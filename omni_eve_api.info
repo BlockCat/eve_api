@@ -1,0 +1,3 @@
+name = Omni Eve API
+description = An EVE API interface that will integrate EVE, Drupal, Teamspeak, and Jabber into an all in one user management solution for EVE Alliances and Corporations.
+core = 7.x
