@@ -1,0 +1,205 @@
+<?php
+
+/**
+ * Implementation of hook_schema.
+ */
+function omni_eve_api_schema()
+{
+  $schema['oea_api_keys'] = array(
+    'description' => t('This table holds all the api\'s associated with all the accounts.'),
+    'fields' => array(
+      'accountid' => array(
+        'description' => t('The primary identifier for an account.'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'drupalid' => array(
+        'description' => t('The link between api and drupal account.'),
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'keyid' => array(
+        'description' => t('The Key ID of the EVE API.'),
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'vcode' => array(
+        'description' => t('The Verification Code of the EVE API.'),
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'errorid' => array(
+        'description' => t('Error code to identify any problems with a registered api key.'),
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'updated' => array(
+        'description' => t('When the API was initially created/updated.'),
+        'type' => 'datetime',
+        'mysql_type' => 'DATETIME',
+        'pgsql_type' => 'timestamp without time zone',
+        'sqlite_type' => 'VARCHAR',
+        'sqlsrv_type' => 'smalldatetime',
+        'not null' => FALSE,
+        'sortable' => TRUE,
+        'views' => TRUE,
+      ),
+    ),
+    'unique keys' => array('accountid' => array('accountid')),
+    'primary key' => array('accountid'),
+  );
+
+  $schema['oea_characters'] = array(
+    'description' => t('This table holds all the characters retrieved from the API\'s.'),
+    'fields' => array(
+      'characterid' => array(
+        'description' => t('The unique Character ID associated with the EVE Character.'),
+        'type' => 'int',
+        'not null' => TRUE
+      ),
+      'drupalid' => array(
+        'description' => t('The link between api and drupal account.'),
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'charactername' => array(
+        'description' => t('The EVE Character Name'),
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'corporationid' => array(
+        'description' => t('The Corporation ID the Character is currently associated with in EVE.'),
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'corporationname' => array(
+        'description' => t('The Corporation Name the Character is currently associated with in EVE.'),
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'corporationticker' => array(
+        'description' => t('The Corporation Ticker the Character is currently associated with in EVE.'),
+        'type' => 'varchar',
+        'length' => 20,
+        'not null' => TRUE,
+      ),
+      'allianceid' => array(
+        'description' => t('The Alliance ID the Character is currently associated with in EVE.'),
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'alliancename' => array(
+        'description' => t('The Alliance Name the Character is currently associated with in EVE.'),
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'allianceticker' => array(
+        'description' => t('The Alliance Ticker the Character is currently associated with in EVE.'),
+        'type' => 'varchar',
+        'length' => 20,
+        'not null' => TRUE,
+      ),
+    ),
+    'unique keys' => array('characterid' => array('characterid')),
+    'primary key' => array('characterid'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function omni_eve_api_install()
+{
+  // Create tables
+  //
+  // oea_api_keys:               - Stores registered users userID and API key.
+  // oea_characters:               - Stores registered users userID and API key.
+
+  drupal_install_schema('omni_eve_api');
+
+  $fields = array(
+    0 => array(
+      'title' => 'Main EVE Character Name',
+      'name' => 'profile_eve_character_name',
+      'explanation' => 'Your main EVE Character Name associated with your account.',
+      'category' => '',
+      'type' => 'textfield',
+      'weight' => -10,
+      'required' => 0,
+      'register' => 0,
+      'visibility' => 4,
+      'autocomplete' => 0,
+      'options' => '',
+      'page' => '',
+    ),
+  );
+
+  foreach ( $fields as $field ) {
+    _omni_eve_api_profile_field_add($field);
+  }
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function omni_eve_api_uninstall()
+{
+  drupal_uninstall_schema('omni_eve_api');
+  _omni_eve_api_profile_field_remove('profile_eve_character_name');
+}
+
+
+/**
+ * Source: https://drupal.org/node/730554
+ * 
+ * Credits: nightlife2008 and hughbris
+ * 
+ */
+function _omni_eve_api_profile_field_add($properties)
+{
+  drupal_write_record('profile_fields', $properties);
+
+  //this ain't such a great workaround
+  $category = (array_key_exists('category', $properties) ? $properties['category'] : t('(none)'));
+
+  watchdog(
+    'profile',
+    'Profile field %field added under category %category.',
+    array(
+      '%field' => $properties['title'],
+      '%category' => $category
+    ),
+    WATCHDOG_NOTICE,
+    l(t('view'), 'admin/user/profile')
+  );
+}
+
+function _omni_eve_api_profile_field_remove($name, $remove_values = TRUE)
+{
+  //could be bad ramifications from deleting a profile field but *not* deleting its values (fid seems not to be reused) ?
+  if ($remove_values)
+  {
+    //not sure how db-independent this SQL is ...
+    db_query("DELETE FROM {profile_values} WHERE fid IN (SELECT fid FROM {profile_fields} WHERE name='%s')", $name);
+  }
+
+  db_query("DELETE FROM {profile_fields} WHERE name='%s'", $name);
+
+  watchdog(
+    'profile',
+    'Profile field %name was deleted.',
+    array(
+      '%name' => $name
+    ),
+    WATCHDOG_NOTICE,
+    l(t('view'), 'admin/user/profile')
+  );
+}
