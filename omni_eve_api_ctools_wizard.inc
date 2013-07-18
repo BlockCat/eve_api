@@ -3,7 +3,7 @@
 /**
  * Create callback for standard ctools registration wizard.
  */
-function omni_eve_api_ctools_wizard($step = 'register') {
+function omni_eve_api_ctools_wizard($step = 'enter_api') {
 	// Include required ctools files.
 	ctools_include('wizard');
 	ctools_include('object-cache');
@@ -25,15 +25,13 @@ function omni_eve_api_ctools_wizard($step = 'register') {
     	'cancel callback' => 'omni_eve_api_subtask_cancel',
     	// Specify the order that the child forms will appear in, as well as their page titles.
     	'order' => array(
-        	'register' => t('Register'),
         	'enter_api' => t('Enter EVE API'),
-        	'select_username' => t('Select Main Character'),
+        	'register' => t('Register'),
         ),
     	// Define the child forms. Be sure to use the same keys here that were user in the 'order' section of this array.
     	'forms' => array(
-        	'register' => array('form id' => 'user_register_form'),
         	'enter_api' => array('form id' => 'omni_eve_api_enter_api_form'),
-            'select_username' => array('form id' => 'omni_eve_api_select_username_form'),
+        	'register' => array('form id' => 'user_register_form'),
         ),
     );
 
@@ -119,16 +117,32 @@ function omni_eve_api_subtask_finish(&$form_state) {
 
 function omni_eve_api_enter_api_form($form, &$form_state) {
   $form['item'] = array(
-    '#markup' => t('This is step 2'),
+    '#markup' => t('Enter your EVE API in order to verify you qualify for an account.'),
+    '#weight' => -100,
   );
- 
-  return $form;
-}
 
-function omni_eve_api_select_username_form($form, &$form_state) {
+	// Please enter your EVE API Key ID
+	$form['enter_api']['keyid'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Key ID'),
+		'#description' => t('Please enter your Key ID from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=268435455">here</a>.'),
+		'#required' => TRUE,
+		'#weight' => -40,
+	);
+
+	// Please enter your EVE API Key ID
+	$form['enter_api']['vcode'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Verification Code'),
+		'#description' => t('Please enter your Verification Code from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=268435455">here</a>.'),
+		'#required' => TRUE,
+		'#weight' => -30,
+	);
+
   $form['item'] = array(
-    '#markup' => t('This is step 3'),
+    '#markup' => t('A Full API is required for registration. Please ensure the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'),
+    '#weight' => -20,
   );
- 
+
   return $form;
 }

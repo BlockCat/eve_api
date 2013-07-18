@@ -8,7 +8,7 @@ function omni_eve_api_menu_alter(&$items) {
   // Overrides default router item defined by core user module.
   $items['user/register']['page callback'] = array('omni_eve_api_ctools_wizard');
   // Pass the "first" step key to start the form on step 1 if no step has been specified.
-  $items['user/register']['page arguments'] = array('register');
+  $items['user/register']['page arguments'] = array('enter_api');
   $items['user/register']['file path'] = drupal_get_path('module', 'omni_eve_api');
   $items['user/register']['file'] = 'omni_eve_api_ctools_wizard.inc';
  
@@ -23,7 +23,8 @@ function omni_eve_api_menu() {
     'title' => 'Create new account',
     'page callback' => 'omni_eve_api_ctools_wizard',
     'page arguments' => array(2),
-    'access callback' => TRUE,
+		'access callback' => 'omni_eve_api_access',
+		'access arguments' => array(2),
     'file' => 'omni_eve_api_ctools_wizard.inc',
     'type' => MENU_CALLBACK,
   );
@@ -35,9 +36,19 @@ function omni_eve_api_menu() {
  * Implements hook_form_FORM_ID_alter().
  */
 function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
+	unset($form['actions']);
+
+  $form['item'] = array(
+    '#markup' => t('Please select your main character from the drop down box.  This character will be used to identify yourself throughout the site and various tools.'),
+    '#weight' => -100,
+  );
+
   $form['#submit'] = array(
     'user_register_submit',
     'ctools_wizard_submit',
   );
 }
 
+function omni_eve_api_access() {
+	return variable_get('user_register',1);
+}
