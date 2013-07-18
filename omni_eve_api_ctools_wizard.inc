@@ -116,7 +116,7 @@ function omni_eve_api_subtask_finish(&$form_state) {
 }
 
 function omni_eve_api_enter_api_form($form, &$form_state) {
-  $form['item'] = array(
+  $form['registration_info'] = array(
     '#markup' => t('Enter your EVE API in order to verify you qualify for an account.'),
     '#weight' => -100,
   );
@@ -139,7 +139,7 @@ function omni_eve_api_enter_api_form($form, &$form_state) {
 		'#weight' => -30,
 	);
 
-  $form['item'] = array(
+  $form['api_info'] = array(
     '#markup' => t('A Full API is required for registration. Please ensure the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'),
     '#weight' => -20,
   );

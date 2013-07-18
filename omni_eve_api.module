@@ -38,7 +38,7 @@ function omni_eve_api_menu() {
 function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
 	unset($form['actions']);
 
-  $form['item'] = array(
+  $form['registration_info'] = array(
     '#markup' => t('Please select your main character from the drop down box.  This character will be used to identify yourself throughout the site and various tools.'),
     '#weight' => -100,
   );
