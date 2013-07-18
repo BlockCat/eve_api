@@ -14,7 +14,7 @@ function omni_eve_api_ctools_wizard($step = 'register') {
     	//Specify the path for this form. It is important to include space for the $step argument to be passed.
     	'path' => "user/register/%step",
     	// Show breadcrumb trail.
-    	'show trail' => TRUE, 'show back' => FALSE, 'show return' => FALSE,
+    	'show trail' => TRUE, 'show back' => TRUE, 'show return' => FALSE,
     	// Callback to use when the 'next' button is clicked.
     	'next callback' => 'omni_eve_api_subtask_next',
     	// Callback to use when entire form is completed.
@@ -32,11 +32,7 @@ function omni_eve_api_ctools_wizard($step = 'register') {
     	// Define the child forms. Be sure to use the same keys here that were user in the 'order' section of this array.
     	'forms' => array(
         	'register' => array('form id' => 'user_register_form'),
-        	'enter_api' => array(
-            	'form id' => 'omni_eve_api_enter_api_form',
-            	// Be sure to load the required include file if the form callback is not defined in the .module file.
-            	'include' => drupal_get_path('module', 'omni_eve_api') . '/omni_eve_api_enter_api_form.inc',
-            ),
+        	'enter_api' => array('form id' => 'omni_eve_api_enter_api_form'),
             'select_username' => array('form id' => 'omni_eve_api_select_username_form'),
         ),
     );

@@ -23,7 +23,7 @@ function omni_eve_api_menu() {
     'title' => 'Create new account',
     'page callback' => 'omni_eve_api_ctools_wizard',
     'page arguments' => array(2),
-    'access callback' => 'registration_access',
+    'access callback' => TRUE,
     'file' => 'omni_eve_api_ctools_wizard.inc',
     'type' => MENU_CALLBACK,
   );
