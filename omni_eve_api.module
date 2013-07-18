@@ -8,7 +8,7 @@ function omni_eve_api_menu_alter(&$items) {
   // Overrides default router item defined by core user module.
   $items['user/register']['page callback'] = array('omni_eve_api_ctools_wizard');
   // Pass the "first" step key to start the form on step 1 if no step has been specified.
-  $items['user/register']['page arguments'] = array('enter_api');
+  $items['user/register']['page arguments'] = array('register');
   $items['user/register']['file path'] = drupal_get_path('module', 'omni_eve_api');
   $items['user/register']['file'] = 'omni_eve_api_ctools_wizard.inc';
  

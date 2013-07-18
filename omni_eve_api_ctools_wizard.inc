@@ -3,7 +3,7 @@
 /**
  * Create callback for standard ctools registration wizard.
  */
-function omni_eve_api_ctools_wizard($step = 'enter_api') {
+function omni_eve_api_ctools_wizard($step = 'register') {
 	// Include required ctools files.
 	ctools_include('wizard');
 	ctools_include('object-cache');
@@ -24,11 +24,11 @@ function omni_eve_api_ctools_wizard($step = 'enter_api') {
 	// Callback to use when user cancels wizard.
 	'cancel callback' => 'omni_eve_api_subtask_cancel',
 	// Specify the order that the child forms will appear in, as well as their page titles.
-	'order' => array('enter_api' => t('Enter EVE API'), 'register' => t('Register'), ),
+	'order' => array('register' => t('Register'), 'enter_api' => t('Enter EVE API'), 'select_username' => t('Select Main Character'), ),
 	// Define the child forms. Be sure to use the same keys here that were user in the 'order' section of this array.
-	'forms' => array('enter_api' => array('form id' => 'omni_eve_api_enter_api_form',
+	'forms' => array('register' => array('form id' => 'user_register_form'), 'enter_api' => array('form id' => 'omni_eve_api_enter_api_form',
 	// Be sure to load the required include file if the form callback is not defined in the .module file.
-	'include' => drupal_get_path('module', 'omni_eve_api') . '/omni_eve_api_enter_api_form.inc', ), 'register' => array('form id' => 'user_register_form'),), );
+	'include' => drupal_get_path('module', 'omni_eve_api') . '/omni_eve_api_enter_api_form.inc', 'select_username' => array('form id' => 'omni_eve_api_select_username_form'),), ), );
 
 	// Make cached data available within each step's $form_state array.
 	$form_state['signup_object'] = omni_eve_api_get_page_cache('signup');
@@ -112,7 +112,15 @@ function omni_eve_api_subtask_finish(&$form_state) {
 
 function omni_eve_api_enter_api_form($form, &$form_state) {
   $form['item'] = array(
-    '#markup' => t('This is step 1'),
+    '#markup' => t('This is step 2'),
+  );
+ 
+  return $form;
+}
+
+function omni_eve_api_select_username_form($form, &$form_state) {
+  $form['item'] = array(
+    '#markup' => t('This is step 3'),
   );
  
   return $form;
