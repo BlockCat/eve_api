@@ -116,9 +116,9 @@ function omni_eve_api_subtask_finish(&$form_state) {
 }
 
 function omni_eve_api_enter_api_form($form, &$form_state) {
-  $form['registration_info'] = array(
+  $form['enter_api']['registration_info'] = array(
     '#markup' => t('Enter your EVE API in order to verify you qualify for an account.'),
-    '#weight' => -100,
+    '#weight' => 10,
   );
 
 	// Please enter your EVE API Key ID
@@ -127,7 +127,7 @@ function omni_eve_api_enter_api_form($form, &$form_state) {
 		'#title' => t('Key ID'),
 		'#description' => t('Please enter your Key ID from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=268435455">here</a>.'),
 		'#required' => TRUE,
-		'#weight' => -40,
+		'#weight' => 20,
 	);
 
 	// Please enter your EVE API Key ID
@@ -136,12 +136,12 @@ function omni_eve_api_enter_api_form($form, &$form_state) {
 		'#title' => t('Verification Code'),
 		'#description' => t('Please enter your Verification Code from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=268435455">here</a>.'),
 		'#required' => TRUE,
-		'#weight' => -30,
+		'#weight' => 30,
 	);
 
-  $form['api_info'] = array(
-    '#markup' => t('A Full API is required for registration. Please ensure the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'),
-    '#weight' => -20,
+  $form['enter_api']['api_info'] = array(
+    '#markup' => t('A Full API is required for registration. Please ensure that the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'),
+    '#weight' => 40,
   );
 
   return $form;
