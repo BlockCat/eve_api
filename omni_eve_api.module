@@ -23,8 +23,7 @@ function omni_eve_api_menu() {
     'title' => 'Create new account',
     'page callback' => 'omni_eve_api_ctools_wizard',
     'page arguments' => array(2),
-    'access callback' => 'omni_eve_api_access',
-    'access arguments' => array(2),
+    'access callback' => 'registration_access',
     'file' => 'omni_eve_api_ctools_wizard.inc',
     'type' => MENU_CALLBACK,
   );
@@ -35,7 +34,7 @@ function omni_eve_api_menu() {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function hook_form_user_register_form_alter(&$form, &$form_state) {
+function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
   $form['#submit'] = array(
     'user_register_submit',
     'ctools_wizard_submit',

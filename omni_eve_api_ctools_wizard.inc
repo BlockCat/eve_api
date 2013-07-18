@@ -9,26 +9,37 @@ function omni_eve_api_ctools_wizard($step = 'register') {
 	ctools_include('object-cache');
 
 	$form_info = array(
-	// Specify unique form id for this form.
-	'id' => 'multistep_registration',
-	//Specify the path for this form. It is important to include space for the $step argument to be passed.
-	'path' => "user/register/%step",
-	// Show breadcrumb trail.
-	'show trail' => TRUE, 'show back' => FALSE, 'show return' => FALSE,
-	// Callback to use when the 'next' button is clicked.
-	'next callback' => 'omni_eve_api_subtask_next',
-	// Callback to use when entire form is completed.
-	'finish callback' => 'omni_eve_api_subtask_finish',
-	// Callback to use when user clicks final submit button.
-	'return callback' => 'omni_eve_api_subtask_finish',
-	// Callback to use when user cancels wizard.
-	'cancel callback' => 'omni_eve_api_subtask_cancel',
-	// Specify the order that the child forms will appear in, as well as their page titles.
-	'order' => array('register' => t('Register'), 'enter_api' => t('Enter EVE API'), 'select_username' => t('Select Main Character'), ),
-	// Define the child forms. Be sure to use the same keys here that were user in the 'order' section of this array.
-	'forms' => array('register' => array('form id' => 'user_register_form'), 'enter_api' => array('form id' => 'omni_eve_api_enter_api_form',
-	// Be sure to load the required include file if the form callback is not defined in the .module file.
-	'include' => drupal_get_path('module', 'omni_eve_api') . '/omni_eve_api_enter_api_form.inc', 'select_username' => array('form id' => 'omni_eve_api_select_username_form'),), ), );
+    	// Specify unique form id for this form.
+    	'id' => 'multistep_registration',
+    	//Specify the path for this form. It is important to include space for the $step argument to be passed.
+    	'path' => "user/register/%step",
+    	// Show breadcrumb trail.
+    	'show trail' => TRUE, 'show back' => FALSE, 'show return' => FALSE,
+    	// Callback to use when the 'next' button is clicked.
+    	'next callback' => 'omni_eve_api_subtask_next',
+    	// Callback to use when entire form is completed.
+    	'finish callback' => 'omni_eve_api_subtask_finish',
+    	// Callback to use when user clicks final submit button.
+    	'return callback' => 'omni_eve_api_subtask_finish',
+    	// Callback to use when user cancels wizard.
+    	'cancel callback' => 'omni_eve_api_subtask_cancel',
+    	// Specify the order that the child forms will appear in, as well as their page titles.
+    	'order' => array(
+        	'register' => t('Register'),
+        	'enter_api' => t('Enter EVE API'),
+        	'select_username' => t('Select Main Character'),
+        ),
+    	// Define the child forms. Be sure to use the same keys here that were user in the 'order' section of this array.
+    	'forms' => array(
+        	'register' => array('form id' => 'user_register_form'),
+        	'enter_api' => array(
+            	'form id' => 'omni_eve_api_enter_api_form',
+            	// Be sure to load the required include file if the form callback is not defined in the .module file.
+            	'include' => drupal_get_path('module', 'omni_eve_api') . '/omni_eve_api_enter_api_form.inc',
+            ),
+            'select_username' => array('form id' => 'omni_eve_api_select_username_form'),
+        ),
+    );
 
 	// Make cached data available within each step's $form_state array.
 	$form_state['signup_object'] = omni_eve_api_get_page_cache('signup');
