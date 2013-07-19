@@ -118,7 +118,6 @@ function omni_eve_api_schema()
  */
 function omni_eve_api_install()
 {
-  $ret = array();
   db_add_field(
     'users',
     'charactername',
@@ -137,7 +136,6 @@ function omni_eve_api_install()
  */
 function omni_eve_api_uninstall()
 {
-  $ret = array();
   db_drop_field(
     'users',
     'charactername'
