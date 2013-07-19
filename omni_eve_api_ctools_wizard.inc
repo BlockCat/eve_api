@@ -143,8 +143,8 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state)
   );
 
   $xml = NULL;
-  $keyid = $form_state['input']['keyid'];
-  $vcode = $form_state['input']['vcode'];
+  $keyid = $form_state['storage']['keyid'];
+  $vcode = $form_state['storage']['vcode'];
   $valid_api = omni_eve_api_verify_api_status($xml, $keyid, $vcode);
   $valid_blue = omni_eve_api_verify_blue_status($xml);
 
@@ -233,5 +233,6 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state)
  */
 function omni_eve_api_enter_api_form_submit($form, &$form_state)
 {
-
+  $form_state['storage']['keyid'] = $form_state['values']['keyid'];
+  $form_state['storage']['vcode'] = $form_state['values']['vcode'];
 }
