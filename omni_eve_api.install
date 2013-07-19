@@ -118,33 +118,18 @@ function omni_eve_api_schema()
  */
 function omni_eve_api_install()
 {
-  // Create tables
-  //
-  // oea_api_keys:               - Stores registered users userID and API key.
-  // oea_characters:               - Stores registered users userID and API key.
-
-  drupal_install_schema('omni_eve_api');
-
-  $fields = array(
-    0 => array(
-      'title' => 'Main EVE Character Name',
-      'name' => 'profile_eve_character_name',
-      'explanation' => 'Your main EVE Character Name associated with your account.',
-      'category' => '',
-      'type' => 'textfield',
-      'weight' => -10,
-      'required' => 0,
-      'register' => 0,
-      'visibility' => 4,
-      'autocomplete' => 0,
-      'options' => '',
-      'page' => '',
-    ),
+  $ret = array();
+  db_add_field(
+    'users',
+    'charactername',
+    array(
+      'description' => t('Main EVE Character Name'),
+      'type' => 'varchar',
+      'length' => 50,
+      'not null' => TRUE,
+      'default' => 'EVE',
+    )
   );
-
-  foreach ( $fields as $field ) {
-    _omni_eve_api_profile_field_add($field);
-  }
 }
 
 /**
@@ -152,54 +137,9 @@ function omni_eve_api_install()
  */
 function omni_eve_api_uninstall()
 {
-  drupal_uninstall_schema('omni_eve_api');
-  _omni_eve_api_profile_field_remove('profile_eve_character_name');
-}
-
-
-/**
- * Source: https://drupal.org/node/730554
- * 
- * Credits: nightlife2008 and hughbris
- * 
- */
-function _omni_eve_api_profile_field_add($properties)
-{
-  drupal_write_record('profile_fields', $properties);
-
-  //this ain't such a great workaround
-  $category = (array_key_exists('category', $properties) ? $properties['category'] : t('(none)'));
-
-  watchdog(
-    'profile',
-    'Profile field %field added under category %category.',
-    array(
-      '%field' => $properties['title'],
-      '%category' => $category
-    ),
-    WATCHDOG_NOTICE,
-    l(t('view'), 'admin/user/profile')
-  );
-}
-
-function _omni_eve_api_profile_field_remove($name, $remove_values = TRUE)
-{
-  //could be bad ramifications from deleting a profile field but *not* deleting its values (fid seems not to be reused) ?
-  if ($remove_values)
-  {
-    //not sure how db-independent this SQL is ...
-    db_query("DELETE FROM {profile_values} WHERE fid IN (SELECT fid FROM {profile_fields} WHERE name='%s')", $name);
-  }
-
-  db_query("DELETE FROM {profile_fields} WHERE name='%s'", $name);
-
-  watchdog(
-    'profile',
-    'Profile field %name was deleted.',
-    array(
-      '%name' => $name
-    ),
-    WATCHDOG_NOTICE,
-    l(t('view'), 'admin/user/profile')
+  $ret = array();
+  db_drop_field(
+    'users',
+    'charactername'
   );
 }

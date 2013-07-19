@@ -56,3 +56,13 @@ function omni_eve_api_access()
 {
   return variable_get('user_register', 1);
 }
+
+/**
+ * Implements hook_username_alter().
+ */
+function omni_eve_api_username_alter(&$name, $account) {
+  // Display the user's EVE Character Name instead of the username.
+  if (isset($account->charactername)) {
+    $name = $account->charactername;
+  }
+}
