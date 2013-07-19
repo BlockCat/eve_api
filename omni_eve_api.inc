@@ -5,7 +5,8 @@
  */
 function omni_eve_api_verify_api_status(&$xml, $keyid, $vcode)
 {
-	return TRUE;
+	$xml = $keyid . $vcode;
+	return NULL;
 }
 
 /**
@@ -13,7 +14,7 @@ function omni_eve_api_verify_api_status(&$xml, $keyid, $vcode)
  */
 function omni_eve_api_verify_blue_status(&$xml)
 {
-	return TRUE;
+	return NULL;
 }
 
 /**
@@ -22,8 +23,8 @@ function omni_eve_api_verify_blue_status(&$xml)
 function omni_eve_api_valid_characters(&$xml)
 {
 	return array(
-      'plugin1' => t('Plugin 1'),
-      'plugin2' => t('Plugin 2'),
-      'plugin3' => t('Plugin 3'),
+      'Character 1' => t('Plugin 1'),
+      'Character 2' => t('Plugin 2'),
+      $xml => t($xml),
     );
 }

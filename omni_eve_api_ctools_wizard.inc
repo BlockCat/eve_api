@@ -143,10 +143,10 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state)
   );
 
   $xml = NULL;
-  $keyid = $form_state['values']['keyid'];
-  $vcode = $form_state['values']['vcode'];
+  $keyid = $form_state['input']['keyid'];
+  $vcode = $form_state['input']['vcode'];
   $valid_api = omni_eve_api_verify_api_status($xml, $keyid, $vcode);
-	$valid_blue = omni_eve_api_verify_blue_status($xml);
+  $valid_blue = omni_eve_api_verify_blue_status($xml);
 
   $form['valid_api']['charactername'] = array(
     '#type' => 'select',
@@ -154,6 +154,7 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state)
     '#default_value' => '',
     '#options' => omni_eve_api_valid_characters($xml),
     '#description' => t('Detected valid Main Characters.'),
+    '#required' => TRUE,
   );
 }
 
@@ -232,22 +233,5 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state)
  */
 function omni_eve_api_enter_api_form_submit($form, &$form_state)
 {
-  $xml = NULL;
-  $keyid = $form_state['values']['keyid'];
-  $vcode = $form_state['values']['vcode'];
-  $valid_api = omni_eve_api_verify_api_status($xml, $keyid, $vcode);
 
-  if (!isset($valid_api))
-  {
-    $valid_blue = omni_eve_api_verify_blue_status($xml);
-
-    if (isset($valid_blue))
-    {
-      form_set_error('valid_blue', $valid_blue);
-    }
-  }
-  else
-  {
-    form_set_error('valid_api', $valid_api);
-  }
 }
