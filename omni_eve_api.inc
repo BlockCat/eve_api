@@ -65,9 +65,9 @@ function omni_eve_api_get_xml(&$xml, $type, $query = array())
 }
 
 /**
- * Function to retrieve the XML
+ * Function to retrieve the standings for a cron job
  */
-function omni_eve_api_get_standings(&$xml, $keyid, $vcode)
+function omni_eve_api_get_standings_cron(&$xml, $keyid, $vcode)
 {
   $query = array(
     'keyid' => $keyid,
