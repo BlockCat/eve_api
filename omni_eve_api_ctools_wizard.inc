@@ -150,7 +150,7 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state)
   $xml = NULL;
   $keyid = $form_state['signup_object']['keyid'];
   $vcode = $form_state['signup_object']['vcode'];
-  $characters = omni_eve_api_verify_api_status($xml, $keyid, $vcode);
+  $characters = omni_eve_api_get_api_status($xml, $keyid, $vcode);
 
 
   $form['account']['charactername'] = array(
@@ -207,12 +207,12 @@ function omni_eve_api_user_register_validate($form, &$form_state)
   $xml = NULL;
   $keyid = $form_state['signup_object']['keyid'];
   $vcode = $form_state['signup_object']['vcode'];
-  $characters = omni_eve_api_verify_api_status($xml, $keyid, $vcode);
+  $characters = omni_eve_api_get_api_status($xml, $keyid, $vcode);
 
   if (!$characters['api_expires'] && $characters['api_type'] == 'Account' && $characters['api_mask'] == 268435455)
   {
     /**
-    $valid_blue = omni_eve_api_verify_blue_status($characters);
+    $valid_blue = omni_eve_api_verify_blue_status($xml, $characters);
 
     if (isset($valid_blue))
     {
@@ -232,6 +232,9 @@ function omni_eve_api_user_register_validate($form, &$form_state)
 function omni_eve_api_user_register_submit($form, &$form_state)
 {
   $charactername = $form_state['values']['charactername'];
+  $keyid = $form_state['signup_object']['keyid'];
+  $vcode = $form_state['signup_object']['vcode'];
+  
 }
 
 /**
@@ -242,12 +245,12 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state)
   $xml = NULL;
   $keyid = $form_state['values']['keyid'];
   $vcode = $form_state['values']['vcode'];
-  $characters = omni_eve_api_verify_api_status($xml, $keyid, $vcode);
+  $characters = omni_eve_api_get_api_status($xml, $keyid, $vcode);
 
   if (!$characters['api_expires'] && $characters['api_type'] == 'Account' && $characters['api_mask'] == 268435455)
   {
     /**
-    $valid_blue = omni_eve_api_verify_blue_status($characters);
+    $valid_blue = omni_eve_api_verify_blue_status($xml, $characters);
 
     if (isset($valid_blue))
     {
