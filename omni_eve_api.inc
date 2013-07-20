@@ -55,16 +55,30 @@ function omni_eve_api_get_xml($type, $query = array())
   {
     $html = omni_eve_api_curl_http_request($url, $query);
 
-    try
+    if ($html -> code == 200)
     {
-      $xml = new SimpleXMLElement($html -> data);
+      try
+      {
+        $xml = new SimpleXMLElement($html -> data);
+      }
+      catch (Exception $e)
+      {
+        /**
+         * Do something with the error
+         */
+        $xml = NULL;
+        drupal_set_message('omni_eve_api: Unable to process XML. Full Error: ' . $e -> getMessage());
+      }
+
+      if ($xml -> error)
+      {
+        drupal_set_message('omni_eve_api: EVE API returned an error.  Error Code: ' . $xml -> error['code'] . '  Error Message:' . $xml -> error);
+        $xml = NULL;
+      }
     }
-    catch (Exception $e)
+    else
     {
-      /**
-       * Do something with the error
-       */
-      $xml = NULL;
+      drupal_set_message('omni_eve_api: The web server returned an error trying to process the request ' . $html -> code . '. Please check your entries or try again later. Full Error: ' . $html -> error);
     }
   }
 
