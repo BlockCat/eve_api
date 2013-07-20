@@ -44,18 +44,33 @@ function omni_eve_api_get_xml($type, $query = array())
     $url .= "/account/APIKeyInfo.xml.aspx";
   }
 
-  $html = omni_eve_api_curl_http_request($url, $query);
+  $cache_name = 'xml' . $type . str_replace('=', '', str_replace('&', '', drupal_http_build_query($query)));
 
-  try
+  if ($cached = cache_get($cache_name, 'cache'))
   {
-    $xml = new SimpleXMLElement($html -> data);
+    $xml = $cached -> data;
   }
-  catch (Exception $e)
+
+  if (empty($username))
   {
-    /**
-     * Do something with the error
-     */
-    $xml = NULL;
+    $html = omni_eve_api_curl_http_request($url, $query);
+
+    try
+    {
+      $xml = new SimpleXMLElement($html -> data);
+    }
+    catch (Exception $e)
+    {
+      /**
+       * Do something with the error
+       */
+      $xml = NULL;
+    }
+  }
+
+  if (isset($xml))
+  {
+    cache_set($cache_name, $xml, 'cache', strtotime($xml -> cachedUntil));
   }
 
   return $xml;
@@ -75,25 +90,22 @@ function omni_eve_api_get_character_api($query)
 
   $api_data = array();
   $api_info = $xml -> result -> key -> attributes();
-  $api_data['api_mask'] = (int)$api_info -> accessMask;
-  $api_data['api_type'] = (string)$api_info -> type;
-  $api_data['api_expires'] = ((string)$api_info -> expires) ? true : false;
+  $api_data['accessMask'] = (int)$api_info -> accessMask;
+  $api_data['type'] = (string)$api_info -> type;
+  $api_data['expires'] = ((string)$api_info -> expires) ? true : false;
 
   foreach ($xml->result->key->rowset->children() as $rows)
   {
     $row = $rows -> attributes();
 
-    $query = array(
-      'corporationID' => (int)$row -> corporationID,
-    );
+    $query = array('corporationID' => (int)$row -> corporationID, );
 
     $api_data['characters'][(string)$row -> characterName] = array_merge(array(
       'characterName' => (string)$row -> characterName,
       'characterID' => (int)$row -> characterID,
       'corporationName' => (string)$row -> corporationName,
       'corporationID' => (int)$row -> corporationID
-    ),
-    omni_eve_api_get_corporation_info($query));
+    ), omni_eve_api_get_corporation_info($query));
   }
 
   return $api_data;
@@ -128,13 +140,12 @@ function omni_eve_api_verify_blue($characters)
 {
   foreach ($characters['characters'] as $character)
   {
-    $result = db_select('oea_blue_standings', 'a')
-      ->fields('a', 'standingid')
-      ->condition('contactID', array($character['characterID'], $character['corporationID'], $character['allianceID']),'IN')
-      ->condition('standing', 0,'>')
-      ->execute()
-      ->fetchAssoc();
-    if ($result->rowCount())
+    $result = db_select('oea_blue_standings', 'a') -> fields('a', 'standingid') -> condition('contactID', array(
+      $character['characterID'],
+      $character['corporationID'],
+      $character['allianceID']
+    ), 'IN') -> condition('standing', 0, '>') -> execute() -> fetchAssoc();
+    if ($result -> rowCount())
     {
       return true;
     }
@@ -152,13 +163,12 @@ function omni_eve_api_valid_characters($characters)
 
   foreach ($characters['characters'] as $character)
   {
-    $result = db_select('oea_blue_standings', 'a')
-      ->fields('a', 'standingid')
-      ->condition('contactID', array($character['characterID'], $character['corporationID'], $character['allianceID']),'IN')
-      ->condition('standing', 0,'>')
-      ->execute()
-      ->fetchAssoc();
-    if ($result->rowCount())
+    $result = db_select('oea_blue_standings', 'a') -> fields('a', 'standingid') -> condition('contactID', array(
+      $character['characterID'],
+      $character['corporationID'],
+      $character['allianceID']
+    ), 'IN') -> condition('standing', 0, '>') -> execute() -> fetchAssoc();
+    if ($result -> rowCount())
     {
       $chars[$character['characterName']] = $character['characterName'];
     }

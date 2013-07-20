@@ -239,7 +239,7 @@ function omni_eve_api_user_register_validate($form, &$form_state)
 
   $characters = omni_eve_api_get_character_api($query);
 
-  if (!$characters['api_expires'] && $characters['api_type'] == 'Account' && $characters['api_mask'] == 268435455)
+  if (!$characters['expires'] && $characters['type'] == 'Account' && $characters['accessMask'] == 268435455)
   {
     if (!omni_eve_api_verify_blue($characters))
     {
@@ -259,10 +259,17 @@ function omni_eve_api_user_register_validate($form, &$form_state)
  */
 function omni_eve_api_user_register_submit($form, &$form_state)
 {
-  $charactername = $form_state['values']['charactername'];
   $uid = $form_state['user'] -> uid;
   $keyid = $form_state['signup_object']['keyid'];
   $vcode = $form_state['signup_object']['vcode'];
+
+  $query = array(
+    'keyid' => $keyid,
+    'vcode' => $vcode,
+  );
+
+  $characters = omni_eve_api_get_character_api($query);
+
   $nid = db_insert('oea_api_keys')
     ->fields(array(
       'drupalid' => $uid,
@@ -270,7 +277,9 @@ function omni_eve_api_user_register_submit($form, &$form_state)
       'vcode' => $vcode,
     ))
     ->execute();
-  $nid;
+  /**
+   * Add function to insert characters and link to api table
+   */
 }
 
 /**
@@ -285,7 +294,7 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state)
 
   $characters = omni_eve_api_get_character_api($query);
 
-  if (!$characters['api_expires'] && $characters['api_type'] == 'Account' && $characters['api_mask'] == 268435455)
+  if (!$characters['expires'] && $characters['type'] == 'Account' && $characters['accessMask'] == 268435455)
   {
     if (!omni_eve_api_verify_blue($characters))
     {

@@ -5,6 +5,8 @@
  */
 module_load_include('inc', 'omni_eve_api', 'omni_eve_api');
 module_load_include('inc', 'omni_eve_api', 'omni_eve_api_cron');
+module_load_include('inc', 'omni_eve_api', 'omni_eve_api_admin');
+module_load_include('inc', 'omni_eve_api', 'omni_eve_api_user');
 
 /**
  * Implements hook_menu_alter().
