@@ -198,11 +198,14 @@ function omni_eve_api_verify_blue_status(&$xml)
 /**
  * Function to compare the API against the Alliance Blue List
  */
-function omni_eve_api_valid_characters(&$xml)
+function omni_eve_api_valid_characters(&$xml, $characters)
 {
-  return array(
-    'Character 1' => t('Plugin 1'),
-    'Character 2' => t('Plugin 2'),
-    $xml => t($xml),
-  );
+  $chars = array();
+
+  foreach ($characters['characters'] as $character)
+  {
+    $chars[$character['characterName']] = $character['characterName'];
+  }
+
+  return $chars;
 }

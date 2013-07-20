@@ -150,14 +150,14 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state)
   $xml = NULL;
   $keyid = $form_state['signup_object']['keyid'];
   $vcode = $form_state['signup_object']['vcode'];
-  $valid_api = omni_eve_api_verify_api_status($xml, $keyid, $vcode);
-  $valid_blue = omni_eve_api_verify_blue_status($xml);
+  $characters = omni_eve_api_verify_api_status($xml, $keyid, $vcode);
+
 
   $form['account']['charactername'] = array(
     '#type' => 'select',
     '#title' => t('Select your Main Character'),
     '#default_value' => '',
-    '#options' => omni_eve_api_valid_characters($xml),
+    '#options' => omni_eve_api_valid_characters($xml, $characters),
     '#description' => t('Detected valid Main Characters.'),
     '#required' => TRUE,
   );
@@ -211,12 +211,14 @@ function omni_eve_api_user_register_validate($form, &$form_state)
 
   if (!$characters['api_expires'] && $characters['api_type'] == 'Account' && $characters['api_mask'] == 268435455)
   {
+    /**
     $valid_blue = omni_eve_api_verify_blue_status($characters);
 
     if (isset($valid_blue))
     {
       form_set_error('valid_blue', $valid_blue);
     }
+     */
   }
   else
   {
@@ -229,7 +231,7 @@ function omni_eve_api_user_register_validate($form, &$form_state)
  */
 function omni_eve_api_user_register_submit($form, &$form_state)
 {
-
+  $charactername = $form_state['values']['charactername'];
 }
 
 /**
@@ -240,16 +242,18 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state)
   $xml = NULL;
   $keyid = $form_state['values']['keyid'];
   $vcode = $form_state['values']['vcode'];
-  $valid_api = omni_eve_api_verify_api_status($xml, $keyid, $vcode);
+  $characters = omni_eve_api_verify_api_status($xml, $keyid, $vcode);
 
-  if (!isset($valid_api))
+  if (!$characters['api_expires'] && $characters['api_type'] == 'Account' && $characters['api_mask'] == 268435455)
   {
-    $valid_blue = omni_eve_api_verify_blue_status($xml);
+    /**
+    $valid_blue = omni_eve_api_verify_blue_status($characters);
 
     if (isset($valid_blue))
     {
       form_set_error('valid_blue', $valid_blue);
     }
+     */
   }
   else
   {
