@@ -132,23 +132,28 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state)
 {
   unset($form['actions']);
 
-  $form['registration_info'] = array(
-    '#markup' => t('Please select your main character from the drop down box.  This character will be used to identify yourself throughout the site and various tools.'),
-    '#weight' => -100,
+  $form['account']['#type'] = 'fieldset';
+  $form['account']['#title'] = t('Blue Status Verified');
+  $form['account']['#description'] = t('Please select your main character from the drop down box.  This character will be used to identify yourself throughout the site and various tools.');
+
+  $form['#validate'] = array(
+    'user_register_validate',
+    'omni_eve_api_user_register_validate',
   );
 
   $form['#submit'] = array(
     'user_register_submit',
+    'omni_eve_api_user_register_submit',
     'ctools_wizard_submit',
   );
 
   $xml = NULL;
-  $keyid = $form_state['storage']['keyid'];
-  $vcode = $form_state['storage']['vcode'];
+  $keyid = $form_state['signup_object']['keyid'];
+  $vcode = $form_state['signup_object']['vcode'];
   $valid_api = omni_eve_api_verify_api_status($xml, $keyid, $vcode);
   $valid_blue = omni_eve_api_verify_blue_status($xml);
 
-  $form['valid_api']['charactername'] = array(
+  $form['account']['charactername'] = array(
     '#type' => 'select',
     '#title' => t('Select your Main Character'),
     '#default_value' => '',
@@ -166,11 +171,10 @@ function omni_eve_api_enter_api_form($form, &$form_state)
   $form['enter_api'] = array(
     '#type' => 'fieldset',
     '#title' => t('Verify Blue Status'),
-    '#description' => t('Please enter your EVE API in order to verify you qualify for an account.'),
+    '#description' => t('Please enter your EVE API in order to verify you qualify for an account.  A Full API is required for registration. Please ensure that the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'),
     '#weight' => 0,
   );
 
-  // Please enter your EVE API Key ID
   $form['enter_api']['keyid'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
@@ -180,7 +184,6 @@ function omni_eve_api_enter_api_form($form, &$form_state)
     '#weight' => 0,
   );
 
-  // Please enter your EVE API Key ID
   $form['enter_api']['vcode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
@@ -190,17 +193,43 @@ function omni_eve_api_enter_api_form($form, &$form_state)
     '#weight' => 10,
   );
 
-  $form['enter_api']['api_info'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('API Key Requirments'),
-    '#description' => t('A Full API is required for registration. Please ensure that the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'),
-    '#weight' => 20,
-  );
-
   $form['#validate'][] = 'omni_eve_api_enter_api_form_validate';
   $form['#submit'][] = 'omni_eve_api_enter_api_form_submit';
 
   return $form;
+}
+
+/**
+ * Verify the API one more time before creating an account
+ */
+function omni_eve_api_user_register_validate($form, &$form_state)
+{
+  $xml = NULL;
+  $keyid = $form_state['signup_object']['keyid'];
+  $vcode = $form_state['signup_object']['vcode'];
+  $characters = omni_eve_api_verify_api_status($xml, $keyid, $vcode);
+
+  if (!$characters['api_expires'] && $characters['api_type'] == 'Account' && $characters['api_mask'] == 268435455)
+  {
+    $valid_blue = omni_eve_api_verify_blue_status($characters);
+
+    if (isset($valid_blue))
+    {
+      form_set_error('valid_blue', $valid_blue);
+    }
+  }
+  else
+  {
+    form_set_error('valid_api', $valid_api);
+  }
+}
+
+/**
+ * Custom submit function for the user registration to add the character name to a custom field
+ */
+function omni_eve_api_user_register_submit($form, &$form_state)
+{
+
 }
 
 /**
@@ -233,6 +262,5 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state)
  */
 function omni_eve_api_enter_api_form_submit($form, &$form_state)
 {
-  $form_state['storage']['keyid'] = $form_state['values']['keyid'];
-  $form_state['storage']['vcode'] = $form_state['values']['vcode'];
+
 }

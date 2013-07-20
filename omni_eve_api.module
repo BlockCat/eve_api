@@ -49,7 +49,7 @@ function omni_eve_api_access()
  */
 function omni_eve_api_username_alter(&$name, $account) {
   // Display the user's EVE Character Name instead of the username.
-  if (isset($account->charactername)) {
-    $name = $account->charactername;
+  if (isset($account->data['charactername'])) {
+    $name = $account->data['charactername'];
   }
 }
