@@ -44,38 +44,34 @@ function omni_eve_api_get_xml($type, $query = array())
     $url .= "/account/APIKeyInfo.xml.aspx";
   }
 
-  $options = array(
-    'method' => 'POST',
-    'data' => $query,
-    'timeout' => 60
-  );
-
-  $html = curl_http_request($url, $options);
+  $html = omni_eve_api_curl_http_request($url, $query);
 
   try
   {
-    $xml = new SimpleXMLElement($html->data);
+    $xml = new SimpleXMLElement($html -> data);
   }
   catch (Exception $e)
   {
     /**
      * Do something with the error
      */
+    $xml = NULL;
   }
 
   return $xml;
 }
 
 /**
- * Function to verify API is valid
+ * Function to retrieve individual characters API info
  */
-function omni_eve_api_get_api_status(&$xml, $keyid, $vcode)
+function omni_eve_api_get_character_api($query)
 {
-  $query = array(
-    'keyid' => $keyid,
-    'vcode' => $vcode,
-  );
   $xml = omni_eve_api_get_xml('keyinfo', $query);
+
+  if (is_null($xml))
+  {
+    return NULL;
+  }
 
   $api_data = array();
   $api_info = $xml -> result -> key -> attributes();
@@ -86,13 +82,41 @@ function omni_eve_api_get_api_status(&$xml, $keyid, $vcode)
   foreach ($xml->result->key->rowset->children() as $rows)
   {
     $row = $rows -> attributes();
-    $api_data['characters'][] = array(
+
+    $query = array(
+      'corporationID' => (int)$row -> corporationID,
+    );
+
+    $api_data['characters'][(string)$row -> characterName] = array_merge(array(
       'characterName' => (string)$row -> characterName,
       'characterID' => (int)$row -> characterID,
       'corporationName' => (string)$row -> corporationName,
       'corporationID' => (int)$row -> corporationID
-    );
+    ),
+    omni_eve_api_get_corporation_info($query));
   }
+
+  return $api_data;
+}
+
+/**
+ * Function to retrieve corporation info
+ */
+function omni_eve_api_get_corporation_info($query)
+{
+  $xml = omni_eve_api_get_xml('corp', $query);
+
+  if (is_null($xml))
+  {
+    return NULL;
+  }
+
+  $api_data = array(
+    'corporationName' => (string)$xml -> result -> corporationName,
+    'ticker' => (string)$xml -> result -> ticker,
+    'allianceID' => (int)$xml -> result -> allianceID,
+    'allianceName' => (string)$xml -> result -> allianceName,
+  );
 
   return $api_data;
 }
@@ -100,21 +124,49 @@ function omni_eve_api_get_api_status(&$xml, $keyid, $vcode)
 /**
  * Function to compare the API against the Alliance Blue List
  */
-function omni_eve_api_verify_blue_status(&$xml)
+function omni_eve_api_verify_blue($characters)
 {
-  return NULL;
+  foreach ($characters['characters'] as $character)
+  {
+    $result = db_select('oea_blue_standings', 'a')
+      ->fields('a', 'standingid')
+      ->condition('contactID', array($character['characterID'], $character['corporationID'], $character['allianceID']),'IN')
+      ->condition('standing', 0,'>')
+      ->execute()
+      ->fetchAssoc();
+    if ($result->rowCount())
+    {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /**
  * Function to compare the API against the Alliance Blue List
  */
-function omni_eve_api_valid_characters(&$xml, $characters)
+function omni_eve_api_valid_characters($characters)
 {
   $chars = array();
 
   foreach ($characters['characters'] as $character)
   {
-    $chars[$character['characterName']] = $character['characterName'];
+    $result = db_select('oea_blue_standings', 'a')
+      ->fields('a', 'standingid')
+      ->condition('contactID', array($character['characterID'], $character['corporationID'], $character['allianceID']),'IN')
+      ->condition('standing', 0,'>')
+      ->execute()
+      ->fetchAssoc();
+    if ($result->rowCount())
+    {
+      $chars[$character['characterName']] = $character['characterName'];
+    }
+  }
+
+  if (empty($chars))
+  {
+    $chars['none'] = 'No Characters Found';
   }
 
   return $chars;

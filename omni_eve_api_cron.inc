@@ -3,91 +3,31 @@
 /**
  * Function to retrieve the standings for a cron job
  */
-function omni_eve_api_get_standings_cron(&$xml, $keyid, $vcode)
+function omni_eve_api_get_standings_cron()
 {
   $query = array(
     'keyid' => $keyid,
     'vcode' => $vcode,
   );
-  omni_eve_api_get_xml($xml, 'standings', $query);
+  $xml = omni_eve_api_get_xml('standings', $query);
 
-  if (!empty($xml -> result -> rowset[0]))
+  db_delete('oea_blue_standings')
+  ->condition('manual', 0)
+  ->execute();
+
+  foreach ($xml->result->children() as $rowset)
   {
-    foreach ($xml->result->rowset[0] as $s)
+    foreach ($rowset->children() as $rows)
     {
-      $cstandings[(string)$s["contactID"]] = array(
-        (string)$s["contactName"],
-        (string)$s["standing"]
-      );
+      $row = $rows -> attributes();
+      db_merge('oea_blue_standings')
+        ->key(array('contactID' => (int) $row -> contactID))
+        -> fields(array(
+        'contactID' => (int) $row -> contactID,
+        'contactName' => (string)$row -> contactName,
+        'standing' => (string)$row -> standing,
+        'manual' => 0,
+      )) -> execute();
     }
   }
-
-  if (!empty($xml -> result -> rowset[1]))
-  {
-    foreach ($xml->result->rowset[1] as $s)
-    {
-      $astandings[(string)$s["contactID"]] = array(
-        (string)$s["contactName"],
-        (string)$s["standing"]
-      );
-    }
-  }
-
-  $count = 0;
-
-  if (!empty($cstandings))
-  {
-    foreach ($cstandings as $i => $c)
-    {
-      if ($c[1] > 0)
-      {
-        $blues[$i][0] = $c[0];
-        $blues[$i][1] = $c[1];
-        $blues[$i][2] = 0;
-        $count++;
-      }
-      elseif ($c[1] < 0)
-      {
-        $reds[$i][0] = $c[0];
-        $reds[$i][1] = $c[1];
-        $reds[$i][2] = 0;
-        $count++;
-      }
-    }
-  }
-
-  if (!empty($astandings))
-  {
-    foreach ($astandings as $i => $a)
-    {
-      if ($a[1] > 0)
-      {
-        $blues[$i][0] = $a[0];
-        $blues[$i][2] = $a[1];
-        $count++;
-
-        if (!isset($blues[$i][1]))
-        {
-          $blues[$i][1] = 0;
-        }
-      }
-      elseif ($a[1] < 0)
-      {
-        $reds[$i][0] = $a[0];
-        $reds[$i][2] = $a[1];
-        $count++;
-
-        if (!isset($reds[$i][1]))
-        {
-          $reds[$i][1] = 0;
-        }
-      }
-    }
-  }
-
-  return array(
-    $blues,
-    $reds,
-    $count,
-  );
 }

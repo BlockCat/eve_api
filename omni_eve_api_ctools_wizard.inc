@@ -126,6 +126,23 @@ function omni_eve_api_subtask_finish(&$form_state)
 }
 
 /**
+ * Implimentation of hook_form_FORM_ID_alter
+ */
+function omni_eve_api_form_user_profile_form_alter(&$form, $form_state)
+{
+  $form['charactername'] = array(
+    '#type' => 'select',
+    '#title' => t('Select your Main Character'),
+    '#default_value' => '',
+    '#options' => array('1' => '1', '2' => '2'),
+    '#description' => t('Detected valid Main Characters.'),
+    '#required' => TRUE,
+  );
+
+  return $form;
+}
+
+/**
  * Implements hook_form_FORM_ID_alter().
  */
 function omni_eve_api_form_user_register_form_alter(&$form, &$form_state)
@@ -147,17 +164,25 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state)
     'ctools_wizard_submit',
   );
 
-  $xml = NULL;
-  $keyid = $form_state['signup_object']['keyid'];
-  $vcode = $form_state['signup_object']['vcode'];
-  $characters = omni_eve_api_get_api_status($xml, $keyid, $vcode);
+  $query = array(
+    'keyid' => $form_state['signup_object']['keyid'],
+    'vcode' => $form_state['signup_object']['vcode'],
+  );
 
+  $characters = omni_eve_api_get_character_api($query);
+
+  if (is_null($characters))
+  {
+/**
+ * Redirect to original registration page, give error message via form_set_error is possible ?
+ */
+  }
 
   $form['account']['charactername'] = array(
     '#type' => 'select',
     '#title' => t('Select your Main Character'),
     '#default_value' => '',
-    '#options' => omni_eve_api_valid_characters($xml, $characters),
+    '#options' => omni_eve_api_valid_characters($characters),
     '#description' => t('Detected valid Main Characters.'),
     '#required' => TRUE,
   );
@@ -204,25 +229,28 @@ function omni_eve_api_enter_api_form($form, &$form_state)
  */
 function omni_eve_api_user_register_validate($form, &$form_state)
 {
-  $xml = NULL;
-  $keyid = $form_state['signup_object']['keyid'];
-  $vcode = $form_state['signup_object']['vcode'];
-  $characters = omni_eve_api_get_api_status($xml, $keyid, $vcode);
+  //Possible fix for signature field on user creation being created as "Array"
+  $form_state['input']['signature'] = $form_state['value']['signature'] = '';
+
+  $query = array(
+    'keyid' => $form_state['signup_object']['keyid'],
+    'vcode' => $form_state['signup_object']['vcode'],
+  );
+
+  $characters = omni_eve_api_get_character_api($query);
 
   if (!$characters['api_expires'] && $characters['api_type'] == 'Account' && $characters['api_mask'] == 268435455)
   {
-    /**
-    $valid_blue = omni_eve_api_verify_blue_status($xml, $characters);
-
-    if (isset($valid_blue))
+    if (!omni_eve_api_verify_blue($characters))
     {
-      form_set_error('valid_blue', $valid_blue);
+      form_set_error('keyid', 'No characters associated with your key are currently blue.');
+      form_set_error('vcode');
     }
-     */
   }
   else
   {
-    form_set_error('valid_api', $valid_api);
+    form_set_error('keyid', 'Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.');
+    form_set_error('vcode');
   }
 }
 
@@ -232,9 +260,17 @@ function omni_eve_api_user_register_validate($form, &$form_state)
 function omni_eve_api_user_register_submit($form, &$form_state)
 {
   $charactername = $form_state['values']['charactername'];
+  $uid = $form_state['user'] -> uid;
   $keyid = $form_state['signup_object']['keyid'];
   $vcode = $form_state['signup_object']['vcode'];
-  
+  $nid = db_insert('oea_api_keys')
+    ->fields(array(
+      'drupalid' => $uid,
+      'keyid' => $keyid,
+      'vcode' => $vcode,
+    ))
+    ->execute();
+  $nid;
 }
 
 /**
@@ -242,25 +278,25 @@ function omni_eve_api_user_register_submit($form, &$form_state)
  */
 function omni_eve_api_enter_api_form_validate($form, &$form_state)
 {
-  $xml = NULL;
-  $keyid = $form_state['values']['keyid'];
-  $vcode = $form_state['values']['vcode'];
-  $characters = omni_eve_api_get_api_status($xml, $keyid, $vcode);
+  $query = array(
+    'keyid' => $form_state['values']['keyid'],
+    'vcode' => $form_state['values']['vcode'],
+  );
+
+  $characters = omni_eve_api_get_character_api($query);
 
   if (!$characters['api_expires'] && $characters['api_type'] == 'Account' && $characters['api_mask'] == 268435455)
   {
-    /**
-    $valid_blue = omni_eve_api_verify_blue_status($xml, $characters);
-
-    if (isset($valid_blue))
+    if (!omni_eve_api_verify_blue($characters))
     {
-      form_set_error('valid_blue', $valid_blue);
+      form_set_error('keyid', 'No characters associated with your key are currently blue.');
+      form_set_error('vcode');
     }
-     */
   }
   else
   {
-    form_set_error('valid_api', $valid_api);
+    form_set_error('keyid', 'Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.');
+    form_set_error('vcode');
   }
 }
 

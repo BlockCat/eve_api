@@ -113,12 +113,12 @@ function omni_eve_api_schema()
   $schema['oea_blue_standings'] = array(
     'description' => t('This table holds all the api\'s associated with all the accounts.'),
     'fields' => array(
-      'standingid' => array(
+      'contactID' => array(
         'description' => t('The unique ID for a corporation, alliance, or character.'),
         'type' => 'int',
         'not null' => TRUE
       ),
-      'standingname' => array(
+      'contactName' => array(
         'description' => t('The name of the corporation, alliance, or character.'),
         'type' => 'varchar',
         'not null' => TRUE,
@@ -157,7 +157,7 @@ function omni_eve_api_install()
       'type' => 'varchar',
       'length' => 50,
       'not null' => TRUE,
-      'default' => 'EVE',
+      'default' => '',
     )
   );
 }
