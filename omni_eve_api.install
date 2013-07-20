@@ -148,6 +148,18 @@ function omni_eve_api_schema()
  */
 function omni_eve_api_install()
 {
+  $ret = array();
+  db_add_field(
+    'users',
+    'charactername',
+    array(
+      'description' => t('Main EVE Character Name'),
+      'type' => 'varchar',
+      'length' => 50,
+      'not null' => TRUE,
+      'default' => 'EVE',
+    )
+  );
 }
 
 /**
@@ -155,4 +167,9 @@ function omni_eve_api_install()
  */
 function omni_eve_api_uninstall()
 {
+  $ret = array();
+  db_drop_field(
+    'users',
+    'charactername'
+  );
 }

@@ -48,8 +48,23 @@ function omni_eve_api_access()
  * Implements hook_username_alter().
  */
 function omni_eve_api_username_alter(&$name, $account) {
+  $user = user_load($account->uid);
+
   // Display the user's EVE Character Name instead of the username.
-  if (isset($account->data['charactername'])) {
-    $name = $account->data['charactername'];
+  if (isset($user->charactername)) {
+    $name = $user->charactername;
   }
+}
+
+/**
+ * Implements hook_username_alter().
+ */
+function omni_eve_api_schema_alter(&$schema) {
+  $schema['users']['fields']['charactername'] = array(
+    'type' => 'varchar',
+    'not null' => TRUE,
+    'default' => 'EVE',
+    'length' => 50,
+    'description' => 'Main EVE Character Name',
+  );
 }
