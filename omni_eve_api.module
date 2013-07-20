@@ -33,16 +33,25 @@ function omni_eve_api_menu()
     'title' => 'Create new account',
     'page callback' => 'omni_eve_api_ctools_wizard',
     'page arguments' => array(2),
-    'access callback' => 'omni_eve_api_access',
+    'access callback' => 'omni_eve_api_register_access',
     'access arguments' => array(2),
     'file' => 'omni_eve_api_ctools_wizard.inc',
     'type' => MENU_CALLBACK,
   );
 
+  $items['admin/settings/omni_eve_api'] = array(
+    'title' => 'Omni eve api settings',
+    'description' => 'Enter your Alliance/Corp CEO and change various options.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('omni_eve_api_admin'),
+    'access arguments' => array('administer omni_eve_api settings'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
   return $items;
 }
 
-function omni_eve_api_access()
+function omni_eve_api_register_access()
 {
   return variable_get('user_register', 1);
 }

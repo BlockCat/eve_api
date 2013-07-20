@@ -48,41 +48,39 @@ function omni_eve_api_get_xml($type, $query = array())
 
   if ($cached = cache_get($cache_name, 'cache'))
   {
-    $xml = $cached -> data;
+    $html = $cached -> data;
   }
 
   if (empty($username))
   {
     $html = omni_eve_api_curl_http_request($url, $query);
 
-    if ($html -> code == 200)
+    if ($html -> code != 200)
     {
-      try
-      {
-        $xml = new SimpleXMLElement($html -> data);
-      }
-      catch (Exception $e)
-      {
-        drupal_set_message('omni_eve_api: Unable to process XML. Full Error: ' . $e -> getMessage());
-        $xml = NULL;
-      }
+      drupal_set_message('omni_eve_api: EVE API returned an error with the HTTP request ' . $html -> code . '. Full Error: ' . $html -> error, 'error');
+      $html = NULL;
+    }
+  }
 
-      if ($xml -> error)
-      {
-        drupal_set_message('omni_eve_api: EVE API returned an error with the API data. Error Code: ' . $xml -> error['code'] . ' Error Message:' . $xml -> error);
-        $xml = NULL;
-      }
-    }
-    else
-    {
-      drupal_set_message('omni_eve_api: EVE API returned an error with the HTTP request ' . $html -> code . '. Full Error: ' . $html -> error);
-      $xml = NULL;
-    }
+  try
+  {
+    $xml = new SimpleXMLElement($html -> data);
+  }
+  catch (Exception $e)
+  {
+    drupal_set_message('omni_eve_api: Unable to process XML. Full Error: ' . $e -> getMessage(), 'error');
+    $xml = NULL;
+  }
+
+  if ($xml -> error)
+  {
+    drupal_set_message('omni_eve_api: EVE API returned an error with the API data. Error Code: ' . $xml -> error['code'] . ' Error Message:' . $xml -> error, 'error');
+    $xml = NULL;
   }
 
   if (isset($xml))
   {
-    cache_set($cache_name, $xml, 'cache', strtotime($xml -> cachedUntil));
+    cache_set($cache_name, $html, 'cache', strtotime($xml -> cachedUntil));
   }
 
   return $xml;
@@ -152,7 +150,7 @@ function omni_eve_api_verify_blue($characters)
 {
   foreach ($characters['characters'] as $character)
   {
-    $result = db_select('oea_blue_standings', 'a') -> fields('a', 'standingid') -> condition('contactID', array(
+    $result = db_select('oea_blue_standings', 'a') -> fields('a', array('standingid')) -> condition('contactID', array(
       $character['characterID'],
       $character['corporationID'],
       $character['allianceID']
@@ -175,7 +173,7 @@ function omni_eve_api_valid_characters($characters)
 
   foreach ($characters['characters'] as $character)
   {
-    $result = db_select('oea_blue_standings', 'a') -> fields('a', 'standingid') -> condition('contactID', array(
+    $result = db_select('oea_blue_standings', 'a') -> fields('a', array('standingid')) -> condition('contactID', array(
       $character['characterID'],
       $character['corporationID'],
       $character['allianceID']

@@ -38,26 +38,6 @@ function omni_eve_api_admin()
 }
 
 /**
- * Implements hook_menu().
- */
-function omni_eve_api_menu()
-{
-
-  $items = array();
-
-  $items['admin/settings/omni_eve_api'] = array(
-    'title' => 'Omni eve api settings',
-    'description' => 'Enter your Alliance/Corp CEO and change various options.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_admin'),
-    'access arguments' => array('administer omni_eve_api settings'),
-    'type' => MENU_NORMAL_ITEM,
-  );
-
-  return $items;
-}
-
-/**
  * Implements hook_admin_validate().
  */
 function onthisdate_admin_validate($form, &$form_state)
