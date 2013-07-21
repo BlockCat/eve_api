@@ -134,7 +134,10 @@ function omni_eve_api_form_user_profile_form_alter(&$form, $form_state)
     '#type' => 'select',
     '#title' => t('Select your Main Character'),
     '#default_value' => '',
-    '#options' => array('1' => '1', '2' => '2'),
+    '#options' => array(
+      '1' => '1',
+      '2' => '2'
+    ),
     '#description' => t('Detected valid Main Characters.'),
     '#required' => TRUE,
   );
@@ -164,18 +167,34 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state)
     'ctools_wizard_submit',
   );
 
-  $query = array(
-    'keyid' => $form_state['signup_object']['keyid'],
-    'vcode' => $form_state['signup_object']['vcode'],
-  );
+  if (is_array($form_state['signup_object']))
+  {
+    $query = array(
+      'keyid' => (int)$form_state['signup_object']['keyid'],
+      'vcode' => (string)$form_state['signup_object']['vcode'],
+    );
+  }
+  else
+  {
+    drupal_goto('/user/register');
+  }
 
   $characters = omni_eve_api_get_character_api($query);
 
-  if (is_null($characters))
+  if (!$characters['expires'] && $characters['type'] == 'Account' && $characters['accessMask'] == 268435455)
   {
-/**
- * Redirect to original registration page, give error message via form_set_error is possible ?
- */
+    if (!omni_eve_api_verify_blue($characters))
+    {
+      drupal_goto('/user/register');
+    }
+    elseif ($chars = omni_eve_api_characters_exist($characters))
+    {
+      drupal_goto('/user/register');
+    }
+  }
+  else
+  {
+    drupal_goto('/user/register');
   }
 
   $form['account']['charactername'] = array(
@@ -246,6 +265,11 @@ function omni_eve_api_user_register_validate($form, &$form_state)
       form_set_error('keyid', 'No characters associated with your key are currently blue.');
       form_set_error('vcode');
     }
+    elseif ($chars = omni_eve_api_characters_exist($characters))
+    {
+      form_set_error('keyid', 'Characters on this key have already been registered. Characters registered: ' . implode(", ", $chars));
+      form_set_error('vcode');
+    }
   }
   else
   {
@@ -270,31 +294,26 @@ function omni_eve_api_user_register_submit($form, &$form_state)
 
   $characters = omni_eve_api_get_character_api($query);
 
-  $new_api_key_id = db_insert('oea_api_keys')
-    ->fields(array(
-      'drupalid' => $uid,
-      'keyid' => $keyid,
-      'vcode' => $vcode,
-    ))
-    ->execute();
+  $new_api_key_id = db_insert('oea_api_keys') -> fields(array(
+    'drupalid' => $uid,
+    'keyid' => $keyid,
+    'vcode' => $vcode,
+  )) -> execute();
 
   foreach ($characters['characters'] as $character)
   {
-    db_merge('oea_characters')
-      ->key(array('characterid' => $character['corporationID']))
-      ->fields(array(
-        'characterid' => $character['characterID'],
-        'drupalid' => $uid,
-        'accountid' => $new_api_key_id,
-        'charactername' => $character['characterName'],
-        'corporationid' => $character['corporationID'],
-        'corporationname' => $character['corporationName'],
-        'corporationticker' => $character['ticker'],
-        'allianceid' => $character['allianceID'],
-        'alliancename' => $character['allianceName'],
-        'allianceticker' => $character['ticker'],
-      ))
-      ->execute();
+    db_merge('oea_characters') -> key(array('characterid' => $character['corporationID'])) -> fields(array(
+      'characterid' => $character['characterID'],
+      'drupalid' => $uid,
+      'accountid' => $new_api_key_id,
+      'charactername' => $character['characterName'],
+      'corporationid' => $character['corporationID'],
+      'corporationname' => $character['corporationName'],
+      'corporationticker' => $character['ticker'],
+      'allianceid' => $character['allianceID'],
+      'alliancename' => $character['allianceName'],
+      'allianceticker' => $character['ticker'],
+    )) -> execute();
   }
 }
 
@@ -315,6 +334,11 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state)
     if (!omni_eve_api_verify_blue($characters))
     {
       form_set_error('keyid', 'No characters associated with your key are currently blue.');
+      form_set_error('vcode');
+    }
+    elseif ($chars = omni_eve_api_characters_exist($characters))
+    {
+      form_set_error('keyid', 'Characters on this key have already been registered. Characters registered: ' . implode(", ", $chars));
       form_set_error('vcode');
     }
   }

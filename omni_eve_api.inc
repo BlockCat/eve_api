@@ -55,27 +55,34 @@ function omni_eve_api_get_xml($type, $query = array())
   {
     $html = omni_eve_api_curl_http_request($url, $query);
 
-    if ($html -> code != 200)
+    if ($html -> code == 403 || $html -> code == 400)
+    {
+      $html = $xml = NULL;
+    }
+    elseif ($html -> code != 200)
     {
       drupal_set_message('omni_eve_api: EVE API returned an error with the HTTP request ' . $html -> code . '. Full Error: ' . $html -> error, 'error');
-      $html = NULL;
+      $html = $xml = NULL;
     }
   }
 
-  try
+  if (isset($html))
   {
-    $xml = new SimpleXMLElement($html -> data);
-  }
-  catch (Exception $e)
-  {
-    drupal_set_message('omni_eve_api: Unable to process XML. Full Error: ' . $e -> getMessage(), 'error');
-    $xml = NULL;
-  }
+    try
+    {
+      $xml = new SimpleXMLElement($html -> data);
+    }
+    catch (Exception $e)
+    {
+      drupal_set_message('omni_eve_api: Unable to process XML. Full Error: ' . $e -> getMessage(), 'error');
+      $xml = NULL;
+    }
 
-  if ($xml -> error)
-  {
-    drupal_set_message('omni_eve_api: EVE API returned an error with the API data. Error Code: ' . $xml -> error['code'] . ' Error Message:' . $xml -> error, 'error');
-    $xml = NULL;
+    if ($xml -> error)
+    {
+      drupal_set_message('omni_eve_api: EVE API returned an error with the API data. Error Code: ' . $xml -> error['code'] . ' Error Message:' . $xml -> error, 'error');
+      $xml = NULL;
+    }
   }
 
   if (isset($xml))
@@ -110,7 +117,7 @@ function omni_eve_api_get_character_api($query)
 
     $query = array('corporationID' => (int)$row -> corporationID, );
 
-    $api_data['characters'][(string)$row -> characterName] = array_merge(array(
+    $api_data['characters'][(int)$row -> characterID] = array_merge(array(
       'characterName' => (string)$row -> characterName,
       'characterID' => (int)$row -> characterID,
       'corporationName' => (string)$row -> corporationName,
@@ -134,6 +141,7 @@ function omni_eve_api_get_corporation_info($query)
   }
 
   $api_data = array(
+    'corporationID' => (string)$xml -> result -> corporationID,
     'corporationName' => (string)$xml -> result -> corporationName,
     'ticker' => (string)$xml -> result -> ticker,
     'allianceID' => (int)$xml -> result -> allianceID,
@@ -155,7 +163,18 @@ function omni_eve_api_verify_blue($characters)
       $character['corporationID'],
       $character['allianceID']
     ), 'IN') -> condition('standing', 0, '>') -> execute();
-    if ($result -> rowCount())
+    if ($result -> fetchField())
+    {
+      return true;
+    }
+
+    if ($character['allianceID'] == variable_get('omni_eve_api_allianceID') || $character['corporationID'] == variable_get('omni_eve_api_corporationID'))
+    {
+      return true;
+    }
+
+    $result = db_select('oea_alliance_corporations', 'c') -> fields('c', array('corporationid')) -> condition('corporationid', array($character['corporationID'], ), 'IN') -> execute();
+    if ($result -> fetchField())
     {
       return true;
     }
@@ -178,7 +197,13 @@ function omni_eve_api_valid_characters($characters)
       $character['corporationID'],
       $character['allianceID']
     ), 'IN') -> condition('standing', 0, '>') -> execute();
-    if ($result -> rowCount())
+    if ($result -> fetchField())
+    {
+      $chars[$character['characterName']] = $character['characterName'];
+      continue;
+    }
+    $result = db_select('oea_alliance_corporations', 'c') -> fields('c', array('corporationid')) -> condition('corporationid', array($character['corporationID'], ), 'IN') -> execute();
+    if ($result -> fetchField())
     {
       $chars[$character['characterName']] = $character['characterName'];
     }
@@ -187,6 +212,34 @@ function omni_eve_api_valid_characters($characters)
   if (empty($chars))
   {
     $chars['none'] = 'No Characters Found';
+  }
+
+  return $chars;
+}
+
+/**
+ * Function to compare the Characters retrieved against the current registered characters
+ */
+function omni_eve_api_characters_exist($characters)
+{
+  $chars = array();
+
+  foreach ($characters['characters'] as $character)
+  {
+    $result = db_select('oea_characters', 'c') -> fields('c', array(
+      'accountid',
+      'characterid',
+      'drupalid'
+    )) -> condition('characterid ', array($character['characterID'], ), 'IN') -> execute();
+    if ($result -> fetchField())
+    {
+      $chars[] = $character['characterName'];
+    }
+  }
+
+  if (empty($chars))
+  {
+    $chars = FALSE;
   }
 
   return $chars;
