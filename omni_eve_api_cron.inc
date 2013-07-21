@@ -16,7 +16,7 @@ function omni_eve_api_get_standings_cron()
     return NULL;
   }
 
-  db_delete('oea_blue_standings') -> condition('manual', 0) -> execute();
+  db_update('oea_blue_standings') -> fields(array('deleted' => 1, )) -> condition('manual ', '0', '=') -> execute();
 
   foreach ($xml->result->children() as $rowset)
   {
@@ -27,6 +27,7 @@ function omni_eve_api_get_standings_cron()
         'contactID' => (int)$row -> contactID,
         'contactName' => (string)$row -> contactName,
         'standing' => (string)$row -> standing,
+        'deleted' => 0,
         'manual' => 0,
       )) -> execute();
     }
@@ -45,7 +46,7 @@ function omni_eve_api_alliance_corporations_cron()
     return NULL;
   }
 
-  db_delete('oea_alliance_corporations') -> condition('manual', 0) -> execute();
+  db_update('oea_alliance_corporations') -> fields(array('deleted' => 1, )) -> condition('manual ', '0', '=') -> execute();
 
   foreach ($xml->result->rowset->row as $row)
   {
@@ -58,8 +59,46 @@ function omni_eve_api_alliance_corporations_cron()
         db_merge('oea_alliance_corporations') -> key(array('corporationid' => (int)$row2['corporationID'])) -> fields(array(
           'corporationid' => (int)$row2['corporationID'],
           'corporationname' => (string)$corp_info['corporationName'],
+          'deleted' => 0,
           'manual' => 0,
         )) -> execute();
+
+      }
+    }
+  }
+
+  $result = db_select('oea_alliance_corporations', 'ac') -> fields('ac', array(
+    'corporationid',
+    'corporationname',
+  )) -> condition('deleted ', '1', '=') -> execute();
+
+  if ($result -> fetchField())
+  {
+    foreach ($result->fetchAll() as $row)
+    {
+      if (user_role_load_by_name($row -> corporationname) == TRUE)
+      {
+        $user_role = new stdClass();
+        $user_role -> name = $row -> corporationname;
+        user_role_delete($user_role);
+      }
+    }
+  }
+
+  $result = db_select('oea_alliance_corporations', 'ac') -> fields('ac', array(
+    'corporationid',
+    'corporationname',
+  )) -> condition('deleted ', '0', '=') -> execute();
+
+  if ($result -> fetchField())
+  {
+    foreach ($result->fetchAll() as $row)
+    {
+      if (user_role_load_by_name($row -> corporationname) == FALSE)
+      {
+        $user_role = new stdClass();
+        $user_role -> name = $row -> corporationname;
+        user_role_save($user_role);
       }
     }
   }

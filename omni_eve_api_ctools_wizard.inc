@@ -248,9 +248,6 @@ function omni_eve_api_enter_api_form($form, &$form_state)
  */
 function omni_eve_api_user_register_validate($form, &$form_state)
 {
-  //Possible fix for signature field on user creation being created as "Array"
-  $form_state['input']['signature'] = $form_state['value']['signature'] = '';
-
   $query = array(
     'keyid' => $form_state['signup_object']['keyid'],
     'vcode' => $form_state['signup_object']['vcode'],
@@ -314,6 +311,27 @@ function omni_eve_api_user_register_submit($form, &$form_state)
       'alliancename' => $character['allianceName'],
       'allianceticker' => $character['ticker'],
     )) -> execute();
+    if($form_state['value']['charactername'] == $character['corporationName'])
+    {
+      $character_id = $character['characterID'];
+    }
+  }
+
+  db_update('users') -> fields(array('characterid' => $character_id, )) -> condition('uid ', $uid, '=') -> execute();
+
+  if (user_role_load_by_name($character['corporationName']) == TRUE)
+  {
+    $corporation_role = user_role_load_by_name($character['corporationName']);
+    $corporation_rid = $corporation_role -> rid;
+    $account = user_load($uid);
+    user_save($account, array('roles' => array($corporation_rid => TRUE)));
+  }
+  else
+  {
+    $blue_role = user_role_load_by_name(variable_get('omni_eve_api_blue_role'));
+    $blue_rid = $blue_role -> rid;
+    $account = user_load($uid);
+    user_save($account, array('roles' => array($blue_rid => TRUE)));
   }
 }
 

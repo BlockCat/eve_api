@@ -135,6 +135,12 @@ function omni_eve_api_schema()
         'not null' => TRUE,
         'default' => 0,
       ),
+      'deleted' => array(
+        'description' => t('Identifies if the corporation was removed from the alliance at some point..'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'manual' => array(
         'description' => t('Identifies if the standing was manually added.'),
         'type' => 'int',
@@ -160,6 +166,12 @@ function omni_eve_api_schema()
         'length' => 50,
         'not null' => TRUE,
       ),
+      'deleted' => array(
+        'description' => t('Identifies if the corporation was removed from the alliance at some point..'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'manual' => array(
         'description' => t('Identifies if the corporation was manually added.'),
         'type' => 'int',
@@ -179,17 +191,23 @@ function omni_eve_api_schema()
  */
 function omni_eve_api_install()
 {
-  db_add_field(
-    'users',
-    'charactername',
-    array(
+  db_add_field('users', 'charactername', array(
     'type' => 'varchar',
     'not null' => TRUE,
     'default' => '',
     'length' => 50,
     'description' => 'Main EVE Character Name',
-    )
-  );
+  ));
+
+  db_add_field('users', 'characterid', array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+    'description' => 'Main EVE Character ID',
+  ));
+
+  variable_set('omni_eve_api_blue_role', '2');
+  variable_set('user_picture_dimensions', '128x128');
 }
 
 /**
@@ -197,8 +215,6 @@ function omni_eve_api_install()
  */
 function omni_eve_api_uninstall()
 {
-  db_drop_field(
-    'users',
-    'charactername'
-  );
+  db_drop_field('users', 'charactername');
+  db_drop_field('users', 'characterid');
 }

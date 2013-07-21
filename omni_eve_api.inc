@@ -173,7 +173,7 @@ function omni_eve_api_verify_blue($characters)
       return true;
     }
 
-    $result = db_select('oea_alliance_corporations', 'c') -> fields('c', array('corporationid')) -> condition('corporationid', array($character['corporationID'], ), 'IN') -> execute();
+    $result = db_select('oea_alliance_corporations', 'c') -> fields('c', array('corporationid')) -> condition('corporationid ', $character['corporationID'], '=') -> execute();
     if ($result -> fetchField())
     {
       return true;
@@ -230,7 +230,7 @@ function omni_eve_api_characters_exist($characters)
       'accountid',
       'characterid',
       'drupalid'
-    )) -> condition('characterid ', array($character['characterID'], ), 'IN') -> execute();
+    )) -> condition('characterid ', $character['characterID'], '=') -> execute();
     if ($result -> fetchField())
     {
       $chars[] = $character['characterName'];
