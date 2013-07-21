@@ -65,6 +65,11 @@ function omni_eve_api_schema()
         'type' => 'int',
         'not null' => TRUE,
       ),
+      'accountid' => array(
+        'description' => t('The primary identifier for an account.'),
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
       'charactername' => array(
         'description' => t('The EVE Character Name'),
         'type' => 'varchar',
@@ -111,16 +116,17 @@ function omni_eve_api_schema()
   );
 
   $schema['oea_blue_standings'] = array(
-    'description' => t('This table holds all the api\'s associated with all the accounts.'),
+    'description' => t('This table holds all the apis associated with all the accounts.'),
     'fields' => array(
       'contactID' => array(
         'description' => t('The unique ID for a corporation, alliance, or character.'),
         'type' => 'int',
-        'not null' => TRUE
+        'not null' => TRUE,
       ),
       'contactName' => array(
         'description' => t('The name of the corporation, alliance, or character.'),
         'type' => 'varchar',
+        'length' => 50,
         'not null' => TRUE,
       ),
       'standing' => array(
@@ -136,8 +142,8 @@ function omni_eve_api_schema()
         'default' => 0,
       ),
     ),
-    'unique keys' => array('standingid' => array('standingid')),
-    'primary key' => array('standingid'),
+    'unique keys' => array('contactID' => array('contactID')),
+    'primary key' => array('contactID'),
   );
 
   return $schema;
@@ -148,16 +154,15 @@ function omni_eve_api_schema()
  */
 function omni_eve_api_install()
 {
-  $ret = array();
   db_add_field(
     'users',
     'charactername',
     array(
-      'description' => t('Main EVE Character Name'),
-      'type' => 'varchar',
-      'length' => 50,
-      'not null' => TRUE,
-      'default' => '',
+    'type' => 'varchar',
+    'not null' => TRUE,
+    'default' => '',
+    'length' => 50,
+    'description' => 'Main EVE Character Name',
     )
   );
 }
@@ -167,7 +172,6 @@ function omni_eve_api_install()
  */
 function omni_eve_api_uninstall()
 {
-  $ret = array();
   db_drop_field(
     'users',
     'charactername'

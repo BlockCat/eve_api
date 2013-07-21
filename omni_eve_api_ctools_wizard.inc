@@ -270,16 +270,32 @@ function omni_eve_api_user_register_submit($form, &$form_state)
 
   $characters = omni_eve_api_get_character_api($query);
 
-  $nid = db_insert('oea_api_keys')
+  $new_api_key_id = db_insert('oea_api_keys')
     ->fields(array(
       'drupalid' => $uid,
       'keyid' => $keyid,
       'vcode' => $vcode,
     ))
     ->execute();
-  /**
-   * Add function to insert characters and link to api table
-   */
+
+  foreach ($characters['characters'] as $character)
+  {
+    db_merge('oea_characters')
+      ->key(array('characterid' => $character['corporationID']))
+      ->fields(array(
+        'characterid' => $character['characterID'],
+        'drupalid' => $uid,
+        'accountid' => $new_api_key_id,
+        'charactername' => $character['characterName'],
+        'corporationid' => $character['corporationID'],
+        'corporationname' => $character['corporationName'],
+        'corporationticker' => $character['ticker'],
+        'allianceid' => $character['allianceID'],
+        'alliancename' => $character['allianceName'],
+        'allianceticker' => $character['ticker'],
+      ))
+      ->execute();
+  }
 }
 
 /**

@@ -150,11 +150,11 @@ function omni_eve_api_verify_blue($characters)
 {
   foreach ($characters['characters'] as $character)
   {
-    $result = db_select('oea_blue_standings', 'a') -> fields('a', array('standingid')) -> condition('contactID', array(
+    $result = db_select('oea_blue_standings', 'a') -> fields('a', array('contactID')) -> condition('contactID', array(
       $character['characterID'],
       $character['corporationID'],
       $character['allianceID']
-    ), 'IN') -> condition('standing', 0, '>') -> execute() -> fetchAssoc();
+    ), 'IN') -> condition('standing', 0, '>') -> execute();
     if ($result -> rowCount())
     {
       return true;
@@ -173,11 +173,11 @@ function omni_eve_api_valid_characters($characters)
 
   foreach ($characters['characters'] as $character)
   {
-    $result = db_select('oea_blue_standings', 'a') -> fields('a', array('standingid')) -> condition('contactID', array(
+    $result = db_select('oea_blue_standings', 'a') -> fields('a', array('contactID')) -> condition('contactID', array(
       $character['characterID'],
       $character['corporationID'],
       $character['allianceID']
-    ), 'IN') -> condition('standing', 0, '>') -> execute() -> fetchAssoc();
+    ), 'IN') -> condition('standing', 0, '>') -> execute();
     if ($result -> rowCount())
     {
       $chars[$character['characterName']] = $character['characterName'];
