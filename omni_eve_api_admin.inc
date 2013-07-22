@@ -90,6 +90,9 @@ function omni_eve_api_admin_validate($form, &$form_state)
   }
 }
 
+/**
+ * Custom function to get list of all Roles
+ */
 function _omni_eve_api_role_list()
 {
   $roles = array();
@@ -120,3 +123,19 @@ function omni_eve_api_user_role_delete($role)
     variable_set('omni_eve_api_blue_role', '2');
   }
 }
+
+/*
+ * Need to implement function to display form for adding a custom standing
+ */
+
+/*
+ * Need to implement function to display all custom standings and select them for deletion
+ */
+
+/*
+ * Need to implement function to display form for adding a custom corporation to the alliance
+ */
+
+/*
+ * Need to implement function to display all custom corporations and select them for deletion
+ */

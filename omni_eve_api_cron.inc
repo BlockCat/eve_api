@@ -1,9 +1,89 @@
 <?php
 
 /**
- * Function to retrieve the standings for a cron job
+ * Implements hook_cron().
  */
-function omni_eve_api_get_standings_cron()
+function omni_eve_api_cron()
+{
+  if (variable_get('omni_eve_api_enable_cron', TRUE))
+  {
+  /**
+   * Queue each user in the database to check the API's for blue status and other checks 
+   */
+    $queue = drupal_queue_get('omni_eve_api_queue_api');
+    $queue -> createQueue();
+    $result = db_select('users', 'u')
+      -> fields('u', array('uid', 'charactername', 'characterid'))
+      -> condition('status', 1, '=')
+      -> execute();
+    while ($item = $result -> fetchAssoc())
+    {
+      $queue -> createItem($item);
+    }
+
+   $item = NULL;
+
+   /**
+    * Run cron for standings, but have nothing to pass so passing a NULL variable.
+    */
+    $queue = drupal_queue_get('omni_eve_api_get_standings');
+    $queue -> createQueue();
+    $queue -> createItem($item);
+
+   /**
+    * Run cron for corporations in the alliance, but have nothing to pass so passing a NULL variable.
+    */
+    $queue = drupal_queue_get('omni_eve_api_get_alliance_corporations');
+    $queue -> createQueue();
+    $queue -> createItem($item);
+  }
+}
+
+/**
+ * Implements hook_cron_queue_info().
+ *
+ * Set up ten queues that all send items to the same callback function.
+ */
+function omni_eve_api_cron_queue_info()
+{
+  $queue = array();
+  $queue['omni_eve_api_queue_api'] = array(
+    'worker callback' => 'omni_eve_api_queue_api',
+    'time' => 15,
+  );
+  $queue['omni_eve_api_get_standings'] = array(
+    'worker callback' => 'omni_eve_api_get_standings',
+    'time' => 15,
+  );
+  $queue['omni_eve_api_get_alliance_corporations'] = array(
+    'worker callback' => 'omni_eve_api_get_alliance_corporations',
+    'time' => 60,
+  );
+  return $queue;
+}
+
+/**
+ * Queue worker callback: receives an item from the queue and performs
+ * some mysterious processing task based on the item data.
+ *
+ * @param mixed $item whatever was added to the queue via queue->createItem()
+ */
+function omni_eve_api_queue_api($item)
+{
+  /**
+   * Check each characters current API's and update changes and delete characters that are no longer valid
+   * Verify current Main Character is still valid for each account
+   * If the main character is no longer valid, remove roles, disable account ?  Probably not, so that way the user can still login and update API.
+   */
+}
+
+/**
+ * Queue worker callback: receives an item from the queue and performs
+ * some mysterious processing task based on the item data.
+ *
+ * @param mixed $item whatever was added to the queue via queue->createItem()
+ */
+function omni_eve_api_get_standings($item)
 {
   $query = array(
     'keyid' => variable_get('omni_eve_api_corp_keyid'),
@@ -35,9 +115,12 @@ function omni_eve_api_get_standings_cron()
 }
 
 /**
- * Function to retrieve the corporations in the alliance cron job
+ * Queue worker callback: receives an item from the queue and performs
+ * some mysterious processing task based on the item data.
+ *
+ * @param mixed $item whatever was added to the queue via queue->createItem()
  */
-function omni_eve_api_alliance_corporations_cron()
+function omni_eve_api_get_alliance_corporations($item)
 {
   $xml = omni_eve_api_get_xml('alliances');
 

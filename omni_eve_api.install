@@ -206,6 +206,7 @@ function omni_eve_api_install()
     'description' => 'Main EVE Character ID',
   ));
 
+  variable_set('omni_eve_api_enable_cron', FALSE);
   variable_set('omni_eve_api_blue_role', '2');
   variable_set('user_picture_dimensions', '128x128');
 }
