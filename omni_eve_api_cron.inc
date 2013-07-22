@@ -112,6 +112,8 @@ function omni_eve_api_get_standings($item)
       )) -> execute();
     }
   }
+
+  db_update('oea_blue_standings') -> condition('deleted ', '1', '=') -> execute();
 }
 
 /**
@@ -185,4 +187,6 @@ function omni_eve_api_get_alliance_corporations($item)
       }
     }
   }
+
+  db_update('oea_alliance_corporations') -> condition('deleted ', '1', '=') -> execute();
 }

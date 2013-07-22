@@ -48,6 +48,14 @@ function omni_eve_api_menu()
     'type' => MENU_NORMAL_ITEM,
   );
 
+  $items['user/%/omni_eve_api'] = array(
+    'title' => t('Omni EVE API'),
+    'page callback' => 'omni_eve_api_list_api_form',
+    'page arguments' => array(1),
+    'access arguments' => array('access content'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
   return $items;
 }
 

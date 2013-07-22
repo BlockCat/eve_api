@@ -139,3 +139,15 @@ function omni_eve_api_user_role_delete($role)
 /*
  * Need to implement function to display all custom corporations and select them for deletion
  */
+
+/**
+ * Add function to show all API's the user currently has and delete them via selection
+ */
+
+/**
+ * Add function to add a new API
+ */
+
+/**
+ * Add function to select a new main character
+ */
