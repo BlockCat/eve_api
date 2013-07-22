@@ -95,7 +95,7 @@ function omni_eve_api_schema_alter(&$schema)
 /**
  * Based on "cURL HTTP Request v1.5" by Vincenzo and minorOffense
  *
- * Modified for specific use.
+ * Modified for use with "Omni EVE API"
  *
  * Performs an HTTP request.
  *
