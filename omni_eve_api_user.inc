@@ -137,7 +137,7 @@ function omni_eve_api_get_eve_avatar($characterid) {
  */
 function omni_eve_api_list_api($uid)
 {
-  $api_info = array();
+  $api_list = array();
 
   $result_a = db_select('oea_api_keys', 'a') -> fields('a', array(
     'accountid',
@@ -151,7 +151,7 @@ function omni_eve_api_list_api($uid)
   {
     foreach ($result_a->fetchAll() as $row_a)
     {
-			$api_info[$row_a -> accountid] = array(
+			$api_list[$row_a -> accountid] = array(
 		    'accountid' => $row_a -> accountid,
 		    'keyid' => $row_a -> keyid,
 		    'vcode' => $row_a -> vcode,
@@ -174,7 +174,7 @@ function omni_eve_api_list_api($uid)
       {
         foreach ($result_b->fetchAll() as $row_b)
         {
-			    $api_info[$row_a -> accountid]['characters'][$row_b -> characterid] = array(
+			    $api_list[$row_a -> accountid]['characters'][$row_b -> characterid] = array(
 			      'characterid' => $row_b -> characterid,
 			      'charactername' => $row_b -> charactername,
 			      'corporationid' => $row_b -> corporationid,
@@ -189,7 +189,7 @@ function omni_eve_api_list_api($uid)
     }
   }
 
-  return $api_info;
+  return $api_list;
 }
 
 /**
@@ -201,14 +201,39 @@ function omni_eve_api_list_api_form()
   $uid = $user -> uid;
   $form = array();
 
-  $uid_api_info = omni_eve_api_list_api($uid);
+  $uid_api_list = omni_eve_api_list_api($uid);
 
-  $form['enter_api'] = array(
+  $form['list_api'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Enter API Info'),
-    '#description' => t('Enter the Alliance Executers or Corperations CEO\'s API.'),
+    '#title' => t('Your API\'s'),
+    '#description' => t('Current list of API\'s associated with your account.'),
     '#weight' => 0,
   );
+
+	$i = 0;
+
+	foreach ($uid_api_list as $uid_api_single)
+	{
+	  $form['list_api']['api_' . $i] = array(
+	    '#type' => 'fieldset',
+	    '#title' => t('API ' . $i),
+	    '#weight' => $i,
+	  );
+
+	  $form['list_api']['api_' . $i]['api_info'] = array(
+	    '#type' => 'markup',
+    	'#value' => 'Current list of API\'s associated with your account.',
+	    '#weight' => 0,
+	  );
+
+	  $form['list_api']['api_' . $i][] = array(
+	    '#type' => 'markup',
+    	'#value' => 'Current list of API\'s associated with your account.',
+	    '#weight' => 0,
+	  );
+		
+		$i++;
+	}
 
   $form['enter_api']['omni_eve_api_corp_keyid'] = array(
     '#type' => 'textfield',
