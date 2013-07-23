@@ -102,7 +102,7 @@ function _omni_eve_api_role_list()
     'name',
   )) -> execute();
 
-  if ($result -> fetchField())
+  if ($result -> rowCount())
   {
     foreach ($result->fetchAll() as $row)
     {

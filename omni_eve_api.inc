@@ -98,21 +98,26 @@ function omni_eve_api_get_xml($type, $query = array())
  */
 function omni_eve_api_get_character_info($charactername)
 {
-  $row = db_select('oea_characters', 'c')
-    -> fields('c', array('charactername', 'characterid', 'corporationname', 'corporationid', 'corporationticker', 'allianceid', 'alliancename', 'allianceticker'))
-    -> condition('charactername', $charactername, '=')
-    -> execute()
-    -> fetchAssoc();
+  $row = db_select('oea_characters', 'c') -> fields('c', array(
+    'charactername',
+    'characterid',
+    'corporationname',
+    'corporationid',
+    'corporationticker',
+    'allianceid',
+    'alliancename',
+    'allianceticker'
+  )) -> condition('charactername', $charactername, '=') -> execute() -> fetchAssoc();
 
   $api_data = array(
-    'characterName' => $row -> charactername,
-    'characterID' => $row -> characterid,
-    'corporationName' => $row -> corporationname,
-    'corporationID' => $row -> corporationid,
-    'corporationTicker' => $row -> corporationticker,
-    'allianceID' => $row -> allianceid,
-    'allianceName' => $row -> alliancename,
-    'allianceTicker' => $row -> allianceticker,
+    'characterName' => $row['charactername'],
+    'characterID' => $row['characterid'],
+    'corporationName' => $row['corporationname'],
+    'corporationID' => $row['corporationid'],
+    'corporationTicker' => $row['corporationticker'],
+    'allianceID' => $row['allianceid'],
+    'allianceName' => $row['alliancename'],
+    'allianceTicker' => $row['allianceticker'],
   );
 
   return $api_data;
@@ -155,11 +160,7 @@ function omni_eve_api_get_character_api($query)
 
 function _omni_eve_api_get_alliance_ticker($allianceid)
 {
-  $row = db_select('oea_alliance_tags', 'a')
-    -> fields('a', array('allianceticker'))
-    -> condition('allianceid', $allianceid, '=')
-    -> execute()
-    -> fetchAssoc();
+  $row = db_select('oea_alliance_tags', 'a') -> fields('a', array('allianceticker')) -> condition('allianceid', $allianceid, '=') -> execute() -> fetchAssoc();
 
   return $row['allianceticker'];
 }
@@ -200,7 +201,7 @@ function omni_eve_api_verify_blue($characters)
       $character['corporationID'],
       $character['allianceID']
     ), 'IN') -> condition('standing', 0, '>') -> execute();
-    if ($result -> fetchField())
+    if ($result -> rowCount())
     {
       return true;
     }
@@ -211,7 +212,7 @@ function omni_eve_api_verify_blue($characters)
     }
 
     $result = db_select('oea_alliance_corporations', 'c') -> fields('c', array('corporationid')) -> condition('corporationid ', $character['corporationID'], '=') -> execute();
-    if ($result -> fetchField())
+    if ($result -> rowCount())
     {
       return true;
     }
@@ -227,28 +228,31 @@ function omni_eve_api_valid_characters($characters)
 {
   $chars = array();
 
-  foreach ($characters['characters'] as $character)
+  if (!empty($characters))
   {
-    $result = db_select('oea_blue_standings', 'a') -> fields('a', array('contactID')) -> condition('contactID', array(
-      $character['characterID'],
-      $character['corporationID'],
-      $character['allianceID']
-    ), 'IN') -> condition('standing', 0, '>') -> execute();
-    if ($result -> fetchField())
+    foreach ($characters['characters'] as $character)
     {
-      $chars[$character['characterName']] = $character['characterName'];
-      continue;
-    }
-    $result = db_select('oea_alliance_corporations', 'c') -> fields('c', array('corporationid')) -> condition('corporationid', array($character['corporationID'], ), 'IN') -> execute();
-    if ($result -> fetchField())
-    {
-      $chars[$character['characterName']] = $character['characterName'];
+      $result = db_select('oea_blue_standings', 'a') -> fields('a', array('contactID')) -> condition('contactID', array(
+        $character['characterID'],
+        $character['corporationID'],
+        $character['allianceID']
+      ), 'IN') -> condition('standing', 0, '>') -> execute();
+      if ($result -> rowCount())
+      {
+        $chars[$character['characterName']] = $character['characterName'];
+        continue;
+      }
+      $result = db_select('oea_alliance_corporations', 'c') -> fields('c', array('corporationid')) -> condition('corporationid', array($character['corporationID'], ), 'IN') -> execute();
+      if ($result -> rowCount())
+      {
+        $chars[$character['characterName']] = $character['characterName'];
+      }
     }
   }
 
   if (empty($chars))
   {
-    $chars['none'] = 'No Characters Found';
+    $chars[''] = 'No Characters Found';
   }
 
   return $chars;
@@ -268,7 +272,7 @@ function omni_eve_api_characters_exist($characters)
       'characterid',
       'drupalid'
     )) -> condition('characterid ', $character['characterID'], '=') -> execute();
-    if ($result -> fetchField())
+    if ($result -> rowCount())
     {
       $chars[] = $character['characterName'];
     }

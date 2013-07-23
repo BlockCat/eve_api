@@ -138,6 +138,8 @@ function _omni_eve_api_load_account($account)
  */
 function _omni_eve_api_get_account_user_picture($account)
 {
+  $user = user_load($account -> uid);
+  
   if (!empty($account -> picture -> uri))
   {
     // If the user has an uploaded picture, use it first.
@@ -186,7 +188,7 @@ function omni_eve_api_list_api($uid)
     'updated',
   )) -> condition('drupalid', $uid, '=') -> execute();
 
-  if ($result_a -> fetchField())
+  if ($result_a -> rowCount())
   {
     foreach ($result_a->fetchAll() as $row_a)
     {
@@ -209,7 +211,7 @@ function omni_eve_api_list_api($uid)
         'allianceticker',
       )) -> condition('drupalid', $uid, '=') -> condition('accountid', $row_a -> accountid, '=') -> execute();
 
-      if ($result_b -> fetchField())
+      if ($result_b -> rowCount())
       {
         foreach ($result_b->fetchAll() as $row_b)
         {
@@ -224,14 +226,14 @@ function omni_eve_api_list_api($uid)
             'allianceticker' => $row_b -> allianceticker,
           );
           $api_list['characters'][$row_b -> characterid] = array(
-            'characterid' => $row_b -> characterid,
-            'charactername' => $row_b -> charactername,
-            'corporationid' => $row_b -> corporationid,
-            'corporationname' => $row_b -> corporationname,
-            'corporationticker' => $row_b -> corporationticker,
-            'allianceid' => $row_b -> allianceid,
-            'alliancename' => $row_b -> alliancename,
-            'allianceticker' => $row_b -> allianceticker,
+            'characterID' => $row_b -> characterid,
+            'characterName' => $row_b -> charactername,
+            'corporationID' => $row_b -> corporationid,
+            'corporationName' => $row_b -> corporationname,
+            'corporationTicker' => $row_b -> corporationticker,
+            'allianceID' => $row_b -> allianceid,
+            'allianceName' => $row_b -> alliancename,
+            'allianceTicker' => $row_b -> allianceticker,
           );
         }
       }
@@ -247,10 +249,31 @@ function omni_eve_api_list_api($uid)
 function omni_eve_api_user_add_api_form($form, &$form_state)
 {
   $form = array();
-  $form = omni_eve_api_enter_api_form($form, $form_state);
 
-  $form['enter_api']['#title'] = t('Verify Blue Status');
-  $form['enter_api']['#description'] = t('Please enter your EVE API in order to add it to your existing account.  A Full API is required for registration. Please ensure that the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.');
+  $form['enter_api'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Verify Blue Status'),
+    '#description' => t('Please enter your EVE API in order to add it to your existing account.  A Full API is required for registration. Please ensure that the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'),
+    '#weight' => 0,
+  );
+
+  $form['enter_api']['keyid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Key ID'),
+    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=268435455">here</a>.'),
+    '#required' => TRUE,
+    '#maxlength' => 15,
+    '#weight' => 0,
+  );
+
+  $form['enter_api']['vcode'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Verification Code'),
+    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=268435455">here</a>.'),
+    '#required' => TRUE,
+    '#maxlength' => 80,
+    '#weight' => 10,
+  );
 
   $form['submit_button'] = array(
     '#type' => 'submit',
@@ -329,7 +352,7 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state)
     )) -> execute();
   }
 
-  ddrupal_set_message(t('API Key successfully added!'));
+  drupal_set_message(t('API Key successfully added!'));
 }
 
 /**
@@ -340,9 +363,9 @@ function omni_eve_api_user_list_api_form($form, &$form_state)
   global $user;
   $uid = $user -> uid;
   $form = array();
-/**
   $uid_api_list = omni_eve_api_list_api($uid);
 
+/**
   $form['list_api'] = array(
     '#type' => 'fieldset',
     '#title' => t('Your API\'s'),
@@ -421,10 +444,10 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state)
 
   if (2 == 1)
   {
-    ddrupal_set_message(t('API Key successfully deleted!'));
+    drupal_set_message(t('API Key successfully deleted!'));
   }
 
-  if ($user -> charactername != $form_state['values']['charactername'])
+  if ($user -> charactername != $form_state['values']['charactername'] && !empty($form_state['values']['charactername']))
   {
     $old_charactername = $user -> charactername;
     $old_character_data = omni_eve_api_get_character_info($old_charactername);
@@ -441,10 +464,10 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state)
     }
   
     user_multiple_role_edit(array($uid), 'remove_role', $old_rid);
-  
+
     db_update('users') -> fields(array('characterid' => $character_data['characterID'], )) -> condition('uid ', $uid, '=') -> execute();
     db_update('users') -> fields(array('charactername' => $character_data['characterName'], )) -> condition('uid ', $uid, '=') -> execute();
-  
+
     if ($corporation_role = user_role_load_by_name($character_data['corporationName']))
     {
       $new_rid = $corporation_role -> rid;
@@ -461,6 +484,6 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state)
   
     user_multiple_role_edit(array($uid), 'add_role', $new_rid);
   
-    ddrupal_set_message(t('New main character selected!'));
+    drupal_set_message(t('New main character selected!'));
   }
 }

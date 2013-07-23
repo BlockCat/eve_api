@@ -162,7 +162,7 @@ function omni_eve_api_get_alliance_corporations($item=NULL)
     'corporationname',
   )) -> condition('deleted ', '1', '=') -> execute();
 
-  if ($result -> fetchField())
+  if ($result -> rowCount())
   {
     foreach ($result->fetchAll() as $row)
     {
@@ -180,7 +180,7 @@ function omni_eve_api_get_alliance_corporations($item=NULL)
     'corporationname',
   )) -> condition('deleted ', '0', '=') -> execute();
 
-  if ($result -> fetchField())
+  if ($result -> rowCount())
   {
     foreach ($result->fetchAll() as $row)
     {
