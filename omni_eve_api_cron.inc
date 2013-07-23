@@ -83,7 +83,7 @@ function omni_eve_api_queue_api($item)
  *
  * @param mixed $item whatever was added to the queue via queue->createItem()
  */
-function omni_eve_api_get_standings($item)
+function omni_eve_api_get_standings($item=NULL)
 {
   $query = array(
     'keyid' => variable_get('omni_eve_api_corp_keyid'),
@@ -113,7 +113,7 @@ function omni_eve_api_get_standings($item)
     }
   }
 
-  db_update('oea_blue_standings') -> condition('deleted ', '1', '=') -> execute();
+  db_delete('oea_blue_standings') -> condition('deleted ', '1', '=') -> execute();
 }
 
 /**
@@ -122,7 +122,7 @@ function omni_eve_api_get_standings($item)
  *
  * @param mixed $item whatever was added to the queue via queue->createItem()
  */
-function omni_eve_api_get_alliance_corporations($item)
+function omni_eve_api_get_alliance_corporations($item=NULL)
 {
   $xml = omni_eve_api_get_xml('alliances');
 
@@ -132,9 +132,15 @@ function omni_eve_api_get_alliance_corporations($item)
   }
 
   db_update('oea_alliance_corporations') -> fields(array('deleted' => 1, )) -> condition('manual ', '0', '=') -> execute();
+  db_truncate('oea_alliance_tags')->execute();
 
   foreach ($xml->result->rowset->row as $row)
   {
+    db_insert('oea_alliance_tags') -> fields(array(
+      'allianceid' => (int)$row['allianceID'],
+      'allianceticker' => (string)$row['shortName'],
+    )) -> execute();
+
     if ((int)$row['allianceID'] == variable_get('omni_eve_api_allianceID'))
     {
       foreach ($row->rowset->row as $row2)
@@ -147,7 +153,6 @@ function omni_eve_api_get_alliance_corporations($item)
           'deleted' => 0,
           'manual' => 0,
         )) -> execute();
-
       }
     }
   }
@@ -188,5 +193,5 @@ function omni_eve_api_get_alliance_corporations($item)
     }
   }
 
-  db_update('oea_alliance_corporations') -> condition('deleted ', '1', '=') -> execute();
+  db_delete('oea_alliance_corporations') -> condition('deleted ', '1', '=') -> execute();
 }

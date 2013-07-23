@@ -183,6 +183,25 @@ function omni_eve_api_schema()
     'primary key' => array('corporationid'),
   );
 
+  $schema['oea_alliance_tags'] = array(
+    'description' => t('This table holds all the alliance tickers.'),
+    'fields' => array(
+      'allianceid' => array(
+        'description' => t('The Alliance ID.'),
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'allianceticker' => array(
+        'description' => t('The Alliance Ticker.'),
+        'type' => 'varchar',
+        'length' => 20,
+        'not null' => TRUE,
+      ),
+    ),
+    'unique keys' => array('allianceid' => array('allianceid')),
+    'primary key' => array('allianceid'),
+  );
+
   return $schema;
 }
 

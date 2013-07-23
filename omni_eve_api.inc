@@ -94,6 +94,31 @@ function omni_eve_api_get_xml($type, $query = array())
 }
 
 /**
+ * Function to retrieve individual characters from the database
+ */
+function omni_eve_api_get_character_info($charactername)
+{
+  $row = db_select('oea_characters', 'c')
+    -> fields('c', array('charactername', 'characterid', 'corporationname', 'corporationid', 'corporationticker', 'allianceid', 'alliancename', 'allianceticker'))
+    -> condition('charactername', $charactername, '=')
+    -> execute()
+    -> fetchAssoc();
+
+  $api_data = array(
+    'characterName' => $row -> charactername,
+    'characterID' => $row -> characterid,
+    'corporationName' => $row -> corporationname,
+    'corporationID' => $row -> corporationid,
+    'corporationTicker' => $row -> corporationticker,
+    'allianceID' => $row -> allianceid,
+    'allianceName' => $row -> alliancename,
+    'allianceTicker' => $row -> allianceticker,
+  );
+
+  return $api_data;
+}
+
+/**
  * Function to retrieve individual characters API info
  */
 function omni_eve_api_get_character_api($query)
@@ -128,6 +153,17 @@ function omni_eve_api_get_character_api($query)
   return $api_data;
 }
 
+function _omni_eve_api_get_alliance_ticker($allianceid)
+{
+  $row = db_select('oea_alliance_tags', 'a')
+    -> fields('a', array('allianceticker'))
+    -> condition('allianceid', $allianceid, '=')
+    -> execute()
+    -> fetchAssoc();
+
+  return $row['allianceticker'];
+}
+
 /**
  * Function to retrieve corporation info
  */
@@ -143,9 +179,10 @@ function omni_eve_api_get_corporation_info($query)
   $api_data = array(
     'corporationID' => (string)$xml -> result -> corporationID,
     'corporationName' => (string)$xml -> result -> corporationName,
-    'ticker' => (string)$xml -> result -> ticker,
+    'corporationTicker' => (string)$xml -> result -> ticker,
     'allianceID' => (int)$xml -> result -> allianceID,
     'allianceName' => (string)$xml -> result -> allianceName,
+    'allianceTicker' => _omni_eve_api_get_alliance_ticker((int)$xml -> result -> allianceID),
   );
 
   return $api_data;

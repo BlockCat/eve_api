@@ -85,8 +85,8 @@ function omni_eve_api_admin_validate($form, &$form_state)
       variable_set('omni_eve_api_corporationID', (int)$character['corporationID']);
     }
 
-    omni_eve_api_get_standings_cron();
-    omni_eve_api_alliance_corporations_cron();
+    omni_eve_api_get_standings();
+    omni_eve_api_get_alliance_corporations();
   }
 }
 

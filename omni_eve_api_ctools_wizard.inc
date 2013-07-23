@@ -306,10 +306,10 @@ function omni_eve_api_user_register_submit($form, &$form_state)
       'charactername' => $character['characterName'],
       'corporationid' => $character['corporationID'],
       'corporationname' => $character['corporationName'],
-      'corporationticker' => $character['ticker'],
+      'corporationticker' => $character['corporationTicker'],
       'allianceid' => $character['allianceID'],
       'alliancename' => $character['allianceName'],
-      'allianceticker' => $character['ticker'],
+      'allianceticker' => $character['allianceTicker'],
     )) -> execute();
     if($form_state['value']['charactername'] == $character['corporationName'])
     {
@@ -319,20 +319,21 @@ function omni_eve_api_user_register_submit($form, &$form_state)
 
   db_update('users') -> fields(array('characterid' => $character_id, )) -> condition('uid ', $uid, '=') -> execute();
 
-  if (user_role_load_by_name($character['corporationName']) == TRUE)
+  if ($corporation_role = user_role_load_by_name($character['corporationName']))
   {
-    $corporation_role = user_role_load_by_name($character['corporationName']);
-    $corporation_rid = $corporation_role -> rid;
-    $account = user_load($uid);
-    user_save($account, array('roles' => array($corporation_rid => TRUE)));
+    $new_rid = $corporation_role -> rid;
+  }
+  else if ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role')))
+  {
+    $new_rid = $blue_role -> rid;
   }
   else
   {
-    $blue_role = user_role_load_by_name(variable_get('omni_eve_api_blue_role'));
-    $blue_rid = $blue_role -> rid;
-    $account = user_load($uid);
-    user_save($account, array('roles' => array($blue_rid => TRUE)));
+  	$default_role = user_role_load_by_name('authenticated user');
+    $new_rid = $default_role -> rid;
   }
+
+  user_multiple_role_edit(array($uid), 'add_role', $new_rid);
 }
 
 /**

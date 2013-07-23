@@ -29,8 +29,10 @@ function omni_eve_api_menu_alter(&$items)
  */
 function omni_eve_api_menu()
 {
+  $items = array();
+
   $items['user/register/%'] = array(
-    'title' => 'Create new account',
+    'title' => 'Create New Account',
     'page callback' => 'omni_eve_api_ctools_wizard',
     'page arguments' => array(2),
     'access callback' => 'omni_eve_api_register_access',
@@ -40,7 +42,7 @@ function omni_eve_api_menu()
   );
 
   $items['admin/settings/omni_eve_api'] = array(
-    'title' => 'Omni eve api settings',
+    'title' => 'Omni EVE API Settings',
     'description' => 'Enter your Alliance/Corp CEO and change various options.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('omni_eve_api_admin'),
@@ -48,12 +50,20 @@ function omni_eve_api_menu()
     'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['user/%/omni_eve_api'] = array(
-    'title' => t('Omni EVE API'),
-    'page callback' => 'omni_eve_api_list_api_form',
-    'page arguments' => array(1),
+  $items['user/%user/omni_eve_api'] = array(
+    'title' => t('List API Keys'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(1, 'omni_eve_api_user_list_api_form'),
     'access arguments' => array('access content'),
     'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['user/%user/omni_eve_api/add'] = array(
+    'title' => t('Add API Key'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(1, 'omni_eve_api_user_add_api_form'),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
@@ -89,6 +99,12 @@ function omni_eve_api_schema_alter(&$schema)
     'default' => '',
     'length' => 50,
     'description' => 'Main EVE Character Name',
+  );
+  $schema['users']['fields']['characterid'] = array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+    'description' => 'Main EVE Character ID',
   );
 }
 
