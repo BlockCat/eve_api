@@ -125,6 +125,18 @@ function omni_eve_api_schema_alter(&$schema)
 }
 
 /**
+ * Implements hook_permission().
+ */
+function omni_eve_api_permission() {
+  return array(
+    'omni eve api moderate' => array(
+      'title' => t('Omni EVE API Moderate'),
+      'description' => t('Allow people to view and edit a users EVE API information.'),
+    ),
+  );
+}
+
+/**
  * Based on "cURL HTTP Request v1.5" by Vincenzo and minorOffense
  *
  * Modified for use with "Omni EVE API"
