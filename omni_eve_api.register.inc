@@ -176,7 +176,7 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state)
   }
   else
   {
-    drupal_goto('/user/register');
+    drupal_goto('user/register');
   }
 
   $characters = omni_eve_api_get_character_api($query);
@@ -185,16 +185,16 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state)
   {
     if (!omni_eve_api_verify_blue($characters))
     {
-      drupal_goto('/user/register');
+      drupal_goto('user/register');
     }
     elseif ($chars = omni_eve_api_characters_exist($characters))
     {
-      drupal_goto('/user/register');
+      drupal_goto('user/register');
     }
   }
   else
   {
-    drupal_goto('/user/register');
+    drupal_goto('user/register');
   }
 
   $form['account']['charactername'] = array(
@@ -306,7 +306,7 @@ function omni_eve_api_user_register_submit($form, &$form_state)
     db_merge('oea_characters') -> key(array('characterid' => $character['corporationID'])) -> fields(array(
       'characterid' => $character['characterID'],
       'drupalid' => $uid,
-      'accountid' => $new_api_key_id,
+      'apiid' => $new_api_key_id,
       'charactername' => $character['characterName'],
       'corporationid' => $character['corporationID'],
       'corporationname' => $character['corporationName'],

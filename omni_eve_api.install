@@ -8,7 +8,7 @@ function omni_eve_api_schema()
   $schema['oea_api_keys'] = array(
     'description' => t('This table holds all the api\'s associated with all the accounts.'),
     'fields' => array(
-      'accountid' => array(
+      'apiid' => array(
         'description' => t('The link between api and the character.'),
         'type' => 'serial',
         'unsigned' => TRUE,
@@ -59,8 +59,8 @@ function omni_eve_api_schema()
         'views' => TRUE,
       ),
     ),
-    'unique keys' => array('accountid' => array('accountid')),
-    'primary key' => array('accountid'),
+    'unique keys' => array('apiid' => array('apiid')),
+    'primary key' => array('apiid'),
   );
 
   $schema['oea_characters'] = array(
@@ -76,7 +76,7 @@ function omni_eve_api_schema()
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'accountid' => array(
+      'apiid' => array(
         'description' => t('The link between api and the character.'),
         'type' => 'int',
         'not null' => TRUE,
@@ -107,19 +107,19 @@ function omni_eve_api_schema()
       'allianceid' => array(
         'description' => t('The Alliance ID the Character is currently associated with in EVE.'),
         'type' => 'int',
-        'not null' => TRUE,
+        'not null' => FALSE,
       ),
       'alliancename' => array(
         'description' => t('The Alliance Name the Character is currently associated with in EVE.'),
         'type' => 'varchar',
         'length' => 50,
-        'not null' => TRUE,
+        'not null' => FALSE,
       ),
       'allianceticker' => array(
         'description' => t('The Alliance Ticker the Character is currently associated with in EVE.'),
         'type' => 'varchar',
         'length' => 20,
-        'not null' => TRUE,
+        'not null' => FALSE,
       ),
     ),
     'unique keys' => array('characterid' => array('characterid')),

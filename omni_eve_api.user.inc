@@ -139,7 +139,7 @@ function _omni_eve_api_load_account($account)
 function _omni_eve_api_get_account_user_picture($account)
 {
   $user = user_load($account -> uid);
-  
+
   if (!empty($account -> picture -> uri))
   {
     // If the user has an uploaded picture, use it first.
@@ -182,7 +182,7 @@ function omni_eve_api_list_api($uid)
   $api_list['full'] = $api_list['simple'] = array();
 
   $result_a = db_select('oea_api_keys', 'a') -> fields('a', array(
-    'accountid',
+    'apiid',
     'keyid',
     'vcode',
     'errorid',
@@ -194,8 +194,8 @@ function omni_eve_api_list_api($uid)
   {
     foreach ($result_a->fetchAll() as $row_a)
     {
-      $api_list['full'][$row_a -> accountid] = array(
-        'accountid' => $row_a -> accountid,
+      $api_list['full'][$row_a -> apiid] = array(
+        'apiid' => $row_a -> apiid,
         'keyid' => $row_a -> keyid,
         'vcode' => $row_a -> vcode,
         'errorid' => $row_a -> errorid,
@@ -212,13 +212,13 @@ function omni_eve_api_list_api($uid)
         'allianceid',
         'alliancename',
         'allianceticker',
-      )) -> condition('drupalid', $uid, '=') -> condition('accountid', $row_a -> accountid, '=') -> execute();
+      )) -> condition('drupalid', $uid, '=') -> condition('apiid', $row_a -> apiid, '=') -> execute();
 
       if ($result_b -> rowCount())
       {
         foreach ($result_b->fetchAll() as $row_b)
         {
-          $api_list['full'][$row_a -> accountid]['characters'][$row_b -> characterid] = array(
+          $api_list['full'][$row_a -> apiid]['characters'][$row_b -> characterid] = array(
             'characterid' => $row_b -> characterid,
             'charactername' => $row_b -> charactername,
             'corporationid' => $row_b -> corporationid,
@@ -249,18 +249,16 @@ function omni_eve_api_list_api($uid)
 /**
  * Add function to add a new API
  */
-function omni_eve_api_user_add_api_form($form, &$form_state)
+function omni_eve_api_user_add_api_form($form, &$form_state, $account)
 {
   global $user;
 
-  if ($form_state['build_info']['args'][0]->uid != $user -> uid && !user_access('omni eve api moderate'))
+  if ($account -> uid != $user -> uid && !user_access('omni eve api moderate'))
   {
     drupal_goto('<front>');
   }
 
-  $uid = $form_state['build_info']['args'][0]->uid;
-  $account = user_load($uid);
-  $form = array();
+  $uid = $account -> uid;
 
   $form['enter_api'] = array(
     '#type' => 'fieldset',
@@ -287,6 +285,11 @@ function omni_eve_api_user_add_api_form($form, &$form_state)
     '#weight' => 10,
   );
 
+  $form['enter_api']['uid'] = array(
+    '#value' => $uid,
+    '#type' => 'hidden',
+  );
+
   $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Add API Key'),
@@ -305,13 +308,13 @@ function omni_eve_api_user_add_api_form_validate($form, &$form_state)
 {
   global $user;
 
-  if ($form_state['build_info']['args'][0]->uid != $user -> uid && !user_access('omni eve api moderate'))
+  $uid = $form_state['values']['uid'];
+
+  if ($uid != $user -> uid && !user_access('omni eve api moderate'))
   {
     drupal_goto('<front>');
   }
 
-  $uid = $form_state['build_info']['args'][0]->uid;
-  $account = user_load($uid);
   $query = array(
     'keyid' => $form_state['values']['keyid'],
     'vcode' => $form_state['values']['vcode'],
@@ -341,13 +344,13 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state)
 {
   global $user;
 
-  if ($form_state['build_info']['args'][0]->uid != $user -> uid && !user_access('omni eve api moderate'))
+  $uid = $form_state['values']['uid'];
+
+  if ($uid != $user -> uid && !user_access('omni eve api moderate'))
   {
     drupal_goto('<front>');
   }
 
-  $uid = $form_state['build_info']['args'][0]->uid;
-  $account = user_load($uid);
   $keyid = $form_state['values']['keyid'];
   $vcode = $form_state['values']['vcode'];
 
@@ -373,7 +376,7 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state)
     db_merge('oea_characters') -> key(array('characterid' => $character['corporationID'])) -> fields(array(
       'characterid' => $character['characterID'],
       'drupalid' => $uid,
-      'accountid' => $new_api_key_id,
+      'apiid' => $new_api_key_id,
       'charactername' => $character['characterName'],
       'corporationid' => $character['corporationID'],
       'corporationname' => $character['corporationName'],
@@ -390,33 +393,36 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state)
 /**
  * Add function to list valid characters the user can select from for a new main character
  */
-function omni_eve_api_user_select_main_character_form($form, &$form_state)
+function omni_eve_api_user_select_main_character_form($form, &$form_state, $account)
 {
   global $user;
 
-  if ($form_state['build_info']['args'][0]->uid != $user -> uid && !user_access('omni eve api moderate'))
+  if ($account -> uid != $user -> uid && !user_access('omni eve api moderate'))
   {
     drupal_goto('<front>');
   }
 
-  $uid = $form_state['build_info']['args'][0]->uid;
-  $account = user_load($uid);
-  $form = array();
+  $uid = $account -> uid;
   $uid_api_list = omni_eve_api_list_api($uid);
 
-  $form['settings'] = array(
+  $form['select_character'] = array(
     '#type' => 'fieldset',
     '#title' => t('Valid Characters'),
     '#weight' => 0,
   );
 
-  $form['settings']['charactername'] = array(
+  $form['select_character']['charactername'] = array(
     '#type' => 'select',
     '#title' => t('Select your Main Character'),
     '#default_value' => $account -> charactername,
     '#options' => omni_eve_api_valid_characters($uid_api_list['simple']),
     '#description' => t('Detected valid Main Characters.'),
     '#required' => TRUE,
+  );
+
+  $form['select_character']['uid'] = array(
+    '#value' => $uid,
+    '#type' => 'hidden',
   );
 
   $form['submit_button'] = array(
@@ -437,13 +443,12 @@ function omni_eve_api_user_select_main_character_form_validate($form, &$form_sta
 {
   global $user;
 
-  if ($form_state['build_info']['args'][0]->uid != $user -> uid && !user_access('omni eve api moderate'))
+  $uid = $form_state['values']['uid'];
+
+  if ($uid != $user -> uid && !user_access('omni eve api moderate'))
   {
     drupal_goto('<front>');
   }
-
-  $uid = $form_state['build_info']['args'][0]->uid;
-  $account = user_load($uid);
 }
 
 /**
@@ -453,13 +458,12 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
 {
   global $user;
 
-  if ($form_state['build_info']['args'][0]->uid != $user -> uid && !user_access('omni eve api moderate'))
+  $uid = $form_state['values']['uid'];
+
+  if ($uid != $user -> uid && !user_access('omni eve api moderate'))
   {
     drupal_goto('<front>');
   }
-
-  $uid = $form_state['build_info']['args'][0]->uid;
-  $account = user_load($uid);
 
   if ($account -> charactername != $form_state['values']['charactername'] && !empty($form_state['values']['charactername']))
   {
@@ -467,7 +471,7 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
     $old_character_data = omni_eve_api_get_character_info($old_charactername);
     $charactername = $form_state['values']['charactername'];
     $character_data = omni_eve_api_get_character_info($charactername);
-  
+
     if ($corporation_role = user_role_load_by_name($old_character_data['corporationName']))
     {
       $old_rid = $corporation_role -> rid;
@@ -476,7 +480,7 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
     {
       $old_rid = $blue_role -> rid;
     }
-  
+
     user_multiple_role_edit(array($uid), 'remove_role', $old_rid);
 
     db_update('users') -> fields(array('characterid' => $character_data['characterID'], )) -> condition('uid ', $uid, '=') -> execute();
@@ -486,7 +490,8 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
     {
       $new_rid = $corporation_role -> rid;
     }
-    else if ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role')))
+    else
+    if ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role')))
     {
       $new_rid = $blue_role -> rid;
     }
@@ -495,9 +500,9 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
       $default_role = user_role_load_by_name('authenticated user');
       $new_rid = $default_role -> rid;
     }
-  
+
     user_multiple_role_edit(array($uid), 'add_role', $new_rid);
-  
+
     drupal_set_message(t('New main character selected!'));
   }
 }
@@ -505,28 +510,47 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
 /**
  * Add function to show all API's the user currently has and delete them via selection
  */
-function omni_eve_api_user_list_api_form($form, &$form_state)
+function omni_eve_api_user_list_api_form($form, &$form_state, $account)
 {
   global $user;
 
-  if ($form_state['build_info']['args'][0]->uid != $user -> uid && !user_access('omni eve api moderate'))
+  if ($account -> uid != $user -> uid && !user_access('omni eve api moderate'))
   {
     drupal_goto('<front>');
   }
 
-  $uid = $form_state['build_info']['args'][0]->uid;
-  $account = user_load($uid);
-  $form = array();
+  $uid = $account -> uid;
   $uid_api_list = omni_eve_api_list_api($uid);
 
   $header = array(
-    'apiid' => array('data' => t('API #'), 'field' => 'n.apiid'),
-    'keyid' => array('data' => t('API Key ID'), 'field' => 'n.keyid'),
-    'vcode' => array('data' => t('API Verification Code'), 'field' => 'n.vcode'),
-    'characters' => array('data' => t('Characters'), 'field' => 'n.characters'),
-    'updated' => array('data' => t('Last Updated'), 'field' => 'n.updated'),
-    'created' => array('data' => t('Created'), 'field' => 'n.created'),
-    'status' => array('data' => t('Status'), 'field' => 'n.status'),
+    'edit' => array(
+      'data' => t('Edit'),
+      'field' => 'n.edit'
+    ),
+    'keyid' => array(
+      'data' => t('API Key ID'),
+      'field' => 'n.keyid'
+    ),
+    'vcode' => array(
+      'data' => t('API Verification Code'),
+      'field' => 'n.vcode'
+    ),
+    'characters' => array(
+      'data' => t('Characters'),
+      'field' => 'n.characters'
+    ),
+    'updated' => array(
+      'data' => t('Last Updated'),
+      'field' => 'n.updated'
+    ),
+    'created' => array(
+      'data' => t('Created'),
+      'field' => 'n.created'
+    ),
+    'status' => array(
+      'data' => t('Status'),
+      'field' => 'n.status'
+    ),
   );
 
   $options = array();
@@ -542,10 +566,16 @@ function omni_eve_api_user_list_api_form($form, &$form_state)
       $list_characters .= '<br />';
     }
 
-    $options[$uid_api_single['accountid']] = array(
-      'apiid' => $uid_api_single['accountid'],
+    $options[$uid_api_single['apiid']] = array(
+      'edit' => array(
+        'data' => array(
+          '#type' => 'link',
+          '#title' => t('Edit API # @api_key_id', array('@api_key_id' => $uid_api_single['apiid'])),
+          '#href' => 'user/' . $uid . '/omni_eve_api/update_api_key/' . $uid_api_single['apiid'],
+        ),
+      ),
       'keyid' => $uid_api_single['keyid'],
-      'vcode' => $string = (strlen($uid_api_single['vcode']) > 13) ? substr($uid_api_single['vcode'],0,10).'...' : $uid_api_single['vcode'],
+      'vcode' => $string = (strlen($uid_api_single['vcode']) > 13) ? substr($uid_api_single['vcode'], 0, 10) . '...' : $uid_api_single['vcode'],
       'characters' => $list_characters,
       'updated' => format_date(strtotime($uid_api_single['updated']), 'short'),
       'created' => format_date(strtotime($uid_api_single['created']), 'short'),
@@ -553,13 +583,18 @@ function omni_eve_api_user_list_api_form($form, &$form_state)
     );
   }
 
-  $form['settings']['api_keys'] = array(
-      '#type' => 'tableselect',
-      '#header' => $header,
-      '#options' => $options,
-      '#empty' => t('No content available.'),
-    );
-    
+  $form['list_api']['uid'] = array(
+    '#value' => $uid,
+    '#type' => 'hidden',
+  );
+
+  $form['list_api']['api_keys'] = array(
+    '#type' => 'tableselect',
+    '#header' => $header,
+    '#options' => $options,
+    '#empty' => t('No API Keys associated with your account.'),
+  );
+
   $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Delete'),
@@ -578,13 +613,12 @@ function omni_eve_api_user_list_api_form_validate($form, &$form_state)
 {
   global $user;
 
-  if ($form_state['build_info']['args'][0]->uid != $user -> uid && !user_access('omni eve api moderate'))
+  $uid = $form_state['values']['uid'];
+
+  if ($uid != $user -> uid && !user_access('omni eve api moderate'))
   {
     drupal_goto('<front>');
   }
-
-  $uid = $form_state['build_info']['args'][0]->uid;
-  $account = user_load($uid);
 }
 
 /**
@@ -594,31 +628,34 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state)
 {
   global $user;
 
-  if ($form_state['build_info']['args'][0]->uid != $user -> uid && !user_access('omni eve api moderate'))
+  $uid = $form_state['values']['uid'];
+
+  if ($uid != $user -> uid && !user_access('omni eve api moderate'))
   {
     drupal_goto('<front>');
   }
 
-  $uid = $form_state['build_info']['args'][0]->uid;
-  $account = user_load($uid);
-
   foreach ($form_state['values']['api_keys'] as $api_key_id)
   {
-    db_delete('oea_api_keys') -> condition('accountid', $api_key_id) -> execute();
-    db_delete('oea_characters') -> condition('accountid', $api_key_id) -> execute();
+    db_delete('oea_api_keys') -> condition('apiid', $api_key_id) -> execute();
+    db_delete('oea_characters') -> condition('apiid', $api_key_id) -> execute();
 
     drupal_set_message(t('API # @api_key_id  successfully deleted!', array('@api_key_id' => $api_key_id)));
   }
 
-  $result = db_select('oea_characters', 'c')
-    ->join('users', 'u', 'c.charactername = u.charactername')
-    ->fields('c', array('charactername', 'characterid'))
-    ->condition('u.uid', $uid, '=')
-    ->execute();
+	$query = db_select('oea_characters', 'c');
+	$query->join('users', 'u', 'c.charactername = u.charactername');
+	$query->fields('c', array('charactername', 'characterid'));
+	$query->condition('u.uid', $uid);
+	$result = $query->execute();
 
   if ($result -> rowCount())
   {
-    db_update('users') -> fields(array('charactername' => '', 'characterid' => '',)) -> condition('uid ', $uid, '=') -> execute();
+    db_update('users') -> fields(array(
+      'charactername' => '',
+      'characterid' => '',
+    )) -> condition('uid ', $uid, '=') -> execute();
+		$form_state['redirect'] = 'user/' . $uid . '/omni_eve_api/select_main_character';
     drupal_set_message(t('Please select a new Main Character'));
   }
 }
@@ -626,45 +663,47 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state)
 /**
  * Add function to update an API
  */
-function omni_eve_api_user_update_api_form($form, &$form_state)
+function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_key_id)
 {
   global $user;
 
-  if ($form_state['build_info']['args'][0]->uid != $user -> uid && !user_access('omni eve api moderate'))
+  if ($account -> uid != $user -> uid && !user_access('omni eve api moderate'))
   {
     drupal_goto('<front>');
   }
 
-  $uid = $form_state['build_info']['args'][0]->uid;
-  $account = user_load($uid);
-  $form = array();
-	$api_key_id = arg(4);
+  $uid = $account -> uid;
 
   $result = db_select('oea_api_keys', 'a') -> fields('a', array(
     'keyid',
     'vcode',
-  )) -> condition('accountid ', $api_key_id, '=') -> execute();
+  )) -> condition('apiid ', $api_key_id, '=') -> execute();
 
   if (!$result -> rowCount())
   {
-    drupal_goto('/user/' . $uid . '/omni_eve_api');
+    drupal_goto('user/' . $uid . '/omni_eve_api');
   }
 
   $row = $result -> fetchAssoc();
 
-  $form['enter_api'] = array(
+  $form['update_api'] = array(
     '#type' => 'fieldset',
     '#title' => t('Update API'),
     '#description' => t('Please enter your EVE API in order to update it to your existing account.  A Full API is required for registration. Please ensure that the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'),
     '#weight' => 0,
   );
 
-	$form['enter_api']['api_key_id'] = array(
+  $form['update_api']['api_key_id'] = array(
     '#value' => $api_key_id,
     '#type' => 'hidden',
-	);
+  );
 
-  $form['enter_api']['keyid'] = array(
+  $form['update_api']['uid'] = array(
+    '#value' => $uid,
+    '#type' => 'hidden',
+  );
+
+  $form['update_api']['keyid'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
     '#description' => t('Please enter your Key ID from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=268435455">here</a>.'),
@@ -674,7 +713,7 @@ function omni_eve_api_user_update_api_form($form, &$form_state)
     '#weight' => 0,
   );
 
-  $form['enter_api']['vcode'] = array(
+  $form['update_api']['vcode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
     '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=268435455">here</a>.'),
@@ -686,9 +725,10 @@ function omni_eve_api_user_update_api_form($form, &$form_state)
 
   $form['submit_button'] = array(
     '#type' => 'submit',
-    '#value' => t('update API Key'),
+    '#value' => t('Update API Key'),
   );
 
+	$form_state['redirect'] = 'user/' . $uid . '/omni_eve_api';
   $form['#validate'] = array('omni_eve_api_user_update_api_form_validate');
   $form['#submit'] = array('omni_eve_api_user_update_api_form_submit');
 
@@ -702,13 +742,13 @@ function omni_eve_api_user_update_api_form_validate($form, &$form_state)
 {
   global $user;
 
-  if ($form_state['build_info']['args'][0]->uid != $user -> uid && !user_access('omni eve api moderate'))
+  $uid = $form_state['values']['uid'];
+  $api_key_id = $form_state['values']['api_key_id'];
+
+  if ($uid != $user -> uid && !user_access('omni eve api moderate'))
   {
     drupal_goto('<front>');
   }
-
-  $uid = $form_state['build_info']['args'][0]->uid;
-  $account = user_load($uid);
 
   $query = array(
     'keyid' => $form_state['values']['keyid'],
@@ -731,16 +771,16 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state)
 {
   global $user;
 
-  if ($form_state['build_info']['args'][0]->uid != $user -> uid && !user_access('omni eve api moderate'))
+  $uid = $form_state['values']['uid'];
+
+  if ($uid != $user -> uid && !user_access('omni eve api moderate'))
   {
     drupal_goto('<front>');
   }
 
-  $uid = $form_state['build_info']['args'][0]->uid;
-  $account = user_load($uid);
   $keyid = $form_state['values']['keyid'];
   $vcode = $form_state['values']['vcode'];
-	$api_key_id = $form_state['values']['api_key_id'];
+  $api_key_id = $form_state['values']['api_key_id'];
 
   $query = array(
     'keyid' => $keyid,
@@ -751,23 +791,29 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state)
 
   $updated = date('Y-m-d H:i:s', time());
 
-  db_delete('oea_characters') -> condition('accountid', $api_key_id) -> execute();
+  db_delete('oea_characters') -> condition('apiid', $api_key_id) -> execute();
 
-  $result = db_select('oea_characters', 'c')
-    ->join('users', 'u', 'c.charactername = u.charactername')
-    ->fields('c', array('charactername', 'characterid'))
-    ->condition('u.uid', $uid, '=')
-    ->condition('c.accountid', $api_key_id, '=')
-    ->execute();
+  $query = db_select('oea_characters', 'c');
+  $query -> join('users', 'u', 'c.charactername = u.charactername');
+  $query -> fields('c', array(
+    'charactername',
+    'characterid'
+  ));
+  $query -> condition('u.uid', $uid);
+  $result = $query -> execute();
 
   if ($result -> rowCount())
   {
-    db_update('users') -> fields(array('charactername' => '', 'characterid' => '',)) -> condition('uid ', $uid, '=') -> execute();
+    db_update('users') -> fields(array(
+      'charactername' => '',
+      'characterid' => '',
+    )) -> condition('uid ', $uid, '=') -> execute();
+		$form_state['redirect'] = 'user/' . $uid . '/omni_eve_api/select_main_character';
     drupal_set_message(t('Please select a new Main Character'));
   }
 
-  db_merge('oea_api_keys') -> key(array('accountid' => $api_key_id)) -> fields(array(
-    'accountid' => $api_key_id,
+  db_merge('oea_api_keys') -> key(array('apiid' => $api_key_id)) -> fields(array(
+    'apiid' => $api_key_id,
     'drupalid' => $uid,
     'keyid' => $keyid,
     'vcode' => $vcode,
@@ -779,7 +825,7 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state)
     db_merge('oea_characters') -> key(array('characterid' => $character['corporationID'])) -> fields(array(
       'characterid' => $character['characterID'],
       'drupalid' => $uid,
-      'accountid' => $new_api_key_id,
+      'apiid' => $api_key_id,
       'charactername' => $character['characterName'],
       'corporationid' => $character['corporationID'],
       'corporationname' => $character['corporationName'],

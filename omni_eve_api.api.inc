@@ -268,7 +268,7 @@ function omni_eve_api_characters_exist($characters)
   foreach ($characters['characters'] as $character)
   {
     $result = db_select('oea_characters', 'c') -> fields('c', array(
-      'accountid',
+      'apiid',
       'characterid',
       'drupalid'
     )) -> condition('characterid ', $character['characterID'], '=') -> execute();
