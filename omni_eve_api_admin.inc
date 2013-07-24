@@ -151,3 +151,11 @@ function omni_eve_api_user_role_delete($role)
 /**
  * Add function to select a new main character
  */
+
+/**
+ * Add function to select the API mask required
+ */
+
+/**
+ * Add function to add a character name to a bypass list to whitelist an API
+ */

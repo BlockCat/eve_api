@@ -291,10 +291,14 @@ function omni_eve_api_user_register_submit($form, &$form_state)
 
   $characters = omni_eve_api_get_character_api($query);
 
+  $created = date('Y-m-d H:i:s', time());
+
   $new_api_key_id = db_insert('oea_api_keys') -> fields(array(
     'drupalid' => $uid,
     'keyid' => $keyid,
     'vcode' => $vcode,
+    'updated' => $created,
+    'created' => $created,
   )) -> execute();
 
   foreach ($characters['characters'] as $character)
@@ -311,7 +315,7 @@ function omni_eve_api_user_register_submit($form, &$form_state)
       'alliancename' => $character['allianceName'],
       'allianceticker' => $character['allianceTicker'],
     )) -> execute();
-    if($form_state['value']['charactername'] == $character['corporationName'])
+    if($form_state['value']['charactername'] == $character['characterName'])
     {
       $character_id = $character['characterID'];
     }

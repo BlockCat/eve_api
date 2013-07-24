@@ -51,18 +51,34 @@ function omni_eve_api_menu()
   );
 
   $items['user/%user/omni_eve_api'] = array(
-    'title' => t('List API Keys'),
+    'title' => t('Omni EVE API'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('omni_eve_api_user_list_api_form', 1),
-    'access arguments' => array('access content'),
+    'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
   );
 
-  $items['user/%user/omni_eve_api_add_api_key'] = array(
+  $items['user/%user/omni_eve_api/list_api'] = array(
+    'title' => t('List API Keys'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('omni_eve_api_user_list_api_form', 1),
+    'access callback' => TRUE,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+
+  $items['user/%user/omni_eve_api/select_main_character'] = array(
+    'title' => t('Select Main Character'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('omni_eve_api_user_select_main_character_form', 1),
+    'access callback' => TRUE,
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['user/%user/omni_eve_api/add_api_key'] = array(
     'title' => t('Add API Key'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('omni_eve_api_user_add_api_form', 1),
-    'access arguments' => array('access content'),
+    'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
   );
 

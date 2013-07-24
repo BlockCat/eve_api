@@ -285,3 +285,12 @@ function omni_eve_api_characters_exist($characters)
 
   return $chars;
 }
+
+/**
+ * Add function to check API MASK agaisnt options
+ */
+
+/**
+ * Add function to translate error code from api into a readable message
+ */
+ 
