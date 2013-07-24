@@ -3,7 +3,7 @@
 /**
  * Create callback for standard ctools registration wizard.
  */
-function omni_eve_api_ctools_wizard($step = 'enter_api')
+function omni_eve_api_register_wizard($step = 'enter_api')
 {
   // Include required ctools files.
   ctools_include('wizard');

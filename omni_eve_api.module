@@ -3,10 +3,11 @@
 /**
  * Include additional Files
  */
-module_load_include('inc', 'omni_eve_api', 'omni_eve_api');
-module_load_include('inc', 'omni_eve_api', 'omni_eve_api_cron');
-module_load_include('inc', 'omni_eve_api', 'omni_eve_api_admin');
-module_load_include('inc', 'omni_eve_api', 'omni_eve_api_user');
+module_load_include('inc', 'omni_eve_api', 'omni_eve_api.api');
+module_load_include('inc', 'omni_eve_api', 'omni_eve_api.cron');
+module_load_include('inc', 'omni_eve_api', 'omni_eve_api.admin');
+module_load_include('inc', 'omni_eve_api', 'omni_eve_api.user');
+module_load_include('inc', 'omni_eve_api', 'omni_eve_api.register');
 
 /**
  * Implements hook_menu_alter().
@@ -15,11 +16,9 @@ function omni_eve_api_menu_alter(&$items)
 {
   // Ctools registration wizard for standard registration.
   // Overrides default router item defined by core user module.
-  $items['user/register']['page callback'] = array('omni_eve_api_ctools_wizard');
+  $items['user/register']['page callback'] = array('omni_eve_api_register_wizard');
   // Pass the "first" step key to start the form on step 1 if no step has been specified.
   $items['user/register']['page arguments'] = array('enter_api');
-  $items['user/register']['file path'] = drupal_get_path('module', 'omni_eve_api');
-  $items['user/register']['file'] = 'omni_eve_api_ctools_wizard.inc';
 
   return $items;
 }
@@ -33,11 +32,10 @@ function omni_eve_api_menu()
 
   $items['user/register/%'] = array(
     'title' => 'Create New Account',
-    'page callback' => 'omni_eve_api_ctools_wizard',
+    'page callback' => 'omni_eve_api_register_wizard',
     'page arguments' => array(2),
     'access callback' => 'omni_eve_api_register_access',
     'access arguments' => array(2),
-    'file' => 'omni_eve_api_ctools_wizard.inc',
     'type' => MENU_CALLBACK,
   );
 
@@ -80,6 +78,14 @@ function omni_eve_api_menu()
     'page arguments' => array('omni_eve_api_user_add_api_form', 1),
     'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['user/%user/omni_eve_api/update_api_key/%'] = array(
+    'title' => t('Update API Key'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('omni_eve_api_user_update_api_form', 1, 4),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
