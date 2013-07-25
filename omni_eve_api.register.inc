@@ -126,26 +126,6 @@ function omni_eve_api_subtask_finish(&$form_state)
 }
 
 /**
- * Implimentation of hook_form_FORM_ID_alter
- */
-function omni_eve_api_form_user_profile_form_alter(&$form, $form_state)
-{
-  $form['charactername'] = array(
-    '#type' => 'select',
-    '#title' => t('Select your Main Character'),
-    '#default_value' => '',
-    '#options' => array(
-      '1' => '1',
-      '2' => '2'
-    ),
-    '#description' => t('Detected valid Main Characters.'),
-    '#required' => TRUE,
-  );
-
-  return $form;
-}
-
-/**
  * Implements hook_form_FORM_ID_alter().
  */
 function omni_eve_api_form_user_register_form_alter(&$form, &$form_state)
@@ -181,7 +161,7 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state)
 
   $characters = omni_eve_api_get_character_api($query);
 
-  if (!$characters['expires'] && $characters['type'] == 'Account' && $characters['accessMask'] == 268435455)
+  if (!$characters['expires'] && $characters['type'] == 'Account' && $characters['accessMask'] == variable_get('omni_eve_api_access_mask'))
   {
     if (!omni_eve_api_verify_blue($characters))
     {
@@ -197,7 +177,7 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state)
     drupal_goto('user/register');
   }
 
-  $form['account']['charactername'] = array(
+  $form['account']['select_charactername'] = array(
     '#type' => 'select',
     '#title' => t('Select your Main Character'),
     '#default_value' => '',
@@ -222,7 +202,7 @@ function omni_eve_api_enter_api_form($form, &$form_state)
   $form['enter_api']['keyid'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
-    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=268435455">here</a>.'),
+    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask') . '">here</a>.'),
     '#required' => TRUE,
     '#maxlength' => 15,
     '#weight' => 0,
@@ -231,7 +211,7 @@ function omni_eve_api_enter_api_form($form, &$form_state)
   $form['enter_api']['vcode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
-    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=268435455">here</a>.'),
+    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask') . '">here</a>.'),
     '#required' => TRUE,
     '#maxlength' => 80,
     '#weight' => 10,
@@ -255,7 +235,7 @@ function omni_eve_api_user_register_validate($form, &$form_state)
 
   $characters = omni_eve_api_get_character_api($query);
 
-  if (!$characters['expires'] && $characters['type'] == 'Account' && $characters['accessMask'] == 268435455)
+  if (!$characters['expires'] && $characters['type'] == 'Account' && $characters['accessMask'] == variable_get('omni_eve_api_access_mask'))
   {
     if (!omni_eve_api_verify_blue($characters))
     {
@@ -315,29 +295,42 @@ function omni_eve_api_user_register_submit($form, &$form_state)
       'alliancename' => $character['allianceName'],
       'allianceticker' => $character['allianceTicker'],
     )) -> execute();
-    if($form_state['value']['charactername'] == $character['characterName'])
+    if ($form_state['value']['select_charactername'] == $character['characterName'])
     {
       $character_id = $character['characterID'];
     }
   }
 
   db_update('users') -> fields(array('characterid' => $character_id, )) -> condition('uid ', $uid, '=') -> execute();
+  db_update('users') -> fields(array('charactername' => $form_state['value']['select_charactername'], )) -> condition('uid ', $uid, '=') -> execute();
+
+  $new_rid_2 = NULL;
 
   if ($corporation_role = user_role_load_by_name($character['corporationName']))
   {
     $new_rid = $corporation_role -> rid;
+
+    if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role')))
+    {
+      $new_rid_2 = $alliance_role -> rid;
+    }
   }
-  else if ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role')))
+  elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role')))
   {
     $new_rid = $blue_role -> rid;
   }
   else
   {
-  	$default_role = user_role_load_by_name('authenticated user');
+    $default_role = user_role_load_by_name('authenticated user');
     $new_rid = $default_role -> rid;
   }
 
   user_multiple_role_edit(array($uid), 'add_role', $new_rid);
+
+  if (isset($new_rid_2))
+  {
+    user_multiple_role_edit(array($uid), 'add_role', $new_rid_2);
+  }
 }
 
 /**
@@ -352,7 +345,7 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state)
 
   $characters = omni_eve_api_get_character_api($query);
 
-  if (!$characters['expires'] && $characters['type'] == 'Account' && $characters['accessMask'] == 268435455)
+  if (!$characters['expires'] && $characters['type'] == 'Account' && $characters['accessMask'] == variable_get('omni_eve_api_access_mask'))
   {
     if (!omni_eve_api_verify_blue($characters))
     {

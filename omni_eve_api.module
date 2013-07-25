@@ -40,12 +40,39 @@ function omni_eve_api_menu()
   );
 
   $items['admin/settings/omni_eve_api'] = array(
-    'title' => 'Omni EVE API Settings',
-    'description' => 'Enter your Alliance/Corp CEO and change various options.',
+    'title' => 'Omni EVE API',
+    'description' => 'Edit your Alliance API Key if you have not done so, enter it now.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_admin'),
+    'page arguments' => array('omni_eve_api_admin_alliance_api_key'),
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/settings/omni_eve_api/settings'] = array(
+    'title' => 'Role Settings',
+    'description' => 'From here you can change various settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('omni_eve_api_admin_roles'),
+    'access arguments' => array('administer omni_eve_api settings'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/settings/omni_eve_api/alliance_api_key'] = array(
+    'title' => 'Alliance API Key',
+    'description' => 'Edit your Alliance API Key if you have not done so, enter it now.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('omni_eve_api_admin_alliance_api_key'),
+    'access arguments' => array('administer omni_eve_api settings'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+
+  $items['admin/settings/omni_eve_api/access_mask'] = array(
+    'title' => 'Edit Access Mask',
+    'description' => 'Edit your Access Mask that is required to register on the site.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('omni_eve_api_admin_access_mask'),
+    'access arguments' => array('administer omni_eve_api settings'),
+    'type' => MENU_LOCAL_TASK,
   );
 
   $items['user/%user/omni_eve_api'] = array(
@@ -58,10 +85,8 @@ function omni_eve_api_menu()
 
   $items['user/%user/omni_eve_api/list_api'] = array(
     'title' => t('List API Keys'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_user_list_api_form', 1),
-    'access callback' => TRUE,
     'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 0,
   );
 
   $items['user/%user/omni_eve_api/select_main_character'] = array(
@@ -70,6 +95,7 @@ function omni_eve_api_menu()
     'page arguments' => array('omni_eve_api_user_select_main_character_form', 1),
     'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
+    'weight' => 1,
   );
 
   $items['user/%user/omni_eve_api/add_api_key'] = array(
@@ -78,6 +104,7 @@ function omni_eve_api_menu()
     'page arguments' => array('omni_eve_api_user_add_api_form', 1),
     'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
+    'weight' => 2,
   );
 
   $items['user/%user/omni_eve_api/update_api_key/%'] = array(
@@ -85,7 +112,9 @@ function omni_eve_api_menu()
     'page callback' => 'drupal_get_form',
     'page arguments' => array('omni_eve_api_user_update_api_form', 1, 4),
     'access callback' => TRUE,
-    'type' => MENU_CALLBACK,
+    'context' => MENU_CONTEXT_INLINE,
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 0,
   );
 
   return $items;

@@ -188,7 +188,10 @@ function omni_eve_api_get_alliance_corporations($item=NULL)
       {
         $user_role = new stdClass();
         $user_role -> name = $row -> corporationname;
-        user_role_save($user_role);
+        if (!empty($row -> corporationname))
+        {
+          user_role_save($user_role);
+        }
       }
     }
   }
