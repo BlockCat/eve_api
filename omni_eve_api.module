@@ -78,7 +78,10 @@ function omni_eve_api_menu()
   $items['user/%user/omni_eve_api'] = array(
     'title' => t('Omni EVE API'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_user_list_api_form', 1),
+    'page arguments' => array(
+      'omni_eve_api_user_list_api_form',
+      1
+    ),
     'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
   );
@@ -92,7 +95,10 @@ function omni_eve_api_menu()
   $items['user/%user/omni_eve_api/select_main_character'] = array(
     'title' => t('Select Main Character'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_user_select_main_character_form', 1),
+    'page arguments' => array(
+      'omni_eve_api_user_select_main_character_form',
+      1
+    ),
     'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
     'weight' => 1,
@@ -101,7 +107,10 @@ function omni_eve_api_menu()
   $items['user/%user/omni_eve_api/add_api_key'] = array(
     'title' => t('Add API Key'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_user_add_api_form', 1),
+    'page arguments' => array(
+      'omni_eve_api_user_add_api_form',
+      1
+    ),
     'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
     'weight' => 2,
@@ -110,7 +119,11 @@ function omni_eve_api_menu()
   $items['user/%user/omni_eve_api/update_api_key/%'] = array(
     'title' => t('Update API Key'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_user_update_api_form', 1, 4),
+    'page arguments' => array(
+      'omni_eve_api_user_update_api_form',
+      1,
+      4
+    ),
     'access callback' => TRUE,
     'context' => MENU_CONTEXT_INLINE,
     'type' => MENU_LOCAL_TASK,
@@ -162,13 +175,12 @@ function omni_eve_api_schema_alter(&$schema)
 /**
  * Implements hook_permission().
  */
-function omni_eve_api_permission() {
-  return array(
-    'omni eve api moderate' => array(
+function omni_eve_api_permission()
+{
+  return array('omni eve api moderate' => array(
       'title' => t('Omni EVE API Moderate'),
       'description' => t('Allow people to view and edit a users EVE API information.'),
-    ),
-  );
+    ), );
 }
 
 /**
