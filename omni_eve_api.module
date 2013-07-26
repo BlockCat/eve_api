@@ -86,9 +86,9 @@ function omni_eve_api_menu() {
     'type' => MENU_LOCAL_TASK,
   );
 
-  $items['admin/settings/omni_eve_api/list_blues/add_blue'] = array(
+  $items['admin/settings/omni_eve_api/add_blue'] = array(
     'title' => 'Add Blue',
-    'description' => 'You can manually Add Blues from here.',
+    'description' => 'You can manually add blues from here.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('omni_eve_api_admin_add_blues_form'),
     'access arguments' => array('administer omni_eve_api settings'),
