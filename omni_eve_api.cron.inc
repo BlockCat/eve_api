@@ -100,10 +100,10 @@ function omni_eve_api_get_standings($item = NULL) {
   foreach ($xml->result->children() as $rowset) {
     foreach ($rowset->children() as $rows) {
       $row = $rows->attributes();
-      db_merge('oea_blue_standings')->key(array('contactID' => (int)$row->contactID))->fields(array(
-        'contactID' => (int)$row->contactID,
-        'contactName' => (string)$row->contactName,
-        'standing' => (string)$row->standing,
+      db_merge('oea_blue_standings')->key(array('contactID' => (int) $row->contactID))->fields(array(
+        'contactID' => (int) $row->contactID,
+        'contactName' => (string) $row->contactName,
+        'standing' => (string) $row->standing,
         'manual' => 0,
         'checked' => 0,
       ))->execute();
@@ -134,18 +134,18 @@ function omni_eve_api_get_alliance_corporations($item = NULL) {
 
   foreach ($xml->result->rowset->row as $row) {
     db_insert('oea_alliance_info')->fields(array(
-      'allianceid' => (int)$row['allianceID'],
-      'allianceticker' => (string)$row['shortName'],
-      'alliancename' => (string)$row['name'],
+      'allianceid' => (int) $row['allianceID'],
+      'allianceticker' => (string) $row['shortName'],
+      'alliancename' => (string) $row['name'],
     ))->execute();
 
-    if ((int)$row['allianceID'] == variable_get('omni_eve_api_allianceID')) {
+    if ((int) $row['allianceID'] == variable_get('omni_eve_api_allianceID')) {
       foreach ($row->rowset->row as $row2) {
-        $query = array('corporationID' => (int)$row2['corporationID']);
+        $query = array('corporationID' => (int) $row2['corporationID']);
         $corp_info = omni_eve_api_get_corporation_info($query);
-        db_merge('oea_alliance_corporations')->key(array('corporationid' => (int)$row2['corporationID']))->fields(array(
-          'corporationid' => (int)$row2['corporationID'],
-          'corporationname' => (string)$corp_info['corporationName'],
+        db_merge('oea_alliance_corporations')->key(array('corporationid' => (int) $row2['corporationID']))->fields(array(
+          'corporationid' => (int) $row2['corporationID'],
+          'corporationname' => (string) $corp_info['corporationName'],
           'deleted' => 0,
           'manual' => 0,
         ))->execute();

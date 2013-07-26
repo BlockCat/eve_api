@@ -152,8 +152,8 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
 
   if (is_array($form_state['signup_object'])) {
     $query = array(
-      'keyid' => (int)$form_state['signup_object']['keyid'],
-      'vcode' => (string)$form_state['signup_object']['vcode'],
+      'keyid' => (int) $form_state['signup_object']['keyid'],
+      'vcode' => (string) $form_state['signup_object']['vcode'],
     );
   }
   else {

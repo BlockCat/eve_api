@@ -54,11 +54,11 @@ function omni_eve_api_admin_settings_form($form, &$form_state) {
  * @see omni_eve_api_admin_settings_form_submit()
  */
 function omni_eve_api_admin_settings_form_validate($form, &$form_state) {
-  if (user_role_load((int)$form_state['values']['omni_eve_api_blue_role']) == FALSE) {
+  if (user_role_load((int) $form_state['values']['omni_eve_api_blue_role']) == FALSE) {
     form_set_error('omni_eve_api_blue_role', t('The role does not exist.'));
   }
 
-  if (user_role_load((int)$form_state['values']['omni_eve_api_alliance_role']) == FALSE) {
+  if (user_role_load((int) $form_state['values']['omni_eve_api_alliance_role']) == FALSE) {
     form_set_error('omni_eve_api_alliance_role', t('The role does not exist.'));
   }
 }
@@ -69,48 +69,42 @@ function omni_eve_api_admin_settings_form_validate($form, &$form_state) {
  * @see omni_eve_api_admin_settings_form_validate()
  */
 function omni_eve_api_admin_settings_form_submit($form, &$form_state) {
-  //$uids = array();
-  //$result = db_select('users_roles', 'r') -> fields('r', array('uid', )) ->
-  // condition('rid', (int)variable_get('omni_eve_api_blue_role'), '=') ->
-  // execute();
-
-  //if ($result -> rowCount()) {
+  //  $uids = array();
+  //  $result = db_select('users_roles', 'r') -> fields('r', array('uid', )) ->
+  //  condition('rid', (int) variable_get('omni_eve_api_blue_role'), '=') ->
+  //  execute();
+  //  if ($result -> rowCount()) {
   //  foreach ($result->fetchAll() as $row) {
-  //    $uids[] = $row -> uid;
+  //  $uids[] = $row -> uid;
   //  }
-  //}
-
-  //if (!empty($uids)) {
+  //  }
+  //  if (!empty($uids)) {
   //  user_multiple_role_edit($uids, 'remove_role',
-  // (int)variable_get('omni_eve_api_blue_role'));
+  //  (int) variable_get('omni_eve_api_blue_role'));
   //  user_multiple_role_edit($uids, 'add_role',
-  // (int)$form_state['values']['omni_eve_api_blue_role']);
-  //}
-
-  //$uids = array();
-  //$result = db_select('users_roles', 'r') -> fields('r', array('uid', )) ->
-  // condition('rid', (int)variable_get('omni_eve_api_alliance_role'), '=') ->
-  // execute();
-
-  //if ($result -> rowCount()) {
+  //  (int) $form_state['values']['omni_eve_api_blue_role']);
+  //  }
+  //  $uids = array();
+  //  $result = db_select('users_roles', 'r') -> fields('r', array('uid', )) ->
+  //  condition('rid', (int) variable_get('omni_eve_api_alliance_role'), '=') ->
+  //  execute();
+  //  if ($result -> rowCount()) {
   //  foreach ($result->fetchAll() as $row) {
-  //    $uids[] = $row -> uid;
+  //  $uids[] = $row -> uid;
   //  }
-  //}
-
-  //if (!empty($uids)) {
+  //  }
+  //  if (!empty($uids)) {
   //  user_multiple_role_edit($uids, 'remove_role',
-  // (int)variable_get('omni_eve_api_alliance_role'));
+  //  (int) variable_get('omni_eve_api_alliance_role'));
   //  user_multiple_role_edit($uids, 'add_role',
-  // (int)$form_state['values']['omni_eve_api_alliance_role']);
-  //}
-
-  variable_set('omni_eve_api_blue_role', (int)$form_state['values']['omni_eve_api_blue_role']);
-  variable_set('omni_eve_api_alliance_role', (int)$form_state['values']['omni_eve_api_alliance_role']);
+  //  (int) $form_state['values']['omni_eve_api_alliance_role']);
+  //  }
+  variable_set('omni_eve_api_blue_role', (int) $form_state['values']['omni_eve_api_blue_role']);
+  variable_set('omni_eve_api_alliance_role', (int) $form_state['values']['omni_eve_api_alliance_role']);
 }
 
 /**
- * Form constructor for editing the alliance API Key
+ * Form constructor for editing the alliance API Key.
  *
  * @see omni_eve_api_admin_alliance_api_key_form_validate()
  * @see omni_eve_api_admin_alliance_api_key_form_submit()
@@ -185,13 +179,13 @@ function omni_eve_api_admin_alliance_api_key_form_validate($form, &$form_state) 
 function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
   $characters = $form_state['values']['characters'];
 
-  variable_set('omni_eve_api_corp_keyid', (int)$form_state['values']['omni_eve_api_corp_keyid']);
+  variable_set('omni_eve_api_corp_keyid', (int) $form_state['values']['omni_eve_api_corp_keyid']);
   variable_set('omni_eve_api_corp_vcode', $form_state['values']['omni_eve_api_corp_vcode']);
 
   // It's not pretty but it works.
   foreach ($characters['characters'] as $character) {
-    variable_set('omni_eve_api_allianceID', (int)$character['allianceID']);
-    variable_set('omni_eve_api_corporationID', (int)$character['corporationID']);
+    variable_set('omni_eve_api_allianceID', (int) $character['allianceID']);
+    variable_set('omni_eve_api_corporationID', (int) $character['corporationID']);
   }
 
   omni_eve_api_get_standings();
@@ -631,31 +625,31 @@ function omni_eve_api_admin_add_blues_form($form, &$form_state) {
  * @see omni_eve_api_admin_add_blues_form_submit()
  */
 function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
-  $result = db_select('oea_blue_standings', 'b')->fields('b', array('contactID'))->condition('contactID', (int)$form_state['values']['id'], '=')->execute();
+  $result = db_select('oea_blue_standings', 'b')->fields('b', array('contactID'))->condition('contactID', (int) $form_state['values']['id'], '=')->execute();
 
   if ($result->rowCount()) {
     form_set_error('id', t('Character/Corporation/Alliance already added to the standings.'));
   }
 
-  $result = db_select('oea_alliance_corporations', 'a')->fields('a', array('corporationid'))->condition('deleted', 0, '=')->condition('corporationid', (int)$form_state['values']['id'], '=')->execute();
+  $result = db_select('oea_alliance_corporations', 'a')->fields('a', array('corporationid'))->condition('deleted', 0, '=')->condition('corporationid', (int) $form_state['values']['id'], '=')->execute();
 
   if ($result->rowCount()) {
     form_set_error('id', t('Corporation already listed as an Alliance Corporation.'));
   }
 
-  $query = array('corporationID' => (int)$form_state['values']['id'], );
+  $query = array('corporationID' => (int) $form_state['values']['id'], );
   $corp_info = omni_eve_api_get_corporation_info($query);
 
-  $query = array('ids' => (int)$form_state['values']['id'], );
+  $query = array('ids' => (int) $form_state['values']['id'], );
   $char_info = omni_eve_api_get_character_name($query);
 
-  $alliance_info = db_select('oea_alliance_info', 'a')->fields('a', array('alliancename'))->condition('allianceid', (int)$form_state['values']['id'], '=')->execute()->fetchAssoc();
+  $alliance_info = db_select('oea_alliance_info', 'a')->fields('a', array('alliancename'))->condition('allianceid', (int) $form_state['values']['id'], '=')->execute()->fetchAssoc();
 
   if (isset($corp_info)) {
     $form_state['values']['name'] = $corp_info['corporationName'];
   }
   elseif (isset($char_info)) {
-    $form_state['values']['name'] = $char_info[(int)$form_state['values']['id']];
+    $form_state['values']['name'] = $char_info[(int) $form_state['values']['id']];
   }
   elseif ($alliance_info->rowCount()) {
     $form_state['values']['name'] = $row['alliancename'];

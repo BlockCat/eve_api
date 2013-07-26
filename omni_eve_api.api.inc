@@ -157,20 +157,20 @@ function omni_eve_api_get_character_api($query) {
 
   $api_data = array();
   $api_info = $xml->result->key->attributes();
-  $api_data['accessMask'] = (int)$api_info->accessMask;
-  $api_data['type'] = (string)$api_info->type;
-  $api_data['expires'] = ((string)$api_info->expires) ? TRUE : FALSE;
+  $api_data['accessMask'] = (int) $api_info->accessMask;
+  $api_data['type'] = (string) $api_info->type;
+  $api_data['expires'] = ((string) $api_info->expires) ? TRUE : FALSE;
 
   foreach ($xml->result->key->rowset->children() as $rows) {
     $row = $rows->attributes();
 
-    $query = array('corporationID' => (int)$row->corporationID);
+    $query = array('corporationID' => (int) $row->corporationID);
 
-    $api_data['characters'][(int)$row->characterID] = array_merge(array(
-      'characterName' => (string)$row->characterName,
-      'characterID' => (int)$row->characterID,
-      'corporationName' => (string)$row->corporationName,
-      'corporationID' => (int)$row->corporationID,
+    $api_data['characters'][(int) $row->characterID] = array_merge(array(
+      'characterName' => (string) $row->characterName,
+      'characterID' => (int) $row->characterID,
+      'corporationName' => (string) $row->corporationName,
+      'corporationID' => (int) $row->corporationID,
     ), omni_eve_api_get_corporation_info($query));
   }
 
@@ -209,12 +209,12 @@ function omni_eve_api_get_corporation_info($query) {
   }
 
   $api_data = array(
-    'corporationID' => (string)$xml->result->corporationID,
-    'corporationName' => (string)$xml->result->corporationName,
-    'corporationTicker' => (string)$xml->result->ticker,
-    'allianceID' => (int)$xml->result->allianceID,
-    'allianceName' => (string)$xml->result->allianceName,
-    'allianceTicker' => _omni_eve_api_get_alliance_ticker((int)$xml->result->allianceID),
+    'corporationID' => (string) $xml->result->corporationID,
+    'corporationName' => (string) $xml->result->corporationName,
+    'corporationTicker' => (string) $xml->result->ticker,
+    'allianceID' => (int) $xml->result->allianceID,
+    'allianceName' => (string) $xml->result->allianceName,
+    'allianceTicker' => _omni_eve_api_get_alliance_ticker((int) $xml->result->allianceID),
   );
 
   return $api_data;
@@ -241,7 +241,7 @@ function omni_eve_api_get_character_name($query) {
   foreach ($xml->result->rowset->children() as $rows) {
     $row = $rows->attributes();
 
-    $api_data[(int)$row->characterID] = (string)$row->name;
+    $api_data[(int) $row->characterID] = (string) $row->name;
   }
 
   return $api_data;
