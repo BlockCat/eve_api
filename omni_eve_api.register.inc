@@ -362,5 +362,4 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state) {
  * @see omni_eve_api_enter_api_form_validate()
  */
 function omni_eve_api_enter_api_form_submit($form, &$form_state) {
-
 }
