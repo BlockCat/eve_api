@@ -265,8 +265,8 @@ function omni_eve_api_permission() {
  *   - redirect_url: If redirected, a string containing the URL of the redirect
  *     target.
  *   - error: If an error occurred, the error message. Otherwise not set.
- *   - errno: If an error occurred, a cURL error number greater than 0. Otherwise
- * set to 0.
+ *   - errno: If an error occurred, a cURL error number greater than 0.
+ *     Otherwise set to 0.
  *   - headers: An array containing the response headers as name/value pairs.
  *     HTTP header names are case-insensitive (RFC 2616, section 4.2), so for
  *     easy access the array keys are returned in lower case.
@@ -555,6 +555,7 @@ function omni_eve_api_curl_http_request($url, array $query = array()) {
     case 304:
       // Not modified.
       break;
+
     case 301:
       // Moved permanently.
     case 302:

@@ -80,6 +80,7 @@ function omni_eve_api_preprocess_user_picture(&$variables) {
  *
  * @param array $account
  *   A simple user object.
+ * 
  * @return array
  *   A full user object.
  */
@@ -129,6 +130,7 @@ function omni_eve_api_load_account($account) {
  *
  * @param array $account
  *   A user object.
+ * 
  * @return string
  *   A string with the path to the user's picture.
  */
@@ -152,6 +154,7 @@ function omni_eve_api_get_account_user_picture($account) {
  *
  * @param int $characterid
  *   A string with an EVE character ID.
+ * 
  * @return string
  *   An URL string with the EVE avatar image.
  */
@@ -511,12 +514,12 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
 
     $options[$uid_api_single['apiid']] = array(
       'edit' => array(
-	      'data' => array(
-	          '#type' => 'link',
-	          '#title' => t('Edit API # @api_key_id', array('@api_key_id' => $uid_api_single['apiid'])),
-	          '#href' => 'user/' . $uid . '/omni_eve_api/update_api_key/' . $uid_api_single['apiid'],
-	        ),
-				),
+        'data' => array(
+          '#type' => 'link',
+          '#title' => t('Edit API # @api_key_id', array('@api_key_id' => $uid_api_single['apiid'])),
+          '#href' => 'user/' . $uid . '/omni_eve_api/update_api_key/' . $uid_api_single['apiid'],
+        ),
+      ),
       'keyid' => $uid_api_single['keyid'],
       'vcode' => $string = (strlen($uid_api_single['vcode']) > 13) ? substr($uid_api_single['vcode'], 0, 10) . '...' : $uid_api_single['vcode'],
       'characters' => $list_characters,

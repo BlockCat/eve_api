@@ -162,7 +162,7 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
 
   $characters = omni_eve_api_get_character_api($query);
 
-  //Need to add check for whitelisted characters.
+  // Need to add check for whitelisted characters.
   if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
     drupal_goto('user/register');
   }
