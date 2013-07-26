@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * The main file for Omni EVE API, where all the magic happens.
+ */
 
 /**
  * Include additional Files
@@ -12,8 +16,7 @@ module_load_include('inc', 'omni_eve_api', 'omni_eve_api.register');
 /**
  * Implements hook_menu_alter().
  */
-function omni_eve_api_menu_alter(&$items)
-{
+function omni_eve_api_menu_alter(&$items) {
   // Ctools registration wizard for standard registration.
   // Overrides default router item defined by core user module.
   $items['user/register']['page callback'] = array('omni_eve_api_register_wizard');
@@ -26,8 +29,7 @@ function omni_eve_api_menu_alter(&$items)
 /**
  * Implements hook_menu().
  */
-function omni_eve_api_menu()
-{
+function omni_eve_api_menu() {
   $items = array();
 
   $items['user/register/%'] = array(
@@ -43,7 +45,7 @@ function omni_eve_api_menu()
     'title' => 'Omni EVE API',
     'description' => 'Edit your Alliance API Key if you have not done so, enter it now.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_admin_alliance_api_key'),
+    'page arguments' => array('omni_eve_api_admin_alliance_api_key_form'),
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -52,7 +54,7 @@ function omni_eve_api_menu()
     'title' => 'Role Settings',
     'description' => 'From here you can change various settings.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_admin_roles'),
+    'page arguments' => array('omni_eve_api_admin_roles_form'),
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_TASK,
   );
@@ -61,7 +63,7 @@ function omni_eve_api_menu()
     'title' => 'Alliance API Key',
     'description' => 'Edit your Alliance API Key if you have not done so, enter it now.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_admin_alliance_api_key'),
+    'page arguments' => array('omni_eve_api_admin_alliance_api_key_form'),
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
@@ -70,34 +72,52 @@ function omni_eve_api_menu()
     'title' => 'Edit Access Mask',
     'description' => 'Edit your Access Mask that is required to register on the site.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_admin_access_mask'),
+    'page arguments' => array('omni_eve_api_admin_access_mask_form'),
+    'access arguments' => array('administer omni_eve_api settings'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/settings/omni_eve_api/list_blues'] = array(
+    'title' => 'List Blues',
+    'description' => 'You can remove Blues and Add Blues from here.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('omni_eve_api_admin_list_blues_form'),
+    'access arguments' => array('administer omni_eve_api settings'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/settings/omni_eve_api/list_blues/add_blue'] = array(
+    'title' => 'Add Blue',
+    'description' => 'You can manually Add Blues from here.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('omni_eve_api_admin_add_blues_form'),
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_TASK,
   );
 
   $items['user/%user/omni_eve_api'] = array(
-    'title' => t('Omni EVE API'),
+    'title' => 'Omni EVE API',
     'page callback' => 'drupal_get_form',
     'page arguments' => array(
       'omni_eve_api_user_list_api_form',
-      1
+      1,
     ),
     'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
   );
 
   $items['user/%user/omni_eve_api/list_api'] = array(
-    'title' => t('List API Keys'),
+    'title' => 'List API Keys',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
   );
 
   $items['user/%user/omni_eve_api/select_main_character'] = array(
-    'title' => t('Select Main Character'),
+    'title' => 'Select Main Character',
     'page callback' => 'drupal_get_form',
     'page arguments' => array(
       'omni_eve_api_user_select_main_character_form',
-      1
+      1,
     ),
     'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
@@ -105,11 +125,11 @@ function omni_eve_api_menu()
   );
 
   $items['user/%user/omni_eve_api/add_api_key'] = array(
-    'title' => t('Add API Key'),
+    'title' => 'Add API Key',
     'page callback' => 'drupal_get_form',
     'page arguments' => array(
       'omni_eve_api_user_add_api_form',
-      1
+      1,
     ),
     'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
@@ -117,12 +137,12 @@ function omni_eve_api_menu()
   );
 
   $items['user/%user/omni_eve_api/update_api_key/%'] = array(
-    'title' => t('Update API Key'),
+    'title' => 'Update API Key',
     'page callback' => 'drupal_get_form',
     'page arguments' => array(
       'omni_eve_api_user_update_api_form',
       1,
-      4
+      4,
     ),
     'access callback' => TRUE,
     'context' => MENU_CONTEXT_INLINE,
@@ -133,21 +153,18 @@ function omni_eve_api_menu()
   return $items;
 }
 
-function omni_eve_api_register_access()
-{
+function omni_eve_api_register_access() {
   return variable_get('user_register', 1);
 }
 
 /**
  * Implements hook_username_alter().
  */
-function omni_eve_api_username_alter(&$name, $account)
-{
+function omni_eve_api_username_alter(&$name, $account) {
   $user = user_load($account -> uid);
 
   // Display the user's EVE Character Name instead of the username.
-  if (!empty($user -> charactername))
-  {
+  if (!empty($user -> charactername)) {
     $name = $user -> charactername;
   }
 }
@@ -155,8 +172,7 @@ function omni_eve_api_username_alter(&$name, $account)
 /**
  * Implements hook_username_alter().
  */
-function omni_eve_api_schema_alter(&$schema)
-{
+function omni_eve_api_schema_alter(&$schema) {
   $schema['users']['fields']['charactername'] = array(
     'type' => 'varchar',
     'not null' => TRUE,
@@ -175,12 +191,17 @@ function omni_eve_api_schema_alter(&$schema)
 /**
  * Implements hook_permission().
  */
-function omni_eve_api_permission()
-{
-  return array('omni eve api moderate' => array(
-      'title' => t('Omni EVE API Moderate'),
-      'description' => t('Allow people to view and edit a users EVE API information.'),
-    ), );
+function omni_eve_api_permission() {
+  $permissions = array();
+  $permissions['administer omni_eve_api settings'] = array(
+    'title' => t('Admin Omni EVE API'),
+    'description' => t('Allow user to view and edit Omni EVE API Settings.'),
+  );
+  $permissions['moderate omni_eve_api users'] = array(
+    'title' => t('Moderate Users'),
+    'description' => t('Allow user to view and edit a users EVE API information.'),
+  );
+  return $permissions;
 }
 
 /**
@@ -216,22 +237,19 @@ function omni_eve_api_permission()
  *     easy access the array keys are returned in lower case.
  *   - data: A string containing the response body that was received.
  */
-function omni_eve_api_curl_http_request($url, array $query = array())
-{
+function omni_eve_api_curl_http_request($url, array $query = array()) {
   $result = new stdClass();
 
   // Parse the URL and make sure we can handle the schema.
   $uri = @parse_url($url);
 
-  if ($uri == FALSE)
-  {
+  if ($uri == FALSE) {
     $result -> error = 'unable to parse URL';
     $result -> code = -1001;
     return $result;
   }
 
-  if (!isset($uri['scheme']))
-  {
+  if (!isset($uri['scheme'])) {
     $result -> error = 'missing schema';
     $result -> code = -1002;
     return $result;
@@ -258,8 +276,7 @@ function omni_eve_api_curl_http_request($url, array $query = array())
   $proxy = ('https' == $uri['scheme']) ? $options['https_proxy'] : $options['http_proxy'];
 
   // Nullify the proxy if the host to send the request to is part of the proxy's exceptions.
-  if ((!empty($proxy['exceptions'])) && (array_key_exists($uri['host'], $proxy['exceptions'])))
-  {
+  if ((!empty($proxy['exceptions'])) && (array_key_exists($uri['host'], $proxy['exceptions']))) {
     $proxy = NULL;
   }
 
@@ -274,23 +291,20 @@ function omni_eve_api_curl_http_request($url, array $query = array())
     CURLOPT_MAXREDIRS => $options['max_redirects'],
   );
 
-  if ($options['cookiefile'])
-  {
+  if ($options['cookiefile']) {
     $curl_opt += array(
       CURLOPT_COOKIEJAR => $options['cookiefile'],
       CURLOPT_COOKIEFILE => $options['cookiefile'],
     );
   }
 
-  if (!empty($proxy))
-  {
+  if (!empty($proxy)) {
     $proxy_options = array(
       CURLOPT_PROXY => $proxy['server'],
       CURLOPT_PROXYPORT => $proxy['port'],
     );
     // For the time being let's just support HTTP proxies with basic authentication.
-    if (isset($proxy['username']) && isset($proxy['password']))
-    {
+    if (isset($proxy['username']) && isset($proxy['password'])) {
       $proxy_options += array(
         CURLOPT_PROXYUSERPWD => implode(':', array(
           $proxy['username'],
@@ -309,10 +323,8 @@ function omni_eve_api_curl_http_request($url, array $query = array())
     'https' => 443,
   );
 
-  if (array_key_exists($uri['scheme'], $default_ports))
-  {
-    if (!isset($uri['port']))
-    {
+  if (array_key_exists($uri['scheme'], $default_ports)) {
+    if (!isset($uri['port'])) {
       $uri['port'] = $default_ports[$uri['scheme']];
     }
     // RFC 2616: "non-standard ports MUST, default ports MAY be included".
@@ -320,8 +332,7 @@ function omni_eve_api_curl_http_request($url, array $query = array())
     // checking the host that do not take into account the port number.
     $options['headers']['Host'] = $uri['host'] . ($uri['port'] != 80 ? ':' . $uri['port'] : '');
   }
-  else
-  {
+  else {
     $result -> error = 'invalid schema ' . $uri['scheme'];
     $result -> code = -1003;
     return $result;
@@ -335,14 +346,12 @@ function omni_eve_api_curl_http_request($url, array $query = array())
   // at least HEAD/GET requests, and Squid always requires Content-Length in
   // POST/PUT requests.
   $content_length = strlen(drupal_http_build_query($options['data']));
-  if ($content_length > 0 || $options['method'] == 'POST' || $options['method'] == 'PUT')
-  {
+  if ($content_length > 0 || $options['method'] == 'POST' || $options['method'] == 'PUT') {
     $options['headers']['Content-Length'] = $content_length;
   }
 
   // If the server URL has a user then attempt to use basic authentication.
-  if (isset($uri['user']))
-  {
+  if (isset($uri['user'])) {
     $options['headers']['Authorization'] = 'Basic ' . base64_encode($uri['user'] . (isset($uri['pass']) ? ':' . $uri['pass'] : ''));
   }
 
@@ -353,28 +362,24 @@ function omni_eve_api_curl_http_request($url, array $query = array())
   // same time won't interfere with each other as they would if the database
   // prefix were stored statically in a file or database variable.
   $test_info = &$GLOBALS['drupal_test_info'];
-  if (!empty($test_info['test_run_id']))
-  {
+  if (!empty($test_info['test_run_id'])) {
     $options['headers']['User-Agent'] = drupal_generate_test_ua($test_info['test_run_id']);
   }
 
   // Set all the headers.
   $curl_opt[CURLOPT_HTTPHEADER] = array();
-  foreach ($options['headers'] as $name => $value)
-  {
+  foreach ($options['headers'] as $name => $value) {
     $curl_opt[CURLOPT_HTTPHEADER][] = $name . ": " . trim($value);
   }
 
   // Set the request method.
-  switch ($options['method'])
-  {
+  switch ($options['method']) {
     case 'GET':
       $curl_opt[CURLOPT_HTTPGET] = TRUE;
       break;
     case 'POST':
       $curl_opt[CURLOPT_POST] = TRUE;
-      if (!empty($options['data']))
-      {
+      if (!empty($options['data'])) {
         $curl_opt[CURLOPT_POSTFIELDS] = drupal_http_build_query($options['data']);
       }
       break;
@@ -397,11 +402,9 @@ function omni_eve_api_curl_http_request($url, array $query = array())
   $result -> errno = curl_errno($ch);
 
   // If there's been an error, do not continue.
-  if ($result -> error)
-  {
+  if ($result -> error) {
     // Request timed out.
-    if (CURLE_OPERATION_TIMEOUTED == $result -> errno)
-    {
+    if (CURLE_OPERATION_TIMEOUTED == $result -> errno) {
       $result -> code = HTTP_REQUEST_TIMEOUT;
       $result -> error = 'request timed out';
       return $result;
@@ -425,8 +428,7 @@ function omni_eve_api_curl_http_request($url, array $query = array())
   // from the web server being the actual target, from the proxy itself, etc.
   // The following 'if' statement is to check for such a situation and make sure we get a proper split between
   // actual response body and actual response headers both coming from the web server.
-  while ('HTTP/' == substr($result -> data, 0, 5))
-  {
+  while ('HTTP/' == substr($result -> data, 0, 5)) {
     list($response, $result -> data) = preg_split("/\r\n\r\n|\n\n|\r\r/", $result -> data, 2);
   }
 
@@ -440,18 +442,15 @@ function omni_eve_api_curl_http_request($url, array $query = array())
   $result -> headers = array();
 
   // Parse the response headers.
-  while ($line = trim(array_shift($response)))
-  {
+  while ($line = trim(array_shift($response))) {
     list($name, $value) = explode(':', $line, 2);
     $name = strtolower($name);
-    if (isset($result -> headers[$name]) && $name == 'set-cookie')
-    {
+    if (isset($result -> headers[$name]) && $name == 'set-cookie') {
       // RFC 2109: the Set-Cookie response header comprises the token Set-
       // Cookie:, followed by a comma-separated list of one or more cookies.
       $result -> headers[$name] .= ',' . trim($value);
     }
-    else
-    {
+    else {
       $result -> headers[$name] = trim($value);
     }
   }
@@ -500,14 +499,12 @@ function omni_eve_api_curl_http_request($url, array $query = array())
   );
   // RFC 2616 states that all unknown HTTP codes must be treated the same as the
   // base code in their class.
-  if (!isset($responses[$code]))
-  {
+  if (!isset($responses[$code])) {
     $code = floor($code / 100) * 100;
   }
   $result -> code = $code;
 
-  switch ($code)
-  {
+  switch ($code) {
     case 200:
     // OK
     case 304:
@@ -521,20 +518,17 @@ function omni_eve_api_curl_http_request($url, array $query = array())
       // Moved temporarily
       $location = $result -> headers['location'];
       $options['timeout'] -= timer_read(__FUNCTION__) / 1000;
-      if ($options['timeout'] <= 0)
-      {
+      if ($options['timeout'] <= 0) {
         $result -> code = HTTP_REQUEST_TIMEOUT;
         $result -> error = 'request timed out';
       }
-      elseif ($options['max_redirects'])
-      {
+      elseif ($options['max_redirects']) {
         // Redirect to the new location.
         $options['max_redirects']--;
         $result = curl_http_request($location, $options);
         $result -> redirect_code = $code;
       }
-      if (!isset($result -> redirect_url))
-      {
+      if (!isset($result -> redirect_url)) {
         $result -> redirect_url = $location;
       }
       break;

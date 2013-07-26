@@ -1,10 +1,13 @@
 <?php
+/**
+ * @file
+ * Install, update, and uninstall functions for the Omni EVE API module.
+ */
 
 /**
  * Implementation of hook_schema.
  */
-function omni_eve_api_schema()
-{
+function omni_eve_api_schema() {
   $schema['oea_api_keys'] = array(
     'description' => t('This table holds all the api\'s associated with all the accounts.'),
     'fields' => array(
@@ -147,13 +150,19 @@ function omni_eve_api_schema()
         'default' => 0,
       ),
       'deleted' => array(
-        'description' => t('Identifies if the corporation was removed from the alliance at some point..'),
+        'description' => t('Identifies if the corporation, alliance, or character was removed from the alliance at some point.'),
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
       ),
       'manual' => array(
         'description' => t('Identifies if the standing was manually added.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'checked' => array(
+        'description' => t('Used to check for updates.'),
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -194,7 +203,7 @@ function omni_eve_api_schema()
     'primary key' => array('corporationid'),
   );
 
-  $schema['oea_alliance_tags'] = array(
+  $schema['oea_alliance_info'] = array(
     'description' => t('This table holds all the alliance tickers.'),
     'fields' => array(
       'allianceid' => array(
@@ -208,6 +217,12 @@ function omni_eve_api_schema()
         'length' => 20,
         'not null' => TRUE,
       ),
+      'alliancename' => array(
+        'description' => t('The Alliance Name.'),
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
     ),
     'unique keys' => array('allianceid' => array('allianceid')),
     'primary key' => array('allianceid'),
@@ -219,8 +234,7 @@ function omni_eve_api_schema()
 /**
  * Implementation of hook_install().
  */
-function omni_eve_api_install()
-{
+function omni_eve_api_install() {
   db_add_field('users', 'charactername', array(
     'type' => 'varchar',
     'not null' => TRUE,
@@ -249,8 +263,7 @@ function omni_eve_api_install()
 /**
  * Implementation of hook_uninstall().
  */
-function omni_eve_api_uninstall()
-{
+function omni_eve_api_uninstall() {
   db_drop_field('users', 'charactername');
   db_drop_field('users', 'characterid');
 }
