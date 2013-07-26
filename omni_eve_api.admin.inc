@@ -115,7 +115,7 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
   $form['enter_api'] = array(
     '#type' => 'fieldset',
     '#title' => t('Enter API Info'),
-    '#description' => t('Enter the Alliance Executers or Corperations CEO\'s API.'),
+    '#description' => t('Enter the Alliance Executers or Corperations CEO API.'),
     '#weight' => 0,
   );
 
