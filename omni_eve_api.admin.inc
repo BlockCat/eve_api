@@ -7,12 +7,12 @@
 /**
  * Form constructor for the admin edit roles form.
  *
- * @see omni_eve_api_admin_roles_form_validate()
- * @see omni_eve_api_admin_roles_form_submit()
+ * @see omni_eve_api_admin_settings_form_validate()
+ * @see omni_eve_api_admin_settings_form_submit()
  *
  * @ingroup forms
  */
-function omni_eve_api_admin_roles_form($form, &$form_state) {
+function omni_eve_api_admin_settings_form($form, &$form_state) {
   $form['roles'] = array(
     '#type' => 'fieldset',
     '#title' => t('Roles'),
@@ -42,18 +42,18 @@ function omni_eve_api_admin_roles_form($form, &$form_state) {
     '#value' => t('Submit'),
   );
 
-  $form['#validate'] = array('omni_eve_api_admin_roles_form_validate');
-  $form['#submit'] = array('omni_eve_api_admin_roles_form_submit');
+  $form['#validate'] = array('omni_eve_api_admin_settings_form_validate');
+  $form['#submit'] = array('omni_eve_api_admin_settings_form_submit');
 
   return $form;
 }
 
 /**
- * Form validation handler for omni_eve_api_admin_roles_form().
+ * Form validation handler for omni_eve_api_admin_settings_form().
  *
- * @see omni_eve_api_admin_roles_form_submit()
+ * @see omni_eve_api_admin_settings_form_submit()
  */
-function omni_eve_api_admin_roles_form_validate($form, &$form_state) {
+function omni_eve_api_admin_settings_form_validate($form, &$form_state) {
   if (user_role_load((int)$form_state['values']['omni_eve_api_blue_role']) == FALSE) {
     form_set_error('omni_eve_api_blue_role', 'The role does not exist.');
   }
@@ -64,11 +64,11 @@ function omni_eve_api_admin_roles_form_validate($form, &$form_state) {
 }
 
 /**
- * Form submission handler for omni_eve_api_admin_roles_form().
+ * Form submission handler for omni_eve_api_admin_settings_form().
  *
- * @see omni_eve_api_admin_roles_form_validate()
+ * @see omni_eve_api_admin_settings_form_validate()
  */
-function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
+function omni_eve_api_admin_settings_form_submit($form, &$form_state) {
 /**
   $uids = array();
   $result = db_select('users_roles', 'r') -> fields('r', array('uid', )) -> condition('rid', (int)variable_get('omni_eve_api_blue_role'), '=') -> execute();
@@ -612,6 +612,7 @@ function omni_eve_api_admin_add_blues_form($form, &$form_state) {
     '#value' => t('Add Blue'),
   );
 
+  $form_state['redirect'] = 'admin/settings/omni_eve_api/list_blues';
   $form['#validate'] = array('omni_eve_api_admin_add_blues_form_validate');
   $form['#submit'] = array('omni_eve_api_admin_add_blues_form_submit');
 
@@ -674,5 +675,192 @@ function omni_eve_api_admin_add_blues_form_submit($form, &$form_state) {
 }
 
 /**
- * Add function to add a character name to a bypass list to whitelist an API
+ * Form constructor for the admin list blues form.
+ *
+ * @see omni_eve_api_admin_list_whitelist_form_validate()
+ * @see omni_eve_api_admin_list_whitelist_form_submit()
+ *
+ * @ingroup forms
  */
+function omni_eve_api_admin_list_whitelist_form($form, &$form_state) {
+  $header = array(
+    'deleted' => array(
+      'data' => t('Deleted'),
+      'field' => 'n.deleted'
+    ),
+    'characterid' => array(
+      'data' => t('Character ID'),
+      'field' => 'n.characterid'
+    ),
+    'charactername' => array(
+      'data' => t('Character Name'),
+      'field' => 'n.charactername'
+    ),
+  );
+
+  $options = $selected = array();
+
+  $result = db_select('oea_whitelist', 'w') -> fields('w', array(
+    'characterid',
+    'charactername',
+    'deleted',
+  )) -> execute();
+
+  if ($result -> rowCount()) {
+    foreach ($result->fetchAll() as $row) {
+      $options[$row -> characterid] = array(
+        'deleted' => ($row -> deleted) ? 'Yes' : 'No',
+        'characterid' => $row -> characterid,
+        'charactername' => $row -> charactername,
+      );
+
+      if ($row -> deleted) {
+        $selected[$row -> characterid] = TRUE;
+      }
+    }
+  }
+
+  $form['whitelist'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Update Whitelist'),
+    '#description' => t('Toggle the checkbox to remove/add an Whitelisted Character.'),
+    '#weight' => 0,
+  );
+
+  $form['whitelist']['whitelist'] = array(
+    '#type' => 'tableselect',
+    '#header' => $header,
+    '#options' => $options,
+    '#default_value' => $selected,
+    '#weight' => 10,
+  );
+
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update Whitelist'),
+  );
+
+  $form['#validate'] = array('omni_eve_api_admin_list_whitelist_form_validate');
+  $form['#submit'] = array('omni_eve_api_admin_list_whitelist_form_submit');
+
+  return $form;
+}
+
+/**
+ * Form validation handler for omni_eve_api_admin_list_whitelist_form().
+ *
+ * @see omni_eve_api_admin_list_whitelist_form_submit()
+ */
+function omni_eve_api_admin_list_whitelist_form_validate($form, &$form_state) {
+}
+
+/**
+ * Form submission handler for omni_eve_api_admin_list_whitelist_form().
+ *
+ * @see omni_eve_api_admin_list_whitelist_form_validate()
+ */
+function omni_eve_api_admin_list_whitelist_form_submit($form, &$form_state) {
+  db_update('oea_whitelist') -> fields(array('deleted' => 0, )) -> execute();
+  $deleted_whitelist = array();
+  foreach ($form_state['values']['whitelist'] as $whitelist) {
+    $deleted_whitelist[] = $whitelist;
+  }
+  db_update('oea_whitelist') -> fields(array('deleted' => 1, )) -> condition('characterid', $deleted_whitelist, 'IN') -> execute();
+}
+
+/**
+ * Form constructor for the admin add blues form.
+ *
+ * @see omni_eve_api_admin_add_whitelist_form_validate()
+ * @see omni_eve_api_admin_add_whitelist_form_submit()
+ *
+ * @ingroup forms
+ */
+function omni_eve_api_admin_add_whitelist_form($form, &$form_state) {
+  $form['add_whitelist'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Add Whitelist'),
+    '#description' => t('Add characters to the whitelist, the key is not stored here, it is used to retrieve the characters on the API Key and add them to the whitelist.  There are times when you will have high profile members join your site, they may have sensitive e-mails or items in locations.  With this whitelist you are able to allow the user to register with a very limited and basic API Key, but still provide full functionality on the site.  Please provide the following <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=8388680">link</a> to have the new user create a new limited API Key, the user has the option to list all characters, or just a single character.'),
+    '#weight' => 0,
+  );
+
+  $form['add_whitelist']['keyid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Key ID'),
+    '#description' => t('Please enter the Key ID.'),
+    '#required' => TRUE,
+    '#maxlength' => 15,
+    '#weight' => 0,
+  );
+
+  $form['add_whitelist']['vcode'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Verification Code'),
+    '#description' => t('Please enter the Verification Code.'),
+    '#required' => TRUE,
+    '#maxlength' => 80,
+    '#weight' => 10,
+  );
+
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add Whitelist'),
+  );
+
+  $form_state['redirect'] = 'admin/settings/omni_eve_api/list_whitelist';
+  $form['#validate'] = array('omni_eve_api_admin_add_whitelist_form_validate');
+  $form['#submit'] = array('omni_eve_api_admin_add_whitelist_form_submit');
+
+  return $form;
+}
+
+/**
+ * Form validation handler for omni_eve_api_admin_add_whitelist_form().
+ *
+ * @see omni_eve_api_admin_add_whitelist_form_submit()
+ */
+function omni_eve_api_admin_add_whitelist_form_validate($form, &$form_state) {
+  $query = array(
+    'keyid' => $form_state['values']['keyid'],
+    'vcode' => $form_state['values']['vcode'],
+  );
+
+  $characters = omni_eve_api_get_character_api($query);
+
+  if ($characters['expires'] || $characters['accessMask'] != 8388680) {
+    form_set_error('keyid', 'Please ensure that only the following boxes are highlighted and selected for the API: (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet))<br /> In addition the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.');
+    form_set_error('vcode');
+  }
+
+  if (!omni_eve_api_verify_blue($characters)) {
+    form_set_error('keyid', 'No characters associated with the key are currently blue, please add the characters to the blue standings.');
+    form_set_error('vcode');
+  }
+}
+
+/**
+ * Form submission handler for omni_eve_api_admin_add_whitelist_form().
+ *
+ * @see omni_eve_api_admin_add_whitelist_form_validate()
+ */
+function omni_eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
+  $keyid = $form_state['values']['keyid'];
+  $vcode = $form_state['values']['vcode'];
+
+  $query = array(
+    'keyid' => $keyid,
+    'vcode' => $vcode,
+  );
+
+  $characters = omni_eve_api_get_character_api($query);
+
+  foreach ($characters['characters'] as $character) {
+    db_merge('oea_whitelist') -> key(array('characterid' => $character['characterID'])) -> fields(array(
+      'characterid' => $character['characterID'],
+      'charactername' => $character['characterName'],
+      'deleted' => 0,
+    )) -> execute();
+  }
+
+  drupal_set_message(t('Whitelisted Characters successfully added!'));
+}

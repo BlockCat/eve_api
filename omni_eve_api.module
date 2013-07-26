@@ -48,15 +48,7 @@ function omni_eve_api_menu() {
     'page arguments' => array('omni_eve_api_admin_alliance_api_key_form'),
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_NORMAL_ITEM,
-  );
-
-  $items['admin/settings/omni_eve_api/settings'] = array(
-    'title' => 'Role Settings',
-    'description' => 'From here you can change various settings.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_admin_roles_form'),
-    'access arguments' => array('administer omni_eve_api settings'),
-    'type' => MENU_LOCAL_TASK,
+    'weight' => 0,
   );
 
   $items['admin/settings/omni_eve_api/alliance_api_key'] = array(
@@ -66,6 +58,17 @@ function omni_eve_api_menu() {
     'page arguments' => array('omni_eve_api_admin_alliance_api_key_form'),
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 0,
+  );
+
+  $items['admin/settings/omni_eve_api/settings'] = array(
+    'title' => 'Role Settings',
+    'description' => 'From here you can change various settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('omni_eve_api_admin_settings_form'),
+    'access arguments' => array('administer omni_eve_api settings'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10,
   );
 
   $items['admin/settings/omni_eve_api/access_mask'] = array(
@@ -75,6 +78,7 @@ function omni_eve_api_menu() {
     'page arguments' => array('omni_eve_api_admin_access_mask_form'),
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_TASK,
+    'weight' => 20,
   );
 
   $items['admin/settings/omni_eve_api/list_blues'] = array(
@@ -84,15 +88,37 @@ function omni_eve_api_menu() {
     'page arguments' => array('omni_eve_api_admin_list_blues_form'),
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_TASK,
+    'weight' => 30,
   );
 
-  $items['admin/settings/omni_eve_api/add_blue'] = array(
+  $items['admin/settings/omni_eve_api/list_blues/add_blue'] = array(
     'title' => 'Add Blue',
     'description' => 'You can manually add blues from here.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('omni_eve_api_admin_add_blues_form'),
     'access arguments' => array('administer omni_eve_api settings'),
+    'type' => MENU_LOCAL_ACTION,
+    'weight' => 0,
+  );
+
+  $items['admin/settings/omni_eve_api/list_whitelist'] = array(
+    'title' => 'List Whitelist',
+    'description' => 'You can remove Whitelisted API Characters and Add Whitelisted API Characters from here.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('omni_eve_api_admin_list_whitelist_form'),
+    'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_TASK,
+    'weight' => 40,
+  );
+
+  $items['admin/settings/omni_eve_api/list_whitelist/add_whitelist'] = array(
+    'title' => 'Add Whitelist',
+    'description' => 'You can manually add Whitelisted API Characters from here.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('omni_eve_api_admin_add_whitelist_form'),
+    'access arguments' => array('administer omni_eve_api settings'),
+    'type' => MENU_LOCAL_ACTION,
+    'weight' => 0,
   );
 
   $items['user/%user/omni_eve_api'] = array(
@@ -104,6 +130,7 @@ function omni_eve_api_menu() {
     ),
     'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
+    'weight' => 0,
   );
 
   $items['user/%user/omni_eve_api/list_api'] = array(
@@ -121,7 +148,7 @@ function omni_eve_api_menu() {
     ),
     'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
-    'weight' => 1,
+    'weight' => 10,
   );
 
   $items['user/%user/omni_eve_api/add_api_key'] = array(
@@ -133,7 +160,7 @@ function omni_eve_api_menu() {
     ),
     'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
-    'weight' => 2,
+    'weight' => 20,
   );
 
   $items['user/%user/omni_eve_api/update_api_key/%'] = array(

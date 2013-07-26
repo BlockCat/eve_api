@@ -224,6 +224,8 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
  * Form validation handler for omni_eve_api_user_add_api_form().
  *
  * @see omni_eve_api_user_add_api_form_submit()
+ * 
+ * @todo Need to add check for whitelisted characters.
  */
 function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
   global $user;
@@ -241,14 +243,13 @@ function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
 
   $characters = omni_eve_api_get_character_api($query);
 
-  if (!$characters['expires'] && $characters['type'] == 'Account' && $characters['accessMask'] == variable_get('omni_eve_api_access_mask')) {
-    if ($chars = omni_eve_api_characters_exist($characters)) {
-      form_set_error('keyid', 'Characters on this key have already been registered. Characters registered: ' . implode(", ", $chars));
-      form_set_error('vcode');
-    }
-  }
-  else {
+  if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
     form_set_error('keyid', 'Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.');
+    form_set_error('vcode');
+  }
+
+  if ($chars = omni_eve_api_characters_exist($characters)) {
+    form_set_error('keyid', 'Characters on this key have already been registered. Characters registered: ' . implode(", ", $chars));
     form_set_error('vcode');
   }
 }
@@ -288,7 +289,7 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
   )) -> execute();
 
   foreach ($characters['characters'] as $character) {
-    db_merge('oea_characters') -> key(array('characterid' => $character['corporationID'])) -> fields(array(
+    db_merge('oea_characters') -> key(array('characterid' => $character['characterID'])) -> fields(array(
       'characterid' => $character['characterID'],
       'drupalid' => $uid,
       'apiid' => $new_api_key_id,
@@ -689,6 +690,8 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_k
  * Form validation handler for omni_eve_api_user_update_api_form().
  *
  * @see omni_eve_api_user_update_api_form_submit()
+ * 
+ * @todo Need to add check for whitelisted characters.
  */
 function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
   global $user;
