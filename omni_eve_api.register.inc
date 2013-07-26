@@ -18,7 +18,8 @@ function omni_eve_api_register_wizard($step = 'enter_api') {
   $form_info = array(
     // Specify unique form id for this form.
     'id' => 'multistep_registration',
-    //Specify the path for this form. It is important to include space for the $step argument to be passed.
+    //Specify the path for this form. It is important to include space for the
+    // $step argument to be passed.
     'path' => "user/register/%step",
     // Show breadcrumb trail.
     'show trail' => TRUE,
@@ -32,12 +33,14 @@ function omni_eve_api_register_wizard($step = 'enter_api') {
     'return callback' => 'omni_eve_api_subtask_finish',
     // Callback to use when user cancels wizard.
     'cancel callback' => 'omni_eve_api_subtask_cancel',
-    // Specify the order that the child forms will appear in, as well as their page titles.
+    // Specify the order that the child forms will appear in, as well as their
+    // page titles.
     'order' => array(
       'enter_api' => t('Enter EVE API'),
       'register' => t('Register'),
     ),
-    // Define the child forms. Be sure to use the same keys here that were user in the 'order' section of this array.
+    // Define the child forms. Be sure to use the same keys here that were user
+    // in the 'order' section of this array.
     'forms' => array(
       'enter_api' => array('form id' => 'omni_eve_api_enter_api_form'),
       'register' => array('form id' => 'user_register_form'),
@@ -66,7 +69,7 @@ function omni_eve_api_get_page_cache($name) {
   // If the cached object doesn't exist yet, create an empty object.
   if (!$cache) {
     $cache = new stdClass();
-    $cache -> locked = ctools_object_cache_test('omni_eve_api', $name);
+    $cache->locked = ctools_object_cache_test('omni_eve_api', $name);
   }
 
   return $cache;
@@ -126,7 +129,7 @@ function omni_eve_api_subtask_finish(&$form_state) {
 
 /**
  * Implements hook_form_FORM_ID_alter() for user_register_form().
- * 
+ *
  * @todo Need to add check for whitelisted characters.
  */
 function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
@@ -159,7 +162,7 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
 
   $characters = omni_eve_api_get_character_api($query);
 
-	//Need to add check for whitelisted characters
+  //Need to add check for whitelisted characters
   if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
     drupal_goto('user/register');
   }
@@ -186,7 +189,7 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
  * Form validation handler for user_register_form().
  *
  * @see omni_eve_api_user_register_form_submit()
- * 
+ *
  * @todo Need to add check for whitelisted characters.
  */
 function omni_eve_api_user_register_form_validate($form, &$form_state) {
@@ -198,17 +201,17 @@ function omni_eve_api_user_register_form_validate($form, &$form_state) {
   $characters = omni_eve_api_get_character_api($query);
 
   if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
-    form_set_error('keyid', 'Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.');
+    form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
     form_set_error('vcode');
   }
 
   if (!omni_eve_api_verify_blue($characters)) {
-    form_set_error('keyid', 'No characters associated with your key are currently blue.');
+    form_set_error('keyid', t('No characters associated with your key are currently blue.'));
     form_set_error('vcode');
   }
 
   if ($chars = omni_eve_api_characters_exist($characters)) {
-    form_set_error('keyid', 'Characters on this key have already been registered. Characters registered: ' . implode(", ", $chars));
+    form_set_error('keyid', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
     form_set_error('vcode');
   }
 }
@@ -219,7 +222,7 @@ function omni_eve_api_user_register_form_validate($form, &$form_state) {
  * @see omni_eve_api_user_register_form_validate()
  */
 function omni_eve_api_user_register_form_submit($form, &$form_state) {
-  $uid = $form_state['user'] -> uid;
+  $uid = $form_state['user']->uid;
   $keyid = $form_state['signup_object']['keyid'];
   $vcode = $form_state['signup_object']['vcode'];
 
@@ -232,16 +235,16 @@ function omni_eve_api_user_register_form_submit($form, &$form_state) {
 
   $created = date('Y-m-d H:i:s', time());
 
-  $new_api_key_id = db_insert('oea_api_keys') -> fields(array(
+  $new_api_key_id = db_insert('oea_api_keys')->fields(array(
     'drupalid' => $uid,
     'keyid' => $keyid,
     'vcode' => $vcode,
     'updated' => $created,
     'created' => $created,
-  )) -> execute();
+  ))->execute();
 
   foreach ($characters['characters'] as $character) {
-    db_merge('oea_characters') -> key(array('characterid' => $character['characterID'])) -> fields(array(
+    db_merge('oea_characters')->key(array('characterid' => $character['characterID']))->fields(array(
       'characterid' => $character['characterID'],
       'drupalid' => $uid,
       'apiid' => $new_api_key_id,
@@ -252,30 +255,30 @@ function omni_eve_api_user_register_form_submit($form, &$form_state) {
       'allianceid' => $character['allianceID'],
       'alliancename' => $character['allianceName'],
       'allianceticker' => $character['allianceTicker'],
-    )) -> execute();
+    ))->execute();
     if ($form_state['value']['select_charactername'] == $character['characterName']) {
       $character_id = $character['characterID'];
     }
   }
 
-  db_update('users') -> fields(array('characterid' => $character_id, )) -> condition('uid ', $uid, '=') -> execute();
-  db_update('users') -> fields(array('charactername' => $form_state['value']['select_charactername'], )) -> condition('uid ', $uid, '=') -> execute();
+  db_update('users')->fields(array('characterid' => $character_id, ))->condition('uid ', $uid, '=')->execute();
+  db_update('users')->fields(array('charactername' => $form_state['value']['select_charactername'], ))->condition('uid ', $uid, '=')->execute();
 
   $new_rid_2 = NULL;
 
   if ($corporation_role = user_role_load_by_name($character['corporationName'])) {
-    $new_rid = $corporation_role -> rid;
+    $new_rid = $corporation_role->rid;
 
     if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role'))) {
-      $new_rid_2 = $alliance_role -> rid;
+      $new_rid_2 = $alliance_role->rid;
     }
   }
   elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role'))) {
-    $new_rid = $blue_role -> rid;
+    $new_rid = $blue_role->rid;
   }
   else {
     $default_role = user_role_load_by_name('authenticated user');
-    $new_rid = $default_role -> rid;
+    $new_rid = $default_role->rid;
   }
 
   user_multiple_role_edit(array($uid), 'add_role', $new_rid);
@@ -304,7 +307,7 @@ function omni_eve_api_enter_api_form($form, &$form_state) {
   $form['enter_api']['keyid'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
-    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask') . '">here</a>.'),
+    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=@mask">here</a>.', array('@mask' => variable_get('omni_eve_api_access_mask'))),
     '#required' => TRUE,
     '#maxlength' => 15,
     '#weight' => 0,
@@ -313,7 +316,7 @@ function omni_eve_api_enter_api_form($form, &$form_state) {
   $form['enter_api']['vcode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
-    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask') . '">here</a>.'),
+    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=@mask">here</a>.', array('@mask' => variable_get('omni_eve_api_access_mask'))),
     '#required' => TRUE,
     '#maxlength' => 80,
     '#weight' => 10,
@@ -329,7 +332,7 @@ function omni_eve_api_enter_api_form($form, &$form_state) {
  * Form validation handler for omni_eve_api_enter_api_form().
  *
  * @see omni_eve_api_enter_api_form_submit()
- * 
+ *
  * @todo Need to add check for whitelisted characters.
  */
 function omni_eve_api_enter_api_form_validate($form, &$form_state) {
@@ -341,17 +344,17 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state) {
   $characters = omni_eve_api_get_character_api($query);
 
   if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
-    form_set_error('keyid', 'Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.');
+    form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
     form_set_error('vcode');
   }
 
   if (!omni_eve_api_verify_blue($characters)) {
-    form_set_error('keyid', 'No characters associated with your key are currently blue to this alliance.');
+    form_set_error('keyid', t('No characters associated with your key are currently blue to this alliance.'));
     form_set_error('vcode');
   }
 
-	if ($chars = omni_eve_api_characters_exist($characters)) {
-    form_set_error('keyid', 'Characters on this key have already been registered. Characters registered: ' . implode(", ", $chars));
+  if ($chars = omni_eve_api_characters_exist($characters)) {
+    form_set_error('keyid', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
     form_set_error('vcode');
   }
 }
