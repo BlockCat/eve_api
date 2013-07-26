@@ -1,4 +1,5 @@
-<?php /**
+<?php
+/**
  * @file
  * The main file for Omni EVE API, where all the magic happens.
  */
@@ -246,7 +247,7 @@ function omni_eve_api_permission() {
  * Modified for use with "Omni EVE API"
  *
  *
- * @param $url
+ * @param string $url
  *   A string containing a fully qualified URI.
  * @param array $query
  *   (optional) An array composed of the url variable elements.
@@ -550,16 +551,16 @@ function omni_eve_api_curl_http_request($url, array $query = array()) {
 
   switch ($code) {
     case 200:
-    // OK.
+      // OK.
     case 304:
       // Not modified.
       break;
     case 301:
-    // Moved permanently.
+      // Moved permanently.
     case 302:
-    // Moved temporarily.
+      // Moved temporarily.
     case 307:
-      // Moved temporarily
+      // Moved temporarily.
       $location = $result->headers['location'];
       $options['timeout'] -= timer_read(__FUNCTION__) / 1000;
       if ($options['timeout'] <= 0) {

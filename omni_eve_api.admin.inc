@@ -69,7 +69,7 @@ function omni_eve_api_admin_settings_form_validate($form, &$form_state) {
  * @see omni_eve_api_admin_settings_form_validate()
  */
 function omni_eve_api_admin_settings_form_submit($form, &$form_state) {
-  //  $uids = array();
+  // $uids = array();
   //  $result = db_select('users_roles', 'r') -> fields('r', array('uid', )) ->
   //  condition('rid', (int) variable_get('omni_eve_api_blue_role'), '=') ->
   //  execute();
@@ -637,10 +637,10 @@ function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
     form_set_error('id', t('Corporation already listed as an Alliance Corporation.'));
   }
 
-  $query = array('corporationID' => (int) $form_state['values']['id'], );
+  $query = array('corporationID' => (int) $form_state['values']['id']);
   $corp_info = omni_eve_api_get_corporation_info($query);
 
-  $query = array('ids' => (int) $form_state['values']['id'], );
+  $query = array('ids' => (int) $form_state['values']['id']);
   $char_info = omni_eve_api_get_character_name($query);
 
   $alliance_info = db_select('oea_alliance_info', 'a')->fields('a', array('alliancename'))->condition('allianceid', (int) $form_state['values']['id'], '=')->execute()->fetchAssoc();
@@ -759,12 +759,12 @@ function omni_eve_api_admin_list_whitelist_form_validate($form, &$form_state) {
  * @see omni_eve_api_admin_list_whitelist_form_validate()
  */
 function omni_eve_api_admin_list_whitelist_form_submit($form, &$form_state) {
-  db_update('oea_whitelist')->fields(array('deleted' => 0, ))->execute();
+  db_update('oea_whitelist')->fields(array('deleted' => 0))->execute();
   $deleted_whitelist = array();
   foreach ($form_state['values']['whitelist'] as $whitelist) {
     $deleted_whitelist[] = $whitelist;
   }
-  db_update('oea_whitelist')->fields(array('deleted' => 1, ))->condition('characterid', $deleted_whitelist, 'IN')->execute();
+  db_update('oea_whitelist')->fields(array('deleted' => 1))->condition('characterid', $deleted_whitelist, 'IN')->execute();
 }
 
 /**

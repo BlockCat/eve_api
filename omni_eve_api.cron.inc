@@ -10,7 +10,7 @@
 function omni_eve_api_cron() {
   if (variable_get('omni_eve_api_enable_cron', TRUE)) {
     // Queue each user in the database to check the API's for blue status and
-    // other checks
+    // other checks.
     $queue = drupal_queue_get('omni_eve_api_queue_api');
     $queue->createQueue();
     $result = db_select('users', 'u')->fields('u', array(
@@ -61,11 +61,10 @@ function omni_eve_api_cron_queue_info() {
 }
 
 /**
- * Queue worker callback: receives an item from the queue and performs
- * some mysterious processing task based on the item data.
+ * Verify each characters API.
  *
  * @param mixed $item
- * whatever was added to the queue via queue->createItem()
+ *   whatever was added to the queue via queue->createItem()
  *
  * @todo Check each characters current API's and update changes and delete
  * characters that are no longer valid.  Verify current Main Character is still
@@ -76,11 +75,10 @@ function omni_eve_api_queue_api($item) {
 }
 
 /**
- * Queue worker callback: This worker is only ever called once, but because it
- * can take a while, it is run in parallel.
+ * Get current alliance standings.
  *
  * @param mixed $item
- * whatever was added to the queue via queue->createItem()
+ *   whatever was added to the queue via queue->createItem()
  *
  * @todo Error check for $xml
  */
@@ -110,15 +108,14 @@ function omni_eve_api_get_standings($item = NULL) {
     }
   }
 
-  db_update('oea_blue_standings')->fields(array('deleted' => 1, ))->condition('checked ', '1', '=')->condition('manual ', '0', '=')->execute();
+  db_update('oea_blue_standings')->fields(array('deleted' => 1))->condition('checked ', '1', '=')->condition('manual ', '0', '=')->execute();
 }
 
 /**
- * Queue worker callback: This worker is only ever called once, but because it
- * can take a while, it is run in parallel.
+ * Get current corporations in the alliance.
  *
  * @param mixed $item
- * whatever was added to the queue via queue->createItem()
+ *   whatever was added to the queue via queue->createItem()
  *
  * @todo Error check for $xml
  */

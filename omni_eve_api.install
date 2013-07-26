@@ -15,7 +15,7 @@ function omni_eve_api_schema() {
         'description' => 'The link between api and the character.',
         'type' => 'serial',
         'unsigned' => TRUE,
-        'not null' => TRUE
+        'not null' => TRUE,
       ),
       'drupalid' => array(
         'description' => 'The link between api and drupal account.',

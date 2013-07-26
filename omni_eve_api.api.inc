@@ -84,7 +84,8 @@ function omni_eve_api_get_xml($type, $query = array()) {
   if (isset($html)) {
     try {
       $xml = new SimpleXMLElement($html->data);
-    } catch (Exception $e) {
+    }
+    catch (Exception $e) {
       drupal_set_message(check_plain('omni_eve_api: Unable to process XML. Full Error: ' . $e->getMessage(), 'error'));
       $xml = NULL;
     }
@@ -122,7 +123,7 @@ function omni_eve_api_get_character_info($charactername) {
     'corporationticker',
     'allianceid',
     'alliancename',
-    'allianceticker'
+    'allianceticker',
   ))->condition('charactername', $charactername, '=')->execute()->fetchAssoc();
 
   $api_data = array(
@@ -303,7 +304,7 @@ function omni_eve_api_list_valid_characters($characters) {
         $chars[$character['characterName']] = $character['characterName'];
         continue;
       }
-      $result = db_select('oea_alliance_corporations', 'c')->fields('c', array('corporationid'))->condition('corporationid', array($character['corporationID'], ), 'IN')->execute();
+      $result = db_select('oea_alliance_corporations', 'c')->fields('c', array('corporationid'))->condition('corporationid', array($character['corporationID']), 'IN')->execute();
       if ($result->rowCount()) {
         $chars[$character['characterName']] = $character['characterName'];
       }
@@ -318,8 +319,7 @@ function omni_eve_api_list_valid_characters($characters) {
 }
 
 /**
- * Function to compare the Characters retrieved against the current registered
- * characters.
+ * Function to check if the Characters already exist in the DB.
  *
  * @param array $characters
  *   A complex array full of character information.
@@ -423,7 +423,7 @@ function omni_eve_api_list_api($uid) {
 }
 
 /**
- * Add function to translate error code from API into a readable message
+ * Add function to translate error code from API into a readable message.
  *
  * @todo Well its not done, so need to do it :)
  */

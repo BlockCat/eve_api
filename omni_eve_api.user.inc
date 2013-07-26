@@ -13,10 +13,10 @@ function omni_eve_api_user_delete($account) {
 }
 
 /**
- * Override template_preprocess_user_picture() to display user pictures with
- * EVE Online integration.
+ * Override template_preprocess_user_picture().
  *
- * Example URL's
+ * Override template_preprocess_user_pictures() to display user pictures with
+ * EVE Online integrationExample URL's.
  * http://image.eveonline.com/Character/1643072492_128.jpg
  * http://image.eveonline.com/Character/1_128.jpg
  *
@@ -40,14 +40,14 @@ function omni_eve_api_preprocess_user_picture(&$variables) {
           'style_name' => $style,
           'path' => $filepath,
           'alt' => $alt,
-          'title' => $alt
+          'title' => $alt,
         ));
       }
       else {
         $variables['user_picture'] = theme('image', array(
           'path' => $filepath,
           'alt' => $alt,
-          'title' => $alt
+          'title' => $alt,
         ));
       }
       if ($account->uid && user_access('access user profiles')) {
@@ -55,7 +55,7 @@ function omni_eve_api_preprocess_user_picture(&$variables) {
         $attributes = array('title' => t('View user profile.'));
         $variables['user_picture'] = l($variables['user_picture'], 'user/' . $account->uid, array(
           'attributes' => $attributes,
-          'html' => TRUE
+          'html' => TRUE,
         ));
       }
       elseif (!empty($account->homepage)) {
@@ -66,7 +66,7 @@ function omni_eve_api_preprocess_user_picture(&$variables) {
         );
         $variables['user_picture'] = l($variables['user_picture'], $account->homepage, array(
           'attributes' => $attributes,
-          'html' => TRUE
+          'html' => TRUE,
         ));
       }
     }
@@ -74,13 +74,13 @@ function omni_eve_api_preprocess_user_picture(&$variables) {
 }
 
 /**
- * Original function from"Gravatar v1.1" by Narno, Git Migration, Dave Reid,
- * podarok, and macedigital
- * Unmodified function.
+ * Unmodified function from"Gravatar v1.1".
+ * 
+ * By Narno, Git Migration, Dave Reid, podarok, and macedigital.
  *
- * @param $account
+ * @param array $account
  *   A simple user object.
- * @return
+ * @return array
  *   A full user object.
  */
 function omni_eve_api_load_account($account) {
@@ -102,7 +102,7 @@ function omni_eve_api_load_account($account) {
         'name',
         'mail',
         'homepage',
-        'hostname'
+        'hostname',
       ), '');
       foreach ($values as $value => $default_value) {
         if (empty($account->$value)) {
@@ -120,16 +120,16 @@ function omni_eve_api_load_account($account) {
 }
 
 /**
- * Original function from"Gravatar v1.1" by Narno, Git Migration, Dave Reid,
- * podarok, and macedigital
- *
- * Modified for use with "Omni EVE API"
+ * Original function from"Gravatar v1.1".
+ * 
+ * by Narno, Git Migration, Dave Reid, podarok, and macedigital.
+ * Modified for use with "Omni EVE API".
  *
  * Decide which user picture should be displayed for a user account.
  *
- * @param $account
+ * @param array $account
  *   A user object.
- * @return
+ * @return string
  *   A string with the path to the user's picture.
  */
 function omni_eve_api_get_account_user_picture($account) {
@@ -150,9 +150,9 @@ function omni_eve_api_get_account_user_picture($account) {
 /**
  * Generate a EVE Avatar URL.
  *
- * @param $characterid
+ * @param int $characterid
  *   A string with an EVE character ID.
- * @return
+ * @return string
  *   An URL string with the EVE avatar image.
  */
 function omni_eve_api_get_eve_avatar($characterid) {
@@ -191,7 +191,7 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
   $form['enter_api']['keyid'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
-    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask') . '">here</a>.'),
+    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=@mask">here</a>.', array('@mask' => variable_get('omni_eve_api_access_mask'))),
     '#required' => TRUE,
     '#maxlength' => 15,
     '#weight' => 0,
@@ -200,7 +200,7 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
   $form['enter_api']['vcode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
-    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask') . '">here</a>.'),
+    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=@mask">here</a>.', array('@mask' => variable_get('omni_eve_api_access_mask'))),
     '#required' => TRUE,
     '#maxlength' => 80,
     '#weight' => 10,
@@ -416,8 +416,8 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
       user_multiple_role_edit(array($uid), 'remove_role', $old_rid_2);
     }
 
-    db_update('users')->fields(array('characterid' => $character_data['characterID'], ))->condition('uid ', $uid, '=')->execute();
-    db_update('users')->fields(array('charactername' => $character_data['characterName'], ))->condition('uid ', $uid, '=')->execute();
+    db_update('users')->fields(array('characterid' => $character_data['characterID']))->condition('uid ', $uid, '=')->execute();
+    db_update('users')->fields(array('charactername' => $character_data['characterName']))->condition('uid ', $uid, '=')->execute();
 
     $new_rid_2 = NULL;
 
@@ -470,31 +470,31 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
   $header = array(
     'edit' => array(
       'data' => t('Edit'),
-      'field' => 'n.edit'
+      'field' => 'n.edit',
     ),
     'keyid' => array(
       'data' => t('API Key ID'),
-      'field' => 'n.keyid'
+      'field' => 'n.keyid',
     ),
     'vcode' => array(
       'data' => t('API Verification Code'),
-      'field' => 'n.vcode'
+      'field' => 'n.vcode',
     ),
     'characters' => array(
       'data' => t('Characters'),
-      'field' => 'n.characters'
+      'field' => 'n.characters',
     ),
     'updated' => array(
       'data' => t('Last Updated'),
-      'field' => 'n.updated'
+      'field' => 'n.updated',
     ),
     'created' => array(
       'data' => t('Created'),
-      'field' => 'n.created'
+      'field' => 'n.created',
     ),
     'status' => array(
       'data' => t('Status'),
-      'field' => 'n.status'
+      'field' => 'n.status',
     ),
   );
 
@@ -510,11 +510,13 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
     }
 
     $options[$uid_api_single['apiid']] = array(
-      'edit' => array('data' => array(
-          '#type' => 'link',
-          '#title' => t('Edit API # @api_key_id', array('@api_key_id' => $uid_api_single['apiid'])),
-          '#href' => 'user/' . $uid . '/omni_eve_api/update_api_key/' . $uid_api_single['apiid'],
-        ), ),
+      'edit' => array(
+	      'data' => array(
+	          '#type' => 'link',
+	          '#title' => t('Edit API # @api_key_id', array('@api_key_id' => $uid_api_single['apiid'])),
+	          '#href' => 'user/' . $uid . '/omni_eve_api/update_api_key/' . $uid_api_single['apiid'],
+	        ),
+				),
       'keyid' => $uid_api_single['keyid'],
       'vcode' => $string = (strlen($uid_api_single['vcode']) > 13) ? substr($uid_api_single['vcode'], 0, 10) . '...' : $uid_api_single['vcode'],
       'characters' => $list_characters,
@@ -591,7 +593,7 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
   $query->join('users', 'u', 'c.charactername = u.charactername');
   $query->fields('c', array(
     'charactername',
-    'characterid'
+    'characterid',
   ));
   $query->condition('u.uid', $uid);
   $result = $query->execute();
@@ -774,7 +776,7 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
   $query->join('users', 'u', 'c.charactername = u.charactername');
   $query->fields('c', array(
     'charactername',
-    'characterid'
+    'characterid',
   ));
   $query->condition('u.uid', $uid);
   $result = $query->execute();

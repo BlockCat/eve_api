@@ -8,7 +8,7 @@
  * Create callback for standard ctools registration wizard.
  *
  * @param string $step
- *  Indicates what step of the registration process is being called
+ *   Indicates what step of the registration process is being called
  */
 function omni_eve_api_register_wizard($step = 'enter_api') {
   // Include required ctools files.
@@ -18,7 +18,7 @@ function omni_eve_api_register_wizard($step = 'enter_api') {
   $form_info = array(
     // Specify unique form id for this form.
     'id' => 'multistep_registration',
-    //Specify the path for this form. It is important to include space for the
+    // Specify the path for this form. It is important to include space for the
     // $step argument to be passed.
     'path' => "user/register/%step",
     // Show breadcrumb trail.
@@ -60,7 +60,7 @@ function omni_eve_api_register_wizard($step = 'enter_api') {
  * Retrieves an object from the cache.
  *
  * @param string $name
- *  The name of the cached object to retrieve.
+ *   The name of the cached object to retrieve.
  */
 function omni_eve_api_get_page_cache($name) {
   ctools_include('object-cache');
@@ -79,10 +79,10 @@ function omni_eve_api_get_page_cache($name) {
  * Creates or updates an object in the cache.
  *
  * @param string $name
- *  The name of the object to cache.
+ *   The name of the object to cache.
  *
  * @param object $data
- *  The object to be cached.
+ *   The object to be cached.
  */
 function omni_eve_api_set_page_cache($name, $data) {
   ctools_include('object-cache');
@@ -93,7 +93,7 @@ function omni_eve_api_set_page_cache($name, $data) {
  * Removes an item from the object cache.
  *
  * @param string $name
- *  The name of the object to destroy.
+ *   The name of the object to destroy.
  */
 function omni_eve_api_clear_page_cache($name) {
   ctools_include('object-cache');
@@ -162,7 +162,7 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
 
   $characters = omni_eve_api_get_character_api($query);
 
-  //Need to add check for whitelisted characters
+  //Need to add check for whitelisted characters.
   if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
     drupal_goto('user/register');
   }
@@ -261,8 +261,8 @@ function omni_eve_api_user_register_form_submit($form, &$form_state) {
     }
   }
 
-  db_update('users')->fields(array('characterid' => $character_id, ))->condition('uid ', $uid, '=')->execute();
-  db_update('users')->fields(array('charactername' => $form_state['value']['select_charactername'], ))->condition('uid ', $uid, '=')->execute();
+  db_update('users')->fields(array('characterid' => $character_id))->condition('uid ', $uid, '=')->execute();
+  db_update('users')->fields(array('charactername' => $form_state['value']['select_charactername']))->condition('uid ', $uid, '=')->execute();
 
   $new_rid_2 = NULL;
 
