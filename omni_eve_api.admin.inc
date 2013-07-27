@@ -163,6 +163,11 @@ function omni_eve_api_admin_alliance_api_key_form_validate($form, &$form_state) 
 
   $characters = omni_eve_api_get_character_api($query);
 
+  if (isset($characters['error'])) {
+    form_set_error('omni_eve_api_corp_keyid', t('There was an error with the API.'));
+    form_set_error('omni_eve_api_corp_vcode');
+  }
+
   if ($characters['expires'] || $characters['type'] != 'Corporation' || $characters['accessMask'] != 67108863) {
     form_set_error('omni_eve_api_corp_keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to your Alliance Executor or Corporation CEO, the "Type" drop down box is set to "Corporation", and that the "No Expiry" checkbox is ticked.'));
     form_set_error('omni_eve_api_corp_vcode');
@@ -188,6 +193,7 @@ function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
     variable_set('omni_eve_api_corporationID', (int) $character['corporationID']);
   }
 
+  omni_eve_api_get_access_mask();
   omni_eve_api_get_standings();
   omni_eve_api_get_alliance_corporations();
 }
@@ -218,19 +224,26 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
 
   $options = $selected = array();
 
-  $access_mask_list = omni_eve_api_access_mask_list();
-
   $access_mask = variable_get('omni_eve_api_access_mask');
 
-  foreach ($access_mask_list as $access_bit) {
-    $options[$access_bit['mask']] = array(
-      'mask' => $access_bit['mask'],
-      'name' => $access_bit['name'],
-      'description' => $access_bit['description'],
-    );
+  $result = db_select('oea_access_mask', 'a')->fields('a', array(
+    'accessmask',
+    'type',
+    'name',
+    'description',
+  ))->condition('type', 'Character', '=')->execute();
 
-    if (($access_mask & $access_bit['mask']) == TRUE) {
-      $selected[$access_bit['mask']] = TRUE;
+  if ($result->rowCount()) {
+    foreach ($result->fetchAll() as $row) {
+      $options[$row->accessmask] = array(
+        'mask' => $row->accessmask,
+        'name' => $row->name,
+        'description' => $row->description,
+      );
+
+      if (($access_mask & $row->accessmask) == TRUE) {
+        $selected[$row->accessmask] = TRUE;
+      }
     }
   }
 
@@ -252,6 +265,7 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
     '#header' => $header,
     '#options' => $options,
     '#default_value' => $selected,
+    '#empty' => t('Accessmask not retrieved.'),
     '#weight' => 10,
   );
 
@@ -312,159 +326,6 @@ function omni_eve_api_role_list() {
   }
 
   return $roles;
-}
-
-/**
- * Function to get a list of all Access Masks and descriptions.
- *
- * @return array
- *   A simple array of Access Mask ID, Name, and Description.
- */
-function omni_eve_api_access_mask_list() {
-  $access_mask = array();
-
-  $access_mask[] = array(
-    'mask' => 1,
-    'name' => 'AccountBalance',
-    'description' => 'Current balance of characters wallet.',
-  );
-  $access_mask[] = array(
-    'mask' => 2,
-    'name' => 'AssetList',
-    'description' => 'Entire asset list of character.',
-  );
-  $access_mask[] = array(
-    'mask' => 4,
-    'name' => 'CalendarEventAttendees',
-    'description' => 'Event attendee responses. Requires UpcomingCalendarEvents to function.',
-  );
-  $access_mask[] = array(
-    'mask' => 8,
-    'name' => 'CharacterSheet',
-    'description' => 'Character Sheet information. Contains basic "Show Info" information along with clones, account balance, implants, attributes, skills, certificates and corporation roles.',
-  );
-  $access_mask[] = array(
-    'mask' => 16,
-    'name' => 'ContactList',
-    'description' => 'List of character contacts and relationship levels.',
-  );
-  $access_mask[] = array(
-    'mask' => 32,
-    'name' => 'ContactNotifications',
-    'description' => 'Most recent contact notifications for the character.',
-  );
-  $access_mask[] = array(
-    'mask' => 64,
-    'name' => 'FacWarStats',
-    'description' => 'Characters Factional Warfare Statistics.',
-  );
-  $access_mask[] = array(
-    'mask' => 128,
-    'name' => 'IndustryJobs',
-    'description' => 'Character jobs, completed and active.',
-  );
-  $access_mask[] = array(
-    'mask' => 256,
-    'name' => 'KillMails',
-    'description' => 'Character\'s killmails.',
-  );
-  $access_mask[] = array(
-    'mask' => 512,
-    'name' => 'MailBodies',
-    'description' => 'EVE Mail bodies. Requires MailMessages as well to function.',
-  );
-  $access_mask[] = array(
-    'mask' => 1024,
-    'name' => 'MailingLists',
-    'description' => 'List of all Mailing Lists the character subscribes to.',
-  );
-  $access_mask[] = array(
-    'mask' => 2048,
-    'name' => 'MailMessages',
-    'description' => 'List of all messages in the characters EVE Mail Inbox.',
-  );
-  $access_mask[] = array(
-    'mask' => 4096,
-    'name' => 'MarketOrders',
-    'description' => 'List of all Market Orders the character has made.',
-  );
-  $access_mask[] = array(
-    'mask' => 8192,
-    'name' => 'Medals',
-    'description' => 'Medals awarded to the character.',
-  );
-  $access_mask[] = array(
-    'mask' => 16384,
-    'name' => 'Notifications',
-    'description' => 'List of recent notifications sent to the character.',
-  );
-  $access_mask[] = array(
-    'mask' => 32768,
-    'name' => 'NotificationTexts',
-    'description' => 'Actual body of notifications sent to the character. Requires Notification access to function.',
-  );
-  $access_mask[] = array(
-    'mask' => 65536,
-    'name' => 'Research',
-    'description' => 'List of all Research agents working for the character and the progress of the research.',
-  );
-  $access_mask[] = array(
-    'mask' => 131072,
-    'name' => 'SkillInTraining',
-    'description' => 'Skill currently in training on the character. Subset of entire Skill Queue.',
-  );
-  $access_mask[] = array(
-    'mask' => 262144,
-    'name' => 'SkillQueue',
-    'description' => 'Entire skill queue of character.',
-  );
-  $access_mask[] = array(
-    'mask' => 524288,
-    'name' => 'Standings',
-    'description' => 'NPC Standings towards the character.',
-  );
-  $access_mask[] = array(
-    'mask' => 1048576,
-    'name' => 'UpcomingCalendarEvents',
-    'description' => 'Upcoming events on characters calendar.',
-  );
-  $access_mask[] = array(
-    'mask' => 2097152,
-    'name' => 'WalletJournal',
-    'description' => 'Wallet journal of character.',
-  );
-  $access_mask[] = array(
-    'mask' => 4194304,
-    'name' => 'WalletTransactions',
-    'description' => 'Market transaction journal of character.',
-  );
-  $access_mask[] = array(
-    'mask' => 8388608,
-    'name' => 'CharacterInfoPublic',
-    'description' => 'Character information, exposes skill points and current ship information on top of "Show Info" information.',
-  );
-  $access_mask[] = array(
-    'mask' => 16777216,
-    'name' => 'CharacterInfoPrivate',
-    'description' => 'Sensitive Character Information, exposes account balance and last known location on top of the other Character Information call.',
-  );
-  $access_mask[] = array(
-    'mask' => 33554432,
-    'name' => 'AccountStatus',
-    'description' => 'EVE player account status.',
-  );
-  $access_mask[] = array(
-    'mask' => 67108864,
-    'name' => 'Contracts',
-    'description' => 'List of all Contracts the character is involved in.',
-  );
-  $access_mask[] = array(
-    'mask' => 134217728,
-    'name' => 'Locations',
-    'description' => 'Allows the fetching of coordinate and name data for items owned by the character.',
-  );
-
-  return $access_mask;
 }
 
 /**
@@ -546,6 +407,7 @@ function omni_eve_api_admin_list_blues_form($form, &$form_state) {
     '#header' => $header,
     '#options' => $options,
     '#default_value' => $selected,
+    '#empty' => t('There are no standings.'),
     '#weight' => 10,
   );
 
@@ -640,8 +502,17 @@ function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
   $query = array('corporationID' => (int) $form_state['values']['id']);
   $corp_info = omni_eve_api_get_corporation_info($query);
 
+  // This will result in an error if the ID does not exist.
+  // if (isset($corp_info['error'])) {
+  // form_set_error('id', t('There was an error with the API.'));
+  // }
+
   $query = array('ids' => (int) $form_state['values']['id']);
   $char_info = omni_eve_api_get_character_name($query);
+
+  if (isset($char_info['error'])) {
+    form_set_error('id', t('There was an error with the API.'));
+  }
 
   $alliance_info = db_select('oea_alliance_info', 'a')->fields('a', array('alliancename'))->condition('allianceid', (int) $form_state['values']['id'], '=')->execute()->fetchAssoc();
 
@@ -731,6 +602,7 @@ function omni_eve_api_admin_list_whitelist_form($form, &$form_state) {
     '#header' => $header,
     '#options' => $options,
     '#default_value' => $selected,
+    '#empty' => t('No Characters Whitelisted.'),
     '#weight' => 10,
   );
 
@@ -826,6 +698,11 @@ function omni_eve_api_admin_add_whitelist_form_validate($form, &$form_state) {
 
   $characters = omni_eve_api_get_character_api($query);
 
+  if (isset($characters['error'])) {
+    form_set_error('omni_eve_api_corp_keyid', t('There was an error with the API.'));
+    form_set_error('omni_eve_api_corp_vcode');
+  }
+
   if ($characters['expires'] || $characters['accessMask'] != 8388680) {
     form_set_error('keyid', t('Please ensure that only the following boxes are highlighted and selected for the API: (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet))
 <br />
@@ -837,6 +714,8 @@ In addition the "Type" drop down box is set to "Character", and that the "No Exp
     form_set_error('keyid', t('No characters associated with the key are currently blue, please add the characters to the blue standings.'));
     form_set_error('vcode');
   }
+
+  $form_state['values']['characters'] = $characters;
 }
 
 /**
@@ -845,15 +724,7 @@ In addition the "Type" drop down box is set to "Character", and that the "No Exp
  * @see omni_eve_api_admin_add_whitelist_form_validate()
  */
 function omni_eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
-  $keyid = $form_state['values']['keyid'];
-  $vcode = $form_state['values']['vcode'];
-
-  $query = array(
-    'keyid' => $keyid,
-    'vcode' => $vcode,
-  );
-
-  $characters = omni_eve_api_get_character_api($query);
+  $characters = $form_state['values']['characters'];
 
   foreach ($characters['characters'] as $character) {
     db_merge('oea_whitelist')->key(array('characterid' => $character['characterID']))->fields(array(

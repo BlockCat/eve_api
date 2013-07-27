@@ -80,17 +80,19 @@ function omni_eve_api_queue_api($item) {
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
  *
- * @todo Error check for $xml
+ * @return mixed
+ *   A complex array if an error is generated, or TRUE if no error.
  */
 function omni_eve_api_get_standings($item = NULL) {
   $query = array(
     'keyid' => variable_get('omni_eve_api_corp_keyid'),
     'vcode' => variable_get('omni_eve_api_corp_vcode'),
   );
-  $xml = omni_eve_api_get_xml('standings', $query);
+  $xml = omni_eve_api_get_xml('ContactList', $query);
 
-  if (!isset($xml->result)) {
-    return NULL;
+  if (!isset($xml->cachedUntil)) {
+    watchdog('eve api', '<pre>'. print_r($xml, TRUE) .'</pre>', NULL, WATCHDOG_WARNING);
+    return array('error' => $xml);
   }
 
   db_update('oea_blue_standings')->fields(array('checked' => 1))->condition('manual ', '0', '=')->execute();
@@ -98,6 +100,7 @@ function omni_eve_api_get_standings($item = NULL) {
   foreach ($xml->result->children() as $rowset) {
     foreach ($rowset->children() as $rows) {
       $row = $rows->attributes();
+
       db_merge('oea_blue_standings')->key(array('contactID' => (int) $row->contactID))->fields(array(
         'contactID' => (int) $row->contactID,
         'contactName' => (string) $row->contactName,
@@ -109,6 +112,8 @@ function omni_eve_api_get_standings($item = NULL) {
   }
 
   db_update('oea_blue_standings')->fields(array('deleted' => 1))->condition('checked ', '1', '=')->condition('manual ', '0', '=')->execute();
+  
+  return TRUE;
 }
 
 /**
@@ -117,31 +122,42 @@ function omni_eve_api_get_standings($item = NULL) {
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
  *
- * @todo Error check for $xml
+ * @return mixed
+ *   A complex array if an error is generated, or TRUE if no error.
  */
 function omni_eve_api_get_alliance_corporations($item = NULL) {
-  $xml = omni_eve_api_get_xml('alliances');
+  $xml = omni_eve_api_get_xml('AllianceList');
 
-  if (!isset($xml->result->rowset->row)) {
-    return NULL;
+  if (!isset($xml->cachedUntil)) {
+    watchdog('eve api', '<pre>'. print_r($xml, TRUE) .'</pre>', NULL, WATCHDOG_WARNING);
+    return array('error' => $xml);
   }
 
   db_update('oea_alliance_corporations')->fields(array('deleted' => 1))->condition('manual ', '0', '=')->execute();
   db_truncate('oea_alliance_info')->execute();
 
-  foreach ($xml->result->rowset->row as $row) {
+  foreach ($xml->result->rowset->children() as $rows_a) {
+    $row_a = $rows_a->attributes();
+
     db_insert('oea_alliance_info')->fields(array(
-      'allianceid' => (int) $row['allianceID'],
-      'allianceticker' => (string) $row['shortName'],
-      'alliancename' => (string) $row['name'],
+      'allianceid' => (int) $row_a->allianceID,
+      'allianceticker' => (string) $row_a->shortName,
+      'alliancename' => (string) $row_a->name,
     ))->execute();
 
-    if ((int) $row['allianceID'] == variable_get('omni_eve_api_allianceID')) {
-      foreach ($row->rowset->row as $row2) {
-        $query = array('corporationID' => (int) $row2['corporationID']);
+    if ((int) $row_a->allianceID == variable_get('omni_eve_api_allianceID')) {
+      foreach ($rows_a->rowset->children() as $rows_b) {
+        $row_b = $rows_b->attributes();
+
+        $query = array('corporationID' => (int) $row_b->corporationID);
         $corp_info = omni_eve_api_get_corporation_info($query);
-        db_merge('oea_alliance_corporations')->key(array('corporationid' => (int) $row2['corporationID']))->fields(array(
-          'corporationid' => (int) $row2['corporationID'],
+
+        if (isset($corp_info['error'])) {
+          continue;
+        }
+
+        db_merge('oea_alliance_corporations')->key(array('corporationid' => (int) $row_b->corporationID))->fields(array(
+          'corporationid' => (int) $row_b->corporationID,
           'corporationname' => (string) $corp_info['corporationName'],
           'deleted' => 0,
           'manual' => 0,
@@ -183,4 +199,6 @@ function omni_eve_api_get_alliance_corporations($item = NULL) {
   }
 
   db_delete('oea_alliance_corporations')->condition('deleted ', '1', '=')->execute();
+  
+  return TRUE;
 }

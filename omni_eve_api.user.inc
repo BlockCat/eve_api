@@ -246,6 +246,11 @@ function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
 
   $characters = omni_eve_api_get_character_api($query);
 
+  if (isset($characters['error'])) {
+    form_set_error('keyid', t('There was an error with the API.'));
+    form_set_error('vcode');
+  }
+
   $whitelist_characters = array();
 
   if (!empty($characters)) {
@@ -272,6 +277,9 @@ function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
     form_set_error('keyid', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
     form_set_error('vcode');
   }
+
+  
+  $form_state['values']['characters'] = $characters;
 }
 
 /**
@@ -290,13 +298,7 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
 
   $keyid = $form_state['values']['keyid'];
   $vcode = $form_state['values']['vcode'];
-
-  $query = array(
-    'keyid' => $keyid,
-    'vcode' => $vcode,
-  );
-
-  $characters = omni_eve_api_get_character_api($query);
+  $characters = $form_state['values']['characters'];
 
   $created = date('Y-m-d H:i:s', time());
 
@@ -730,6 +732,11 @@ function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
 
   $characters = omni_eve_api_get_character_api($query);
 
+  if (isset($characters['error'])) {
+    form_set_error('keyid', t('There was an error with the API.'));
+    form_set_error('vcode');
+  }
+
   $whitelist_characters = array();
 
   if (!empty($characters)) {
@@ -751,6 +758,8 @@ function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
       form_set_error('vcode');
     }
   }
+
+  $form_state['values']['characters'] = $characters;
 }
 
 /**
@@ -770,13 +779,7 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
   $keyid = $form_state['values']['keyid'];
   $vcode = $form_state['values']['vcode'];
   $api_key_id = $form_state['values']['api_key_id'];
-
-  $query = array(
-    'keyid' => $keyid,
-    'vcode' => $vcode,
-  );
-
-  $characters = omni_eve_api_get_character_api($query);
+  $characters = $form_state['values']['characters'];
 
   $updated = date('Y-m-d H:i:s', time());
 

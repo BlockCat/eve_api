@@ -148,17 +148,13 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
     'ctools_wizard_submit',
   );
 
-  if (is_array($form_state['signup_object'])) {
-    $query = array(
-      'keyid' => (int) $form_state['signup_object']['keyid'],
-      'vcode' => (string) $form_state['signup_object']['vcode'],
-    );
-  }
-  else {
+  if (!is_array($form_state['signup_object'])) {
+    form_set_error('keyid', t('Unknown Error, please try again.'));
+    form_set_error('vcode');
     drupal_goto('user/register');
   }
 
-  $characters = omni_eve_api_get_character_api($query);
+  $characters = $form_state['signup_object']['characters'];
 
   $whitelist_characters = array();
 
@@ -171,20 +167,28 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
   $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid'))->condition('characterid', $whitelist_characters, 'IN')->condition('deleted', 0, '=')->execute();
   if ($result->rowCount()) {
     if ($characters['expires'] || $characters['accessMask'] != 8388680) {
+      form_set_error('keyid', t('Unknown Error, please try again.'));
+      form_set_error('vcode');
       drupal_goto('user/register');
     }
   }
   else {
     if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
+      form_set_error('keyid', t('Unknown Error, please try again.'));
+      form_set_error('vcode');
       drupal_goto('user/register');
     }
   }
 
   if (!omni_eve_api_verify_blue($characters)) {
+    form_set_error('keyid', t('Unknown Error, please try again.'));
+    form_set_error('vcode');
     drupal_goto('user/register');
   }
 
   if ($chars = omni_eve_api_characters_exist($characters)) {
+    form_set_error('keyid', t('Unknown Error, please try again.'));
+    form_set_error('vcode');
     drupal_goto('user/register');
   }
 
@@ -204,12 +208,7 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
  * @see omni_eve_api_user_register_form_submit()
  */
 function omni_eve_api_user_register_form_validate($form, &$form_state) {
-  $query = array(
-    'keyid' => $form_state['signup_object']['keyid'],
-    'vcode' => $form_state['signup_object']['vcode'],
-  );
-
-  $characters = omni_eve_api_get_character_api($query);
+  $characters = $form_state['signup_object']['characters'];
 
   $whitelist_characters = array();
 
@@ -253,13 +252,7 @@ function omni_eve_api_user_register_form_submit($form, &$form_state) {
   $uid = $form_state['user']->uid;
   $keyid = $form_state['signup_object']['keyid'];
   $vcode = $form_state['signup_object']['vcode'];
-
-  $query = array(
-    'keyid' => $keyid,
-    'vcode' => $vcode,
-  );
-
-  $characters = omni_eve_api_get_character_api($query);
+  $characters = $form_state['signup_object']['characters'];
 
   $created = date('Y-m-d H:i:s', time());
 
@@ -369,6 +362,11 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state) {
 
   $characters = omni_eve_api_get_character_api($query);
 
+  if (isset($characters['error'])) {
+    form_set_error('keyid', t('There was an error with the API.'));
+    form_set_error('vcode');
+  }
+
   $whitelist_characters = array();
 
   if (!empty($characters)) {
@@ -400,6 +398,8 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state) {
     form_set_error('keyid', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
     form_set_error('vcode');
   }
+
+  $form_state['signup_object']['characters'] = $characters;
 }
 
 /**

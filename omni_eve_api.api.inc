@@ -14,47 +14,45 @@
  *
  * @return mixed
  *   Returns a valid XML object or ERROR information.
- *
- * @todo API Error Checking
  */
 function omni_eve_api_get_xml($type, $query = array()) {
   $url = 'https://api.eveonline.com';
 
   switch ($type) {
-    case 'standings':
+    case 'ContactList':
       $url .= "/corp/ContactList.xml.aspx";
       break;
 
-    case 'alliances':
+    case 'AllianceList':
       $url .= "/eve/AllianceList.xml.aspx";
       break;
 
-    case 'corp':
+    case 'CorporationSheet':
       $url .= "/corp/CorporationSheet.xml.aspx";
       break;
 
-    case 'charsheet':
+    case 'CharacterSheet':
       $url .= "/char/CharacterSheet.xml.aspx";
       break;
 
-    case 'facwar':
+    case 'FacWarStats':
       $url .= "/char/FacWarStats.xml.aspx";
       break;
 
-    case 'find':
+    case 'CharacterID':
       $url .= "/eve/CharacterID.xml.aspx";
       break;
 
-    case 'name':
+    case 'CharacterName':
       $url .= "/eve/CharacterName.xml.aspx";
       break;
 
-    case 'calllist':
+    case 'callList':
       $url .= "/api/callList.xml.aspx";
       break;
 
     default:
-    case 'keyinfo':
+    case 'APIKeyInfo':
       $url .= "/account/APIKeyInfo.xml.aspx";
       break;
   }
@@ -70,7 +68,8 @@ function omni_eve_api_get_xml($type, $query = array()) {
   if (empty($username)) {
     $html = omni_eve_api_curl_http_request($url, $query);
 
-    if ($html->code == 403 || $html->code == 400) {
+    if ($html->code >= 400) {
+      drupal_set_message(t('EVE API returned an error with the HTTP request: @error', array('@error' => $html->error)), 'error');
       $error = $html;
       $html = $xml = NULL;
     }
@@ -150,10 +149,11 @@ function omni_eve_api_get_character_info($charactername) {
  *   A complex array of multiple character information.
  */
 function omni_eve_api_get_character_api($query) {
-  $xml = omni_eve_api_get_xml('keyinfo', $query);
+  $xml = omni_eve_api_get_xml('APIKeyInfo', $query);
 
-  if (!isset($xml->result->key)) {
-    return NULL;
+  if (!isset($xml->cachedUntil)) {
+    watchdog('eve api', '<pre>'. print_r($xml, TRUE) .'</pre>', NULL, WATCHDOG_WARNING);
+    return array('error' => $xml);
   }
 
   $api_data = array();
@@ -166,16 +166,62 @@ function omni_eve_api_get_character_api($query) {
     $row = $rows->attributes();
 
     $query = array('corporationID' => (int) $row->corporationID);
+    $corp_info = omni_eve_api_get_corporation_info($query);
+
+    if (isset($corp_info['error'])) {
+      return array('error' => $corp_info);
+    }
 
     $api_data['characters'][(int) $row->characterID] = array_merge(array(
       'characterName' => (string) $row->characterName,
       'characterID' => (int) $row->characterID,
       'corporationName' => (string) $row->corporationName,
       'corporationID' => (int) $row->corporationID,
-    ), omni_eve_api_get_corporation_info($query));
+    ), $corp_info);
   }
 
   return $api_data;
+}
+
+/**
+ * Function to retrieve a list of Access Masks and insert into the database.
+ */
+function omni_eve_api_get_access_mask() {
+  $xml = omni_eve_api_get_xml('callList');
+
+  if (!isset($xml->cachedUntil)) {
+    watchdog('eve api', '<pre>'. print_r($xml, TRUE) .'</pre>', NULL, WATCHDOG_WARNING);
+    return array('error' => $xml);
+  }
+
+  db_truncate('oea_access_mask')->execute();
+
+  foreach ($xml->result->children() as $rowset) {
+    $row_a = $rowset->attributes();
+
+    if ($row_a->name == 'callGroups')
+    {
+      continue;
+    }
+
+    foreach ($rowset->children() as $rows) {
+      $row_b = $rows->attributes();
+
+      if ($row_b->type == 'Corporation')
+      {
+        continue;
+      }
+
+      db_insert('oea_access_mask')->fields(array(
+        'accessmask' => $row_b->accessMask,
+        'type' => $row_b->type,
+        'name' => $row_b->name,
+        'description' => $row_b->description,
+      ))->execute();
+    }
+  }
+
+  return TRUE;
 }
 
 /**
@@ -203,10 +249,11 @@ function _omni_eve_api_get_alliance_ticker($allianceid) {
  *   A complex array of corporate information.
  */
 function omni_eve_api_get_corporation_info($query) {
-  $xml = omni_eve_api_get_xml('corp', $query);
+  $xml = omni_eve_api_get_xml('CorporationSheet', $query);
 
-  if (!isset($xml->result->corporationID)) {
-    return NULL;
+  if (!isset($xml->cachedUntil)) {
+    watchdog('eve api', '<pre>'. print_r($xml, TRUE) .'</pre>', NULL, WATCHDOG_WARNING);
+    return array('error' => $xml);
   }
 
   $api_data = array(
@@ -231,10 +278,11 @@ function omni_eve_api_get_corporation_info($query) {
  *   A complex array of corporate information.
  */
 function omni_eve_api_get_character_name($query) {
-  $xml = omni_eve_api_get_xml('name', $query);
+  $xml = omni_eve_api_get_xml('CharacterName', $query);
 
-  if (!isset($xml->result->rowset)) {
-    return NULL;
+  if (!isset($xml->cachedUntil)) {
+    watchdog('eve api', '<pre>'. print_r($xml, TRUE) .'</pre>', NULL, WATCHDOG_WARNING);
+    return array('error' => $xml);
   }
 
   $api_data = array();
@@ -422,12 +470,4 @@ function omni_eve_api_list_api($uid) {
   }
 
   return $api_list;
-}
-
-/**
- * Add function to translate error code from API into a readable message.
- *
- * @todo Well its not done, so need to do it :)
- */
-function omni_eve_api_error_message() {
 }
