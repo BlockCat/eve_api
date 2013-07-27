@@ -73,7 +73,7 @@ function omni_eve_api_admin_settings_form_submit($form, &$form_state) {
   // $result = db_select('users_roles', 'r') -> fields('r', array('uid', )) ->
   // condition('rid', (int) variable_get('omni_eve_api_blue_role'), '=') ->
   // execute();
-  // if ($result -> rowCount()) {
+  // if ($result->rowCount()) {
   // foreach ($result->fetchAll() as $row) {
   // $uids[] = $row -> uid;
   // }
@@ -88,7 +88,7 @@ function omni_eve_api_admin_settings_form_submit($form, &$form_state) {
   // $result = db_select('users_roles', 'r') -> fields('r', array('uid', )) ->
   // condition('rid', (int) variable_get('omni_eve_api_alliance_role'), '=') ->
   // execute();
-  // if ($result -> rowCount()) {
+  // if ($result->rowCount()) {
   // foreach ($result->fetchAll() as $row) {
   // $uids[] = $row -> uid;
   // }
