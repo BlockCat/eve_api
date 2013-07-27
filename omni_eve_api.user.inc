@@ -229,8 +229,6 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
  * Form validation handler for omni_eve_api_user_add_api_form().
  *
  * @see omni_eve_api_user_add_api_form_submit()
- *
- * @todo Need to add check for whitelisted characters.
  */
 function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
   global $user;
@@ -714,8 +712,6 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_k
  * Form validation handler for omni_eve_api_user_update_api_form().
  *
  * @see omni_eve_api_user_update_api_form_submit()
- *
- * @todo Need to add check for whitelisted characters.
  */
 function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
   global $user;

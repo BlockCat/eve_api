@@ -129,8 +129,6 @@ function omni_eve_api_subtask_finish(&$form_state) {
 
 /**
  * Implements hook_form_FORM_ID_alter() for user_register_form().
- *
- * @todo Need to add check for whitelisted characters.
  */
 function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
   unset($form['actions']);
@@ -204,8 +202,6 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
  * Form validation handler for user_register_form().
  *
  * @see omni_eve_api_user_register_form_submit()
- *
- * @todo Need to add check for whitelisted characters.
  */
 function omni_eve_api_user_register_form_validate($form, &$form_state) {
   $query = array(
@@ -364,8 +360,6 @@ function omni_eve_api_enter_api_form($form, &$form_state) {
  * Form validation handler for omni_eve_api_enter_api_form().
  *
  * @see omni_eve_api_enter_api_form_submit()
- *
- * @todo Need to add check for whitelisted characters.
  */
 function omni_eve_api_enter_api_form_validate($form, &$form_state) {
   $query = array(
