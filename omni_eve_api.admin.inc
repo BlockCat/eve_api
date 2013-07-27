@@ -69,36 +69,34 @@ function omni_eve_api_admin_settings_form_validate($form, &$form_state) {
  * @see omni_eve_api_admin_settings_form_validate()
  */
 function omni_eve_api_admin_settings_form_submit($form, &$form_state) {
-  // $uids = array();
-  // $result = db_select('users_roles', 'r') -> fields('r', array('uid', )) ->
-  // condition('rid', (int) variable_get('omni_eve_api_blue_role'), '=') ->
-  // execute();
-  // if ($result->rowCount()) {
-  // foreach ($result->fetchAll() as $row) {
-  // $uids[] = $row -> uid;
-  // }
-  // }
-  // if (!empty($uids)) {
-  // user_multiple_role_edit($uids, 'remove_role',
-  // (int) variable_get('omni_eve_api_blue_role'));
-  // user_multiple_role_edit($uids, 'add_role',
-  // (int) $form_state['values']['omni_eve_api_blue_role']);
-  // }
-  // $uids = array();
-  // $result = db_select('users_roles', 'r') -> fields('r', array('uid', )) ->
-  // condition('rid', (int) variable_get('omni_eve_api_alliance_role'), '=') ->
-  // execute();
-  // if ($result->rowCount()) {
-  // foreach ($result->fetchAll() as $row) {
-  // $uids[] = $row -> uid;
-  // }
-  // }
-  // if (!empty($uids)) {
-  // user_multiple_role_edit($uids, 'remove_role',
-  // (int) variable_get('omni_eve_api_alliance_role'));
-  // user_multiple_role_edit($uids, 'add_role',
-  // (int) $form_state['values']['omni_eve_api_alliance_role']);
-  // }
+  $uids = array();
+  $result = db_select('users_roles', 'r')->fields('r', array('uid', ))->condition('rid', (int) variable_get('omni_eve_api_blue_role'), '=')->execute();
+
+  if ($result->rowCount()) {
+    foreach ($result->fetchAll() as $row) {
+      $uids[] = $row -> uid;
+    }
+  }
+
+  if (!empty($uids)) {
+    user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_blue_role'));
+    // user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['omni_eve_api_blue_role']);
+  }
+
+  $uids = array();
+  $result = db_select('users_roles', 'r')->fields('r', array('uid', ))->condition('rid', (int) variable_get('omni_eve_api_alliance_role'), '=')->execute();
+
+  if ($result->rowCount()) {
+    foreach ($result->fetchAll() as $row) {
+      $uids[] = $row -> uid;
+    }
+  }
+
+  if (!empty($uids)) {
+    user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_alliance_role'));
+    // user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['omni_eve_api_alliance_role']);
+  }
+
   variable_set('omni_eve_api_blue_role', (int) $form_state['values']['omni_eve_api_blue_role']);
   variable_set('omni_eve_api_alliance_role', (int) $form_state['values']['omni_eve_api_alliance_role']);
 }
