@@ -521,11 +521,11 @@ function omni_eve_api_admin_list_blues_form($form, &$form_state) {
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
       $options[$row->contactID] = array(
-        'deleted' => ($row->deleted) ? 'Yes' : 'No',
+        'deleted' => ($row->deleted) ? t('Yes') : t('No'),
         'id' => $row->contactID,
         'name' => $row->contactName,
         'standing' => $row->standing,
-        'manual' => ($row->manual) ? 'Yes' : 'No',
+        'manual' => ($row->manual) ? t('Yes') : t('No'),
       );
 
       if ($row->deleted) {
@@ -708,7 +708,7 @@ function omni_eve_api_admin_list_whitelist_form($form, &$form_state) {
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
       $options[$row->characterid] = array(
-        'deleted' => ($row->deleted) ? 'Yes' : 'No',
+        'deleted' => ($row->deleted) ? t('Yes') : t('No'),
         'characterid' => $row->characterid,
         'charactername' => $row->charactername,
       );

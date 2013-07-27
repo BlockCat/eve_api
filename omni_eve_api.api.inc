@@ -75,7 +75,7 @@ function omni_eve_api_get_xml($type, $query = array()) {
       $html = $xml = NULL;
     }
     elseif ($html->code != 200) {
-      drupal_set_message(check_plain('omni_eve_api: EVE API returned an error with the HTTP request ' . $html->code . '. Full Error: ' . $html->error, 'error'));
+      drupal_set_message(t('EVE API returned an error with the HTTP request: @error', array('@error' => $html->error)), 'error');
       $error = $html;
       $html = $xml = NULL;
     }
@@ -86,12 +86,12 @@ function omni_eve_api_get_xml($type, $query = array()) {
       $xml = new SimpleXMLElement($html->data);
     }
     catch (Exception $e) {
-      drupal_set_message(check_plain('omni_eve_api: Unable to process XML. Full Error: ' . $e->getMessage(), 'error'));
+      drupal_set_message(t('EVE API returned an error with the data retrieved: @error', array('@error' => $e->getMessage()), 'error'));
       $xml = NULL;
     }
 
     if ($xml->error) {
-      drupal_set_message(check_plain('omni_eve_api: EVE API returned an error with the API data. Error Code: ' . $xml->error['code'] . ' Error Message:' . $xml->error, 'error'));
+      drupal_set_message(t('EVE API returned an error with the API data: @error', array('@error' => $xml->error)), 'error');
       $xml = NULL;
     }
   }

@@ -21,7 +21,7 @@ function omni_eve_api_register_wizard($step = 'enter_api') {
     // Specify the path for this form. It is important to include space for the
     // $step argument to be passed.
     'path' => "user/register/%step",
-    // Show breadcrumb trail.
+    // Show bread crumb trail.
     'show trail' => TRUE,
     'show back' => FALSE,
     'show return' => FALSE,
