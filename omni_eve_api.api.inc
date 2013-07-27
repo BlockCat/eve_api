@@ -330,14 +330,16 @@ function omni_eve_api_list_valid_characters($characters) {
 function omni_eve_api_characters_exist($characters) {
   $chars = array();
 
-  foreach ($characters['characters'] as $character) {
-    $result = db_select('oea_characters', 'c')->fields('c', array(
-      'apiid',
-      'characterid',
-      'drupalid',
-    ))->condition('characterid ', $character['characterID'], '=')->execute();
-    if ($result->rowCount()) {
-      $chars[] = $character['characterName'];
+  if (!empty($characters)) {
+    foreach ($characters['characters'] as $character) {
+      $result = db_select('oea_characters', 'c')->fields('c', array(
+        'apiid',
+        'characterid',
+        'drupalid',
+      ))->condition('characterid ', $character['characterID'], '=')->execute();
+      if ($result->rowCount()) {
+        $chars[] = $character['characterName'];
+      }
     }
   }
 

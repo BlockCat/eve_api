@@ -248,9 +248,26 @@ function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
 
   $characters = omni_eve_api_get_character_api($query);
 
-  if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
-    form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
-    form_set_error('vcode');
+  $whitelist_characters = array();
+
+  if (!empty($characters)) {
+    foreach ($characters['characters'] as $character) {
+      $whitelist_characters[] = $character['characterID'];
+    }
+  }
+
+  $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid', ))->condition('characterid', $whitelist_characters, 'IN')->execute();
+  if ($result -> rowCount()) {
+    if ($characters['expires'] || $characters['accessMask'] != 8388680) {
+      form_set_error('keyid', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
+      form_set_error('vcode');
+    }
+  }
+  else {
+    if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
+      form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
+      form_set_error('vcode');
+    }
   }
 
   if ($chars = omni_eve_api_characters_exist($characters)) {
@@ -717,9 +734,26 @@ function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
 
   $characters = omni_eve_api_get_character_api($query);
 
-  if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
-    form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
-    form_set_error('vcode');
+  $whitelist_characters = array();
+
+  if (!empty($characters)) {
+    foreach ($characters['characters'] as $character) {
+      $whitelist_characters[] = $character['characterID'];
+    }
+  }
+
+  $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid', ))->condition('characterid', $whitelist_characters, 'IN')->execute();
+  if ($result -> rowCount()) {
+    if ($characters['expires'] || $characters['accessMask'] != 8388680) {
+      form_set_error('keyid', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
+      form_set_error('vcode');
+    }
+  }
+  else {
+    if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
+      form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
+      form_set_error('vcode');
+    }
   }
 }
 
