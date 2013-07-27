@@ -91,7 +91,7 @@ function omni_eve_api_get_standings($item = NULL) {
   $xml = omni_eve_api_get_xml('ContactList', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>'. print_r($xml, TRUE) .'</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>' . print_r($xml, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
     return array('error' => $xml);
   }
 
@@ -112,7 +112,7 @@ function omni_eve_api_get_standings($item = NULL) {
   }
 
   db_update('oea_blue_standings')->fields(array('deleted' => 1))->condition('checked ', '1', '=')->condition('manual ', '0', '=')->execute();
-  
+
   return TRUE;
 }
 
@@ -129,7 +129,7 @@ function omni_eve_api_get_alliance_corporations($item = NULL) {
   $xml = omni_eve_api_get_xml('AllianceList');
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>'. print_r($xml, TRUE) .'</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>' . print_r($xml, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
     return array('error' => $xml);
   }
 
@@ -199,6 +199,6 @@ function omni_eve_api_get_alliance_corporations($item = NULL) {
   }
 
   db_delete('oea_alliance_corporations')->condition('deleted ', '1', '=')->execute();
-  
+
   return TRUE;
 }

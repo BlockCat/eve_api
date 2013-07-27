@@ -278,7 +278,6 @@ function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
     form_set_error('vcode');
   }
 
-  
   $form_state['values']['characters'] = $characters;
 }
 

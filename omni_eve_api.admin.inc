@@ -501,12 +501,10 @@ function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
 
   $query = array('corporationID' => (int) $form_state['values']['id']);
   $corp_info = omni_eve_api_get_corporation_info($query);
-
   // This will result in an error if the ID does not exist.
   // if (isset($corp_info['error'])) {
   // form_set_error('id', t('There was an error with the API.'));
   // }
-
   $query = array('ids' => (int) $form_state['values']['id']);
   $char_info = omni_eve_api_get_character_name($query);
 

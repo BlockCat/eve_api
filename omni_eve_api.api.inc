@@ -152,7 +152,7 @@ function omni_eve_api_get_character_api($query) {
   $xml = omni_eve_api_get_xml('APIKeyInfo', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>'. print_r($xml, TRUE) .'</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>' . print_r($xml, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
     return array('error' => $xml);
   }
 
@@ -190,7 +190,7 @@ function omni_eve_api_get_access_mask() {
   $xml = omni_eve_api_get_xml('callList');
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>'. print_r($xml, TRUE) .'</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>' . print_r($xml, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
     return array('error' => $xml);
   }
 
@@ -199,16 +199,14 @@ function omni_eve_api_get_access_mask() {
   foreach ($xml->result->children() as $rowset) {
     $row_a = $rowset->attributes();
 
-    if ($row_a->name == 'callGroups')
-    {
+    if ($row_a->name == 'callGroups') {
       continue;
     }
 
     foreach ($rowset->children() as $rows) {
       $row_b = $rows->attributes();
 
-      if ($row_b->type == 'Corporation')
-      {
+      if ($row_b->type == 'Corporation') {
         continue;
       }
 
@@ -252,7 +250,7 @@ function omni_eve_api_get_corporation_info($query) {
   $xml = omni_eve_api_get_xml('CorporationSheet', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>'. print_r($xml, TRUE) .'</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>' . print_r($xml, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
     return array('error' => $xml);
   }
 
@@ -281,7 +279,7 @@ function omni_eve_api_get_character_name($query) {
   $xml = omni_eve_api_get_xml('CharacterName', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>'. print_r($xml, TRUE) .'</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>' . print_r($xml, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
     return array('error' => $xml);
   }
 
