@@ -196,9 +196,8 @@ function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
     variable_set('omni_eve_api_corporationID', (int) $character['corporationID']);
   }
 
-  omni_eve_api_get_access_mask();
-  omni_eve_api_get_standings();
-  omni_eve_api_get_alliance_corporations();
+  omni_eve_api_cron(TRUE);
+  drupal_cron_run();
 }
 
 /**
@@ -303,18 +302,22 @@ function omni_eve_api_admin_access_mask_form_submit($form, &$form_state) {
     $new_access_mask = $new_access_mask + $access_bit;
   }
 
+  $access_mask = variable_get('omni_eve_api_access_mask', '268435455');
+
   variable_set('omni_eve_api_access_mask', $new_access_mask);
 
-  $queue = DrupalQueue::get('omni_eve_api_queue_api');
-  $queue->createQueue();
-  $result = db_select('users', 'u')->fields('u', array(
-    'uid',
-    'charactername',
-    'characterid',
-  ))->condition('status', 1, '=')->execute();
+  if ($access_mask != $new_access_mask) {
+    $queue = DrupalQueue::get('omni_eve_api_queue_api');
+    $queue->createQueue();
+    $result = db_select('users', 'u')->fields('u', array(
+      'uid',
+      'charactername',
+      'characterid',
+    ))->condition('status', 1, '=')->execute();
 
-  while ($item = $result->fetchAssoc()) {
-    $queue->createItem($item);
+    while ($item = $result->fetchAssoc()) {
+      $queue->createItem($item);
+    }
   }
 }
 
@@ -452,22 +455,29 @@ function omni_eve_api_admin_list_blues_form_validate($form, &$form_state) {
  */
 function omni_eve_api_admin_list_blues_form_submit($form, &$form_state) {
   db_update('oea_blue_standings')->fields(array('deleted' => 0))->execute();
+
   $deleted_blues = array();
+  $is_change = FALSE;
+
   foreach ($form_state['values']['blues'] as $blue_id) {
     $deleted_blues[] = $blue_id;
+    $is_change = TRUE;
   }
+
   db_update('oea_blue_standings')->fields(array('deleted' => 1))->condition('contactID', $deleted_blues, 'IN')->execute();
 
-  $queue = DrupalQueue::get('omni_eve_api_queue_api');
-  $queue->createQueue();
-  $result = db_select('users', 'u')->fields('u', array(
-    'uid',
-    'charactername',
-    'characterid',
-  ))->condition('status', 1, '=')->execute();
+  if ($is_change) {
+    $queue = DrupalQueue::get('omni_eve_api_queue_api');
+    $queue->createQueue();
+    $result = db_select('users', 'u')->fields('u', array(
+      'uid',
+      'charactername',
+      'characterid',
+    ))->condition('status', 1, '=')->execute();
 
-  while ($item = $result->fetchAssoc()) {
-    $queue->createItem($item);
+    while ($item = $result->fetchAssoc()) {
+      $queue->createItem($item);
+    }
   }
 }
 

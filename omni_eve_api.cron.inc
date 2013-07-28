@@ -7,7 +7,7 @@
 /**
  * Implements hook_cron().
  */
-function omni_eve_api_cron() {
+function omni_eve_api_cron($force = FALSE) {
   if (variable_get('omni_eve_api_enable_cron', TRUE)) {
     $short_threshold = variable_get('omni_eve_api_cron_short_threshold', '3600');
     $short_last_run = variable_get('omni_eve_api_cron_short_last_run', '0');
@@ -16,7 +16,7 @@ function omni_eve_api_cron() {
 
     // Queue each user in the database to check the API's for blue status and
     // other checks.
-    if ((time() - $short_last_run) > $short_threshold) {
+    if ((time() - $short_last_run) > $short_threshold || $force) {
       // Set start time.
       variable_set('omni_eve_api_cron_short_last_run', time());
 
@@ -33,7 +33,7 @@ function omni_eve_api_cron() {
       }
     }
 
-    if ((time() - $long_last_run) > $long_threshold) {
+    if ((time() - $long_last_run) > $long_threshold || $force) {
       // Set start time.
       variable_set('omni_eve_api_cron_long_last_run', time());
 
@@ -51,7 +51,10 @@ function omni_eve_api_cron() {
       $queue->createQueue();
       $queue->createItem($item);
 
-      omni_eve_api_get_access_mask();
+      // Run cron to get latest access mask definitions.
+      $queue = DrupalQueue::get('omni_eve_api_get_access_mask');
+      $queue->createQueue();
+      $queue->createItem($item);
     }
   }
 }
@@ -69,6 +72,10 @@ function omni_eve_api_cron_queue_info() {
   );
   $queue['omni_eve_api_get_standings'] = array(
     'worker callback' => 'omni_eve_api_get_standings',
+    'time' => 15,
+  );
+  $queue['omni_eve_api_get_access_mask'] = array(
+    'worker callback' => 'omni_eve_api_get_access_mask',
     'time' => 15,
   );
   $queue['omni_eve_api_get_alliance_corporations'] = array(
@@ -355,6 +362,51 @@ function omni_eve_api_get_alliance_corporations($item = NULL) {
   }
 
   db_delete('oea_alliance_corporations')->condition('deleted', '1', '=')->execute();
+
+  return TRUE;
+}
+
+/**
+ * Get the latest access mask from the EVE API.
+ * 
+ * @param mixed $item
+ *   whatever was added to the queue via queue->createItem()
+ *
+ * @return mixed
+ *   A complex array if an error is generated, or TRUE if no error.
+ */
+function omni_eve_api_get_access_mask($item = NULL) {
+  $xml = omni_eve_api_get_xml('callList');
+
+  if (!isset($xml->cachedUntil)) {
+    watchdog('eve api', '<pre>' . print_r($xml, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
+    return array('error' => $xml);
+  }
+
+  db_truncate('oea_access_mask')->execute();
+
+  foreach ($xml->result->children() as $rowset) {
+    $row_a = $rowset->attributes();
+
+    if ($row_a->name == 'callGroups') {
+      continue;
+    }
+
+    foreach ($rowset->children() as $rows) {
+      $row_b = $rows->attributes();
+
+      if ($row_b->type == 'Corporation') {
+        continue;
+      }
+
+      db_insert('oea_access_mask')->fields(array(
+        'accessmask' => $row_b->accessMask,
+        'type' => $row_b->type,
+        'name' => $row_b->name,
+        'description' => $row_b->description,
+      ))->execute();
+    }
+  }
 
   return TRUE;
 }

@@ -185,45 +185,6 @@ function omni_eve_api_get_character_api($query) {
 }
 
 /**
- * Function to retrieve a list of Access Masks and insert into the database.
- */
-function omni_eve_api_get_access_mask() {
-  $xml = omni_eve_api_get_xml('callList');
-
-  if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>' . print_r($xml, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
-    return array('error' => $xml);
-  }
-
-  db_truncate('oea_access_mask')->execute();
-
-  foreach ($xml->result->children() as $rowset) {
-    $row_a = $rowset->attributes();
-
-    if ($row_a->name == 'callGroups') {
-      continue;
-    }
-
-    foreach ($rowset->children() as $rows) {
-      $row_b = $rows->attributes();
-
-      if ($row_b->type == 'Corporation') {
-        continue;
-      }
-
-      db_insert('oea_access_mask')->fields(array(
-        'accessmask' => $row_b->accessMask,
-        'type' => $row_b->type,
-        'name' => $row_b->name,
-        'description' => $row_b->description,
-      ))->execute();
-    }
-  }
-
-  return TRUE;
-}
-
-/**
  * Function to retrieve the alliance tags.
  *
  * @param int $allianceid
