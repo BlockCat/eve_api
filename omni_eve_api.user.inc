@@ -321,6 +321,7 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
       'allianceid' => $character['allianceID'],
       'alliancename' => $character['allianceName'],
       'allianceticker' => $character['allianceTicker'],
+      'deleted' => 0,
     ))->execute();
   }
 
@@ -435,8 +436,7 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
       user_multiple_role_edit(array($uid), 'remove_role', $old_rid_2);
     }
 
-    db_update('users')->fields(array('characterid' => $character_data['characterID']))->condition('uid ', $uid, '=')->execute();
-    db_update('users')->fields(array('charactername' => $character_data['characterName']))->condition('uid ', $uid, '=')->execute();
+    db_update('users')->fields(array('characterid' => $character_data['characterID'], 'charactername' => $character_data['characterName']))->condition('uid ', $uid, '=')->execute();
 
     $new_rid_2 = NULL;
 
@@ -603,12 +603,13 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
     }
 
     db_delete('oea_api_keys')->condition('apiid', $api_key_id)->execute();
-    db_delete('oea_characters')->condition('apiid', $api_key_id)->execute();
+    db_update('oea_characters')->fields(array('deleted' => 1))->condition('apiid', $api_key_id)->execute();
 
     drupal_set_message(t('API # @api_key_id  successfully deleted!', array('@api_key_id' => $api_key_id)));
   }
 
   $query = db_select('oea_characters', 'c');
+  $query->condition('c.deleted', 0);
   $query->join('users', 'u', 'c.charactername = u.charactername');
   $query->fields('c', array(
     'charactername',
@@ -782,7 +783,7 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
 
   $updated = date('Y-m-d H:i:s', time());
 
-  db_delete('oea_characters')->condition('apiid', $api_key_id)->execute();
+  db_update('oea_characters')->fields(array('deleted' => 1))->condition('apiid', $api_key_id)->execute();
 
   db_merge('oea_api_keys')->key(array('apiid' => $api_key_id))->fields(array(
     'apiid' => $api_key_id,
@@ -804,10 +805,12 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
       'allianceid' => $character['allianceID'],
       'alliancename' => $character['allianceName'],
       'allianceticker' => $character['allianceTicker'],
+      'deleted' => 0,
     ))->execute();
   }
 
   $query = db_select('oea_characters', 'c');
+  $query->condition('c.deleted', 0);
   $query->join('users', 'u', 'c.charactername = u.charactername');
   $query->fields('c', array(
     'charactername',

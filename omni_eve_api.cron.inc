@@ -9,32 +9,48 @@
  */
 function omni_eve_api_cron() {
   if (variable_get('omni_eve_api_enable_cron', TRUE)) {
+    $short_threshold = variable_get('omni_eve_api_cron_short_threshold', 3600);
+    $short_last_run = variable_get('omni_eve_api_cron_short_last_run', 0);
+    $long_threshold = variable_get('omni_eve_api_cron_long_threshold', 86400);
+    $long_last_run = variable_get('omni_eve_api_cron_long_last_run', 0);
+
     // Queue each user in the database to check the API's for blue status and
     // other checks.
-    $queue = drupal_queue_get('omni_eve_api_queue_api');
-    $queue->createQueue();
-    $result = db_select('users', 'u')->fields('u', array(
-      'uid',
-      'charactername',
-      'characterid',
-    ))->condition('status', 1, '=')->execute();
-    while ($item = $result->fetchAssoc()) {
-      $queue->createItem($item);
+    if ((time() - $short_last_run) > $short_threshold) {
+      // Set start time
+      variable_set('omni_eve_api_cron_short_last_run', time());
+
+      $queue = drupal_queue_get('omni_eve_api_queue_api');
+      $queue->createQueue();
+      $result = db_select('users', 'u')->fields('u', array(
+        'uid',
+        'charactername',
+        'characterid',
+      ))->condition('status', 1, '=')->execute();
+
+      while ($item = $result->fetchAssoc()) {
+        $queue->createItem($item);
+      }
     }
 
-    $item = NULL;
+    if ((time() - $long_last_run) > $long_threshold) {
+      // Set start time
+      variable_set('omni_eve_api_cron_long_last_run', time());
 
-    // Run cron for standings, but have nothing to pass so passing a NULL
-    // variable.
-    $queue = drupal_queue_get('omni_eve_api_get_standings');
-    $queue->createQueue();
-    $queue->createItem($item);
+      $item = NULL;
 
-    // Run cron for corporations in the alliance, but have nothing to pass so
-    // passing a NULL variable.
-    $queue = drupal_queue_get('omni_eve_api_get_alliance_corporations');
-    $queue->createQueue();
-    $queue->createItem($item);
+      // Run cron for standings, but have nothing to pass so passing a NULL
+      // variable.
+      $queue = drupal_queue_get('omni_eve_api_get_standings');
+      $queue->createQueue();
+      $queue->createItem($item);
+
+      // Run cron for corporations in the alliance, but have nothing to pass so
+      // passing a NULL variable.
+      $queue = drupal_queue_get('omni_eve_api_get_alliance_corporations');
+      $queue->createQueue();
+      $queue->createItem($item);
+    }
   }
 }
 
@@ -72,6 +88,138 @@ function omni_eve_api_cron_queue_info() {
  * roles.
  */
 function omni_eve_api_queue_api($item) {
+  $uid = $item;
+  $all_characters = array();
+
+  $result = db_select('oea_api_keys', 'a')->fields('a', array(
+    'apiid',
+    'keyid',
+    'vcode',
+  ))->condition('drupalid', $uid, '=')->execute();
+
+  if ($result->rowCount()) {
+    foreach ($result->fetchAll() as $row) {
+      $error = 0;
+
+      $query = array(
+        'keyid' => $row->keyid,
+        'vcode' => $row->vcode,
+      );
+
+      $characters = omni_eve_api_get_character_api($query);
+
+      if (isset($characters['error'])) {
+        continue;
+      }
+
+      $whitelist_characters = array();
+
+      if (!empty($characters)) {
+        foreach ($characters['characters'] as $character) {
+          $whitelist_characters[] = $character['characterID'];
+        }
+      }
+
+      $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid'))->condition('characterid', $whitelist_characters, 'IN')->condition('deleted', 0, '=')->execute();
+
+      if ($result->rowCount()) {
+        if ($characters['expires'] || $characters['accessMask'] != 8388680) {
+          drupal_set_message(t('Invalid API Mask/Type/Expiry, characters disabled.'), 'status');
+          $error = 1;
+        }
+      }
+      else {
+        if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
+          drupal_set_message(t('Invalid API Mask/Type/Expiry, characters disabled.'), 'status');
+          $error = 1;
+        }
+      }
+
+      $updated = date('Y-m-d H:i:s', time());
+
+      $new_api_key_id = db_merge('oea_api_keys')->key(array('apiid' => $row->apiid))->fields(array(
+        'apiid' => $row->apiid,
+        'errorid' => $error,
+        'updated' => $updated,
+      ))->execute();
+
+      db_update('oea_characters')->fields(array('errorid' => $error, 'deleted' => 1))->condition('apiid', $row->apiid, '=')->execute();
+
+      foreach ($characters['characters'] as $character) {
+        db_merge('oea_characters')->key(array('characterid' => $character['characterID']))->fields(array(
+          'characterid' => $character['characterID'],
+          'drupalid' => $uid,
+          'apiid' => $row->apiid,
+          'charactername' => $character['characterName'],
+          'corporationid' => $character['corporationID'],
+          'corporationname' => $character['corporationName'],
+          'corporationticker' => $character['corporationTicker'],
+          'allianceid' => $character['allianceID'],
+          'alliancename' => $character['allianceName'],
+          'allianceticker' => $character['allianceTicker'],
+          'deleted' => 0,
+          'errorid' => $error,
+        ))->execute();
+      }
+
+      $all_characters = array_replace_recursive($characters, $all_characters);
+    }
+  }
+
+  if (!omni_eve_api_verify_blue($all_characters)) {
+    $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
+      'corporationid',
+      'corporationname',
+    ))->condition('deleted ', '0', '=')->execute();
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $row) {
+        if ($corporation_role = user_role_load_by_name($row->corporationname)) {
+          user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
+        }
+      }
+    }
+
+    if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role'))) {
+      user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
+    }
+
+    if ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role'))) {
+      user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
+    }
+
+    db_update('users')->fields(array('charactername' => '', 'characterid' => 0))->condition('uid', $uid, '=')->execute();
+    return FALSE;
+  }
+  else {
+    $row = db_select('users', 'u')->fields('a', array('charactername'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
+    $character_data = omni_eve_api_get_character_info($row['charactername']);
+
+    $update_rid_2 = NULL;
+
+    if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
+      $update_rid = $corporation_role->rid;
+
+      if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role'))) {
+        $update_rid_2 = $alliance_role->rid;
+      }
+    }
+    elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role'))) {
+      $update_rid = $blue_role->rid;
+    }
+    else {
+      $default_role = user_role_load_by_name('authenticated user');
+      $update_rid = $default_role->rid;
+    }
+
+    user_multiple_role_edit(array($uid), 'add_role', $update_rid);
+
+    if (isset($update_rid_2)) {
+      user_multiple_role_edit(array($uid), 'add_role', $update_rid_2);
+    }
+
+    return TRUE;
+  }
 }
 
 /**

@@ -124,6 +124,18 @@ function omni_eve_api_schema() {
         'length' => 20,
         'not null' => FALSE,
       ),
+      'errorid' => array(
+        'description' => 'Error code to identify any problems with a registered characters.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'deleted' => array(
+        'description' => 'Identifies if the character was removed from the key at some point.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'unique keys' => array('characterid' => array('characterid')),
     'primary key' => array('characterid'),

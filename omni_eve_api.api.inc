@@ -382,7 +382,7 @@ function omni_eve_api_characters_exist($characters) {
         'apiid',
         'characterid',
         'drupalid',
-      ))->condition('characterid ', $character['characterID'], '=')->execute();
+      ))->condition('characterid ', $character['characterID'], '=')->condition('deleted ', 0, '=')->execute();
       if ($result->rowCount()) {
         $chars[] = $character['characterName'];
       }
@@ -429,6 +429,10 @@ function omni_eve_api_list_api($uid) {
         'created' => $row_a->created,
       );
 
+      if ($row_a->errorid != 0) {
+        continue;
+      }
+
       $result_b = db_select('oea_characters', 'c')->fields('c', array(
         'characterid',
         'charactername',
@@ -438,7 +442,7 @@ function omni_eve_api_list_api($uid) {
         'allianceid',
         'alliancename',
         'allianceticker',
-      ))->condition('drupalid', $uid, '=')->condition('apiid', $row_a->apiid, '=')->execute();
+      ))->condition('drupalid', $uid, '=')->condition('deleted ', 0, '=')->condition('apiid', $row_a->apiid, '=')->execute();
 
       if ($result_b->rowCount()) {
         foreach ($result_b->fetchAll() as $row_b) {
