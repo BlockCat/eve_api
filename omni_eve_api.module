@@ -204,7 +204,7 @@ function omni_eve_api_username_alter(&$name, $account) {
 }
 
 /**
- * Implements hook_username_alter().
+ * Implements hook_schema_alter().
  */
 function omni_eve_api_schema_alter(&$schema) {
   $schema['users']['fields']['charactername'] = array(

@@ -194,7 +194,7 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
   $form['enter_api']['keyid'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
-    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=@mask">here</a>.', array('@mask' => variable_get('omni_eve_api_access_mask'))),
+    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@mask">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask'))),
     '#required' => TRUE,
     '#maxlength' => 15,
     '#weight' => 0,
@@ -203,7 +203,7 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
   $form['enter_api']['vcode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
-    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=@mask">here</a>.', array('@mask' => variable_get('omni_eve_api_access_mask'))),
+    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@mask">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask'))),
     '#required' => TRUE,
     '#maxlength' => 80,
     '#weight' => 10,
@@ -681,7 +681,7 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_k
   $form['update_api']['keyid'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
-    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=@mask">here</a>.', array('@mask' => variable_get('omni_eve_api_access_mask'))),
+    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@mask">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask'))),
     '#required' => TRUE,
     '#maxlength' => 15,
     '#default_value' => isset($form_state['values']['keyid']) ? $form_state['values']['keyid'] : $row['keyid'],
@@ -691,7 +691,7 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_k
   $form['update_api']['vcode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
-    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=@mask">here</a>.', array('@mask' => variable_get('omni_eve_api_access_mask'))),
+    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@mask">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask'))),
     '#required' => TRUE,
     '#maxlength' => 80,
     '#default_value' => isset($form_state['values']['vcode']) ? $form_state['values']['vcode'] : $row['vcode'],

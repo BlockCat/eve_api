@@ -18,12 +18,14 @@ function omni_eve_api_admin_settings_form($form, &$form_state) {
     '#title' => t('Roles'),
     '#weight' => 0,
   );
+  
+  $role_list = omni_eve_api_role_list();
 
   $form['roles']['omni_eve_api_blue_role'] = array(
     '#type' => 'select',
     '#title' => t('Select Role for Blues'),
     '#description' => t('Please select the default role for blues.'),
-    '#options' => omni_eve_api_role_list(),
+    '#options' => $role_list,
     '#default_value' => variable_get('omni_eve_api_blue_role'),
     '#weight' => 0,
   );
@@ -32,7 +34,7 @@ function omni_eve_api_admin_settings_form($form, &$form_state) {
     '#type' => 'select',
     '#title' => t('Select Role for Alliance Members'),
     '#description' => t('Please select an additional role assigned to all members of the Alliance.'),
-    '#options' => omni_eve_api_role_list(),
+    '#options' => $role_list,
     '#default_value' => variable_get('omni_eve_api_alliance_role'),
     '#weight' => 10,
   );
@@ -122,7 +124,7 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
   $form['enter_api']['omni_eve_api_corp_keyid'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
-    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=67108863">here</a>.'),
+    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@url">here</a>.', array('@url' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=67108863')),
     '#required' => TRUE,
     '#maxlength' => 15,
     '#weight' => 0,
@@ -132,7 +134,7 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
   $form['enter_api']['omni_eve_api_corp_vcode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
-    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=67108863">here</a>.'),
+    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@url">here</a>.', array('@url' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=67108863')),
     '#required' => TRUE,
     '#maxlength' => 80,
     '#weight' => 10,
@@ -649,7 +651,7 @@ function omni_eve_api_admin_add_whitelist_form($form, &$form_state) {
   $form['add_whitelist'] = array(
     '#type' => 'fieldset',
     '#title' => t('Add Whitelist'),
-    '#description' => t('Add characters to the whitelist, the key is not stored here, it is used to retrieve the characters on the API Key and add them to the whitelist.  There are times when you will have high profile members join your site, they may have sensitive e-mails or items in locations.  With this whitelist you are able to allow the user to register with a very limited and basic API Key, but still provide full functionality on the site.  Please provide the following <a href="http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=8388680">link</a> to have the new user create a new limited API Key, the user has the option to list all characters, or just a single character.'),
+    '#description' => t('Add characters to the whitelist, the key is not stored here, it is used to retrieve the characters on the API Key and add them to the whitelist.  There are times when you will have high profile members join your site, they may have sensitive e-mails or items in locations.  With this whitelist you are able to allow the user to register with a very limited and basic API Key, but still provide full functionality on the site.  Please provide the following <a href="@url">link</a> to have the new user create a new limited API Key, the user has the option to list all characters, or just a single character.', array('@url' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=8388680')),
     '#weight' => 0,
   );
 
