@@ -18,7 +18,7 @@ function omni_eve_api_admin_settings_form($form, &$form_state) {
     '#title' => t('Roles'),
     '#weight' => 0,
   );
-  
+
   $role_list = omni_eve_api_role_list();
 
   $form['roles']['omni_eve_api_blue_role'] = array(
