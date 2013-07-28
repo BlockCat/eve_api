@@ -14,25 +14,6 @@ function omni_eve_api_cron($force = FALSE) {
     $long_threshold = variable_get('omni_eve_api_cron_long_threshold', '86400');
     $long_last_run = variable_get('omni_eve_api_cron_long_last_run', '0');
 
-    // Queue each user in the database to check the API's for blue status and
-    // other checks.
-    if ((time() - $short_last_run) > $short_threshold || $force) {
-      // Set start time.
-      variable_set('omni_eve_api_cron_short_last_run', time());
-
-      $queue = DrupalQueue::get('omni_eve_api_queue_api');
-      $queue->createQueue();
-      $result = db_select('users', 'u')->fields('u', array(
-        'uid',
-        'charactername',
-        'characterid',
-      ))->condition('status', 1, '=')->execute();
-
-      while ($item = $result->fetchAssoc()) {
-        $queue->createItem($item);
-      }
-    }
-
     if ((time() - $long_last_run) > $long_threshold || $force) {
       // Set start time.
       variable_set('omni_eve_api_cron_long_last_run', time());
@@ -55,6 +36,21 @@ function omni_eve_api_cron($force = FALSE) {
       $queue = DrupalQueue::get('omni_eve_api_get_access_mask');
       $queue->createQueue();
       $queue->createItem($item);
+    }
+
+    // Queue each user in the database to check the API's for blue status and
+    // other checks.
+    if ((time() - $short_last_run) > $short_threshold || $force) {
+      // Set start time.
+      variable_set('omni_eve_api_cron_short_last_run', time());
+
+      $queue = DrupalQueue::get('omni_eve_api_queue_api');
+      $queue->createQueue();
+      $result = db_select('users', 'u')->fields('u', array('uid'))->condition('status', 1, '=')->execute();
+
+      foreach ($result->fetchAll() as $item) {
+        $queue->createItem($item->uid);
+      }
     }
   }
 }
@@ -100,11 +96,10 @@ function omni_eve_api_queue_api($item) {
   $uid = $item;
   $all_characters = array();
 
-  $result = db_select('oea_api_keys', 'a')->fields('a', array(
-    'apiid',
-    'keyid',
-    'vcode',
-  ))->condition('drupalid', $uid, '=')->execute();
+  $query = db_select('oea_api_keys', 'a');
+  $query->fields('a', array('apiid', 'keyid', 'vcode'));
+  $query->condition('drupalid', $uid, '=');
+  $result = $query->execute();
 
   $updated = date('Y-m-d H:i:s', time());
 
@@ -207,7 +202,7 @@ function omni_eve_api_queue_api($item) {
     return FALSE;
   }
   else {
-    $row = db_select('users', 'u')->fields('a', array('charactername'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
+    $row = db_select('users', 'u')->fields('u', array('charactername'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
     $character_data = omni_eve_api_get_character_info($row['charactername']);
 
     $update_rid_2 = NULL;

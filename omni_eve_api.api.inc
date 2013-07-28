@@ -266,6 +266,10 @@ function omni_eve_api_get_character_name($query) {
  *   Indicates a character is blue to the alliance.
  */
 function omni_eve_api_verify_blue($characters) {
+  if (!isset($characters['characters'])) {
+    return FALSE;
+  }
+
   foreach ($characters['characters'] as $character) {
     $result = db_select('oea_blue_standings', 'a')->fields('a', array('contactID'))->condition('contactID', array(
       $character['characterID'],
