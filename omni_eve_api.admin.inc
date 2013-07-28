@@ -511,7 +511,7 @@ function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
   if (isset($char_info['error'])) {
     form_set_error('id', t('There was an error with the API.'));
   }
-  else{
+  else {
     $alliance_info = db_select('oea_alliance_info', 'a')->fields('a', array('alliancename'))->condition('allianceid', (int) $form_state['values']['id'], '=')->execute()->fetchAssoc();
 
     if (isset($corp_info['corporationName'])) {

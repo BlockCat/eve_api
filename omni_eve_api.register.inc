@@ -351,7 +351,11 @@ function omni_eve_api_user_register_form_submit($form, &$form_state) {
     user_multiple_role_edit(array($uid), 'add_role', $new_rid_2);
   }
 
-  db_update('users')->fields(array('characterid' => $characterid, 'charactername' => $charactername, 'signature' => ''))->condition('uid', $uid, '=')->execute();
+  db_update('users')->fields(array(
+      'characterid' => $characterid,
+      'charactername' => $charactername,
+      'signature' => '',
+    ))->condition('uid', $uid, '=')->execute();
 }
 
 /**
