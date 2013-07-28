@@ -17,7 +17,7 @@ function omni_eve_api_cron() {
     // Queue each user in the database to check the API's for blue status and
     // other checks.
     if ((time() - $short_last_run) > $short_threshold) {
-      // Set start time
+      // Set start time.
       variable_set('omni_eve_api_cron_short_last_run', time());
 
       $queue = drupal_queue_get('omni_eve_api_queue_api');
@@ -34,7 +34,7 @@ function omni_eve_api_cron() {
     }
 
     if ((time() - $long_last_run) > $long_threshold) {
-      // Set start time
+      // Set start time.
       variable_set('omni_eve_api_cron_long_last_run', time());
 
       $item = NULL;
