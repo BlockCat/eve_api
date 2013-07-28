@@ -318,7 +318,7 @@ function omni_eve_api_verify_blue($characters) {
       return TRUE;
     }
 
-    $result = db_select('oea_alliance_corporations', 'c')->fields('c', array('corporationid'))->condition('corporationid ', $character['corporationID'], '=')->execute();
+    $result = db_select('oea_alliance_corporations', 'c')->fields('c', array('corporationid'))->condition('corporationid', $character['corporationID'], '=')->execute();
     if ($result->rowCount()) {
       return TRUE;
     }
@@ -382,7 +382,7 @@ function omni_eve_api_characters_exist($characters) {
         'apiid',
         'characterid',
         'drupalid',
-      ))->condition('characterid ', $character['characterID'], '=')->condition('deleted ', 0, '=')->execute();
+      ))->condition('characterid', $character['characterID'], '=')->condition('deleted', 0, '=')->execute();
       if ($result->rowCount()) {
         $chars[] = $character['characterName'];
       }
@@ -442,7 +442,7 @@ function omni_eve_api_list_api($uid) {
         'allianceid',
         'alliancename',
         'allianceticker',
-      ))->condition('drupalid', $uid, '=')->condition('deleted ', 0, '=')->condition('apiid', $row_a->apiid, '=')->execute();
+      ))->condition('drupalid', $uid, '=')->condition('deleted', 0, '=')->condition('apiid', $row_a->apiid, '=')->execute();
 
       if ($result_b->rowCount()) {
         foreach ($result_b->fetchAll() as $row_b) {

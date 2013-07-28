@@ -277,8 +277,6 @@ function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
     form_set_error('keyid', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
     form_set_error('vcode');
   }
-
-  $form_state['values']['characters'] = $characters;
 }
 
 /**
@@ -297,7 +295,18 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
 
   $keyid = $form_state['values']['keyid'];
   $vcode = $form_state['values']['vcode'];
-  $characters = $form_state['values']['characters'];
+
+  $query = array(
+    'keyid' => $keyid,
+    'vcode' => $vcode,
+  );
+
+  $characters = omni_eve_api_get_character_api($query);
+
+  if (isset($characters['error'])) {
+    form_set_error('keyid', t('There was an error with the API.'));
+    form_set_error('vcode');
+  }
 
   $created = date('Y-m-d H:i:s', time());
 
@@ -436,7 +445,7 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
       user_multiple_role_edit(array($uid), 'remove_role', $old_rid_2);
     }
 
-    db_update('users')->fields(array('characterid' => $character_data['characterID'], 'charactername' => $character_data['characterName']))->condition('uid ', $uid, '=')->execute();
+    db_update('users')->fields(array('characterid' => $character_data['characterID'], 'charactername' => $character_data['characterName']))->condition('uid', $uid, '=')->execute();
 
     $new_rid_2 = NULL;
 
@@ -622,7 +631,7 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
     db_update('users')->fields(array(
       'charactername' => '',
       'characterid' => 0,
-    ))->condition('uid ', $uid, '=')->execute();
+    ))->condition('uid', $uid, '=')->execute();
     $form_state['redirect'] = 'user/' . $uid . '/omni_eve_api/select_main_character';
     drupal_set_message(t('Please select a new Main Character'));
   }
@@ -653,7 +662,7 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_k
   $result = db_select('oea_api_keys', 'a')->fields('a', array(
     'keyid',
     'vcode',
-  ))->condition('apiid ', $api_key_id, '=')->execute();
+  ))->condition('apiid', $api_key_id, '=')->execute();
 
   if (!$result->rowCount()) {
     drupal_goto('user/' . $uid . '/omni_eve_api');
@@ -736,6 +745,9 @@ function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
     form_set_error('keyid', t('There was an error with the API.'));
     form_set_error('vcode');
   }
+  else {
+    $form_state['values']['characters'] = $characters;
+  }
 
   $whitelist_characters = array();
 
@@ -759,7 +771,6 @@ function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
     }
   }
 
-  $form_state['values']['characters'] = $characters;
 }
 
 /**
@@ -823,7 +834,7 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
     db_update('users')->fields(array(
       'charactername' => '',
       'characterid' => 0,
-    ))->condition('uid ', $uid, '=')->execute();
+    ))->condition('uid', $uid, '=')->execute();
     $form_state['redirect'] = 'user/' . $uid . '/omni_eve_api/select_main_character';
     drupal_set_message(t('Please select a new Main Character'));
   }

@@ -154,7 +154,21 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
     drupal_goto('user/register');
   }
 
-  $characters = $form_state['signup_object']['characters'];
+  $keyid = $form_state['signup_object']['keyid'];
+  $vcode = $form_state['signup_object']['vcode'];
+
+  $query = array(
+    'keyid' => $keyid,
+    'vcode' => $vcode,
+  );
+
+  $characters = omni_eve_api_get_character_api($query);
+
+  if (isset($characters['error'])) {
+    form_set_error('keyid', t('Unknown Error, please try again.'));
+    form_set_error('vcode');
+    drupal_goto('user/register');
+  }
 
   $whitelist_characters = array();
 
@@ -192,7 +206,7 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
     drupal_goto('user/register');
   }
 
-  $form['account']['select_charactername'] = array(
+  $form['account']['charactername'] = array(
     '#type' => 'select',
     '#title' => t('Select your Main Character'),
     '#default_value' => '',
@@ -208,13 +222,27 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
  * @see omni_eve_api_user_register_form_submit()
  */
 function omni_eve_api_user_register_form_validate($form, &$form_state) {
-  $characters = $form_state['signup_object']['characters'];
+  $keyid = (int) $form_state['signup_object']['keyid'];
+  $vcode = (string) $form_state['signup_object']['vcode'];
+
+  $query = array(
+    'keyid' => $keyid,
+    'vcode' => $vcode,
+  );
+
+  $characters = omni_eve_api_get_character_api($query);
+
+  if (isset($characters['error'])) {
+    form_set_error('keyid', t('Unknown Error, please try again.'));
+    form_set_error('vcode');
+    drupal_goto('user/register');
+  }
 
   $whitelist_characters = array();
 
   if (!empty($characters)) {
     foreach ($characters['characters'] as $character) {
-      $whitelist_characters[] = $character['characterID'];
+      $whitelist_characters[] = (int) $character['characterID'];
     }
   }
 
@@ -241,6 +269,16 @@ function omni_eve_api_user_register_form_validate($form, &$form_state) {
     form_set_error('keyid', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
     form_set_error('vcode');
   }
+
+  $selected_charactername = array();
+
+  foreach ($characters['characters'] as $character) {
+    $selected_charactername[] = $character['characterName'];
+  }
+
+  if (!in_array((string) $form_state['values']['charactername'], $selected_charactername)) {
+    form_set_error('charactername', t('You must select a main character!'));
+  }
 }
 
 /**
@@ -252,38 +290,43 @@ function omni_eve_api_user_register_form_submit($form, &$form_state) {
   $uid = $form_state['user']->uid;
   $keyid = $form_state['signup_object']['keyid'];
   $vcode = $form_state['signup_object']['vcode'];
-  $characters = $form_state['signup_object']['characters'];
+
+  $query = array(
+    'keyid' => $keyid,
+    'vcode' => $vcode,
+  );
+
+  $characters = omni_eve_api_get_character_api($query);
 
   $created = date('Y-m-d H:i:s', time());
 
   $new_api_key_id = db_insert('oea_api_keys')->fields(array(
-    'drupalid' => $uid,
-    'keyid' => $keyid,
-    'vcode' => $vcode,
-    'updated' => $created,
-    'created' => $created,
+    'drupalid' => (int) $uid,
+    'keyid' => (int) $keyid,
+    'vcode' => (string) $vcode,
+    'updated' => (string) $created,
+    'created' => (string) $created,
   ))->execute();
 
   foreach ($characters['characters'] as $character) {
-    db_merge('oea_characters')->key(array('characterid' => $character['characterID']))->fields(array(
-      'characterid' => $character['characterID'],
-      'drupalid' => $uid,
-      'apiid' => $new_api_key_id,
-      'charactername' => $character['characterName'],
-      'corporationid' => $character['corporationID'],
-      'corporationname' => $character['corporationName'],
-      'corporationticker' => $character['corporationTicker'],
-      'allianceid' => $character['allianceID'],
-      'alliancename' => $character['allianceName'],
-      'allianceticker' => $character['allianceTicker'],
+    db_merge('oea_characters')->key(array('characterid' => (int) $character['characterID']))->fields(array(
+      'characterid' => (int) $character['characterID'],
+      'drupalid' => (int) $uid,
+      'apiid' => (int) $new_api_key_id,
+      'charactername' => (string) $character['characterName'],
+      'corporationid' => (int) $character['corporationID'],
+      'corporationname' => (string) $character['corporationName'],
+      'corporationticker' => (string) $character['corporationTicker'],
+      'allianceid' => (int) $character['allianceID'],
+      'alliancename' => (string) $character['allianceName'],
+      'allianceticker' => (string) $character['allianceTicker'],
     ))->execute();
-    if ($form_state['value']['select_charactername'] == $character['characterName']) {
-      $character_id = $character['characterID'];
+
+    if ((string) $form_state['values']['charactername'] == (string) $character['characterName']) {
+      $charactername = $character['characterName'];
+      $characterid = $character['characterID'];
     }
   }
-
-  db_update('users')->fields(array('characterid' => $character_id))->condition('uid ', $uid, '=')->execute();
-  db_update('users')->fields(array('charactername' => $form_state['value']['select_charactername']))->condition('uid ', $uid, '=')->execute();
 
   $new_rid_2 = NULL;
 
@@ -307,6 +350,8 @@ function omni_eve_api_user_register_form_submit($form, &$form_state) {
   if (isset($new_rid_2)) {
     user_multiple_role_edit(array($uid), 'add_role', $new_rid_2);
   }
+
+  db_update('users')->fields(array('characterid' => $characterid, 'charactername' => $charactername, 'signature' => ''))->condition('uid', $uid, '=')->execute();
 }
 
 /**
@@ -398,8 +443,6 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state) {
     form_set_error('keyid', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
     form_set_error('vcode');
   }
-
-  $form_state['signup_object']['characters'] = $characters;
 }
 
 /**
