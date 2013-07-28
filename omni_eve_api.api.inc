@@ -171,13 +171,14 @@ function omni_eve_api_get_character_api($query) {
     if (isset($corp_info['error'])) {
       return array('error' => $corp_info);
     }
-
-    $api_data['characters'][(int) $row->characterID] = array_merge(array(
-      'characterName' => (string) $row->characterName,
-      'characterID' => (int) $row->characterID,
-      'corporationName' => (string) $row->corporationName,
-      'corporationID' => (int) $row->corporationID,
-    ), $corp_info);
+    else {
+      $api_data['characters'][(int) $row->characterID] = array_merge(array(
+        'characterName' => (string) $row->characterName,
+        'characterID' => (int) $row->characterID,
+        'corporationName' => (string) $row->corporationName,
+        'corporationID' => (int) $row->corporationID,
+      ), $corp_info);
+    }
   }
 
   return $api_data;

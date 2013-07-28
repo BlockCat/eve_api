@@ -411,37 +411,38 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state) {
     form_set_error('keyid', t('There was an error with the API.'));
     form_set_error('vcode');
   }
-
-  $whitelist_characters = array();
-
-  if (!empty($characters)) {
-    foreach ($characters['characters'] as $character) {
-      $whitelist_characters[] = $character['characterID'];
-    }
-  }
-
-  $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid'))->condition('characterid', $whitelist_characters, 'IN')->condition('deleted', 0, '=')->execute();
-  if ($result->rowCount()) {
-    if ($characters['expires'] || $characters['accessMask'] != 8388680) {
-      form_set_error('keyid', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
-      form_set_error('vcode');
-    }
-  }
   else {
-    if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
-      form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
+    $whitelist_characters = array();
+
+    if (!empty($characters)) {
+      foreach ($characters['characters'] as $character) {
+        $whitelist_characters[] = $character['characterID'];
+      }
+    }
+
+    $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid'))->condition('characterid', $whitelist_characters, 'IN')->condition('deleted', 0, '=')->execute();
+    if ($result->rowCount()) {
+      if ($characters['expires'] || $characters['accessMask'] != 8388680) {
+        form_set_error('keyid', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
+        form_set_error('vcode');
+      }
+    }
+    else {
+      if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
+        form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
+        form_set_error('vcode');
+      }
+    }
+
+    if (!omni_eve_api_verify_blue($characters)) {
+      form_set_error('keyid', t('No characters associated with your key are currently blue to this alliance.'));
       form_set_error('vcode');
     }
-  }
 
-  if (!omni_eve_api_verify_blue($characters)) {
-    form_set_error('keyid', t('No characters associated with your key are currently blue to this alliance.'));
-    form_set_error('vcode');
-  }
-
-  if ($chars = omni_eve_api_characters_exist($characters)) {
-    form_set_error('keyid', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
-    form_set_error('vcode');
+    if ($chars = omni_eve_api_characters_exist($characters)) {
+      form_set_error('keyid', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
+      form_set_error('vcode');
+    }
   }
 }
 

@@ -99,6 +99,8 @@ function omni_eve_api_queue_api($item) {
     'vcode',
   ))->condition('drupalid', $uid, '=')->execute();
 
+  $updated = date('Y-m-d H:i:s', time());
+
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
       $error = 0;
@@ -111,6 +113,12 @@ function omni_eve_api_queue_api($item) {
       $characters = omni_eve_api_get_character_api($query);
 
       if (isset($characters['error'])) {
+        $new_api_key_id = db_merge('oea_api_keys')->key(array('apiid' => $row->apiid))->fields(array(
+          'apiid' => $row->apiid,
+          'errorid' => 2,
+          'updated' => $updated,
+        ))->execute();
+
         continue;
       }
 
@@ -136,8 +144,6 @@ function omni_eve_api_queue_api($item) {
           $error = 1;
         }
       }
-
-      $updated = date('Y-m-d H:i:s', time());
 
       $new_api_key_id = db_merge('oea_api_keys')->key(array('apiid' => $row->apiid))->fields(array(
         'apiid' => $row->apiid,

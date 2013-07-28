@@ -250,32 +250,33 @@ function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
     form_set_error('keyid', t('There was an error with the API.'));
     form_set_error('vcode');
   }
-
-  $whitelist_characters = array();
-
-  if (!empty($characters)) {
-    foreach ($characters['characters'] as $character) {
-      $whitelist_characters[] = $character['characterID'];
-    }
-  }
-
-  $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid'))->condition('characterid', $whitelist_characters, 'IN')->condition('deleted', 0, '=')->execute();
-  if ($result->rowCount()) {
-    if ($characters['expires'] || $characters['accessMask'] != 8388680) {
-      form_set_error('keyid', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
-      form_set_error('vcode');
-    }
-  }
   else {
-    if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
-      form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
+    $whitelist_characters = array();
+
+    if (!empty($characters)) {
+      foreach ($characters['characters'] as $character) {
+        $whitelist_characters[] = $character['characterID'];
+      }
+    }
+
+    $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid'))->condition('characterid', $whitelist_characters, 'IN')->condition('deleted', 0, '=')->execute();
+    if ($result->rowCount()) {
+      if ($characters['expires'] || $characters['accessMask'] != 8388680) {
+        form_set_error('keyid', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
+        form_set_error('vcode');
+      }
+    }
+    else {
+      if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
+        form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
+        form_set_error('vcode');
+      }
+    }
+
+    if ($chars = omni_eve_api_characters_exist($characters)) {
+      form_set_error('keyid', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
       form_set_error('vcode');
     }
-  }
-
-  if ($chars = omni_eve_api_characters_exist($characters)) {
-    form_set_error('keyid', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
-    form_set_error('vcode');
   }
 }
 
@@ -304,37 +305,37 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
   $characters = omni_eve_api_get_character_api($query);
 
   if (isset($characters['error'])) {
-    form_set_error('keyid', t('There was an error with the API.'));
-    form_set_error('vcode');
+    drupal_set_message(t('There was an error with the API.'), 'error');
   }
+  else {
+    $created = date('Y-m-d H:i:s', time());
 
-  $created = date('Y-m-d H:i:s', time());
-
-  $new_api_key_id = db_insert('oea_api_keys')->fields(array(
-    'drupalid' => $uid,
-    'keyid' => $keyid,
-    'vcode' => $vcode,
-    'updated' => $created,
-    'created' => $created,
-  ))->execute();
-
-  foreach ($characters['characters'] as $character) {
-    db_merge('oea_characters')->key(array('characterid' => $character['characterID']))->fields(array(
-      'characterid' => $character['characterID'],
+    $new_api_key_id = db_insert('oea_api_keys')->fields(array(
       'drupalid' => $uid,
-      'apiid' => $new_api_key_id,
-      'charactername' => $character['characterName'],
-      'corporationid' => $character['corporationID'],
-      'corporationname' => $character['corporationName'],
-      'corporationticker' => $character['corporationTicker'],
-      'allianceid' => $character['allianceID'],
-      'alliancename' => $character['allianceName'],
-      'allianceticker' => $character['allianceTicker'],
-      'deleted' => 0,
+      'keyid' => $keyid,
+      'vcode' => $vcode,
+      'updated' => $created,
+      'created' => $created,
     ))->execute();
-  }
 
-  drupal_set_message(t('API Key successfully added!'));
+    foreach ($characters['characters'] as $character) {
+      db_merge('oea_characters')->key(array('characterid' => $character['characterID']))->fields(array(
+        'characterid' => $character['characterID'],
+        'drupalid' => $uid,
+        'apiid' => $new_api_key_id,
+        'charactername' => $character['characterName'],
+        'corporationid' => $character['corporationID'],
+        'corporationname' => $character['corporationName'],
+        'corporationticker' => $character['corporationTicker'],
+        'allianceid' => $character['allianceID'],
+        'alliancename' => $character['allianceName'],
+        'allianceticker' => $character['allianceTicker'],
+        'deleted' => 0,
+      ))->execute();
+    }
+
+    drupal_set_message(t('API Key successfully added!'));
+  }
 }
 
 /**
@@ -747,30 +748,29 @@ function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
   }
   else {
     $form_state['values']['characters'] = $characters;
-  }
 
-  $whitelist_characters = array();
+    $whitelist_characters = array();
 
-  if (!empty($characters)) {
-    foreach ($characters['characters'] as $character) {
-      $whitelist_characters[] = $character['characterID'];
+    if (!empty($characters)) {
+      foreach ($characters['characters'] as $character) {
+        $whitelist_characters[] = $character['characterID'];
+      }
+    }
+
+    $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid'))->condition('characterid', $whitelist_characters, 'IN')->condition('deleted', 0, '=')->execute();
+    if ($result->rowCount()) {
+      if ($characters['expires'] || $characters['accessMask'] != 8388680) {
+        form_set_error('keyid', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
+        form_set_error('vcode');
+      }
+    }
+    else {
+      if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
+        form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
+        form_set_error('vcode');
+      }
     }
   }
-
-  $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid'))->condition('characterid', $whitelist_characters, 'IN')->condition('deleted', 0, '=')->execute();
-  if ($result->rowCount()) {
-    if ($characters['expires'] || $characters['accessMask'] != 8388680) {
-      form_set_error('keyid', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
-      form_set_error('vcode');
-    }
-  }
-  else {
-    if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
-      form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
-      form_set_error('vcode');
-    }
-  }
-
 }
 
 /**

@@ -169,13 +169,14 @@ function omni_eve_api_admin_alliance_api_key_form_validate($form, &$form_state) 
     form_set_error('omni_eve_api_corp_keyid', t('There was an error with the API.'));
     form_set_error('omni_eve_api_corp_vcode');
   }
+  else {
+    if ($characters['expires'] || $characters['type'] != 'Corporation' || $characters['accessMask'] != 67108863) {
+      form_set_error('omni_eve_api_corp_keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to your Alliance Executor or Corporation CEO, the "Type" drop down box is set to "Corporation", and that the "No Expiry" checkbox is ticked.'));
+      form_set_error('omni_eve_api_corp_vcode');
+    }
 
-  if ($characters['expires'] || $characters['type'] != 'Corporation' || $characters['accessMask'] != 67108863) {
-    form_set_error('omni_eve_api_corp_keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to your Alliance Executor or Corporation CEO, the "Type" drop down box is set to "Corporation", and that the "No Expiry" checkbox is ticked.'));
-    form_set_error('omni_eve_api_corp_vcode');
+    $form_state['values']['characters'] = $characters;
   }
-
-  $form_state['values']['characters'] = $characters;
 }
 
 /**
@@ -503,30 +504,28 @@ function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
 
   $query = array('corporationID' => (int) $form_state['values']['id']);
   $corp_info = omni_eve_api_get_corporation_info($query);
-  // This will result in an error if the ID does not exist.
-  // if (isset($corp_info['error'])) {
-  // form_set_error('id', t('There was an error with the API.'));
-  // }
+
   $query = array('ids' => (int) $form_state['values']['id']);
   $char_info = omni_eve_api_get_character_name($query);
 
   if (isset($char_info['error'])) {
     form_set_error('id', t('There was an error with the API.'));
   }
+  else{
+    $alliance_info = db_select('oea_alliance_info', 'a')->fields('a', array('alliancename'))->condition('allianceid', (int) $form_state['values']['id'], '=')->execute()->fetchAssoc();
 
-  $alliance_info = db_select('oea_alliance_info', 'a')->fields('a', array('alliancename'))->condition('allianceid', (int) $form_state['values']['id'], '=')->execute()->fetchAssoc();
-
-  if (isset($corp_info)) {
-    $form_state['values']['name'] = $corp_info['corporationName'];
-  }
-  elseif (isset($char_info)) {
-    $form_state['values']['name'] = $char_info[(int) $form_state['values']['id']];
-  }
-  elseif ($alliance_info->rowCount()) {
-    $form_state['values']['name'] = $row['alliancename'];
-  }
-  else {
-    form_set_error('id', t('No match found.'));
+    if (isset($corp_info['corporationName'])) {
+      $form_state['values']['name'] = $corp_info['corporationName'];
+    }
+    elseif (isset($char_info[(int) $form_state['values']['id']])) {
+      $form_state['values']['name'] = $char_info[(int) $form_state['values']['id']];
+    }
+    elseif ($alliance_info->rowCount()) {
+      $form_state['values']['name'] = $row['alliancename'];
+    }
+    else {
+      form_set_error('id', t('No match found.'));
+    }
   }
 }
 
@@ -702,20 +701,21 @@ function omni_eve_api_admin_add_whitelist_form_validate($form, &$form_state) {
     form_set_error('omni_eve_api_corp_keyid', t('There was an error with the API.'));
     form_set_error('omni_eve_api_corp_vcode');
   }
-
-  if ($characters['expires'] || $characters['accessMask'] != 8388680) {
-    form_set_error('keyid', t('Please ensure that only the following boxes are highlighted and selected for the API: (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet))
+  else {
+    if ($characters['expires'] || $characters['accessMask'] != 8388680) {
+      form_set_error('keyid', t('Please ensure that only the following boxes are highlighted and selected for the API: (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet))
 <br />
 In addition the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
-    form_set_error('vcode');
-  }
+      form_set_error('vcode');
+    }
 
-  if (!omni_eve_api_verify_blue($characters)) {
-    form_set_error('keyid', t('No characters associated with the key are currently blue, please add the characters to the blue standings.'));
-    form_set_error('vcode');
-  }
+    if (!omni_eve_api_verify_blue($characters)) {
+      form_set_error('keyid', t('No characters associated with the key are currently blue, please add the characters to the blue standings.'));
+      form_set_error('vcode');
+    }
 
-  $form_state['values']['characters'] = $characters;
+    $form_state['values']['characters'] = $characters;
+  }
 }
 
 /**
