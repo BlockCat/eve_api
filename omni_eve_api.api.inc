@@ -280,7 +280,7 @@ function omni_eve_api_verify_blue($characters) {
       return TRUE;
     }
 
-    if ($character['allianceID'] == variable_get('omni_eve_api_allianceID', '0') || $character['corporationID'] == variable_get('omni_eve_api_corporationID', '0')) {
+    if ($character['allianceID'] == variable_get('omni_eve_api_allianceID', 0) || $character['corporationID'] == variable_get('omni_eve_api_corporationID', 0)) {
       return TRUE;
     }
 

@@ -9,10 +9,10 @@
  */
 function omni_eve_api_cron($force = FALSE) {
   if (variable_get('omni_eve_api_enable_cron', TRUE)) {
-    $short_threshold = variable_get('omni_eve_api_cron_short_threshold', '3600');
-    $short_last_run = variable_get('omni_eve_api_cron_short_last_run', '0');
-    $long_threshold = variable_get('omni_eve_api_cron_long_threshold', '86400');
-    $long_last_run = variable_get('omni_eve_api_cron_long_last_run', '0');
+    $short_threshold = variable_get('omni_eve_api_cron_short_threshold', 3600);
+    $short_last_run = variable_get('omni_eve_api_cron_short_last_run', 0);
+    $long_threshold = variable_get('omni_eve_api_cron_long_threshold', 86400);
+    $long_last_run = variable_get('omni_eve_api_cron_long_last_run', 0);
 
     if ((time() - $long_last_run) > $long_threshold || $force) {
       // Set start time.
@@ -141,7 +141,7 @@ function omni_eve_api_queue_api($item) {
         }
       }
       else {
-        if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask', '268435455')) {
+        if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask', 268435455)) {
           drupal_set_message(t('Invalid API Mask/Type/Expiry, characters disabled.'), 'status');
           $error = 1;
         }
@@ -180,7 +180,7 @@ function omni_eve_api_queue_api($item) {
     $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
       'corporationid',
       'corporationname',
-    ))->condition('deleted', '0', '=')->execute();
+    ))->condition('deleted', 0, '=')->execute();
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -190,11 +190,11 @@ function omni_eve_api_queue_api($item) {
       }
     }
 
-    if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', '2'))) {
+    if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2))) {
       user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
     }
 
-    if ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', '2'))) {
+    if ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2))) {
       user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
     }
 
@@ -210,11 +210,11 @@ function omni_eve_api_queue_api($item) {
     if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
       $update_rid = $corporation_role->rid;
 
-      if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', '2'))) {
+      if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2))) {
         $update_rid_2 = $alliance_role->rid;
       }
     }
-    elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', '2'))) {
+    elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2))) {
       $update_rid = $blue_role->rid;
     }
     else {
@@ -253,7 +253,7 @@ function omni_eve_api_get_standings($item = NULL) {
     return array('error' => $xml);
   }
 
-  db_update('oea_blue_standings')->fields(array('checked' => 1))->condition('manual', '0', '=')->execute();
+  db_update('oea_blue_standings')->fields(array('checked' => 1))->condition('manual', 0, '=')->execute();
 
   foreach ($xml->result->children() as $rowset) {
     foreach ($rowset->children() as $rows) {
@@ -269,7 +269,7 @@ function omni_eve_api_get_standings($item = NULL) {
     }
   }
 
-  db_update('oea_blue_standings')->fields(array('deleted' => 1))->condition('checked', '1', '=')->condition('manual', '0', '=')->execute();
+  db_update('oea_blue_standings')->fields(array('deleted' => 1))->condition('checked', 1, '=')->condition('manual', 0, '=')->execute();
 
   return TRUE;
 }
@@ -291,7 +291,7 @@ function omni_eve_api_get_alliance_corporations($item = NULL) {
     return array('error' => $xml);
   }
 
-  db_update('oea_alliance_corporations')->fields(array('deleted' => 1))->condition('manual', '0', '=')->execute();
+  db_update('oea_alliance_corporations')->fields(array('deleted' => 1))->condition('manual', 0, '=')->execute();
   db_truncate('oea_alliance_info')->execute();
 
   foreach ($xml->result->rowset->children() as $rows_a) {
@@ -303,7 +303,7 @@ function omni_eve_api_get_alliance_corporations($item = NULL) {
       'alliancename' => (string) $row_a->name,
     ))->execute();
 
-    if ((int) $row_a->allianceID == variable_get('omni_eve_api_allianceID', '0')) {
+    if ((int) $row_a->allianceID == variable_get('omni_eve_api_allianceID', 0)) {
       foreach ($rows_a->rowset->children() as $rows_b) {
         $row_b = $rows_b->attributes();
 
@@ -327,7 +327,7 @@ function omni_eve_api_get_alliance_corporations($item = NULL) {
   $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
     'corporationid',
     'corporationname',
-  ))->condition('deleted', '1', '=')->execute();
+  ))->condition('deleted', 1, '=')->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -342,7 +342,7 @@ function omni_eve_api_get_alliance_corporations($item = NULL) {
   $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
     'corporationid',
     'corporationname',
-  ))->condition('deleted', '0', '=')->execute();
+  ))->condition('deleted', 0, '=')->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -356,7 +356,7 @@ function omni_eve_api_get_alliance_corporations($item = NULL) {
     }
   }
 
-  db_delete('oea_alliance_corporations')->condition('deleted', '1', '=')->execute();
+  db_delete('oea_alliance_corporations')->condition('deleted', 1, '=')->execute();
 
   return TRUE;
 }
