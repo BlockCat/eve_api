@@ -26,7 +26,7 @@ function omni_eve_api_admin_settings_form($form, &$form_state) {
     '#title' => t('Select Role for Blues'),
     '#description' => t('Please select the default role for blues.'),
     '#options' => $role_list,
-    '#default_value' => variable_get('omni_eve_api_blue_role'),
+    '#default_value' => variable_get('omni_eve_api_blue_role', '2'),
     '#weight' => 0,
   );
 
@@ -35,7 +35,7 @@ function omni_eve_api_admin_settings_form($form, &$form_state) {
     '#title' => t('Select Role for Alliance Members'),
     '#description' => t('Please select an additional role assigned to all members of the Alliance.'),
     '#options' => $role_list,
-    '#default_value' => variable_get('omni_eve_api_alliance_role'),
+    '#default_value' => variable_get('omni_eve_api_alliance_role', '2'),
     '#weight' => 10,
   );
 
@@ -72,7 +72,7 @@ function omni_eve_api_admin_settings_form_validate($form, &$form_state) {
  */
 function omni_eve_api_admin_settings_form_submit($form, &$form_state) {
   $uids = array();
-  $result = db_select('users_roles', 'r')->fields('r', array('uid'))->condition('rid', (int) variable_get('omni_eve_api_blue_role'), '=')->execute();
+  $result = db_select('users_roles', 'r')->fields('r', array('uid'))->condition('rid', (int) variable_get('omni_eve_api_blue_role', '2'), '=')->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -81,13 +81,13 @@ function omni_eve_api_admin_settings_form_submit($form, &$form_state) {
   }
 
   if (!empty($uids)) {
-    user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_blue_role'));
+    user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_blue_role', '2'));
     // user_multiple_role_edit($uids, 'add_role',
     // (int) $form_state['values']['omni_eve_api_blue_role']);
   }
 
   $uids = array();
-  $result = db_select('users_roles', 'r')->fields('r', array('uid'))->condition('rid', (int) variable_get('omni_eve_api_alliance_role'), '=')->execute();
+  $result = db_select('users_roles', 'r')->fields('r', array('uid'))->condition('rid', (int) variable_get('omni_eve_api_alliance_role', '2'), '=')->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -96,7 +96,7 @@ function omni_eve_api_admin_settings_form_submit($form, &$form_state) {
   }
 
   if (!empty($uids)) {
-    user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_alliance_role'));
+    user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_alliance_role', '2'));
     // user_multiple_role_edit($uids, 'add_role',
     // (int) $form_state['values']['omni_eve_api_alliance_role']);
   }
@@ -128,7 +128,7 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
     '#required' => TRUE,
     '#maxlength' => 15,
     '#weight' => 0,
-    '#default_value' => variable_get('omni_eve_api_corp_keyid'),
+    '#default_value' => variable_get('omni_eve_api_corp_keyid', ''),
   );
 
   $form['enter_api']['omni_eve_api_corp_vcode'] = array(
@@ -138,7 +138,7 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
     '#required' => TRUE,
     '#maxlength' => 80,
     '#weight' => 10,
-    '#default_value' => variable_get('omni_eve_api_corp_vcode'),
+    '#default_value' => variable_get('omni_eve_api_corp_vcode', ''),
   );
 
   $form['submit_button'] = array(
@@ -227,7 +227,7 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
 
   $options = $selected = array();
 
-  $access_mask = variable_get('omni_eve_api_access_mask');
+  $access_mask = variable_get('omni_eve_api_access_mask', '268435455');
 
   $result = db_select('oea_access_mask', 'a')->fields('a', array(
     'accessmask',
@@ -335,7 +335,7 @@ function omni_eve_api_role_list() {
  * Implements hook_user_role_delete().
  */
 function omni_eve_api_user_role_delete($role) {
-  if ($role->rid == variable_get('omni_eve_api_blue_role')) {
+  if ($role->rid == variable_get('omni_eve_api_blue_role', '2')) {
     variable_set('omni_eve_api_blue_role', '2');
   }
 }

@@ -187,7 +187,7 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
     }
   }
   else {
-    if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
+    if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask', '268435455')) {
       form_set_error('keyid', t('Unknown Error, please try again.'));
       form_set_error('vcode');
       drupal_goto('user/register');
@@ -254,7 +254,7 @@ function omni_eve_api_user_register_form_validate($form, &$form_state) {
     }
   }
   else {
-    if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
+    if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask', '268435455')) {
       form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
       form_set_error('vcode');
     }
@@ -333,11 +333,11 @@ function omni_eve_api_user_register_form_submit($form, &$form_state) {
   if ($corporation_role = user_role_load_by_name($character['corporationName'])) {
     $new_rid = $corporation_role->rid;
 
-    if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role'))) {
+    if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', '2'))) {
       $new_rid_2 = $alliance_role->rid;
     }
   }
-  elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role'))) {
+  elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', '2'))) {
     $new_rid = $blue_role->rid;
   }
   else {
@@ -377,7 +377,7 @@ function omni_eve_api_enter_api_form($form, &$form_state) {
   $form['enter_api']['keyid'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
-    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@mask">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask'))),
+    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@mask">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask', '268435455'))),
     '#required' => TRUE,
     '#maxlength' => 15,
     '#weight' => 0,
@@ -386,7 +386,7 @@ function omni_eve_api_enter_api_form($form, &$form_state) {
   $form['enter_api']['vcode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
-    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@mask">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask'))),
+    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@mask">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask', '268435455'))),
     '#required' => TRUE,
     '#maxlength' => 80,
     '#weight' => 10,
@@ -432,7 +432,7 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state) {
       }
     }
     else {
-      if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
+      if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask', '268435455')) {
         form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
         form_set_error('vcode');
       }

@@ -161,8 +161,8 @@ function omni_eve_api_get_account_user_picture($account) {
 function omni_eve_api_get_eve_avatar($characterid) {
   global $is_https;
 
-  $eve_avatar = $is_https ? variable_get('eve_avatar_https') : variable_get('eve_avatar_http');
-  $eve_avatar .= $characterid . '_' . variable_get('eve_user_picture_dimensions') . '.jpg';
+  $eve_avatar = $is_https ? variable_get('eve_avatar_https', 'https://image.eveonline.com/Character/') : variable_get('eve_avatar_http', 'http://image.eveonline.com/Character/');
+  $eve_avatar .= $characterid . '_' . variable_get('eve_user_picture_dimensions', '128x128') . '.jpg';
 
   return url($eve_avatar);
 }
@@ -194,7 +194,7 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
   $form['enter_api']['keyid'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
-    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@mask">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask'))),
+    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@mask">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask', '268435455'))),
     '#required' => TRUE,
     '#maxlength' => 15,
     '#weight' => 0,
@@ -203,7 +203,7 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
   $form['enter_api']['vcode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
-    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@mask">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask'))),
+    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@mask">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask', '268435455'))),
     '#required' => TRUE,
     '#maxlength' => 80,
     '#weight' => 10,
@@ -267,7 +267,7 @@ function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
       }
     }
     else {
-      if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
+      if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask', '268435455')) {
         form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
         form_set_error('vcode');
       }
@@ -432,11 +432,11 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
     if ($corporation_role = user_role_load_by_name($old_character_data['corporationName'])) {
       $old_rid = $corporation_role->rid;
 
-      if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role'))) {
+      if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', '2'))) {
         $old_rid_2 = $alliance_role->rid;
       }
     }
-    elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role'))) {
+    elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', '2'))) {
       $old_rid = $blue_role->rid;
     }
 
@@ -453,11 +453,11 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
     if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
       $new_rid = $corporation_role->rid;
 
-      if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role'))) {
+      if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', '2'))) {
         $new_rid_2 = $alliance_role->rid;
       }
     }
-    elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role'))) {
+    elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', '2'))) {
       $new_rid = $blue_role->rid;
     }
     else {
@@ -642,11 +642,11 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
       }
     }
 
-    if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role'))) {
+    if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', '2'))) {
       user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
     }
 
-    if ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role'))) {
+    if ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', '2'))) {
       user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
     }
 
@@ -712,7 +712,7 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_k
   $form['update_api']['keyid'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
-    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@mask">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask'))),
+    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@mask">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask', '268435455'))),
     '#required' => TRUE,
     '#maxlength' => 15,
     '#default_value' => isset($form_state['values']['keyid']) ? $form_state['values']['keyid'] : $row['keyid'],
@@ -722,7 +722,7 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_k
   $form['update_api']['vcode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
-    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@mask">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask'))),
+    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@mask">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask', '268435455'))),
     '#required' => TRUE,
     '#maxlength' => 80,
     '#default_value' => isset($form_state['values']['vcode']) ? $form_state['values']['vcode'] : $row['vcode'],
@@ -786,7 +786,7 @@ function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
       }
     }
     else {
-      if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
+      if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask', '268435455')) {
         form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
         form_set_error('vcode');
       }

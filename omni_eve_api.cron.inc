@@ -9,10 +9,10 @@
  */
 function omni_eve_api_cron() {
   if (variable_get('omni_eve_api_enable_cron', TRUE)) {
-    $short_threshold = variable_get('omni_eve_api_cron_short_threshold', 3600);
-    $short_last_run = variable_get('omni_eve_api_cron_short_last_run', 0);
-    $long_threshold = variable_get('omni_eve_api_cron_long_threshold', 86400);
-    $long_last_run = variable_get('omni_eve_api_cron_long_last_run', 0);
+    $short_threshold = variable_get('omni_eve_api_cron_short_threshold', '3600');
+    $short_last_run = variable_get('omni_eve_api_cron_short_last_run', '0');
+    $long_threshold = variable_get('omni_eve_api_cron_long_threshold', '86400');
+    $long_last_run = variable_get('omni_eve_api_cron_long_last_run', '0');
 
     // Queue each user in the database to check the API's for blue status and
     // other checks.
@@ -139,7 +139,7 @@ function omni_eve_api_queue_api($item) {
         }
       }
       else {
-        if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask')) {
+        if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask', '268435455')) {
           drupal_set_message(t('Invalid API Mask/Type/Expiry, characters disabled.'), 'status');
           $error = 1;
         }
@@ -188,11 +188,11 @@ function omni_eve_api_queue_api($item) {
       }
     }
 
-    if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role'))) {
+    if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', '2'))) {
       user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
     }
 
-    if ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role'))) {
+    if ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', '2'))) {
       user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
     }
 
@@ -208,11 +208,11 @@ function omni_eve_api_queue_api($item) {
     if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
       $update_rid = $corporation_role->rid;
 
-      if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role'))) {
+      if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', '2'))) {
         $update_rid_2 = $alliance_role->rid;
       }
     }
-    elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role'))) {
+    elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', '2'))) {
       $update_rid = $blue_role->rid;
     }
     else {
@@ -241,8 +241,8 @@ function omni_eve_api_queue_api($item) {
  */
 function omni_eve_api_get_standings($item = NULL) {
   $query = array(
-    'keyid' => variable_get('omni_eve_api_corp_keyid'),
-    'vcode' => variable_get('omni_eve_api_corp_vcode'),
+    'keyid' => variable_get('omni_eve_api_corp_keyid', ''),
+    'vcode' => variable_get('omni_eve_api_corp_vcode', ''),
   );
   $xml = omni_eve_api_get_xml('ContactList', $query);
 
@@ -301,7 +301,7 @@ function omni_eve_api_get_alliance_corporations($item = NULL) {
       'alliancename' => (string) $row_a->name,
     ))->execute();
 
-    if ((int) $row_a->allianceID == variable_get('omni_eve_api_allianceID')) {
+    if ((int) $row_a->allianceID == variable_get('omni_eve_api_allianceID', '0')) {
       foreach ($rows_a->rowset->children() as $rows_b) {
         $row_b = $rows_b->attributes();
 
