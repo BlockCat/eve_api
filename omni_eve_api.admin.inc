@@ -304,6 +304,18 @@ function omni_eve_api_admin_access_mask_form_submit($form, &$form_state) {
   }
 
   variable_set('omni_eve_api_access_mask', $new_access_mask);
+
+  $queue = DrupalQueue::get('omni_eve_api_queue_api');
+  $queue->createQueue();
+  $result = db_select('users', 'u')->fields('u', array(
+    'uid',
+    'charactername',
+    'characterid',
+  ))->condition('status', 1, '=')->execute();
+
+  while ($item = $result->fetchAssoc()) {
+    $queue->createItem($item);
+  }
 }
 
 /**
@@ -445,6 +457,18 @@ function omni_eve_api_admin_list_blues_form_submit($form, &$form_state) {
     $deleted_blues[] = $blue_id;
   }
   db_update('oea_blue_standings')->fields(array('deleted' => 1))->condition('contactID', $deleted_blues, 'IN')->execute();
+
+  $queue = DrupalQueue::get('omni_eve_api_queue_api');
+  $queue->createQueue();
+  $result = db_select('users', 'u')->fields('u', array(
+    'uid',
+    'charactername',
+    'characterid',
+  ))->condition('status', 1, '=')->execute();
+
+  while ($item = $result->fetchAssoc()) {
+    $queue->createItem($item);
+  }
 }
 
 /**
@@ -541,6 +565,18 @@ function omni_eve_api_admin_add_blues_form_submit($form, &$form_state) {
     'standing' => 1,
     'manual' => 1,
   ))->execute();
+
+  $queue = DrupalQueue::get('omni_eve_api_queue_api');
+  $queue->createQueue();
+  $result = db_select('users', 'u')->fields('u', array(
+    'uid',
+    'charactername',
+    'characterid',
+  ))->condition('status', 1, '=')->execute();
+
+  while ($item = $result->fetchAssoc()) {
+    $queue->createItem($item);
+  }
 
   drupal_set_message(t('A new Blue standing has been added!'));
 }
