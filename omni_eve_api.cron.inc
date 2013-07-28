@@ -207,6 +207,7 @@ function omni_eve_api_queue_api($item) {
 
     $update_rid_2 = NULL;
 
+    // @todo If blue, need to remove alliance role, and vice versa.
     if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
       $update_rid = $corporation_role->rid;
 
