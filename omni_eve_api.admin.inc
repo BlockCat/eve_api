@@ -541,6 +541,8 @@ function omni_eve_api_admin_add_blues_form_submit($form, &$form_state) {
     'standing' => 1,
     'manual' => 1,
   ))->execute();
+
+  drupal_set_message(t('A new Blue standing has been added!'));
 }
 
 /**
