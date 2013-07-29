@@ -86,11 +86,6 @@ function omni_eve_api_cron_queue_info() {
  *
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
- *
- * @todo Check each characters current API's and update changes and delete
- * characters that are no longer valid.  Verify current Main Character is still
- * valid for each account.  If the main character is no longer valid, remove
- * roles.
  */
 function omni_eve_api_queue_api($item) {
   $uid = $item;
@@ -177,26 +172,26 @@ function omni_eve_api_queue_api($item) {
   }
 
   if (!omni_eve_api_verify_blue($all_characters)) {
-    $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
-      'corporationid',
-      'corporationname',
-    ))->condition('deleted', 0, '=')->execute();
+	  $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
+	    'corporationid',
+	    'corporationname',
+	  ))->condition('deleted', 0, '=')->execute();
 
-    if ($result->rowCount()) {
-      foreach ($result->fetchAll() as $row) {
-        if ($corporation_role = user_role_load_by_name($row->corporationname)) {
-          user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
-        }
-      }
-    }
-
-    if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2))) {
-      user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
-    }
+	  if ($result->rowCount()) {
+	    foreach ($result->fetchAll() as $row) {
+	      if ($corporation_role = user_role_load_by_name($row->corporationname)) {
+	        user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
+	      }
+	    }
+	  }
 
     if ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2))) {
-      user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
-    }
+	    user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
+	  }
+
+	  if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2))) {
+	    user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
+	  }
 
     db_update('users')->fields(array('charactername' => '', 'characterid' => 0))->condition('uid', $uid, '=')->execute();
     return FALSE;
@@ -207,8 +202,24 @@ function omni_eve_api_queue_api($item) {
 
     $update_rid_2 = NULL;
 
-    // @todo If blue, need to remove alliance role, and vice versa.
     if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
+		  $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
+		    'corporationid',
+		    'corporationname',
+		  ))->condition('deleted', 0, '=')->execute();
+
+		  if ($result->rowCount()) {
+		    foreach ($result->fetchAll() as $row) {
+		      if ($corporation_role = user_role_load_by_name($row->corporationname) && $row->corporationid != $character_data['corporationID']) {
+		        user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
+		      }
+		    }
+		  }
+
+      if ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2))) {
+		    user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
+		  }
+
       $update_rid = $corporation_role->rid;
 
       if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2))) {
@@ -216,6 +227,23 @@ function omni_eve_api_queue_api($item) {
       }
     }
     elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2))) {
+		  $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
+		    'corporationid',
+		    'corporationname',
+		  ))->condition('deleted', 0, '=')->execute();
+
+		  if ($result->rowCount()) {
+		    foreach ($result->fetchAll() as $row) {
+		      if ($corporation_role = user_role_load_by_name($row->corporationname)) {
+		        user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
+		      }
+		    }
+		  }
+
+		  if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2))) {
+		    user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
+		  }
+
       $update_rid = $blue_role->rid;
     }
     else {
