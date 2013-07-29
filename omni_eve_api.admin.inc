@@ -782,42 +782,81 @@ function omni_eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
  * @ingroup forms
  */
 function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
-  variable_set('omni_eve_api_ts3_enable', FALSE);
-  variable_set('omni_eve_api_ts3_host', '127.0.0.1');
-  variable_set('omni_eve_api_ts3_query_port', 10011);
-  variable_set('omni_eve_api_ts3_server_port', 9987);
-  variable_set('omni_eve_api_ts3_query_username', '');
-  variable_set('omni_eve_api_ts3_query_password', '');
-  variable_set('omni_eve_api_ts3_name_format', '[@corp] @name');
-
   $form['teamspeak'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Add Whitelist'),
-    '#description' => t('Add characters to the whitelist, the key is not stored here, it is used to retrieve the characters on the API Key and add them to the whitelist.  There are times when you will have high profile members join your site, they may have sensitive e-mails or items in locations.  With this whitelist you are able to allow the user to register with a very limited and basic API Key, but still provide full functionality on the site.  Please provide the following <a href="@url">link</a> to have the new user create a new limited API Key, the user has the option to list all characters, or just a single character.', array('@url' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=8388680')),
+    '#title' => t('Configure Teamspeak Connection'),
+    '#description' => t('Configure Teamspeak 3 connection settings.'),
     '#weight' => 0,
   );
 
-  $form['teamspeak']['keyid'] = array(
+  $form['teamspeak']['hostname'] = array(
     '#type' => 'textfield',
-    '#title' => t('Key ID'),
-    '#description' => t('Please enter the Key ID.'),
+    '#title' => t('Hostname/IP Address'),
+    '#description' => t('The Teamspeak 3 Hostname/IP address used to connect to the Teamspeak 3 Server. This can be 127.0.0.1 if the Teamspeak server is hosted on the same server as the webhost.'),
     '#required' => TRUE,
     '#maxlength' => 15,
     '#weight' => 0,
+    '#default_value' => variable_get('omni_eve_api_ts3_host', '127.0.0.1'),
   );
 
-  $form['teamspeak']['vcode'] = array(
+  $form['teamspeak']['server_port'] = array(
     '#type' => 'textfield',
-    '#title' => t('Verification Code'),
-    '#description' => t('Please enter the Verification Code.'),
+    '#title' => t('Server Port'),
+    '#description' => t('The port used to connect to Teamspeak 3. (Default: 9987)'),
     '#required' => TRUE,
-    '#maxlength' => 80,
+    '#maxlength' => 6,
+    '#weight' => 20,
+    '#default_value' => variable_get('omni_eve_api_ts3_server_port', 9987),
+  );
+
+  $form['teamspeak']['query_port'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Query Port'),
+    '#description' => t('The Teamspeak 3 query port. (Default: 10011)'),
+    '#required' => TRUE,
+    '#maxlength' => 6,
     '#weight' => 10,
+    '#default_value' => variable_get('omni_eve_api_ts3_query_port', 10011),
+  );
+
+  $form['teamspeak']['query_username'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Query Username'),
+    '#description' => t('Query username choosen on your Teamspeak 3 server.'),
+    '#required' => TRUE,
+    '#maxlength' => 50,
+    '#weight' => 30,
+    '#default_value' => variable_get('omni_eve_api_ts3_query_username', 'Username'),
+  );
+
+  $form['teamspeak']['query_password'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Query Password'),
+    '#description' => t('Query password generated on your Teamspeak 3 server.'),
+    '#required' => TRUE,
+    '#maxlength' => 50,
+    '#weight' => 40,
+    '#default_value' => variable_get('omni_eve_api_ts3_query_password', 'Password'),
+  );
+
+  $form['teamspeak']['nickname'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Username Format'),
+    '#description' => t('The format that each user must have when connecting to Teamspeak 3. You can use the following variables:<br />@corp - Corporation Ticker<br />@alliance - Alliance Ticker<br />@name - EVE Character Name'),
+    '#required' => TRUE,
+    '#maxlength' => 50,
+    '#weight' => 50,
+    '#default_value' => variable_get('omni_eve_api_ts3_nickname', '[@corp] @name'),
+  );
+
+  $form['teamspeak']['enable'] = array(
+    '#type' => 'checkbox',
+    '#value' => t('Submit'),
   );
 
   $form['submit_button'] = array(
     '#type' => 'submit',
-    '#value' => t('Submit'),
+    '#title' => t('Enable Teamspeak 3 Connection.'),
   );
 
   $form_state['redirect'] = 'admin/settings/omni_eve_api/list_whitelist';
