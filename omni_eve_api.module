@@ -12,6 +12,7 @@ module_load_include('inc', 'omni_eve_api', 'omni_eve_api.cron');
 module_load_include('inc', 'omni_eve_api', 'omni_eve_api.admin');
 module_load_include('inc', 'omni_eve_api', 'omni_eve_api.user');
 module_load_include('inc', 'omni_eve_api', 'omni_eve_api.register');
+module_load_include('inc', 'omni_eve_api', 'omni_eve_api.ts3');
 
 /**
  * Implements hook_menu_alter().
@@ -82,6 +83,16 @@ function omni_eve_api_menu() {
     'weight' => 20,
   );
 
+  $items['admin/settings/omni_eve_api/teamspeak'] = array(
+    'title' => 'Teamspeak Settings',
+    'description' => 'Configure and edit Teamspeak 3 connection settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('omni_eve_api_admin_teamspeak_form'),
+    'access arguments' => array('administer omni_eve_api settings'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 30,
+  );
+
   $items['admin/settings/omni_eve_api/list_blues'] = array(
     'title' => 'List Blues',
     'description' => 'You can remove Blues and Add Blues from here.',
@@ -89,7 +100,7 @@ function omni_eve_api_menu() {
     'page arguments' => array('omni_eve_api_admin_list_blues_form'),
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 30,
+    'weight' => 40,
   );
 
   $items['admin/settings/omni_eve_api/list_blues/add_blue'] = array(
@@ -109,7 +120,7 @@ function omni_eve_api_menu() {
     'page arguments' => array('omni_eve_api_admin_list_whitelist_form'),
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 40,
+    'weight' => 50,
   );
 
   $items['admin/settings/omni_eve_api/list_whitelist/add_whitelist'] = array(

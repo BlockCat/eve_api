@@ -323,6 +323,12 @@ function omni_eve_api_install() {
   variable_set('omni_eve_api_blue_role', 2);
   variable_set('omni_eve_api_alliance_role', 2);
   variable_set('omni_eve_api_access_mask', 268435455);
+  variable_set('omni_eve_api_ts3_host', '127.0.0.1');
+  variable_set('omni_eve_api_ts3_query_port', 10011);
+  variable_set('omni_eve_api_ts3_server_port', 9987);
+  variable_set('omni_eve_api_ts3_query_username', '');
+  variable_set('omni_eve_api_ts3_query_password', '');
+  variable_set('omni_eve_api_ts3_name_format', '[@corp] @name');
   variable_set('user_picture_dimensions', '128x128');
   variable_set('eve_user_picture_dimensions', 128);
   variable_set('eve_avatar_https', 'https://image.eveonline.com/Character/');

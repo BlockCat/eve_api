@@ -772,3 +772,40 @@ function omni_eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
 
   drupal_set_message(t('Whitelisted Characters successfully added!'));
 }
+
+/**
+ * Form constructor for the admin add blues form.
+ *
+ * @see omni_eve_api_admin_teamspeak_form_validate()
+ * @see omni_eve_api_admin_teamspeak_form_submit()
+ *
+ * @ingroup forms
+ */
+function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add Whitelist'),
+  );
+
+  $form_state['redirect'] = 'admin/settings/omni_eve_api/list_whitelist';
+  $form['#validate'] = array('omni_eve_api_admin_teamspeak_form_validate');
+  $form['#submit'] = array('omni_eve_api_admin_teamspeak_form_submit');
+
+  return $form;
+}
+
+/**
+ * Form validation handler for omni_eve_api_admin_teamspeak_form().
+ *
+ * @see omni_eve_api_admin_teamspeak_form_submit()
+ */
+function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
+}
+
+/**
+ * Form submission handler for omni_eve_api_admin_teamspeak_form().
+ *
+ * @see omni_eve_api_admin_teamspeak_form_validate()
+ */
+function omni_eve_api_admin_teamspeak_form_submit($form, &$form_state) {
+}
