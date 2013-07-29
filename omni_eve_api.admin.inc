@@ -782,9 +782,42 @@ function omni_eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
  * @ingroup forms
  */
 function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
+  variable_set('omni_eve_api_ts3_enable', FALSE);
+  variable_set('omni_eve_api_ts3_host', '127.0.0.1');
+  variable_set('omni_eve_api_ts3_query_port', 10011);
+  variable_set('omni_eve_api_ts3_server_port', 9987);
+  variable_set('omni_eve_api_ts3_query_username', '');
+  variable_set('omni_eve_api_ts3_query_password', '');
+  variable_set('omni_eve_api_ts3_name_format', '[@corp] @name');
+
+  $form['teamspeak'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Add Whitelist'),
+    '#description' => t('Add characters to the whitelist, the key is not stored here, it is used to retrieve the characters on the API Key and add them to the whitelist.  There are times when you will have high profile members join your site, they may have sensitive e-mails or items in locations.  With this whitelist you are able to allow the user to register with a very limited and basic API Key, but still provide full functionality on the site.  Please provide the following <a href="@url">link</a> to have the new user create a new limited API Key, the user has the option to list all characters, or just a single character.', array('@url' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=8388680')),
+    '#weight' => 0,
+  );
+
+  $form['teamspeak']['keyid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Key ID'),
+    '#description' => t('Please enter the Key ID.'),
+    '#required' => TRUE,
+    '#maxlength' => 15,
+    '#weight' => 0,
+  );
+
+  $form['teamspeak']['vcode'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Verification Code'),
+    '#description' => t('Please enter the Verification Code.'),
+    '#required' => TRUE,
+    '#maxlength' => 80,
+    '#weight' => 10,
+  );
+
   $form['submit_button'] = array(
     '#type' => 'submit',
-    '#value' => t('Add Whitelist'),
+    '#value' => t('Submit'),
   );
 
   $form_state['redirect'] = 'admin/settings/omni_eve_api/list_whitelist';

@@ -323,6 +323,7 @@ function omni_eve_api_install() {
   variable_set('omni_eve_api_blue_role', 2);
   variable_set('omni_eve_api_alliance_role', 2);
   variable_set('omni_eve_api_access_mask', 268435455);
+  variable_set('omni_eve_api_ts3_enable', FALSE);
   variable_set('omni_eve_api_ts3_host', '127.0.0.1');
   variable_set('omni_eve_api_ts3_query_port', 10011);
   variable_set('omni_eve_api_ts3_server_port', 9987);
