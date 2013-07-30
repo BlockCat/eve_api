@@ -196,7 +196,7 @@ function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
     variable_set('omni_eve_api_corporationID', (int) $character['corporationID']);
   }
 
-  omni_eve_api_cron(TRUE);
+  omni_eve_api_general_cron(TRUE);
   drupal_cron_run();
 }
 
@@ -307,7 +307,7 @@ function omni_eve_api_admin_access_mask_form_submit($form, &$form_state) {
   variable_set('omni_eve_api_access_mask', $new_access_mask);
 
   if ($access_mask != $new_access_mask) {
-    $queue = DrupalQueue::get('omni_eve_api_queue_api');
+    $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
     $queue->createQueue();
     $result = db_select('users', 'u')->fields('u', array('uid'))->condition('status', 1, '=')->execute();
 
@@ -463,7 +463,7 @@ function omni_eve_api_admin_list_blues_form_submit($form, &$form_state) {
   db_update('oea_blue_standings')->fields(array('deleted' => 1))->condition('contactID', $deleted_blues, 'IN')->execute();
 
   if ($is_change) {
-    $queue = DrupalQueue::get('omni_eve_api_queue_api');
+    $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
     $queue->createQueue();
     $result = db_select('users', 'u')->fields('u', array('uid'))->condition('status', 1, '=')->execute();
 
@@ -568,7 +568,7 @@ function omni_eve_api_admin_add_blues_form_submit($form, &$form_state) {
     'manual' => 1,
   ))->execute();
 
-  $queue = DrupalQueue::get('omni_eve_api_queue_api');
+  $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
   $queue->createQueue();
   $result = db_select('users', 'u')->fields('u', array('uid'))->condition('status', 1, '=')->execute();
 
@@ -851,12 +851,14 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
 
   $form['teamspeak']['enable'] = array(
     '#type' => 'checkbox',
-    '#value' => t('Submit'),
+    '#title' => t('Enable Teamspeak 3 Connection.'),
+    '#default_value' => variable_get('omni_eve_api_ts3_enable', FALSE),
+    '#weight' => 60,
   );
 
   $form['submit_button'] = array(
     '#type' => 'submit',
-    '#title' => t('Enable Teamspeak 3 Connection.'),
+    '#value' => t('Submit'),
   );
 
   $form_state['redirect'] = 'admin/settings/omni_eve_api/list_whitelist';
@@ -872,6 +874,22 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
  * @see omni_eve_api_admin_teamspeak_form_submit()
  */
 function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
+  variable_set('omni_eve_api_ts3_host', (string) $form_state['values']['hostname']);
+  variable_set('omni_eve_api_ts3_query_port', (int) $form_state['values']['query_port']);
+  variable_set('omni_eve_api_ts3_server_port', (int) $form_state['values']['server_port']);
+  variable_set('omni_eve_api_ts3_query_username', (string) $form_state['values']['query_username']);
+  variable_set('omni_eve_api_ts3_query_password', (string) $form_state['values']['query_password']);
+  variable_set('omni_eve_api_ts3_nickname', (string) $form_state['values']['nickname']);
+
+  if ((int) $form_state['values']['enable']) {
+    try {
+      $query = 'serverquery://' . (string) $form_state['values']['query_username'] . ':' . (string) $form_state['values']['query_password'] . '@' . (string) $form_state['values']['hostname'] . ':' . (int) $form_state['values']['query_port'] . '/?server_port=' . (int) $form_state['values']['server_port'] . '&blocking=0';
+      $ts3 = TeamSpeak3::factory($query);
+    }
+    catch (TeamSpeak3_Exception $e){
+      form_set_error('enable', t('Teamspeak 3 Connection failed, check settings and try again. Error: @error', array('@error' => $e->getMessage())));
+    }
+  }
 }
 
 /**
@@ -880,4 +898,10 @@ function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
  * @see omni_eve_api_admin_teamspeak_form_validate()
  */
 function omni_eve_api_admin_teamspeak_form_submit($form, &$form_state) {
+  if ((int) $form_state['values']['enable']) {
+    variable_set('omni_eve_api_ts3_enable', TRUE);
+  }
+  else {
+    variable_set('omni_eve_api_ts3_enable', FALSE);
+  }
 }

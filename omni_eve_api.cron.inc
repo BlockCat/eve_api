@@ -5,52 +5,101 @@
  */
 
 /**
+ * Implements hook_cronapi().
+ */
+function omni_eve_api_cronapi($op, $job = NULL) {
+  $items = array();
+
+  $items['omni_eve_api_general_cron'] = array(
+    'description' => 'General cron, called once a day.',
+    'rule' => '4 0 * * *',
+  );
+
+  $items['omni_eve_api_users_cron'] = array(
+    'description' => 'Pull API for each user every hour.',
+    'rule' => '0 * * * *',
+  );
+
+  $items['omni_eve_api_teamspeak_cron'] = array(
+    'description' => 'Update permissions in Teamspeak every 5 minutes.',
+    'rule' => '*/5 * * * *',
+  );
+
+  $items['omni_eve_api_teamspeak_name_cron'] = array(
+    'description' => 'Check usernames in Teamspeak every minute.',
+    'rule' => '* * * * *',
+  );
+
+  return $items;
+}
+
+/**
  * Implements hook_cron().
  */
-function omni_eve_api_cron($force = FALSE) {
+function omni_eve_api_general_cron($force = FALSE) {
   if (variable_get('omni_eve_api_enable_cron', TRUE)) {
-    $short_threshold = variable_get('omni_eve_api_cron_short_threshold', 3600);
-    $short_last_run = variable_get('omni_eve_api_cron_short_last_run', 0);
-    $long_threshold = variable_get('omni_eve_api_cron_long_threshold', 86400);
-    $long_last_run = variable_get('omni_eve_api_cron_long_last_run', 0);
+    $item = NULL;
 
-    if ((time() - $long_last_run) > $long_threshold || $force) {
-      // Set start time.
-      variable_set('omni_eve_api_cron_long_last_run', time());
+    // Run cron for standings, but have nothing to pass so passing a NULL
+    // variable.
+    $queue = DrupalQueue::get('omni_eve_api_cron_get_standings');
+    $queue->createQueue();
+    $queue->createItem($item);
 
-      $item = NULL;
+    // Run cron for corporations in the alliance, but have nothing to pass so
+    // passing a NULL variable.
+    $queue = DrupalQueue::get('omni_eve_api_cron_get_alliance_corporations');
+    $queue->createQueue();
+    $queue->createItem($item);
 
-      // Run cron for standings, but have nothing to pass so passing a NULL
-      // variable.
-      $queue = DrupalQueue::get('omni_eve_api_get_standings');
-      $queue->createQueue();
-      $queue->createItem($item);
+    // Run cron to get latest access mask definitions.
+    $queue = DrupalQueue::get('omni_eve_api_cron_get_access_mask');
+    $queue->createQueue();
+    $queue->createItem($item);
+  }
+}
 
-      // Run cron for corporations in the alliance, but have nothing to pass so
-      // passing a NULL variable.
-      $queue = DrupalQueue::get('omni_eve_api_get_alliance_corporations');
-      $queue->createQueue();
-      $queue->createItem($item);
+/**
+ * Implements hook_cron().
+ */
+function omni_eve_api_users_cron($force = FALSE) {
+  if (variable_get('omni_eve_api_enable_cron', TRUE)) {
+    $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
+    $queue->createQueue();
+    $result = db_select('users', 'u')->fields('u', array('uid'))->condition('status', 1, '=')->execute();
 
-      // Run cron to get latest access mask definitions.
-      $queue = DrupalQueue::get('omni_eve_api_get_access_mask');
-      $queue->createQueue();
-      $queue->createItem($item);
+    foreach ($result->fetchAll() as $item) {
+      $queue->createItem($item->uid);
     }
+  }
+}
 
-    // Queue each user in the database to check the API's for blue status and
-    // other checks.
-    if ((time() - $short_last_run) > $short_threshold || $force) {
-      // Set start time.
-      variable_set('omni_eve_api_cron_short_last_run', time());
+/**
+ * Implements hook_cron().
+ */
+function omni_eve_api_teamspeak_cron($force = FALSE) {
+  if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_ts3_enable', FALSE)) {
+    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak');
+    $queue->createQueue();
+    $result = db_select('users', 'u')->fields('u', array('uid'))->condition('status', 1, '=')->execute();
 
-      $queue = DrupalQueue::get('omni_eve_api_queue_api');
-      $queue->createQueue();
-      $result = db_select('users', 'u')->fields('u', array('uid'))->condition('status', 1, '=')->execute();
+    foreach ($result->fetchAll() as $item) {
+      $queue->createItem($item->uid);
+    }
+  }
+}
 
-      foreach ($result->fetchAll() as $item) {
-        $queue->createItem($item->uid);
-      }
+/**
+ * Implements hook_cron().
+ */
+function omni_eve_api_teamspeak_name_cron($force = FALSE) {
+  if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_ts3_enable', FALSE)) {
+    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_name');
+    $queue->createQueue();
+    $result = db_select('users', 'u')->fields('u', array('uid'))->condition('status', 1, '=')->execute();
+
+    foreach ($result->fetchAll() as $item) {
+      $queue->createItem($item->uid);
     }
   }
 }
@@ -62,20 +111,28 @@ function omni_eve_api_cron($force = FALSE) {
  */
 function omni_eve_api_cron_queue_info() {
   $queue = array();
-  $queue['omni_eve_api_queue_api'] = array(
-    'worker callback' => 'omni_eve_api_queue_api',
+  $queue['omni_eve_api_cron_teamspeak'] = array(
+    'worker callback' => 'omni_eve_api_cron_teamspeak',
     'time' => 15,
   );
-  $queue['omni_eve_api_get_standings'] = array(
-    'worker callback' => 'omni_eve_api_get_standings',
+  $queue['omni_eve_api_cron_teamspeak_name'] = array(
+    'worker callback' => 'omni_eve_api_cron_teamspeak_name',
     'time' => 15,
   );
-  $queue['omni_eve_api_get_access_mask'] = array(
-    'worker callback' => 'omni_eve_api_get_access_mask',
+  $queue['omni_eve_api_cron_queue_users'] = array(
+    'worker callback' => 'omni_eve_api_cron_queue_users',
     'time' => 15,
   );
-  $queue['omni_eve_api_get_alliance_corporations'] = array(
-    'worker callback' => 'omni_eve_api_get_alliance_corporations',
+  $queue['omni_eve_api_cron_get_standings'] = array(
+    'worker callback' => 'omni_eve_api_cron_get_standings',
+    'time' => 15,
+  );
+  $queue['omni_eve_api_cron_get_access_mask'] = array(
+    'worker callback' => 'omni_eve_api_cron_get_access_mask',
+    'time' => 15,
+  );
+  $queue['omni_eve_api_cron_get_alliance_corporations'] = array(
+    'worker callback' => 'omni_eve_api_cron_get_alliance_corporations',
     'time' => 60,
   );
   return $queue;
@@ -87,7 +144,25 @@ function omni_eve_api_cron_queue_info() {
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
  */
-function omni_eve_api_queue_api($item) {
+function omni_eve_api_cron_teamspeak($item) {
+}
+
+/**
+ * Verify each characters API.
+ *
+ * @param mixed $item
+ *   whatever was added to the queue via queue->createItem()
+ */
+function omni_eve_api_cron_teamspeak_name($item) {
+}
+
+/**
+ * Verify each characters API.
+ *
+ * @param mixed $item
+ *   whatever was added to the queue via queue->createItem()
+ */
+function omni_eve_api_cron_queue_users($item) {
   $uid = $item;
   $all_characters = array();
 
@@ -270,7 +345,7 @@ function omni_eve_api_queue_api($item) {
  * @return mixed
  *   A complex array if an error is generated, or TRUE if no error.
  */
-function omni_eve_api_get_standings($item = NULL) {
+function omni_eve_api_cron_get_standings($item = NULL) {
   $query = array(
     'keyid' => variable_get('omni_eve_api_corp_keyid', ''),
     'vcode' => variable_get('omni_eve_api_corp_vcode', ''),
@@ -312,7 +387,7 @@ function omni_eve_api_get_standings($item = NULL) {
  * @return mixed
  *   A complex array if an error is generated, or TRUE if no error.
  */
-function omni_eve_api_get_alliance_corporations($item = NULL) {
+function omni_eve_api_cron_get_alliance_corporations($item = NULL) {
   $xml = omni_eve_api_get_xml('AllianceList');
 
   if (!isset($xml->cachedUntil)) {
@@ -399,7 +474,7 @@ function omni_eve_api_get_alliance_corporations($item = NULL) {
  * @return mixed
  *   A complex array if an error is generated, or TRUE if no error.
  */
-function omni_eve_api_get_access_mask($item = NULL) {
+function omni_eve_api_cron_get_access_mask($item = NULL) {
   $xml = omni_eve_api_get_xml('callList');
 
   if (!isset($xml->cachedUntil)) {

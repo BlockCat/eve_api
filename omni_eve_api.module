@@ -13,6 +13,7 @@ module_load_include('inc', 'omni_eve_api', 'omni_eve_api.admin');
 module_load_include('inc', 'omni_eve_api', 'omni_eve_api.user');
 module_load_include('inc', 'omni_eve_api', 'omni_eve_api.register');
 module_load_include('inc', 'omni_eve_api', 'omni_eve_api.ts3');
+module_load_include('php', 'omni_eve_api', 'libraries/TeamSpeak3/TeamSpeak3');
 
 /**
  * Implements hook_menu_alter().
@@ -54,7 +55,7 @@ function omni_eve_api_menu() {
   );
 
   $items['admin/settings/omni_eve_api/alliance_api_key'] = array(
-    'title' => 'Alliance API Key',
+    'title' => 'API Key',
     'description' => 'Edit your Alliance API Key if you have not done so, enter it now.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('omni_eve_api_admin_alliance_api_key_form'),
@@ -64,7 +65,7 @@ function omni_eve_api_menu() {
   );
 
   $items['admin/settings/omni_eve_api/settings'] = array(
-    'title' => 'Role Settings',
+    'title' => 'Roles',
     'description' => 'From here you can change various settings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('omni_eve_api_admin_settings_form'),
@@ -74,7 +75,7 @@ function omni_eve_api_menu() {
   );
 
   $items['admin/settings/omni_eve_api/access_mask'] = array(
-    'title' => 'Edit Access Mask',
+    'title' => 'Access Mask',
     'description' => 'Edit your Access Mask that is required to register on the site.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('omni_eve_api_admin_access_mask_form'),
@@ -84,7 +85,7 @@ function omni_eve_api_menu() {
   );
 
   $items['admin/settings/omni_eve_api/teamspeak'] = array(
-    'title' => 'Teamspeak Settings',
+    'title' => 'Teamspeak',
     'description' => 'Configure and edit Teamspeak 3 connection settings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('omni_eve_api_admin_teamspeak_form'),
@@ -94,7 +95,7 @@ function omni_eve_api_menu() {
   );
 
   $items['admin/settings/omni_eve_api/list_blues'] = array(
-    'title' => 'List Blues',
+    'title' => 'Blues',
     'description' => 'You can remove Blues and Add Blues from here.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('omni_eve_api_admin_list_blues_form'),
@@ -114,7 +115,7 @@ function omni_eve_api_menu() {
   );
 
   $items['admin/settings/omni_eve_api/list_whitelist'] = array(
-    'title' => 'List Whitelist',
+    'title' => 'Whitelist',
     'description' => 'You can remove Whitelisted API Characters and Add Whitelisted API Characters from here.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('omni_eve_api_admin_list_whitelist_form'),

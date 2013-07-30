@@ -471,7 +471,7 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
       user_multiple_role_edit(array($uid), 'add_role', $new_rid_2);
     }
 
-    $queue = DrupalQueue::get('omni_eve_api_queue_api');
+    $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
     $queue->createQueue();
     $queue->createItem($uid);
 
@@ -662,7 +662,7 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
     drupal_set_message(t('Please select a new Main Character'));
   }
 
-  $queue = DrupalQueue::get('omni_eve_api_queue_api');
+  $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
   $queue->createQueue();
   $queue->createItem($uid);
 }
