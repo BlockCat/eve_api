@@ -318,6 +318,13 @@ function omni_eve_api_install() {
     'description' => 'Main EVE Character ID',
   ));
 
+  db_add_field('users', 'teamspeakuid', array(
+    'type' => 'varchar',
+    'not null' => TRUE,
+    'default' => 0,
+    'description' => 'Unique Teamspeak 3 ID',
+  ));
+
   variable_set('omni_eve_api_first_install', TRUE);
   variable_set('omni_eve_api_enable_cron', TRUE);
   variable_set('omni_eve_api_blue_role', 2);
@@ -342,4 +349,5 @@ function omni_eve_api_install() {
 function omni_eve_api_uninstall() {
   db_drop_field('users', 'charactername');
   db_drop_field('users', 'characterid');
+  db_drop_field('users', 'teamspeakuid');
 }
