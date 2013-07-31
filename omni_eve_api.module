@@ -176,6 +176,18 @@ function omni_eve_api_menu() {
     'weight' => 20,
   );
 
+  $items['user/%user/omni_eve_api/teamspeak'] = array(
+    'title' => 'Teamspeak Registration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(
+      'omni_eve_api_user_teamspeak_form',
+      1,
+    ),
+    'access callback' => TRUE,
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 30,
+  );
+
   $items['user/%user/omni_eve_api/update_api_key/%'] = array(
     'title' => 'Update API Key',
     'page callback' => 'drupal_get_form',
@@ -230,6 +242,7 @@ function omni_eve_api_schema_alter(&$schema) {
     'type' => 'int',
     'not null' => TRUE,
     'default' => 0,
+    'length' => 20,
     'description' => 'Main EVE Character ID',
   );
 
@@ -237,6 +250,7 @@ function omni_eve_api_schema_alter(&$schema) {
     'type' => 'varchar',
     'not null' => TRUE,
     'default' => 0,
+    'length' => 255,
     'description' => 'Unique Teamspeak 3 ID',
   );
 }

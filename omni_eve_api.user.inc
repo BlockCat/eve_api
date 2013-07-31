@@ -34,7 +34,7 @@ function omni_eve_api_preprocess_user_picture(&$variables) {
     $filepath = omni_eve_api_get_account_user_picture($account);
 
     if (!empty($filepath)) {
-      $alt = t("@user's picture", array('@user' => format_username($account)));
+      $alt = t('@user\'s picture', array('@user' => format_username($account)));
       if (module_exists('image') && file_valid_uri($filepath) && $style = variable_get('user_picture_style', '')) {
         $variables['user_picture'] = theme('image_style', array(
           'style_name' => $style,
@@ -536,10 +536,12 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
   foreach ($uid_api_list['full'] as $uid_api_single) {
     $list_characters = '';
 
-    foreach ($uid_api_single['characters'] as $characters) {
-      $corp_alliance = ($characters['allianceid'] == 0) ? $characters['corporationname'] : $characters['corporationname'] . '/' . $characters['alliancename'];
-      $list_characters .= '[' . $characters['corporationticker'] . '] ' . $characters['charactername'] . ' (' . $corp_alliance . ')';
-      $list_characters .= '<br />';
+    if (isset($uid_api_single['characters'])) {
+      foreach ($uid_api_single['characters'] as $characters) {
+        $corp_alliance = ($characters['allianceid'] == 0) ? $characters['corporationname'] : $characters['corporationname'] . '/' . $characters['alliancename'];
+        $list_characters .= '[' . $characters['corporationticker'] . '] ' . $characters['charactername'] . ' (' . $corp_alliance . ')';
+        $list_characters .= '<br />';
+      }
     }
 
     $options[$uid_api_single['apiid']] = array(
@@ -869,4 +871,136 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
   }
 
   drupal_set_message(t('API Key successfully updated!'));
+}
+
+
+/**
+ * Form constructor for the user select main character form.
+ *
+ * @param string $account
+ *   The account information for the user page being viewed.
+ *
+ * @see omni_eve_api_user_teamspeak_form_validate()
+ * @see omni_eve_api_user_teamspeak_form_submit()
+ *
+ * @ingroup forms
+ */
+function omni_eve_api_user_teamspeak_form($form, &$form_state, $account) {
+  global $user;
+
+  if ($account->uid != $user->uid && !user_access('moderate omni_eve_api users')) {
+    drupal_goto('<front>');
+  }
+
+  $uid = $account->uid;
+  $uid_api_list = omni_eve_api_list_api($uid);
+
+  $form['teamspeak'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Register your Teamspeak Identity to your User Account'),
+    '#weight' => 0,
+  );
+
+  $form['teamspeak']['howto'] = array(
+    '#type' => 'markup',
+    '#prefix' => '<p>',
+    '#markup' => t('In order to register with Teamspeak, you must first connect to our Teamspeak.<br />If you do not have Teamspeak already installed, please download and install Teamspeak 3 from <a href="@teamspeak_url">here</a>.<br />Please use the following settings to connect:<br />Address - @teamspeak_address<br />Port - @teamspeak_port<br />Password - @teamspeak_password', array(
+      '@teamspeak_url' => 'http://www.teamspeak.com/?page=downloads',
+      '@teamspeak_address' => variable_get('omni_eve_api_ts3_server_address', 'teamspeak.com'),
+      '@teamspeak_port' => variable_get('omni_eve_api_ts3_server_port', 9987),
+      '@teamspeak_password' => variable_get('omni_eve_api_ts3_server_password', ''),
+    )),
+    '#suffix' => '</p>',
+    '#weight' => 0,
+  );
+
+  $form['teamspeak']['teamspeak_name'] = array(
+    '#type' => 'markup',
+    '#prefix' => '<p>',
+    '#markup' => !empty($account->charactername) ? t('Teamspeak Name: @teamspeak', array('@teamspeak' => omni_eve_api_teamspeak_format_name($account))) : t('Teamspeak Name: <a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/omni_eve_api/select_main_character'))),
+    '#suffix' => '</p>',
+    '#weight' => 10,
+  );
+
+  $form['teamspeak']['teamspeak_uid'] = array(
+    '#type' => 'markup',
+    '#prefix' => '<p>',
+    '#markup' => !empty($account->teamspeakuid) ? t('Teamspeak Unique ID: @teamspeak', array('@teamspeak' => $account->teamspeakuid)) : t('Teamspeak Unique ID: You are not registered.'),
+    '#suffix' => '</p>',
+    '#weight' => 20,
+  );
+
+  $form['teamspeak']['uid'] = array(
+    '#value' => $uid,
+    '#type' => 'hidden',
+  );
+
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Register'),
+  );
+
+  $form['#validate'] = array('omni_eve_api_user_teamspeak_form_validate');
+  $form['#submit'] = array('omni_eve_api_user_teamspeak_form_submit');
+
+  return $form;
+}
+
+/**
+ * Form validation handler for omni_eve_api_user_teamspeak_form().
+ *
+ * @see omni_eve_api_user_teamspeak_form_submit()
+ */
+function omni_eve_api_user_teamspeak_form_validate($form, &$form_state) {
+  global $user;
+
+  $uid = $form_state['values']['uid'];
+
+  if ($uid != $user->uid && !user_access('moderate omni_eve_api users')) {
+    drupal_goto('<front>');
+  }
+
+  $account = user_load($uid);
+
+  try {
+    $ts3 = omni_eve_api_teamspeak_connection();
+    $teamspeak_name = omni_eve_api_teamspeak_format_name($account);
+    $teamspeakuid = omni_eve_api_teamspeak_get_by_name($ts3, $teamspeak_name);
+  }
+  catch (Exception $e) {
+    form_set_error('teamspeak', $e->getMessage());
+  }
+}
+
+/**
+ * Form submission handler for omni_eve_api_user_teamspeak_form().
+ *
+ * @see omni_eve_api_user_teamspeak_form_validate()
+ */
+function omni_eve_api_user_teamspeak_form_submit($form, &$form_state) {
+  global $user;
+
+  $uid = $form_state['values']['uid'];
+
+  if ($uid != $user->uid && !user_access('moderate omni_eve_api users')) {
+    drupal_goto('<front>');
+  }
+
+  $account = user_load($uid);
+
+  try {
+    $ts3 = omni_eve_api_teamspeak_connection();
+    $teamspeak_name = omni_eve_api_teamspeak_format_name($account);
+    $teamspeakuid = omni_eve_api_teamspeak_get_by_name($ts3, $teamspeak_name);
+
+    db_update('users')->fields(array(
+        'teamspeakuid' => $teamspeakuid,
+      ))->condition('uid', $uid, '=')->execute();
+
+    // Need to assign roles.
+    drupal_set_message(t('Teamspeak access granted.'));
+  }
+  catch (Exception $e) {
+    drupal_set_message($e->getMessage(), 'error');
+  }
 }

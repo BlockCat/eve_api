@@ -258,7 +258,7 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
 
   $form['access_mask']['current_mask'] = array(
     '#type' => 'markup',
-    '#markup' => t("Current Mask: @access_mask", array('@access_mask' => $access_mask)),
+    '#markup' => t('Current Mask: @access_mask', array('@access_mask' => $access_mask)),
     '#weight' => 0,
   );
 
@@ -791,12 +791,22 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
 
   $form['teamspeak']['hostname'] = array(
     '#type' => 'textfield',
-    '#title' => t('Hostname/IP Address'),
-    '#description' => t('The Teamspeak 3 Hostname/IP address used to connect to the Teamspeak 3 Server. This can be 127.0.0.1 if the Teamspeak server is hosted on the same server as the webhost.'),
+    '#title' => t('IP Address'),
+    '#description' => t('The Teamspeak 3 IP address used to connect to the Teamspeak 3 Server. This can be 127.0.0.1 if the Teamspeak server is hosted on the same server as the webhost.'),
     '#required' => TRUE,
     '#maxlength' => 15,
     '#weight' => 0,
     '#default_value' => variable_get('omni_eve_api_ts3_host', '127.0.0.1'),
+  );
+
+  $form['teamspeak']['server_address'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Server Address'),
+    '#description' => t('The Teamspeak 3 server address used to connect to your Teamspeak Server.'),
+    '#required' => TRUE,
+    '#maxlength' => 100,
+    '#weight' => 0,
+    '#default_value' => variable_get('omni_eve_api_ts3_server_address', 'teamspeak.com'),
   );
 
   $form['teamspeak']['server_port'] = array(
@@ -805,8 +815,17 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#description' => t('The port used to connect to Teamspeak 3. (Default: 9987)'),
     '#required' => TRUE,
     '#maxlength' => 6,
-    '#weight' => 20,
+    '#weight' => 10,
     '#default_value' => variable_get('omni_eve_api_ts3_server_port', 9987),
+  );
+
+  $form['teamspeak']['password'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Server Password'),
+    '#description' => t('If you require a password to connect to your Teamspeak, please input the password, otherwise leave this empty.'),
+    '#maxlength' => 50,
+    '#weight' => 20,
+    '#default_value' => variable_get('omni_eve_api_ts3_server_password', ''),
   );
 
   $form['teamspeak']['query_port'] = array(
@@ -815,7 +834,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#description' => t('The Teamspeak 3 query port. (Default: 10011)'),
     '#required' => TRUE,
     '#maxlength' => 6,
-    '#weight' => 10,
+    '#weight' => 30,
     '#default_value' => variable_get('omni_eve_api_ts3_query_port', 10011),
   );
 
@@ -825,7 +844,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#description' => t('Query username choosen on your Teamspeak 3 server.'),
     '#required' => TRUE,
     '#maxlength' => 50,
-    '#weight' => 30,
+    '#weight' => 40,
     '#default_value' => variable_get('omni_eve_api_ts3_query_username', 'Username'),
   );
 
@@ -835,7 +854,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#description' => t('Query password generated on your Teamspeak 3 server.'),
     '#required' => TRUE,
     '#maxlength' => 50,
-    '#weight' => 40,
+    '#weight' => 50,
     '#default_value' => variable_get('omni_eve_api_ts3_query_password', 'Password'),
   );
 
@@ -845,7 +864,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#description' => t('The format that each user must have when connecting to Teamspeak 3. You can use the following variables:<br />@corp - Corporation Ticker<br />@alliance - Alliance Ticker<br />@name - EVE Character Name'),
     '#required' => TRUE,
     '#maxlength' => 50,
-    '#weight' => 50,
+    '#weight' => 60,
     '#default_value' => variable_get('omni_eve_api_ts3_nickname', '[@corp] @name'),
   );
 
@@ -853,7 +872,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#type' => 'checkbox',
     '#title' => t('Enable Teamspeak 3 Connection.'),
     '#default_value' => variable_get('omni_eve_api_ts3_enable', FALSE),
-    '#weight' => 60,
+    '#weight' => 70,
   );
 
   $form['submit_button'] = array(
@@ -875,8 +894,10 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
  */
 function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
   variable_set('omni_eve_api_ts3_host', (string) $form_state['values']['hostname']);
-  variable_set('omni_eve_api_ts3_query_port', (int) $form_state['values']['query_port']);
+  variable_set('omni_eve_api_ts3_server_address', (string) $form_state['values']['server_address']);
   variable_set('omni_eve_api_ts3_server_port', (int) $form_state['values']['server_port']);
+  variable_set('omni_eve_api_ts3_server_password', (string) $form_state['values']['server_password']);
+  variable_set('omni_eve_api_ts3_query_port', (int) $form_state['values']['query_port']);
   variable_set('omni_eve_api_ts3_query_username', (string) $form_state['values']['query_username']);
   variable_set('omni_eve_api_ts3_query_password', (string) $form_state['values']['query_password']);
   variable_set('omni_eve_api_ts3_nickname', (string) $form_state['values']['nickname']);
@@ -888,6 +909,7 @@ function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
     }
     catch (TeamSpeak3_Exception $e){
       form_set_error('enable', t('Teamspeak 3 Connection failed, check settings and try again. Error: @error', array('@error' => $e->getMessage())));
+      variable_set('omni_eve_api_ts3_enable', FALSE);
     }
   }
 }
