@@ -34,7 +34,7 @@ function omni_eve_api_preprocess_user_picture(&$variables) {
     $filepath = omni_eve_api_get_account_user_picture($account);
 
     if (!empty($filepath)) {
-      $alt = t('@user\'s picture', array('@user' => format_username($account)));
+      $alt = t("@user's picture", array('@user' => format_username($account)));
       if (module_exists('image') && file_valid_uri($filepath) && $style = variable_get('user_picture_style', '')) {
         $variables['user_picture'] = theme('image_style', array(
           'style_name' => $style,

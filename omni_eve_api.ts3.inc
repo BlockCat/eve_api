@@ -15,9 +15,9 @@
  */
 function omni_eve_api_teamspeak_format_name($account) {
   // Valid Options:
-  // @name = Character Name
-  // @corp = Corp Ticker
-  // @alliance = Alliance Ticker
+  // @name = Character Name.
+  // @corp = Corp Ticker.
+  // @alliance = Alliance Ticker.
   $teamspeak_name = variable_get('omni_eve_api_ts3_nickname', '[@corp] @name');
 
   $charactername = $account->charactername;
@@ -52,7 +52,6 @@ function omni_eve_api_teamspeak_connection() {
   }
   catch (TeamSpeak3_Exception $e){
     throw new Exception(t('Teamspeak 3 Connection failed. Error: @error', array('@error' => $e->getMessage())));
-    $ts3 = NULL;
   }
 
   return $ts3;
@@ -76,7 +75,6 @@ function omni_eve_api_teamspeak_get_by_name($ts3, $teamspeak_name) {
   }
   catch (TeamSpeak3_Exception $e){
     throw new Exception(t('Unable to find user.'));
-    $teamspeakuid = NULL;
   }
 
   return $teamspeakuid;
