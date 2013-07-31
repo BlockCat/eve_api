@@ -35,6 +35,12 @@ function omni_eve_api_teamspeak_format_name($account) {
   return $teamspeak_name;
 }
 
+/**
+ * Test the connection to the Teamspeak 3 Server.
+ *
+ * @return object
+ *   The Teamspeak connection object.
+ */
 function omni_eve_api_teamspeak_connection() {
   if (variable_get('omni_eve_api_ts3_enable', FALSE) === FALSE) {
     throw new Exception(t('Teamspeak 3 Connection disabled.'));
@@ -52,6 +58,17 @@ function omni_eve_api_teamspeak_connection() {
   return $ts3;
 }
 
+/**
+ * Get the Teamspeak 3 users Unique ID.
+ *
+ * @param object $ts3
+ *   The Teamspeak connection object.
+ * @param string $teamspeak_name
+ *   The expected Teamspeak 3 user name.
+ * 
+ * @return string
+ *   The users unique teamspeak id.
+ */
 function omni_eve_api_teamspeak_get_by_name($ts3, $teamspeak_name) {
   try {
     $teamspeak_data = $ts3->clientGetByName($teamspeak_name);
