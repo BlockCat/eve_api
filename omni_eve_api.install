@@ -315,7 +315,7 @@ function omni_eve_api_install() {
     'type' => 'int',
     'not null' => TRUE,
     'default' => 0,
-    'length' => 20,
+    'length' => 11,
     'description' => 'Main EVE Character ID',
   ));
 
@@ -325,6 +325,14 @@ function omni_eve_api_install() {
     'default' => 0,
     'length' => 255,
     'description' => 'Unique Teamspeak 3 ID',
+  ));
+
+  db_add_field('users', 'teamspeakdbid', array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+    'length' => 10,
+    'description' => 'Teamspeak 3 Database ID',
   ));
 
   variable_set('omni_eve_api_first_install', TRUE);

@@ -68,7 +68,7 @@ function omni_eve_api_teamspeak_connection() {
  * @return string
  *   The users unique teamspeak id.
  */
-function omni_eve_api_teamspeak_get_by_name($ts3, $teamspeak_name) {
+function omni_eve_api_teamspeak_user_by_name(&$ts3, $teamspeak_name) {
   try {
     $teamspeak_data = $ts3->clientGetByName($teamspeak_name);
     $teamspeakuid = $teamspeak_data->client_unique_identifier;
@@ -78,4 +78,161 @@ function omni_eve_api_teamspeak_get_by_name($ts3, $teamspeak_name) {
   }
 
   return $teamspeakuid;
+}
+
+/**
+ * Create a Teamspeak 3 Server group on the Teamspeak 3 server.
+ *
+ * @param object $ts3
+ *   The Teamspeak connection object.
+ * @param object $role
+ *   The expected role object.
+ * 
+ * @return string
+ *   The new Teamspeak Group ID.
+ */
+function omni_eve_api_teamspeak_group_create(&$ts3, $role) {
+  try {
+    $teamspeakgid = $ts3->serverGroupCreate($role->name);
+  }
+  catch (TeamSpeak3_Exception $e){
+    throw new Exception(t('Unable to create new group.'));
+  }
+
+  return $teamspeakgid;
+}
+
+/**
+ * Get the Teamspeak 3 unique group ID.
+ *
+ * @param object $ts3
+ *   The Teamspeak connection object.
+ * @param object $role
+ *   The expected role object.
+ * 
+ * @return string
+ *   The Teamspeak Group ID.
+ */
+function omni_eve_api_teamspeak_group_get_id(&$ts3, $role) {
+  try {
+    $teamspeakgid = $ts3->serverGroupGetByName($role->name);
+  }
+  catch (TeamSpeak3_Exception $e){
+    $teamspeakgid = NULL;
+  }
+
+  return $teamspeakgid;
+}
+
+/**
+ * Delete's the user from the Teamspeak Database.
+ *
+ * @param object $ts3
+ *   The Teamspeak connection object.
+ * @param int $teamspeakdbid
+ *   The database ID for the teamspeak user.
+ * 
+ * @return bool
+ *   Success or failure.
+ */
+function omni_eve_api_teamspeak_user_delete(&$ts3, $teamspeakdbid) {
+  try {
+    $ts3->clientDeleteDb($teamspeakdbid);
+  }
+  catch (TeamSpeak3_Exception $e){
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/**
+ * Delete's the user from the Teamspeak Database.
+ *
+ * @param object $ts3
+ *   The Teamspeak connection object.
+ * @param int $teamspeakdbid
+ *   The database ID for the teamspeak user.
+ * 
+ * @return array
+ *   Returns an array containing the names and IDs of all server groups
+ *   the client specified with $teamspeakdbid is is currently residing in.
+ */
+function omni_eve_api_teamspeak_user_get_groups(&$ts3, $teamspeakdbid) {
+  try {
+    $teamspeak_data = $ts3->clientGetServerGroupsByDbid($teamspeakdbid);
+  }
+  catch (TeamSpeak3_Exception $e){
+    return NULL;
+  }
+
+  return $teamspeak_data;
+}
+
+/**
+ * Delete's the user from the Teamspeak group.
+ *
+ * @param object $ts3
+ *   The Teamspeak connection object.
+ * @param int $teamspeakgid
+ *   The group ID for the teamspeak group.
+ * @param int $teamspeakdbid
+ *   The database ID for the teamspeak user.
+ * 
+ * @return bool
+ *   Success or failure.
+ */
+function omni_eve_api_teamspeak_user_remove_group(&$ts3, $teamspeakgid, $teamspeakdbid) {
+  try {
+    $ts3->serverGroupClientDel($teamspeakgid, $teamspeakdbid);
+  }
+  catch (TeamSpeak3_Exception $e){
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/**
+ * Add's the user to the Teamspeak group.
+ *
+ * @param object $ts3
+ *   The Teamspeak connection object.
+ * @param int $teamspeakgid
+ *   The group ID for the teamspeak group.
+ * @param int $teamspeakdbid
+ *   The database ID for the teamspeak user.
+ * 
+ * @return bool
+ *   Success or failure.
+ */
+function omni_eve_api_teamspeak_user_add_group(&$ts3, $teamspeakgid, $teamspeakdbid) {
+  try {
+    $ts3->serverGroupClientAdd($teamspeakgid, $teamspeakdbid);
+  }
+  catch (TeamSpeak3_Exception $e){
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/**
+ * Get a list of current Teampspeak Server groups.
+ *
+ * @param object $ts3
+ *   The Teamspeak connection object.
+ * 
+ * @return array
+ *   Returns a list of server groups available.
+ */
+function omni_eve_api_teamspeak_get_groups(&$ts3) {
+  try {
+    $teamspeak_data = $ts3->serverGroupList();
+  }
+  catch (TeamSpeak3_Exception $e){
+    return NULL;
+  }
+
+  return $teamspeak_data;
 }
