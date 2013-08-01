@@ -248,10 +248,21 @@ function omni_eve_api_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
+      'rid' => array(
+        'description' => 'The Drupal role ID.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
       'corporationname' => array(
         'description' => 'The Corporation Name the Character is currently associated with in EVE.',
         'type' => 'varchar',
         'length' => 50,
+        'not null' => TRUE,
+      ),
+      'corporationticker' => array(
+        'description' => 'The Corporation Ticker the Character is currently associated with in EVE.',
+        'type' => 'varchar',
+        'length' => 20,
         'not null' => TRUE,
       ),
       'deleted' => array(
@@ -362,4 +373,5 @@ function omni_eve_api_uninstall() {
   db_drop_field('users', 'charactername');
   db_drop_field('users', 'characterid');
   db_drop_field('users', 'teamspeakuid');
+  db_drop_field('users', 'teamspeakdbid');
 }

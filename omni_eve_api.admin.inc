@@ -196,7 +196,7 @@ function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
     variable_set('omni_eve_api_corporationID', (int) $character['corporationID']);
   }
 
-  omni_eve_api_general_cron(TRUE);
+  omni_eve_api_general_cron();
   drupal_cron_run();
 }
 
@@ -819,7 +819,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#default_value' => variable_get('omni_eve_api_ts3_server_port', 9987),
   );
 
-  $form['teamspeak']['password'] = array(
+  $form['teamspeak']['server_password'] = array(
     '#type' => 'textfield',
     '#title' => t('Server Password'),
     '#description' => t('If you require a password to connect to your Teamspeak, please input the password, otherwise leave this empty.'),
@@ -922,6 +922,7 @@ function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
 function omni_eve_api_admin_teamspeak_form_submit($form, &$form_state) {
   if ((int) $form_state['values']['enable']) {
     variable_set('omni_eve_api_ts3_enable', TRUE);
+    omni_eve_api_cron_teamspeak_role(1);
   }
   else {
     variable_set('omni_eve_api_ts3_enable', FALSE);

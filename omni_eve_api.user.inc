@@ -965,7 +965,7 @@ function omni_eve_api_user_teamspeak_form_validate($form, &$form_state) {
   try {
     $ts3 = omni_eve_api_teamspeak_connection();
     $teamspeak_name = omni_eve_api_teamspeak_format_name($account);
-    $teamspeakuid = omni_eve_api_teamspeak_user_by_name($ts3, $teamspeak_name);
+    $teamspeak_data = omni_eve_api_teamspeak_user_by_name($ts3, $teamspeak_name);
   }
   catch (Exception $e) {
     form_set_error('teamspeak', $e->getMessage());
@@ -991,11 +991,16 @@ function omni_eve_api_user_teamspeak_form_submit($form, &$form_state) {
   try {
     $ts3 = omni_eve_api_teamspeak_connection();
     $teamspeak_name = omni_eve_api_teamspeak_format_name($account);
-    $teamspeakuid = omni_eve_api_teamspeak_user_by_name($ts3, $teamspeak_name);
+    $teamspeak_data = omni_eve_api_teamspeak_user_by_name($ts3, $teamspeak_name);
+    $teamspeakuid = $teamspeak_data->client_unique_identifier;
+    $teamspeakdbid = $teamspeak_data->client_database_id;
 
     db_update('users')->fields(array(
         'teamspeakuid' => $teamspeakuid,
+        'teamspeakdbid' => $teamspeakdbid,
       ))->condition('uid', $uid, '=')->execute();
+
+    omni_eve_api_cron_teamspeak_user(array('uid' => $uid, 'teamspeakdbid' => $teamspeakdbid));
 
     // Need to assign roles.
     drupal_set_message(t('Teamspeak access granted.'));

@@ -58,42 +58,21 @@ function omni_eve_api_teamspeak_connection() {
 }
 
 /**
- * Get the Teamspeak 3 users Unique ID.
- *
- * @param object $ts3
- *   The Teamspeak connection object.
- * @param string $teamspeak_name
- *   The expected Teamspeak 3 user name.
- * 
- * @return string
- *   The users unique teamspeak id.
- */
-function omni_eve_api_teamspeak_user_by_name(&$ts3, $teamspeak_name) {
-  try {
-    $teamspeak_data = $ts3->clientGetByName($teamspeak_name);
-    $teamspeakuid = $teamspeak_data->client_unique_identifier;
-  }
-  catch (TeamSpeak3_Exception $e){
-    throw new Exception(t('Unable to find user.'));
-  }
-
-  return $teamspeakuid;
-}
-
-/**
  * Create a Teamspeak 3 Server group on the Teamspeak 3 server.
  *
  * @param object $ts3
  *   The Teamspeak connection object.
- * @param object $role
- *   The expected role object.
+ * @param string $role
+ *   The name of the role.
  * 
  * @return string
  *   The new Teamspeak Group ID.
  */
 function omni_eve_api_teamspeak_group_create(&$ts3, $role) {
   try {
-    $teamspeakgid = $ts3->serverGroupCreate($role->name);
+    $guest_id = omni_eve_api_teamspeak_group_get_id($ts3, 'Guest');
+    $teamspeakgid = $ts3->serverGroupCopy($guest_id, $role);
+    $ts3->serverGroupPermAssign($teamspeakgid, 'b_group_is_permanent', 1);
   }
   catch (TeamSpeak3_Exception $e){
     throw new Exception(t('Unable to create new group.'));
@@ -107,21 +86,63 @@ function omni_eve_api_teamspeak_group_create(&$ts3, $role) {
  *
  * @param object $ts3
  *   The Teamspeak connection object.
- * @param object $role
- *   The expected role object.
+ * @param string $role
+ *   The name of the role.
  * 
  * @return string
  *   The Teamspeak Group ID.
  */
 function omni_eve_api_teamspeak_group_get_id(&$ts3, $role) {
   try {
-    $teamspeakgid = $ts3->serverGroupGetByName($role->name);
+    $teamspeakgid = $ts3->serverGroupGetByName($role);
   }
   catch (TeamSpeak3_Exception $e){
-    $teamspeakgid = NULL;
+    $teamspeakgid = FALSE;
   }
 
   return $teamspeakgid;
+}
+
+/**
+ * Get a list of current Teampspeak Server groups.
+ *
+ * @param object $ts3
+ *   The Teamspeak connection object.
+ * 
+ * @return array
+ *   Returns a list of server groups available.
+ */
+function omni_eve_api_teamspeak_get_groups(&$ts3) {
+  try {
+    $teamspeak_data = $ts3->serverGroupList();
+  }
+  catch (TeamSpeak3_Exception $e){
+    return FALSE;
+  }
+
+  return $teamspeak_data;
+}
+
+/**
+ * Get the Teamspeak 3 users Unique ID.
+ *
+ * @param object $ts3
+ *   The Teamspeak connection object.
+ * @param string $teamspeak_name
+ *   The expected Teamspeak 3 user name.
+ * 
+ * @return string
+ *   The users unique teamspeak id.
+ */
+function omni_eve_api_teamspeak_user_by_name(&$ts3, $teamspeak_name) {
+  try {
+    $teamspeak_data = $ts3->clientGetByName($teamspeak_name);
+  }
+  catch (TeamSpeak3_Exception $e){
+    throw new Exception(t('Unable to find user.'));
+  }
+
+  return $teamspeak_data;
 }
 
 /**
@@ -147,7 +168,7 @@ function omni_eve_api_teamspeak_user_delete(&$ts3, $teamspeakdbid) {
 }
 
 /**
- * Delete's the user from the Teamspeak Database.
+ * Get a list of groups the user is in.
  *
  * @param object $ts3
  *   The Teamspeak connection object.
@@ -163,7 +184,7 @@ function omni_eve_api_teamspeak_user_get_groups(&$ts3, $teamspeakdbid) {
     $teamspeak_data = $ts3->clientGetServerGroupsByDbid($teamspeakdbid);
   }
   catch (TeamSpeak3_Exception $e){
-    return NULL;
+    return FALSE;
   }
 
   return $teamspeak_data;
@@ -215,24 +236,4 @@ function omni_eve_api_teamspeak_user_add_group(&$ts3, $teamspeakgid, $teamspeakd
   }
 
   return TRUE;
-}
-
-/**
- * Get a list of current Teampspeak Server groups.
- *
- * @param object $ts3
- *   The Teamspeak connection object.
- * 
- * @return array
- *   Returns a list of server groups available.
- */
-function omni_eve_api_teamspeak_get_groups(&$ts3) {
-  try {
-    $teamspeak_data = $ts3->serverGroupList();
-  }
-  catch (TeamSpeak3_Exception $e){
-    return NULL;
-  }
-
-  return $teamspeak_data;
 }

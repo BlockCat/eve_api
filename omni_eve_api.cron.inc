@@ -20,8 +20,8 @@ function omni_eve_api_cronapi($op, $job = NULL) {
     'rule' => '0 * * * *',
   );
 
-  $items['omni_eve_api_teamspeak_cron'] = array(
-    'description' => 'Update permissions in Teamspeak every 5 minutes.',
+  $items['omni_eve_api_teamspeak_user_cron'] = array(
+    'description' => 'Update user permissions in Teamspeak every 5 minutes.',
     'rule' => '*/5 * * * *',
   );
 
@@ -36,7 +36,7 @@ function omni_eve_api_cronapi($op, $job = NULL) {
 /**
  * Implements hook_cron().
  */
-function omni_eve_api_general_cron($force = FALSE) {
+function omni_eve_api_general_cron() {
   if (variable_get('omni_eve_api_enable_cron', TRUE)) {
     $item = NULL;
 
@@ -62,7 +62,7 @@ function omni_eve_api_general_cron($force = FALSE) {
 /**
  * Implements hook_cron().
  */
-function omni_eve_api_users_cron($force = FALSE) {
+function omni_eve_api_users_cron() {
   if (variable_get('omni_eve_api_enable_cron', TRUE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
     $queue->createQueue();
@@ -77,14 +77,21 @@ function omni_eve_api_users_cron($force = FALSE) {
 /**
  * Implements hook_cron().
  */
-function omni_eve_api_teamspeak_cron($force = FALSE) {
+function omni_eve_api_teamspeak_user_cron() {
   if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_ts3_enable', FALSE)) {
-    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak');
+    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role');
     $queue->createQueue();
-    $result = db_select('users', 'u')->fields('u', array('uid'))->condition('status', 1, '=')->execute();
+    $item = NULL;
+    $queue->createItem($item);
 
-    foreach ($result->fetchAll() as $item) {
-      $queue->createItem($item->uid);
+    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
+    $queue->createQueue();
+    $result = db_select('users', 'u')->fields('u', array('uid', 'teamspeakdbid'))->condition('status', 1, '=')->condition('teamspeakuid', 0, '<>')->execute();
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $item) {
+        $queue->createItem(array('uid' => $item->uid, 'teamspeakdbid' => $item->teamspeakdbid));
+      }
     }
   }
 }
@@ -92,7 +99,7 @@ function omni_eve_api_teamspeak_cron($force = FALSE) {
 /**
  * Implements hook_cron().
  */
-function omni_eve_api_teamspeak_name_cron($force = FALSE) {
+function omni_eve_api_teamspeak_name_cron() {
   if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_ts3_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_name');
     $queue->createQueue();
@@ -111,12 +118,16 @@ function omni_eve_api_teamspeak_name_cron($force = FALSE) {
  */
 function omni_eve_api_cron_queue_info() {
   $queue = array();
-  $queue['omni_eve_api_cron_teamspeak'] = array(
-    'worker callback' => 'omni_eve_api_cron_teamspeak',
+  $queue['omni_eve_api_cron_teamspeak_user'] = array(
+    'worker callback' => 'omni_eve_api_cron_teamspeak_user',
     'time' => 15,
   );
   $queue['omni_eve_api_cron_teamspeak_name'] = array(
     'worker callback' => 'omni_eve_api_cron_teamspeak_name',
+    'time' => 15,
+  );
+  $queue['omni_eve_api_cron_teamspeak_role'] = array(
+    'worker callback' => 'omni_eve_api_cron_teamspeak_role',
     'time' => 15,
   );
   $queue['omni_eve_api_cron_queue_users'] = array(
@@ -139,21 +150,111 @@ function omni_eve_api_cron_queue_info() {
 }
 
 /**
- * Verify each characters API.
+ * Update user permissions in Teamspeak based on roles.
  *
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
  */
-function omni_eve_api_cron_teamspeak($item) {
+function omni_eve_api_cron_teamspeak_user($item) {
+  try {
+    $roles = user_roles();
+    $valid_roles = $user_roles = array();
+
+    foreach ($roles as $rid => $rname) {
+      if ($rid == 1 || $rid == 2) {
+        continue;
+      }
+
+      $rname = str_replace($corporationname, $corporationticker, $rname);
+      $valid_roles[$rname] = $rid;
+    }
+
+    $uid = $item['uid'];
+    $teamspeakdbid = $item['teamspeakdbid'];
+    $ts3 = omni_eve_api_teamspeak_connection();
+
+    $query = db_select('users_roles', 'ur');
+    $query->join('oea_alliance_corporations', 'oea', 'oea.rid = ur.rid');
+    $query->fields('oea', array('rid', 'corporationticker'));
+    $query->condition('uid', $uid, '=');
+    $result = $query->execute();
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $row) {
+        $user_roles[$row->corporationticker] = $row->rid;
+        $teamspeakgid = omni_eve_api_teamspeak_group_get_id($ts3, $row->corporationticker);
+        omni_eve_api_teamspeak_user_add_group($ts3, $teamspeakgid, $teamspeakdbid);
+      }
+    }
+
+    $roles = omni_eve_api_teamspeak_user_get_groups($ts3, $teamspeakdbid);
+
+    foreach ($roles as $rid => $rname)
+    {
+      if (!isset($user_roles[$rname['name']]) && (string) $rname['name'] != 'Guest' && isset($valid_roles[$rname['name']])) {
+        omni_eve_api_teamspeak_user_remove_group($ts3, $rid, $teamspeakdbid);
+      }
+    }
+  }
+  catch (Exception $e) {
+    return FALSE;
+  }
+
+  return TRUE;
 }
 
 /**
- * Verify each characters API.
+ * Check each user on Teamspeak to ensure the Unique ID Matches the character
+ * name.
  *
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
  */
 function omni_eve_api_cron_teamspeak_name($item) {
+}
+
+/**
+ * Sync Teamspeak Permissions with Drupal roles.
+ *
+ * @param mixed $item
+ *   whatever was added to the queue via queue->createItem()
+ */
+function omni_eve_api_cron_teamspeak_role($item) {
+  try {
+    $roles = user_roles();
+    $ts3 = omni_eve_api_teamspeak_connection();
+    $corporationname = $corporationticker = array();
+
+    $query = db_select('oea_alliance_corporations', 'oea');
+    $query->fields('oea', array('corporationname', 'corporationticker'));
+    $result = $query->execute();
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $row) {
+        $corporationname[] = $row->corporationname;
+        $corporationticker[] = $row->corporationticker;
+      }
+    }
+
+    foreach ($roles as $rid => $rname) {
+      if ($rid == 1 || $rid == 2) {
+        continue;
+      }
+
+      $rname = str_replace($corporationname, $corporationticker, $rname);
+
+      if (omni_eve_api_teamspeak_group_get_id($ts3, $rname)) {
+        continue;
+      }
+
+      omni_eve_api_teamspeak_group_create($ts3, $rname);
+    }
+  }
+  catch (Exception $e) {
+    return FALSE;
+  }
+
+  return TRUE;
 }
 
 /**
@@ -418,9 +519,22 @@ function omni_eve_api_cron_get_alliance_corporations($item = NULL) {
           continue;
         }
 
+        if (!($role = user_role_load_by_name($corp_info['corporationName']))) {
+          $user_role = new stdClass();
+          $user_role->name = $corp_info['corporationName'];
+
+          if (!empty($corp_info['corporationName'])) {
+            user_role_save($user_role);
+          }
+
+          $role = user_role_load_by_name($corp_info['corporationName']);
+        }
+
         db_merge('oea_alliance_corporations')->key(array('corporationid' => (int) $row_b->corporationID))->fields(array(
           'corporationid' => (int) $row_b->corporationID,
+          'rid' => (int) $role->rid,
           'corporationname' => (string) $corp_info['corporationName'],
+          'corporationticker' => (string) $corp_info['corporationTicker'],
           'deleted' => 0,
           'manual' => 0,
         ))->execute();
@@ -439,23 +553,6 @@ function omni_eve_api_cron_get_alliance_corporations($item = NULL) {
         $user_role = new stdClass();
         $user_role->name = $row->corporationname;
         user_role_delete($user_role);
-      }
-    }
-  }
-
-  $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
-    'corporationid',
-    'corporationname',
-  ))->condition('deleted', 0, '=')->execute();
-
-  if ($result->rowCount()) {
-    foreach ($result->fetchAll() as $row) {
-      if (user_role_load_by_name($row->corporationname) == FALSE) {
-        $user_role = new stdClass();
-        $user_role->name = $row->corporationname;
-        if (!empty($row->corporationname)) {
-          user_role_save($user_role);
-        }
       }
     }
   }
