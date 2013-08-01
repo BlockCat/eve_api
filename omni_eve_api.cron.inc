@@ -156,7 +156,7 @@ function omni_eve_api_cron_queue_info() {
  *   whatever was added to the queue via queue->createItem()
  */
 function omni_eve_api_cron_teamspeak_user($item) {
-//  try {
+  try {
     $roles = user_roles();
     $valid_roles = $user_roles = array();
 
@@ -218,10 +218,10 @@ function omni_eve_api_cron_teamspeak_user($item) {
         omni_eve_api_teamspeak_user_remove_group($ts3, $rid, $teamspeakdbid);
       }
     }
-//  }
-//  catch (Exception $e) {
-//    return FALSE;
-//  }
+  }
+  catch (Exception $e) {
+    return FALSE;
+  }
 
   return TRUE;
 }
