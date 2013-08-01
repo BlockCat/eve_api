@@ -210,14 +210,11 @@ function omni_eve_api_cron_teamspeak_user($item) {
       }
     }
 
-    $roles = $ts3->clientGetServerGroupsByDbid($teamspeakdbid);
-    print_r($roles);
-    //$roles = omni_eve_api_teamspeak_user_get_groups($ts3, $teamspeakdbid);
+    $roles = omni_eve_api_teamspeak_user_get_groups($ts3, $teamspeakdbid);
 
     foreach ($roles as $rid => $rname)
     {
-      echo 1;
-      if (!isset($user_roles[$rname['name']]) && (string) $rname['name'] != 'Guest' && isset($valid_roles[$rname['name']])) {
+      if (!isset($user_roles[(string) $rname['name']]) && (string) $rname['name'] != 'Guest' && isset($valid_roles[(string) $rname['name']])) {
         omni_eve_api_teamspeak_user_remove_group($ts3, $rid, $teamspeakdbid);
       }
     }
