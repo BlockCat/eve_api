@@ -156,16 +156,31 @@ function omni_eve_api_cron_queue_info() {
  *   whatever was added to the queue via queue->createItem()
  */
 function omni_eve_api_cron_teamspeak_user($item) {
-  try {
+//  try {
     $roles = user_roles();
     $valid_roles = $user_roles = array();
+
+    $query = db_select('oea_alliance_corporations', 'oea');
+    $query->fields('oea', array('corporationname', 'corporationticker'));
+    $result = $query->execute();
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $row) {
+        $corp_info[$row->corporationname] = $row->corporationticker;
+      }
+    }
 
     foreach ($roles as $rid => $rname) {
       if ($rid == 1 || $rid == 2) {
         continue;
       }
 
-      $rname = str_replace($corporationname, $corporationticker, $rname);
+      foreach ($corp_info as $key => $value) {
+        if ($key == $rname) {
+          $rname = $value;
+        }
+      }
+
       $valid_roles[$rname] = $rid;
     }
 
@@ -174,31 +189,42 @@ function omni_eve_api_cron_teamspeak_user($item) {
     $ts3 = omni_eve_api_teamspeak_connection();
 
     $query = db_select('users_roles', 'ur');
-    $query->join('oea_alliance_corporations', 'oea', 'oea.rid = ur.rid');
-    $query->fields('oea', array('rid', 'corporationticker'));
+    $query->join('role', 'r', 'r.rid = ur.rid');
+    $query->fields('r', array('rid', 'name'));
     $query->condition('uid', $uid, '=');
     $result = $query->execute();
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
-        $user_roles[$row->corporationticker] = $row->rid;
-        $teamspeakgid = omni_eve_api_teamspeak_group_get_id($ts3, $row->corporationticker);
+        $rname = $row->name;
+
+        foreach ($corp_info as $key => $value) {
+          if ($key == $rname) {
+            $rname = $value;
+          }
+        }
+
+        $user_roles[$rname] = $row->rid;
+        $teamspeakgid = omni_eve_api_teamspeak_group_get_id($ts3, $rname);
         omni_eve_api_teamspeak_user_add_group($ts3, $teamspeakgid, $teamspeakdbid);
       }
     }
 
-    $roles = omni_eve_api_teamspeak_user_get_groups($ts3, $teamspeakdbid);
+    $roles = $ts3->clientGetServerGroupsByDbid($teamspeakdbid);
+    print_r($roles);
+    //$roles = omni_eve_api_teamspeak_user_get_groups($ts3, $teamspeakdbid);
 
     foreach ($roles as $rid => $rname)
     {
+      echo 1;
       if (!isset($user_roles[$rname['name']]) && (string) $rname['name'] != 'Guest' && isset($valid_roles[$rname['name']])) {
         omni_eve_api_teamspeak_user_remove_group($ts3, $rid, $teamspeakdbid);
       }
     }
-  }
-  catch (Exception $e) {
-    return FALSE;
-  }
+//  }
+//  catch (Exception $e) {
+//    return FALSE;
+//  }
 
   return TRUE;
 }
@@ -223,7 +249,7 @@ function omni_eve_api_cron_teamspeak_role($item) {
   try {
     $roles = user_roles();
     $ts3 = omni_eve_api_teamspeak_connection();
-    $corporationname = $corporationticker = array();
+    $corp_info = array();
 
     $query = db_select('oea_alliance_corporations', 'oea');
     $query->fields('oea', array('corporationname', 'corporationticker'));
@@ -231,8 +257,7 @@ function omni_eve_api_cron_teamspeak_role($item) {
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
-        $corporationname[] = $row->corporationname;
-        $corporationticker[] = $row->corporationticker;
+        $corp_info[$row->corporationname] = $row->corporationticker;
       }
     }
 
@@ -241,7 +266,11 @@ function omni_eve_api_cron_teamspeak_role($item) {
         continue;
       }
 
-      $rname = str_replace($corporationname, $corporationticker, $rname);
+      foreach ($corp_info as $key => $value) {
+        if ($key == $rname) {
+          $rname = $value;
+        }
+      }
 
       if (omni_eve_api_teamspeak_group_get_id($ts3, $rname)) {
         continue;
