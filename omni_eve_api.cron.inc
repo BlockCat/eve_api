@@ -212,8 +212,7 @@ function omni_eve_api_cron_teamspeak_user($item) {
 
     $roles = omni_eve_api_teamspeak_user_get_groups($ts3, $teamspeakdbid);
 
-    foreach ($roles as $rid => $rname)
-    {
+    foreach ($roles as $rid => $rname) {
       if (!isset($user_roles[(string) $rname['name']]) && (string) $rname['name'] != 'Guest' && isset($valid_roles[(string) $rname['name']])) {
         omni_eve_api_teamspeak_user_remove_group($ts3, $rid, $teamspeakdbid);
       }
@@ -227,8 +226,7 @@ function omni_eve_api_cron_teamspeak_user($item) {
 }
 
 /**
- * Check each user on Teamspeak to ensure the Unique ID Matches the character
- * name.
+ * Check each user on Teamspeak to ensure the Unique ID matches the character.
  *
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
