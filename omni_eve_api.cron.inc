@@ -86,7 +86,7 @@ function omni_eve_api_teamspeak_user_cron() {
 
     $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
     $queue->createQueue();
-    $result = db_select('users', 'u')->fields('u', array('uid', 'teamspeakdbid'))->condition('status', 1, '=')->condition('teamspeakuid', 0, '<>')->execute();
+    $result = db_select('users', 'u')->fields('u', array('uid', 'teamspeakdbid'))->condition('status', 1, '=')->condition('teamspeakuid', 0, '!=')->execute();
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
@@ -410,8 +410,8 @@ function omni_eve_api_cron_queue_users($item) {
 
       if ($result->rowCount()) {
         foreach ($result->fetchAll() as $row) {
-          if ($corporation_role = user_role_load_by_name($row->corporationname) && $row->corporationid != $character_data['corporationID']) {
-            user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
+          if (($corporation_role_2 = user_role_load_by_name($row->corporationname)) && $row->corporationid != $character_data['corporationID']) {
+            user_multiple_role_edit(array($uid), 'remove_role', $corporation_role_2->rid);
           }
         }
       }
