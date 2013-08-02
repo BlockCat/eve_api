@@ -138,8 +138,10 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
   $form['account']['#description'] = t('Please select your main character from the drop down box.  This character will be used to identify yourself throughout the site and various tools.');
 
   $form['#validate'] = array(
-    'user_register_validate',
     'omni_eve_api_user_register_form_validate',
+    'user_account_form_validate',
+    'user_validate_picture',
+    'user_register_validate',
   );
 
   $form['#submit'] = array(
@@ -328,27 +330,19 @@ function omni_eve_api_user_register_form_submit($form, &$form_state) {
     }
   }
 
-  $new_rid_2 = NULL;
-
   if ($corporation_role = user_role_load_by_name($character['corporationName'])) {
-    $new_rid = $corporation_role->rid;
+    user_multiple_role_edit(array($uid), 'add_role', $corporation_role->rid);
 
     if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2))) {
-      $new_rid_2 = $alliance_role->rid;
+      user_multiple_role_edit(array($uid), 'add_role', $alliance_role->rid);
     }
   }
   elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2))) {
-    $new_rid = $blue_role->rid;
+    user_multiple_role_edit(array($uid), 'add_role', $blue_role->rid);
   }
   else {
     $default_role = user_role_load_by_name('authenticated user');
-    $new_rid = $default_role->rid;
-  }
-
-  user_multiple_role_edit(array($uid), 'add_role', $new_rid);
-
-  if (isset($new_rid_2)) {
-    user_multiple_role_edit(array($uid), 'add_role', $new_rid_2);
+    user_multiple_role_edit(array($uid), 'add_role', $default_role->rid);
   }
 
   db_update('users')->fields(array(
