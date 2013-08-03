@@ -403,7 +403,12 @@ function omni_eve_api_cron_queue_users($item) {
       // Log Error ?
     }
 
-    db_update('users')->fields(array('charactername' => '', 'teamspeakuid' => 0, 'teamspeakdbid' => 0, 'characterid' => 0))->condition('uid', $uid, '=')->execute();
+    db_update('users')->fields(array(
+      'charactername' => '',
+      'teamspeakuid' => 0,
+      'teamspeakdbid' => 0,
+      'characterid' => 0,
+      ))->condition('uid', $uid, '=')->execute();
     return FALSE;
   }
   else {
