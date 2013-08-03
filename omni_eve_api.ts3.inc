@@ -4,6 +4,8 @@
  * Functions related to connecting to Teamspeak3.
  */
 
+module_load_include('php', 'omni_eve_api', 'libraries/TeamSpeak3/TeamSpeak3');
+
 /**
  * Generates the Teamspeak name as specified in Teamspeak Settings.
  *

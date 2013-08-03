@@ -9,11 +9,7 @@
  */
 module_load_include('inc', 'omni_eve_api', 'omni_eve_api.api');
 module_load_include('inc', 'omni_eve_api', 'omni_eve_api.cron');
-module_load_include('inc', 'omni_eve_api', 'omni_eve_api.admin');
-module_load_include('inc', 'omni_eve_api', 'omni_eve_api.user');
-module_load_include('inc', 'omni_eve_api', 'omni_eve_api.register');
 module_load_include('inc', 'omni_eve_api', 'omni_eve_api.ts3');
-module_load_include('php', 'omni_eve_api', 'libraries/TeamSpeak3/TeamSpeak3');
 
 /**
  * Implements hook_menu_alter().
@@ -42,6 +38,7 @@ function omni_eve_api_menu() {
     'access callback' => 'omni_eve_api_register_access',
     'access arguments' => array(2),
     'type' => MENU_CALLBACK,
+    'file' => 'omni_eve_api.register.inc',
   );
 
   $items['admin/settings/omni_eve_api'] = array(
@@ -52,6 +49,7 @@ function omni_eve_api_menu() {
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 0,
+    'file' => 'omni_eve_api.admin.inc',
   );
 
   $items['admin/settings/omni_eve_api/alliance_api_key'] = array(
@@ -62,6 +60,7 @@ function omni_eve_api_menu() {
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
+    'file' => 'omni_eve_api.admin.inc',
   );
 
   $items['admin/settings/omni_eve_api/settings'] = array(
@@ -72,6 +71,7 @@ function omni_eve_api_menu() {
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10,
+    'file' => 'omni_eve_api.admin.inc',
   );
 
   $items['admin/settings/omni_eve_api/access_mask'] = array(
@@ -82,6 +82,7 @@ function omni_eve_api_menu() {
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 20,
+    'file' => 'omni_eve_api.admin.inc',
   );
 
   $items['admin/settings/omni_eve_api/teamspeak'] = array(
@@ -92,6 +93,7 @@ function omni_eve_api_menu() {
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 30,
+    'file' => 'omni_eve_api.admin.inc',
   );
 
   $items['admin/settings/omni_eve_api/list_blues'] = array(
@@ -102,6 +104,7 @@ function omni_eve_api_menu() {
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 40,
+    'file' => 'omni_eve_api.admin.inc',
   );
 
   $items['admin/settings/omni_eve_api/list_blues/add_blue'] = array(
@@ -112,6 +115,7 @@ function omni_eve_api_menu() {
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_ACTION,
     'weight' => 0,
+    'file' => 'omni_eve_api.admin.inc',
   );
 
   $items['admin/settings/omni_eve_api/list_whitelist'] = array(
@@ -122,6 +126,7 @@ function omni_eve_api_menu() {
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 50,
+    'file' => 'omni_eve_api.admin.inc',
   );
 
   $items['admin/settings/omni_eve_api/list_whitelist/add_whitelist'] = array(
@@ -132,6 +137,7 @@ function omni_eve_api_menu() {
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_ACTION,
     'weight' => 0,
+    'file' => 'omni_eve_api.admin.inc',
   );
 
   $items['user/%user/omni_eve_api'] = array(
@@ -144,12 +150,14 @@ function omni_eve_api_menu() {
     'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
     'weight' => 0,
+    'file' => 'omni_eve_api.user.inc',
   );
 
   $items['user/%user/omni_eve_api/list_api'] = array(
     'title' => 'List API Keys',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
+    'file' => 'omni_eve_api.user.inc',
   );
 
   $items['user/%user/omni_eve_api/select_main_character'] = array(
@@ -162,6 +170,7 @@ function omni_eve_api_menu() {
     'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
     'weight' => 10,
+    'file' => 'omni_eve_api.user.inc',
   );
 
   $items['user/%user/omni_eve_api/add_api_key'] = array(
@@ -174,6 +183,7 @@ function omni_eve_api_menu() {
     'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
     'weight' => 20,
+    'file' => 'omni_eve_api.user.inc',
   );
 
   $items['user/%user/omni_eve_api/teamspeak'] = array(
@@ -186,6 +196,7 @@ function omni_eve_api_menu() {
     'access callback' => TRUE,
     'type' => MENU_LOCAL_TASK,
     'weight' => 30,
+    'file' => 'omni_eve_api.user.inc',
   );
 
   $items['user/%user/omni_eve_api/update_api_key/%'] = array(
@@ -200,6 +211,7 @@ function omni_eve_api_menu() {
     'context' => MENU_CONTEXT_INLINE,
     'type' => MENU_LOCAL_TASK,
     'weight' => 0,
+    'file' => 'omni_eve_api.user.inc',
   );
 
   return $items;
@@ -627,4 +639,201 @@ function omni_eve_api_curl_http_request($url, array $query = array()) {
 
   curl_close($ch);
   return $result;
+}
+
+/**
+ * Custom function to get list of all Roles.
+ *
+ * @return array
+ *   A simple array of All the Roles.
+ */
+function omni_eve_api_role_list() {
+  $roles = array();
+
+  $result = db_select('role', 'r')->fields('r', array(
+    'rid',
+    'name',
+  ))->execute();
+
+  if ($result->rowCount()) {
+    foreach ($result->fetchAll() as $row) {
+      if ($row->rid != 1) {
+        $roles[$row->rid] = check_plain($row->name);
+      }
+    }
+  }
+
+  return $roles;
+}
+
+/**
+ * Implements hook_user_role_delete().
+ */
+function omni_eve_api_user_role_delete($role) {
+  if ($role->rid == variable_get('omni_eve_api_blue_role', 2)) {
+    variable_set('omni_eve_api_blue_role', 2);
+  }
+}
+
+/**
+ * Implements hook_user_delete().
+ */
+function omni_eve_api_user_delete($account) {
+  db_delete('oea_characters')->condition('drupalid', $account->uid)->execute();
+  db_delete('oea_api_keys')->condition('drupalid', $account->uid)->execute();
+}
+
+/**
+ * Override template_preprocess_user_picture().
+ *
+ * Override template_preprocess_user_pictures() to display user pictures with
+ * EVE Online integrationExample URL's.
+ * http://image.eveonline.com/Character/1643072492_128.jpg
+ * http://image.eveonline.com/Character/1_128.jpg
+ *
+ * @see template_preprocess_user_picture()
+ * @see omni_eve_api_load_account()
+ * @see omni_eve_api_get_account_user_picture()
+ */
+function omni_eve_api_preprocess_user_picture(&$variables) {
+  $variables['user_picture'] = '';
+
+  if (variable_get('user_pictures', 0)) {
+    // Load the full user object since it is not provided with nodes, comments,
+    // or views displays.
+    $account = omni_eve_api_load_account($variables['account']);
+    $filepath = omni_eve_api_get_account_user_picture($account);
+
+    if (!empty($filepath)) {
+      $alt = t("@user's picture", array('@user' => format_username($account)));
+      if (module_exists('image') && file_valid_uri($filepath) && $style = variable_get('user_picture_style', '')) {
+        $variables['user_picture'] = theme('image_style', array(
+          'style_name' => $style,
+          'path' => $filepath,
+          'alt' => $alt,
+          'title' => $alt,
+        ));
+      }
+      else {
+        $variables['user_picture'] = theme('image', array(
+          'path' => $filepath,
+          'alt' => $alt,
+          'title' => $alt,
+        ));
+      }
+      if ($account->uid && user_access('access user profiles')) {
+        // Create link to the user's profile.
+        $attributes = array('title' => t('View user profile.'));
+        $variables['user_picture'] = l($variables['user_picture'], 'user/' . $account->uid, array(
+          'attributes' => $attributes,
+          'html' => TRUE,
+        ));
+      }
+      elseif (!empty($account->homepage)) {
+        // If user is anonymous, create link to the commenter's homepage.
+        $attributes = array(
+          'title' => t('View user website.'),
+          'rel' => 'external nofollow',
+        );
+        $variables['user_picture'] = l($variables['user_picture'], $account->homepage, array(
+          'attributes' => $attributes,
+          'html' => TRUE,
+        ));
+      }
+    }
+  }
+}
+
+/**
+ * Unmodified function from"Gravatar v1.1".
+ * 
+ * By Narno, Git Migration, Dave Reid, podarok, and macedigital.
+ *
+ * @param array $account
+ *   A simple user object.
+ * 
+ * @return array
+ *   A full user object.
+ */
+function omni_eve_api_load_account($account) {
+  // If this is a node or comment object, load the user object.
+  if (!empty($account->nid) || !empty($account->cid) || empty($account->roles)) {
+    $original_values = $account;
+
+    // If a comment is being edited and previewed, the $account->uid is NULL.
+    // @todo Remove when http://drupal.org/node/334826 is fixed in 6.x.
+    if (!isset($account->uid)) {
+      $account->uid = 0;
+    }
+
+    $account = $account->uid ? user_load($account->uid) : drupal_anonymous_user();
+
+    // Load mail/homepage variable from an anonymous comment.
+    if (!$account->uid) {
+      $values = array_fill_keys(array(
+        'name',
+        'mail',
+        'homepage',
+        'hostname',
+      ), '');
+      foreach ($values as $value => $default_value) {
+        if (empty($account->$value)) {
+          $account->$value = !empty($original_values->$value) ? $original_values->$value : $default_value;
+        }
+      }
+    }
+  }
+
+  if (isset($account->picture) && is_numeric($account->picture)) {
+    $account->picture = file_load($account->picture);
+  }
+
+  return $account;
+}
+
+/**
+ * Original function from"Gravatar v1.1".
+ * 
+ * by Narno, Git Migration, Dave Reid, podarok, and macedigital.
+ * Modified for use with "Omni EVE API".
+ *
+ * Decide which user picture should be displayed for a user account.
+ *
+ * @param array $account
+ *   A user object.
+ * 
+ * @return string
+ *   A string with the path to the user's picture.
+ */
+function omni_eve_api_get_account_user_picture($account) {
+  $user = user_load($account->uid);
+
+  if (!empty($account->picture->uri)) {
+    // If the user has an uploaded picture, use it first.
+    return $account->picture->uri;
+  }
+  elseif (empty($user->characterid)) {
+    return omni_eve_api_get_eve_avatar(1);
+  }
+  else {
+    return omni_eve_api_get_eve_avatar($user->characterid);
+  }
+}
+
+/**
+ * Generate a EVE Avatar URL.
+ *
+ * @param int $characterid
+ *   A string with an EVE character ID.
+ * 
+ * @return string
+ *   An URL string with the EVE avatar image.
+ */
+function omni_eve_api_get_eve_avatar($characterid) {
+  global $is_https;
+
+  $eve_avatar = $is_https ? variable_get('eve_avatar_https', 'https://image.eveonline.com/Character/') : variable_get('eve_avatar_http', 'http://image.eveonline.com/Character/');
+  $eve_avatar .= $characterid . '_' . variable_get('eve_user_picture_dimensions', '128x128') . '.jpg';
+
+  return url($eve_avatar);
 }

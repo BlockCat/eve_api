@@ -318,40 +318,6 @@ function omni_eve_api_admin_access_mask_form_submit($form, &$form_state) {
 }
 
 /**
- * Custom function to get list of all Roles.
- *
- * @return array
- *   A simple array of All the Roles.
- */
-function omni_eve_api_role_list() {
-  $roles = array();
-
-  $result = db_select('role', 'r')->fields('r', array(
-    'rid',
-    'name',
-  ))->execute();
-
-  if ($result->rowCount()) {
-    foreach ($result->fetchAll() as $row) {
-      if ($row->rid != 1) {
-        $roles[$row->rid] = check_plain($row->name);
-      }
-    }
-  }
-
-  return $roles;
-}
-
-/**
- * Implements hook_user_role_delete().
- */
-function omni_eve_api_user_role_delete($role) {
-  if ($role->rid == variable_get('omni_eve_api_blue_role', 2)) {
-    variable_set('omni_eve_api_blue_role', 2);
-  }
-}
-
-/**
  * Form constructor for the admin list blues form.
  *
  * @see omni_eve_api_admin_list_blues_form_validate()
