@@ -226,7 +226,6 @@ function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
   }
 
   omni_eve_api_general_cron();
-  drupal_cron_run();
 }
 
 /**

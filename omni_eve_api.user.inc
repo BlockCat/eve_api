@@ -13,12 +13,6 @@
  * @ingroup forms
  */
 function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
-  global $user;
-
-  if ($account->uid != $user->uid && !user_access('moderate omni_eve_api users')) {
-    drupal_goto('<front>');
-  }
-
   $uid = $account->uid;
 
   $form['enter_api'] = array(
@@ -68,13 +62,7 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
  * @see omni_eve_api_user_add_api_form_submit()
  */
 function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
-  global $user;
-
   $uid = $form_state['values']['uid'];
-
-  if ($uid != $user->uid && !user_access('moderate omni_eve_api users')) {
-    drupal_goto('<front>');
-  }
 
   $query = array(
     'keyid' => $form_state['values']['keyid'],
@@ -123,14 +111,7 @@ function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
  * @see omni_eve_api_user_add_api_form_validate()
  */
 function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
-  global $user;
-
   $uid = $form_state['values']['uid'];
-
-  if ($uid != $user->uid && !user_access('moderate omni_eve_api users')) {
-    drupal_goto('<front>');
-  }
-
   $keyid = $form_state['values']['keyid'];
   $vcode = $form_state['values']['vcode'];
 
@@ -187,12 +168,6 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
  * @ingroup forms
  */
 function omni_eve_api_user_select_main_character_form($form, &$form_state, $account) {
-  global $user;
-
-  if ($account->uid != $user->uid && !user_access('moderate omni_eve_api users')) {
-    drupal_goto('<front>');
-  }
-
   $uid = $account->uid;
   $uid_api_list = omni_eve_api_list_api($uid);
 
@@ -233,13 +208,7 @@ function omni_eve_api_user_select_main_character_form($form, &$form_state, $acco
  * @see omni_eve_api_user_select_main_character_form_submit()
  */
 function omni_eve_api_user_select_main_character_form_validate($form, &$form_state) {
-  global $user;
-
   $uid = $form_state['values']['uid'];
-
-  if ($uid != $user->uid && !user_access('moderate omni_eve_api users')) {
-    drupal_goto('<front>');
-  }
 }
 
 /**
@@ -248,14 +217,7 @@ function omni_eve_api_user_select_main_character_form_validate($form, &$form_sta
  * @see omni_eve_api_user_select_main_character_form_validate()
  */
 function omni_eve_api_user_select_main_character_form_submit($form, &$form_state) {
-  global $user;
-
   $uid = $form_state['values']['uid'];
-
-  if ($uid != $user->uid && !user_access('moderate omni_eve_api users')) {
-    drupal_goto('<front>');
-  }
-
   $account = user_load($uid);
 
   if ($account->charactername != $form_state['values']['select_charactername'] && !empty($form_state['values']['select_charactername'])) {
@@ -339,12 +301,6 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
  * @ingroup forms
  */
 function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
-  global $user;
-
-  if ($account->uid != $user->uid && !user_access('moderate omni_eve_api users')) {
-    drupal_goto('<front>');
-  }
-
   $uid = $account->uid;
   $uid_api_list = omni_eve_api_list_api($uid);
 
@@ -438,13 +394,7 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
  * @see omni_eve_api_user_list_api_form_submit()
  */
 function omni_eve_api_user_list_api_form_validate($form, &$form_state) {
-  global $user;
-
   $uid = $form_state['values']['uid'];
-
-  if ($uid != $user->uid && !user_access('moderate omni_eve_api users')) {
-    drupal_goto('<front>');
-  }
 }
 
 /**
@@ -453,13 +403,7 @@ function omni_eve_api_user_list_api_form_validate($form, &$form_state) {
  * @see omni_eve_api_user_list_api_form_validate()
  */
 function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
-  global $user;
-
   $uid = $form_state['values']['uid'];
-
-  if ($uid != $user->uid && !user_access('moderate omni_eve_api users')) {
-    drupal_goto('<front>');
-  }
 
   foreach ($form_state['values']['api_keys'] as $api_key_id) {
     if ($api_key_id == 0) {
@@ -537,12 +481,6 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
  * @ingroup forms
  */
 function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_key_id) {
-  global $user;
-
-  if ($account->uid != $user->uid && !user_access('moderate omni_eve_api users')) {
-    drupal_goto('<front>');
-  }
-
   $uid = $account->uid;
 
   $result = db_select('oea_api_keys', 'a')->fields('a', array(
@@ -611,14 +549,8 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_k
  * @see omni_eve_api_user_update_api_form_submit()
  */
 function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
-  global $user;
-
   $uid = $form_state['values']['uid'];
   $api_key_id = $form_state['values']['api_key_id'];
-
-  if ($uid != $user->uid && !user_access('moderate omni_eve_api users')) {
-    drupal_goto('<front>');
-  }
 
   $query = array(
     'keyid' => $form_state['values']['keyid'],
@@ -664,13 +596,7 @@ function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
  * @see omni_eve_api_user_update_api_form_validate()
  */
 function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
-  global $user;
-
   $uid = $form_state['values']['uid'];
-
-  if ($uid != $user->uid && !user_access('moderate omni_eve_api users')) {
-    drupal_goto('<front>');
-  }
 
   $keyid = $form_state['values']['keyid'];
   $vcode = $form_state['values']['vcode'];
@@ -690,7 +616,7 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
   ))->execute();
 
   foreach ($characters['characters'] as $character) {
-    db_merge('oea_characters')->key(array('characterid' => $character['corporationID']))->fields(array(
+    db_merge('oea_characters')->key(array('characterid' => $character['characterID']))->fields(array(
       'characterid' => $character['characterID'],
       'drupalid' => $uid,
       'apiid' => $api_key_id,
@@ -740,12 +666,6 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
  * @ingroup forms
  */
 function omni_eve_api_user_teamspeak_form($form, &$form_state, $account) {
-  global $user;
-
-  if ($account->uid != $user->uid && !user_access('moderate omni_eve_api users')) {
-    drupal_goto('<front>');
-  }
-
   $uid = $account->uid;
   $uid_api_list = omni_eve_api_list_api($uid);
 
@@ -812,14 +732,7 @@ function omni_eve_api_user_teamspeak_form($form, &$form_state, $account) {
  * @see omni_eve_api_user_teamspeak_form_submit()
  */
 function omni_eve_api_user_teamspeak_form_validate($form, &$form_state) {
-  global $user;
-
   $uid = $form_state['values']['uid'];
-
-  if ($uid != $user->uid && !user_access('moderate omni_eve_api users')) {
-    drupal_goto('<front>');
-  }
-
   $account = user_load($uid);
 
   try {
@@ -838,14 +751,7 @@ function omni_eve_api_user_teamspeak_form_validate($form, &$form_state) {
  * @see omni_eve_api_user_teamspeak_form_validate()
  */
 function omni_eve_api_user_teamspeak_form_submit($form, &$form_state) {
-  global $user;
-
   $uid = $form_state['values']['uid'];
-
-  if ($uid != $user->uid && !user_access('moderate omni_eve_api users')) {
-    drupal_goto('<front>');
-  }
-
   $account = user_load($uid);
 
   try {

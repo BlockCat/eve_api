@@ -327,10 +327,11 @@ function omni_eve_api_user_register_form_submit($form, &$form_state) {
     if ((string) $form_state['values']['charactername'] == (string) $character['characterName']) {
       $charactername = $character['characterName'];
       $characterid = $character['characterID'];
+      $corporationname = $character['corporationName'];
     }
   }
 
-  if ($corporation_role = user_role_load_by_name($character['corporationName'])) {
+  if ($corporation_role = user_role_load_by_name($corporationname)) {
     user_multiple_role_edit(array($uid), 'add_role', $corporation_role->rid);
 
     if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2))) {
