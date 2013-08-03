@@ -385,13 +385,14 @@ function omni_eve_api_cron_queue_users($item) {
       }
     }
 
-    if ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2))) {
-      user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
-    }
+    $blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2));
+    user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
 
-    if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2))) {
-      user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
-    }
+    $alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2));
+    user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
+
+    $default_role = user_role_load(variable_get('omni_eve_api_unverified_role', 2));
+    user_multiple_role_edit(array($uid), 'add_role', $default_role->rid);
 
     try {
       $row = db_select('users', 'u')->fields('u', array('teamspeakdbid'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
@@ -409,8 +410,6 @@ function omni_eve_api_cron_queue_users($item) {
     $row = db_select('users', 'u')->fields('u', array('charactername'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
     $character_data = omni_eve_api_get_character_info($row['charactername']);
 
-    $update_rid_2 = NULL;
-
     if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
       $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
         'corporationid',
@@ -425,17 +424,15 @@ function omni_eve_api_cron_queue_users($item) {
         }
       }
 
-      if ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2))) {
-        user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
-      }
+      user_multiple_role_edit(array($uid), 'add_role', $corporation_role->rid);
 
-      $update_rid = $corporation_role->rid;
+      $blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2));
+      user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
 
-      if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2))) {
-        $update_rid_2 = $alliance_role->rid;
-      }
+      $alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2));
+      user_multiple_role_edit(array($uid), 'add_role', $alliance_role->rid);
     }
-    elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2))) {
+    else {
       $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
         'corporationid',
         'corporationname',
@@ -449,21 +446,11 @@ function omni_eve_api_cron_queue_users($item) {
         }
       }
 
-      if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2))) {
-        user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
-      }
+      $alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2));
+      user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
 
-      $update_rid = $blue_role->rid;
-    }
-    else {
-      $default_role = user_role_load_by_name('authenticated user');
-      $update_rid = $default_role->rid;
-    }
-
-    user_multiple_role_edit(array($uid), 'add_role', $update_rid);
-
-    if (isset($update_rid_2)) {
-      user_multiple_role_edit(array($uid), 'add_role', $update_rid_2);
+      $blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2));
+      user_multiple_role_edit(array($uid), 'add_role', $blue_role->rid);
     }
 
     return TRUE;

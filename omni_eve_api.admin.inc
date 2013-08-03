@@ -7,12 +7,12 @@
 /**
  * Form constructor for the admin edit roles form.
  *
- * @see omni_eve_api_admin_settings_form_validate()
- * @see omni_eve_api_admin_settings_form_submit()
+ * @see omni_eve_api_admin_roles_form_validate()
+ * @see omni_eve_api_admin_roles_form_submit()
  *
  * @ingroup forms
  */
-function omni_eve_api_admin_settings_form($form, &$form_state) {
+function omni_eve_api_admin_roles_form($form, &$form_state) {
   $form['roles'] = array(
     '#type' => 'fieldset',
     '#title' => t('Roles'),
@@ -39,23 +39,32 @@ function omni_eve_api_admin_settings_form($form, &$form_state) {
     '#weight' => 10,
   );
 
+  $form['roles']['omni_eve_api_unverified_role'] = array(
+    '#type' => 'select',
+    '#title' => t('Select Role for Unverified'),
+    '#description' => t('Please select the default role for Unverified members.'),
+    '#options' => $role_list,
+    '#default_value' => variable_get('omni_eve_api_unverified_role', 2),
+    '#weight' => 10,
+  );
+
   $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
   );
 
-  $form['#validate'] = array('omni_eve_api_admin_settings_form_validate');
-  $form['#submit'] = array('omni_eve_api_admin_settings_form_submit');
+  $form['#validate'] = array('omni_eve_api_admin_roles_form_validate');
+  $form['#submit'] = array('omni_eve_api_admin_roles_form_submit');
 
   return $form;
 }
 
 /**
- * Form validation handler for omni_eve_api_admin_settings_form().
+ * Form validation handler for omni_eve_api_admin_roles_form().
  *
- * @see omni_eve_api_admin_settings_form_submit()
+ * @see omni_eve_api_admin_roles_form_submit()
  */
-function omni_eve_api_admin_settings_form_validate($form, &$form_state) {
+function omni_eve_api_admin_roles_form_validate($form, &$form_state) {
   if (user_role_load((int) $form_state['values']['omni_eve_api_blue_role']) == FALSE) {
     form_set_error('omni_eve_api_blue_role', t('The role does not exist.'));
   }
@@ -63,14 +72,18 @@ function omni_eve_api_admin_settings_form_validate($form, &$form_state) {
   if (user_role_load((int) $form_state['values']['omni_eve_api_alliance_role']) == FALSE) {
     form_set_error('omni_eve_api_alliance_role', t('The role does not exist.'));
   }
+
+  if (user_role_load((int) $form_state['values']['omni_eve_api_unverified_role']) == FALSE) {
+    form_set_error('omni_eve_api_unverified_role', t('The role does not exist.'));
+  }
 }
 
 /**
- * Form submission handler for omni_eve_api_admin_settings_form().
+ * Form submission handler for omni_eve_api_admin_roles_form().
  *
- * @see omni_eve_api_admin_settings_form_validate()
+ * @see omni_eve_api_admin_roles_form_validate()
  */
-function omni_eve_api_admin_settings_form_submit($form, &$form_state) {
+function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
   $uids = array();
   $result = db_select('users_roles', 'r')->fields('r', array('uid'))->condition('rid', (int) variable_get('omni_eve_api_blue_role', 2), '=')->execute();
 
@@ -101,8 +114,24 @@ function omni_eve_api_admin_settings_form_submit($form, &$form_state) {
     // (int) $form_state['values']['omni_eve_api_alliance_role']);
   }
 
+  $uids = array();
+  $result = db_select('users_roles', 'r')->fields('r', array('uid'))->condition('rid', (int) variable_get('omni_eve_api_unverified_role', 2), '=')->execute();
+
+  if ($result->rowCount()) {
+    foreach ($result->fetchAll() as $row) {
+      $uids[] = $row->uid;
+    }
+  }
+
+  if (!empty($uids)) {
+    user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_unverified_role', 2));
+    // user_multiple_role_edit($uids, 'add_role',
+    // (int) $form_state['values']['omni_eve_api_unverified_role']);
+  }
+
   variable_set('omni_eve_api_blue_role', (int) $form_state['values']['omni_eve_api_blue_role']);
   variable_set('omni_eve_api_alliance_role', (int) $form_state['values']['omni_eve_api_alliance_role']);
+  variable_set('omni_eve_api_unverified_role', (int) $form_state['values']['omni_eve_api_unverified_role']);
 }
 
 /**

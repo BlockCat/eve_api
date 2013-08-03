@@ -67,7 +67,7 @@ function omni_eve_api_menu() {
     'title' => 'Roles',
     'description' => 'From here you can change various settings.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_admin_settings_form'),
+    'page arguments' => array('omni_eve_api_admin_roles_form'),
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10,
