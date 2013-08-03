@@ -393,7 +393,16 @@ function omni_eve_api_cron_queue_users($item) {
       user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
     }
 
-    db_update('users')->fields(array('charactername' => '', 'characterid' => 0))->condition('uid', $uid, '=')->execute();
+    try {
+      $row = db_select('users', 'u')->fields('u', array('teamspeakdbid'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
+      $ts3 = omni_eve_api_teamspeak_connection();
+      omni_eve_api_teamspeak_user_delete($ts3, $row['teamspeakdbid']);
+    }
+    catch (Exception $e) {
+      // Log Error ?
+    }
+
+    db_update('users')->fields(array('charactername' => '', 'teamspeakuid' => 0, 'teamspeakdbid' => 0, 'characterid' => 0))->condition('uid', $uid, '=')->execute();
     return FALSE;
   }
   else {

@@ -475,6 +475,10 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
     $queue->createQueue();
     $queue->createItem($uid);
 
+    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
+    $queue->createQueue();
+    $queue->createItem(array('uid' => $uid, 'teamspeakdbid' => $account->teamspeakdbid));
+
     drupal_set_message(t('New main character selected!'));
   }
 }
@@ -667,6 +671,11 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
   $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
   $queue->createQueue();
   $queue->createItem($uid);
+
+  $row = db_select('users', 'u')->fields('u', array('teamspeakdbid'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
+  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
+  $queue->createQueue();
+  $queue->createItem(array('uid' => $uid, 'teamspeakdbid' => $row['teamspeakdbid']));
 }
 
 /**
@@ -901,14 +910,16 @@ function omni_eve_api_user_teamspeak_form($form, &$form_state, $account) {
     '#weight' => 0,
   );
 
+  $teamspeak_port_check = variable_get('omni_eve_api_ts3_server_port', 9987);
+  $teamspeak_password_check = variable_get('omni_eve_api_ts3_server_password', '');
+
   $form['teamspeak']['howto'] = array(
     '#type' => 'markup',
     '#prefix' => '<p>',
-    '#markup' => t('In order to register with Teamspeak, you must first connect to our Teamspeak.<br />If you do not have Teamspeak already installed, please download and install Teamspeak 3 from <a href="@teamspeak_url">here</a>.<br />Please use the following settings to connect:<br />Address - @teamspeak_address<br />Port - @teamspeak_port<br />Password - @teamspeak_password', array(
+    '#markup' => t('In order to register with Teamspeak, you must first connect to our Teamspeak.<br />If you do not have Teamspeak already installed, please download and install Teamspeak 3 from <a href="@teamspeak_url">here</a>.<br />Please use the following settings to connect:<br /><br />Address - @teamspeak_address<br />@teamspeak_password', array(
       '@teamspeak_url' => 'http://www.teamspeak.com/?page=downloads',
-      '@teamspeak_address' => variable_get('omni_eve_api_ts3_server_address', 'teamspeak.com'),
-      '@teamspeak_port' => variable_get('omni_eve_api_ts3_server_port', 9987),
-      '@teamspeak_password' => variable_get('omni_eve_api_ts3_server_password', ''),
+      '@teamspeak_address' => empty($teamspeak_port_check) ? variable_get('omni_eve_api_ts3_server_address', 'teamspeak.com') : variable_get('omni_eve_api_ts3_server_address', 'teamspeak.com') . ':' . variable_get('omni_eve_api_ts3_server_port', 9987),
+      '@teamspeak_password' => empty($teamspeak_password_check) ? '' : t('Password')  . ' - ' . variable_get('omni_eve_api_ts3_server_password', ''),
     )),
     '#suffix' => '</p>',
     '#weight' => 0,
@@ -939,6 +950,10 @@ function omni_eve_api_user_teamspeak_form($form, &$form_state, $account) {
     '#type' => 'submit',
     '#value' => t('Register'),
   );
+
+  if (empty($account->charactername)) {
+    $form['submit_button']['#disabled'] = TRUE;
+  }
 
   $form['#validate'] = array('omni_eve_api_user_teamspeak_form_validate');
   $form['#submit'] = array('omni_eve_api_user_teamspeak_form_submit');
