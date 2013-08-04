@@ -362,6 +362,11 @@ function omni_eve_api_install() {
   variable_set('omni_eve_api_ts3_query_password', 'Password');
   variable_set('omni_eve_api_ts3_nickname', '[@corp] @name');
   variable_set('omni_eve_api_ts3_bypass_group', 0);
+  variable_set('omni_eve_api_jabber_enable', FALSE);
+  variable_set('omni_eve_api_jabber_host', '127.0.0.1');
+  variable_set('omni_eve_api_jabber_database', 'Jabber');
+  variable_set('omni_eve_api_jabber_username', 'Username');
+  variable_set('omni_eve_api_jabber_password', 'Password');
   variable_set('user_picture_dimensions', '128x128');
   variable_set('eve_user_picture_dimensions', 128);
   variable_set('eve_avatar_https', 'https://image.eveonline.com/Character/');

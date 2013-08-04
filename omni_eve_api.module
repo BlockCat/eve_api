@@ -10,6 +10,7 @@
 module_load_include('inc', 'omni_eve_api', 'omni_eve_api.api');
 module_load_include('inc', 'omni_eve_api', 'omni_eve_api.cron');
 module_load_include('inc', 'omni_eve_api', 'omni_eve_api.ts3');
+module_load_include('inc', 'omni_eve_api', 'omni_eve_api.jabber');
 
 /**
  * Implements hook_menu_alter().
@@ -97,6 +98,17 @@ function omni_eve_api_menu() {
     'file' => 'omni_eve_api.admin.inc',
   );
 
+  $items['admin/settings/omni_eve_api/jabber'] = array(
+    'title' => 'Jabber',
+    'description' => 'Configure and edit Jabber connection settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('omni_eve_api_admin_jabber_form'),
+    'access arguments' => array('administer omni_eve_api settings'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 40,
+    'file' => 'omni_eve_api.admin.inc',
+  );
+
   $items['admin/settings/omni_eve_api/list_blues'] = array(
     'title' => 'Blues',
     'description' => 'You can remove Blues and Add Blues from here.',
@@ -104,7 +116,7 @@ function omni_eve_api_menu() {
     'page arguments' => array('omni_eve_api_admin_list_blues_form'),
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 40,
+    'weight' => 50,
     'file' => 'omni_eve_api.admin.inc',
   );
 
@@ -126,7 +138,7 @@ function omni_eve_api_menu() {
     'page arguments' => array('omni_eve_api_admin_list_whitelist_form'),
     'access arguments' => array('administer omni_eve_api settings'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 50,
+    'weight' => 60,
     'file' => 'omni_eve_api.admin.inc',
   );
 
@@ -156,7 +168,7 @@ function omni_eve_api_menu() {
   );
 
   $items['user/%user/omni_eve_api/list_api'] = array(
-    'title' => 'List API Keys',
+    'title' => 'API Keys',
     'access callback' => 'omni_eve_api_edit',
     'access arguments' => array(1),
     'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -165,7 +177,7 @@ function omni_eve_api_menu() {
   );
 
   $items['user/%user/omni_eve_api/select_main_character'] = array(
-    'title' => 'Select Main Character',
+    'title' => 'Main Character',
     'page callback' => 'drupal_get_form',
     'page arguments' => array(
       'omni_eve_api_user_select_main_character_form',
@@ -192,19 +204,37 @@ function omni_eve_api_menu() {
     'file' => 'omni_eve_api.user.inc',
   );
 
-  $items['user/%user/omni_eve_api/teamspeak'] = array(
-    'title' => 'Teamspeak Registration',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array(
-      'omni_eve_api_user_teamspeak_form',
-      1,
-    ),
-    'access callback' => 'omni_eve_api_edit',
-    'access arguments' => array(1),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 30,
-    'file' => 'omni_eve_api.user.inc',
-  );
+  if (variable_get('omni_eve_api_ts3_enable', FALSE)) {
+    $items['user/%user/omni_eve_api/teamspeak'] = array(
+      'title' => 'Teamspeak',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array(
+        'omni_eve_api_user_teamspeak_form',
+        1,
+      ),
+      'access callback' => 'omni_eve_api_edit',
+      'access arguments' => array(1),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 30,
+      'file' => 'omni_eve_api.user.inc',
+    );
+  }
+
+  if (variable_get('omni_eve_api_jabber_enable', FALSE)) {
+    $items['user/%user/omni_eve_api/jabber'] = array(
+      'title' => 'Jabber',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array(
+        'omni_eve_api_user_jabber_form',
+        1,
+      ),
+      'access callback' => 'omni_eve_api_edit',
+      'access arguments' => array(1),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 40,
+      'file' => 'omni_eve_api.user.inc',
+    );
+  }
 
   $items['user/%user/omni_eve_api/update_api_key/%'] = array(
     'title' => 'Update API Key',

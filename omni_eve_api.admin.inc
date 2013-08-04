@@ -597,7 +597,7 @@ function omni_eve_api_admin_add_blues_form_submit($form, &$form_state) {
 }
 
 /**
- * Form constructor for the admin list blues form.
+ * Form constructor for the admin list whitelist form.
  *
  * @see omni_eve_api_admin_list_whitelist_form_validate()
  * @see omni_eve_api_admin_list_whitelist_form_submit()
@@ -703,7 +703,7 @@ function omni_eve_api_admin_list_whitelist_form_submit($form, &$form_state) {
 }
 
 /**
- * Form constructor for the admin add blues form.
+ * Form constructor for the admin add whitelist form.
  *
  * @see omni_eve_api_admin_add_whitelist_form_validate()
  * @see omni_eve_api_admin_add_whitelist_form_submit()
@@ -802,7 +802,7 @@ function omni_eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
 }
 
 /**
- * Form constructor for the admin add blues form.
+ * Form constructor for the teamspeak connection form.
  *
  * @see omni_eve_api_admin_teamspeak_form_validate()
  * @see omni_eve_api_admin_teamspeak_form_submit()
@@ -930,7 +930,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
         '#weight' => 80,
       );
     }
-    catch (Exception $e){
+    catch (Exception $e) {
       $form['teamspeak']['omni_eve_api_ts3_bypass_group'] = array(
         '#type' => 'markup',
         '#prefix' => '<p>',
@@ -941,7 +941,6 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     }
   }
 
-  $form_state['redirect'] = 'admin/settings/omni_eve_api/list_whitelist';
   $form['#validate'] = array('omni_eve_api_admin_teamspeak_form_validate');
   $form['#submit'] = array('omni_eve_api_admin_teamspeak_form_submit');
 
@@ -989,4 +988,119 @@ function omni_eve_api_admin_teamspeak_form_submit($form, &$form_state) {
   else {
     variable_set('omni_eve_api_ts3_enable', FALSE);
   }
+
+  menu_rebuild();
+}
+
+/**
+ * Form constructor for the jabber connection form.
+ *
+ * @see omni_eve_api_admin_jabber_form_validate()
+ * @see omni_eve_api_admin_jabber_form_submit()
+ *
+ * @ingroup forms
+ */
+function omni_eve_api_admin_jabber_form($form, &$form_state) {
+  $form['jabber'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Configure Jabber Connection'),
+    '#description' => t('Configure the Jabber Database connection settings.'),
+    '#weight' => 0,
+  );
+
+  $form['jabber']['host'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Hostname'),
+    '#description' => t('The Jabber Database IP address or hostname. This can be 127.0.0.1 if the Database is hosted on the same server as the webhost.'),
+    '#required' => TRUE,
+    '#maxlength' => 15,
+    '#weight' => 0,
+    '#default_value' => variable_get('omni_eve_api_jabber_host', '127.0.0.1'),
+  );
+
+  $form['jabber']['database'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Database Name'),
+    '#description' => t('The name of the Jabber database on the MySQL Server.'),
+    '#required' => TRUE,
+    '#maxlength' => 100,
+    '#weight' => 10,
+    '#default_value' => variable_get('omni_eve_api_jabber_database', 'Jabber'),
+  );
+
+  $form['jabber']['username'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Username'),
+    '#description' => t('The Username required to connect to the Jabber Database.'),
+    '#required' => TRUE,
+    '#maxlength' => 100,
+    '#weight' => 20,
+    '#default_value' => variable_get('omni_eve_api_jabber_username', 'Username'),
+  );
+
+  $form['jabber']['password'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Password'),
+    '#description' => t('The Password required to connect to the Jabber Database.'),
+    '#maxlength' => 100,
+    '#weight' => 30,
+    '#default_value' => variable_get('omni_eve_api_jabber_password', 'Password'),
+  );
+
+  $form['jabber']['enable'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable Jabber Connection.'),
+    '#default_value' => variable_get('omni_eve_api_jabber_enable', FALSE),
+    '#weight' => 40,
+  );
+
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+
+  $form['#validate'] = array('omni_eve_api_admin_jabber_form_validate');
+  $form['#submit'] = array('omni_eve_api_admin_jabber_form_submit');
+
+  return $form;
+}
+
+/**
+ * Form validation handler for omni_eve_api_admin_jabber_form().
+ *
+ * @see omni_eve_api_admin_jabber_form_submit()
+ */
+function omni_eve_api_admin_jabber_form_validate($form, &$form_state) {
+  variable_set('omni_eve_api_jabber_host', (string) $form_state['values']['host']);
+  variable_set('omni_eve_api_jabber_database', (string) $form_state['values']['database']);
+  variable_set('omni_eve_api_jabber_username', (string) $form_state['values']['username']);
+  variable_set('omni_eve_api_jabber_password', (string) $form_state['values']['password']);
+
+  if ((int) $form_state['values']['enable']) {
+    try {
+      omni_eve_api_jabber_connect();
+      omni_eve_api_jabber_test_connection();
+      omni_eve_api_jabber_disconnect();
+    }
+    catch (Exception $e){
+      form_set_error('enable', t('Please check settings and try again. Error: @error', array('@error' => $e->getMessage())));
+      variable_set('omni_eve_api_jabber_enable', FALSE);
+    }
+  }
+}
+
+/**
+ * Form submission handler for omni_eve_api_admin_jabber_form().
+ *
+ * @see omni_eve_api_admin_jabber_form_validate()
+ */
+function omni_eve_api_admin_jabber_form_submit($form, &$form_state) {
+  if ((int) $form_state['values']['enable']) {
+    variable_set('omni_eve_api_jabber_enable', TRUE);
+  }
+  else {
+    variable_set('omni_eve_api_jabber_enable', FALSE);
+  }
+
+  menu_rebuild();
 }

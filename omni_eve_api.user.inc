@@ -5,7 +5,7 @@
  */
 
 /**
- * Form constructor for the user add api form.
+ * Form constructor for the user add API form.
  *
  * @see omni_eve_api_user_add_api_form_validate()
  * @see omni_eve_api_user_add_api_form_submit()
@@ -288,7 +288,7 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
 }
 
 /**
- * Form constructor for the user list api form.
+ * Form constructor for the user list API form.
  *
  * @param string $account
  *   The account information for the user page being viewed.
@@ -404,7 +404,6 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
       'action' => array(
         'data' => array(
           '#type' => 'link',
-          // '#title' => t('Edit API # @api_key_id', array('@api_key_id' => $api_single['apiid'])),
           '#title' => t('Edit'),
           '#href' => 'user/' . $uid . '/omni_eve_api/update_api_key/' . $api_single['apiid'],
         ),
@@ -527,7 +526,7 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
 }
 
 /**
- * Form constructor for the user update api form.
+ * Form constructor for the user update API form.
  *
  * @param string $account
  *   The account information for the user page being viewed.
@@ -714,9 +713,8 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
   drupal_set_message(t('API Key successfully updated!'));
 }
 
-
 /**
- * Form constructor for the user select main character form.
+ * Form constructor for the user teamspeak registration form.
  *
  * @param string $account
  *   The account information for the user page being viewed.
@@ -834,4 +832,64 @@ function omni_eve_api_user_teamspeak_form_submit($form, &$form_state) {
   catch (Exception $e) {
     drupal_set_message($e->getMessage(), 'error');
   }
+}
+
+/**
+ * Form constructor for the user jabber registration form.
+ *
+ * @param string $account
+ *   The account information for the user page being viewed.
+ *
+ * @see omni_eve_api_user_jabber_form_validate()
+ * @see omni_eve_api_user_jabber_form_submit()
+ *
+ * @ingroup forms
+ */
+function omni_eve_api_user_jabber_form($form, &$form_state, $account) {
+  $uid = $account->uid;
+
+  $form['jabber'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Register for a Jabber Account.'),
+    '#weight' => 0,
+  );
+
+  $form['jabber']['uid'] = array(
+    '#value' => $uid,
+    '#type' => 'hidden',
+  );
+
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Register'),
+  );
+
+  if (empty($account->charactername)) {
+    $form['submit_button']['#disabled'] = TRUE;
+  }
+
+  $form['#validate'] = array('omni_eve_api_user_jabber_form_validate');
+  $form['#submit'] = array('omni_eve_api_user_jabber_form_submit');
+
+  return $form;
+}
+
+/**
+ * Form validation handler for omni_eve_api_user_jabber_form().
+ *
+ * @see omni_eve_api_user_jabber_form_submit()
+ */
+function omni_eve_api_user_jabber_form_validate($form, &$form_state) {
+  $uid = $form_state['values']['uid'];
+  $account = user_load($uid);
+}
+
+/**
+ * Form submission handler for omni_eve_api_user_jabber_form().
+ *
+ * @see omni_eve_api_user_jabber_form_validate()
+ */
+function omni_eve_api_user_jabber_form_submit($form, &$form_state) {
+  $uid = $form_state['values']['uid'];
+  $account = user_load($uid);
 }
