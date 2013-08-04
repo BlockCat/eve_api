@@ -128,6 +128,48 @@ function omni_eve_api_teamspeak_get_groups(&$ts3) {
 }
 
 /**
+ * Retrieve list of users currently connected to Teamspeak.
+ *
+ * @param object $ts3
+ *   The Teamspeak connection object.
+ * 
+ * @return array
+ *   Returns an array filled with TeamSpeak3_Node_Client objects.
+ */
+function omni_eve_api_teamspeak_user_list(&$ts3) {
+  try {
+    $teamspeak_user_list = $ts3->clientList();
+  }
+  catch (TeamSpeak3_Exception $e){
+    throw new Exception(t('Unable to get list of active users. Error: @error', array('@error' => $e->getMessage())));
+  }
+
+  return $teamspeak_user_list;
+}
+
+/**
+ * Retrieve info on user currently connected to Teamspeak.
+ *
+ * @param object $ts3
+ *   The Teamspeak connection object.
+ * @param int $teamspeakdbid
+ *   The Teamspeak unique database id of a user.
+ * 
+ * @return array
+ *   Returns a list of properties from the database for the client specified.
+ */
+function omni_eve_api_teamspeak_user_info(&$ts3, $teamspeakdbid) {
+  try {
+    $teamspeak_user_info = $ts3->clientInfoDb($teamspeakdbid);
+  }
+  catch (TeamSpeak3_Exception $e){
+    throw new Exception(t('Unable to get user info. Error: @error', array('@error' => $e->getMessage())));
+  }
+
+  return $teamspeak_user_info;
+}
+
+/**
  * Get the Teamspeak 3 users Unique ID.
  *
  * @param object $ts3

@@ -103,11 +103,8 @@ function omni_eve_api_teamspeak_name_cron() {
   if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_ts3_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_name');
     $queue->createQueue();
-    $result = db_select('users', 'u')->fields('u', array('uid'))->condition('status', 1, '=')->execute();
-
-    foreach ($result->fetchAll() as $item) {
-      $queue->createItem($item->uid);
-    }
+    $item = NULL;
+    $queue->createItem($item);
   }
 }
 
@@ -232,6 +229,61 @@ function omni_eve_api_cron_teamspeak_user($item) {
  *   whatever was added to the queue via queue->createItem()
  */
 function omni_eve_api_cron_teamspeak_name($item) {
+  try {
+    $ts3 = omni_eve_api_teamspeak_connection();
+    $teamspeak_user_list = omni_eve_api_teamspeak_user_list($ts3);
+
+    foreach ($teamspeak_user_list as $teamspeak_user) {
+      if ($teamspeak_user->client_type == 1) {
+        continue;
+      }
+
+      $teamspeakuid = (string) $teamspeak_user->client_unique_identifier;
+      $teamspeaknickname = (string) $teamspeak_user->client_nickname;
+
+      $query = db_select('oea_characters', 'c');
+      $query->condition('c.deleted', 0);
+      $query->join('users', 'u', 'c.charactername = u.charactername');
+      $query->fields('c', array(
+        'charactername',
+        'characterid',
+        'corporationid',
+        'corporationname',
+        'corporationticker',
+        'allianceid',
+        'alliancename',
+        'allianceticker',
+        ));
+      $query->fields('u', array(
+        'teamspeakdbid',
+        'uid',
+        ));
+      $query->condition('u.teamspeakuid', $teamspeakuid);
+      $result = $query->execute();
+
+      if (!$result->rowCount()) {
+        $row = $result->fetchAssoc();
+        $teamspeak_user->message(t('[color=red]Your Teamspeak ID is not registered on our server.[/color]'));
+        $teamspeak_user->message(t('[color=red]If you do not register within 10 minutes[/color]'));
+        $teamspeak_user->message(t('[color=red]you will be removed from the server.[/color]'));
+        $teamspeak_user->message(t('[color=red]To register, go to [url]@homepage[/url][/color]', array('@homepage' => url('user/register', array('absolute' => TRUE)))));
+
+        if (time() >= ($teamspeak_user->client_lastconnected + 600)) {
+          omni_eve_api_teamspeak_user_delete($ts3, $teamspeak_user->client_database_id);
+          $teamspeak_user->kick(TeamSpeak3::KICK_SERVER, t('Please Register!'));
+        }
+
+        continue;
+      }
+
+      $row = $result->fetchAssoc();
+    }
+  }
+  catch (Exception $e) {
+    return FALSE;
+  }
+
+  return TRUE;
 }
 
 /**
