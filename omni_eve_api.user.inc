@@ -249,9 +249,8 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
     if ($corporation_role = user_role_load_by_name($old_character_data['corporationName'])) {
       user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
 
-      if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2))) {
-        user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
-      }
+      $alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2));
+      user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
     }
     elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2))) {
       user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
@@ -265,9 +264,8 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
     if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
       user_multiple_role_edit(array($uid), 'add_role', $corporation_role->rid);
 
-      if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2))) {
-        user_multiple_role_edit(array($uid), 'add_role', $alliance_role->rid);
-      }
+      $alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2));
+      user_multiple_role_edit(array($uid), 'add_role', $alliance_role->rid);
     }
     elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2)) && $character_is_blue) {
       user_multiple_role_edit(array($uid), 'add_role', $blue_role->rid);

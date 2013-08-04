@@ -51,6 +51,8 @@ function omni_eve_api_teamspeak_connection() {
   try {
     $query = 'serverquery://' . variable_get('omni_eve_api_ts3_query_username', 'Username') . ':' . variable_get('omni_eve_api_ts3_query_password', 'Password') . '@' . variable_get('omni_eve_api_ts3_host', '127.0.0.1') . ':' . variable_get('omni_eve_api_ts3_query_port', 10011) . '/?server_port=' . variable_get('omni_eve_api_ts3_server_port', 9987) . '&blocking=0';
     $ts3 = TeamSpeak3::factory($query);
+    $ts3->whoamiSet('client_nickname', 'OEABOT');
+    $ts3->setPredefinedQueryName('OEABOT');
   }
   catch (TeamSpeak3_Exception $e){
     throw new Exception(t('Teamspeak 3 Connection failed. Error: @error', array('@error' => $e->getMessage())));

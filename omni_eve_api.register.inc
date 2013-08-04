@@ -334,9 +334,8 @@ function omni_eve_api_user_register_form_submit($form, &$form_state) {
   if ($corporation_role = user_role_load_by_name($corporationname)) {
     user_multiple_role_edit(array($uid), 'add_role', $corporation_role->rid);
 
-    if ($alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2))) {
-      user_multiple_role_edit(array($uid), 'add_role', $alliance_role->rid);
-    }
+    $alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2));
+    user_multiple_role_edit(array($uid), 'add_role', $alliance_role->rid);
   }
   else {
     $blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2));
