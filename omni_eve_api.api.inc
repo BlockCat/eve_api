@@ -80,7 +80,7 @@ function omni_eve_api_get_xml($type, $query = array()) {
       $xml = NULL;
     }
 
-    if (!((boolean) $xml->isValid()) || FALSE !== strpos($html->data, '<!DOCTYPE html')) {
+    if (FALSE !== strpos($html->data, '<!DOCTYPE html')) {
       drupal_set_message(t('EVE API returned an error with the API data: Not valid XML'), 'error');
       $xml = NULL;
     }

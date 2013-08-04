@@ -611,6 +611,7 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
     'keyid' => $keyid,
     'vcode' => $vcode,
     'updated' => $updated,
+    'errorid' => 0,
   ))->execute();
 
   foreach ($characters['characters'] as $character) {
@@ -625,6 +626,7 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
       'allianceid' => $character['allianceID'],
       'alliancename' => $character['allianceName'],
       'allianceticker' => $character['allianceTicker'],
+      'errorid' => 0,
       'deleted' => 0,
     ))->execute();
   }
