@@ -238,31 +238,21 @@ function omni_eve_api_cron_teamspeak_name($item) {
         continue;
       }
 
+      if (in_array(variable_get('omni_eve_api_ts3_bypass_group', 0), explode(',', (string) $teamspeak_user->client_servergroups))) {
+        continue;
+      }
+
       $teamspeakuid = (string) $teamspeak_user->client_unique_identifier;
       $teamspeaknickname = (string) $teamspeak_user->client_nickname;
 
       $query = db_select('oea_characters', 'c');
       $query->condition('c.deleted', 0);
       $query->join('users', 'u', 'c.charactername = u.charactername');
-      $query->fields('c', array(
-        'charactername',
-        'characterid',
-        'corporationid',
-        'corporationname',
-        'corporationticker',
-        'allianceid',
-        'alliancename',
-        'allianceticker',
-        ));
-      $query->fields('u', array(
-        'teamspeakdbid',
-        'uid',
-        ));
+      $query->fields('c', array('charactername'));
       $query->condition('u.teamspeakuid', $teamspeakuid);
       $result = $query->execute();
 
       if (!$result->rowCount()) {
-        $row = $result->fetchAssoc();
         $teamspeak_user->message(t('[color=red]Your Teamspeak ID is not registered on our server.[/color]'));
         $teamspeak_user->message(t('[color=red]If you do not register within 10 minutes[/color]'));
         $teamspeak_user->message(t('[color=red]you will be removed from the server.[/color]'));
@@ -277,6 +267,18 @@ function omni_eve_api_cron_teamspeak_name($item) {
       }
 
       $row = $result->fetchAssoc();
+
+      $expected_teamspeaknickname = omni_eve_api_teamspeak_format_name($row['charactername']);
+
+      if ($teamspeaknickname != $expected_teamspeaknickname) {
+        $teamspeak_user->message(t('[color=red]Your nickname is incorrect.[/color]'));
+        $teamspeak_user->message(t('[color=red]If you do not correct your nickname within 10 minutes[/color]'));
+        $teamspeak_user->message(t('[color=red]Nickname expected: @nickname[/color]', array('@nickname' => $expected_teamspeaknickname)));
+
+        if (time() >= ($teamspeak_user->client_lastconnected + 600)) {
+          $teamspeak_user->kick(TeamSpeak3::KICK_SERVER, t('You were told, fix your nickname!'));
+        }
+      }
     }
   }
   catch (Exception $e) {

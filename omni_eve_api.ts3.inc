@@ -9,20 +9,18 @@ module_load_include('php', 'omni_eve_api', 'libraries/TeamSpeak3/TeamSpeak3');
 /**
  * Generates the Teamspeak name as specified in Teamspeak Settings.
  *
- * @param array $account
- *   A simple user object.
+ * @param string $charactername
+ *   An eve Character Name.
  *
  * @return string
  *   The users Teamspeak display name.
  */
-function omni_eve_api_teamspeak_format_name($account) {
+function omni_eve_api_teamspeak_format_name($charactername) {
   // Valid Options:
   // @name = Character Name.
   // @corp = Corp Ticker.
   // @alliance = Alliance Ticker.
   $teamspeak_name = variable_get('omni_eve_api_ts3_nickname', '[@corp] @name');
-
-  $charactername = $account->charactername;
 
   $character_data = omni_eve_api_get_character_info($charactername);
 

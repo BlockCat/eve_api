@@ -776,7 +776,7 @@ function omni_eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
  * @ingroup forms
  */
 function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
-  omni_eve_api_cron_teamspeak_name(NULL);
+  // omni_eve_api_cron_teamspeak_name(NULL);
   $form['teamspeak'] = array(
     '#type' => 'fieldset',
     '#title' => t('Configure Teamspeak Connection'),
@@ -875,6 +875,39 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#value' => t('Submit'),
   );
 
+  if (variable_get('omni_eve_api_ts3_enable', FALSE)) {
+    try {
+      $teamspeakgroups = array();
+
+      $ts3 = omni_eve_api_teamspeak_connection();
+      $teamspeak_groups = $ts3->serverGroupList();
+
+      foreach ($teamspeak_groups as $teamspeak_group) {
+        if ((int) $teamspeak_group->type == 1 && (string) $teamspeak_group->name != 'Guest') {
+          $teamspeakgroups[(int) $teamspeak_group->sgid] = check_plain((string) $teamspeak_group->name);
+        }
+      }
+
+      $form['teamspeak']['omni_eve_api_ts3_bypass_group'] = array(
+        '#type' => 'select',
+        '#title' => t('Select Teamspeak Bypass Group'),
+        '#description' => t('Please select a Teamspeak Group for users to bypass the name and registration check.'),
+        '#options' => $teamspeakgroups,
+        '#default_value' => variable_get('omni_eve_api_ts3_bypass_group', 0),
+        '#weight' => 80,
+      );
+    }
+    catch (Exception $e){
+      $form['teamspeak']['omni_eve_api_ts3_bypass_group'] = array(
+        '#type' => 'markup',
+        '#prefix' => '<p>',
+        '#markup' => t('Teamspeak 3 Connection failed, check settings and try again. Error: @error', array('@error' => $e->getMessage())),
+        '#suffix' => '</p>',
+        '#weight' => 80,
+      );
+    }
+  }
+
   $form_state['redirect'] = 'admin/settings/omni_eve_api/list_whitelist';
   $form['#validate'] = array('omni_eve_api_admin_teamspeak_form_validate');
   $form['#submit'] = array('omni_eve_api_admin_teamspeak_form_submit');
@@ -896,6 +929,7 @@ function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
   variable_set('omni_eve_api_ts3_query_username', (string) $form_state['values']['query_username']);
   variable_set('omni_eve_api_ts3_query_password', (string) $form_state['values']['query_password']);
   variable_set('omni_eve_api_ts3_nickname', (string) $form_state['values']['nickname']);
+  variable_set('omni_eve_api_ts3_bypass_group', (int) $form_state['values']['omni_eve_api_ts3_bypass_group']);
 
   if ((int) $form_state['values']['enable']) {
     try {

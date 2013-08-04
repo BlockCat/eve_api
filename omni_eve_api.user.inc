@@ -691,7 +691,7 @@ function omni_eve_api_user_teamspeak_form($form, &$form_state, $account) {
   $form['teamspeak']['teamspeak_name'] = array(
     '#type' => 'markup',
     '#prefix' => '<p>',
-    '#markup' => !empty($account->charactername) ? t('Teamspeak Name: @teamspeak', array('@teamspeak' => omni_eve_api_teamspeak_format_name($account))) : t('Teamspeak Name: <a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/omni_eve_api/select_main_character'))),
+    '#markup' => !empty($account->charactername) ? t('Teamspeak Name: @teamspeak', array('@teamspeak' => omni_eve_api_teamspeak_format_name($account->charactername))) : t('Teamspeak Name: <a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/omni_eve_api/select_main_character'))),
     '#suffix' => '</p>',
     '#weight' => 10,
   );
@@ -735,7 +735,7 @@ function omni_eve_api_user_teamspeak_form_validate($form, &$form_state) {
 
   try {
     $ts3 = omni_eve_api_teamspeak_connection();
-    $teamspeak_name = omni_eve_api_teamspeak_format_name($account);
+    $teamspeak_name = omni_eve_api_teamspeak_format_name($account->charactername);
     $teamspeak_data = omni_eve_api_teamspeak_user_by_name($ts3, $teamspeak_name);
   }
   catch (Exception $e) {
@@ -754,7 +754,7 @@ function omni_eve_api_user_teamspeak_form_submit($form, &$form_state) {
 
   try {
     $ts3 = omni_eve_api_teamspeak_connection();
-    $teamspeak_name = omni_eve_api_teamspeak_format_name($account);
+    $teamspeak_name = omni_eve_api_teamspeak_format_name($account->charactername);
     $teamspeak_data = omni_eve_api_teamspeak_user_by_name($ts3, $teamspeak_name);
     $teamspeakuid = $teamspeak_data->client_unique_identifier;
     $teamspeakdbid = $teamspeak_data->client_database_id;
