@@ -359,10 +359,6 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
         'created' => $row_a->created,
       );
 
-      if ($row_a->errorid == 403) {
-        continue;
-      }
-
       $result_b = db_select('oea_characters', 'c')->fields('c', array(
         'characterid',
         'charactername',
