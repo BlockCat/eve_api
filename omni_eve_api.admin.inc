@@ -238,17 +238,17 @@ function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
  */
 function omni_eve_api_admin_access_mask_form($form, &$form_state) {
   $header = array(
-    'mask' => array(
+    'accessmask' => array(
       'data' => t('Mask'),
-      'field' => 'n.mask',
+      'field' => 'a.accessmask',
     ),
     'name' => array(
       'data' => t('Name'),
-      'field' => 'n.name',
+      'field' => 'a.name',
     ),
     'description' => array(
       'data' => t('Description'),
-      'field' => 'n.description',
+      'field' => 'a.description',
     ),
   );
 
@@ -256,17 +256,24 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
 
   $access_mask = variable_get('omni_eve_api_access_mask', 268435455);
 
-  $result = db_select('oea_access_mask', 'a')->fields('a', array(
-    'accessmask',
-    'type',
-    'name',
-    'description',
-  ))->condition('type', 'Character', '=')->execute();
+  $result = db_select('oea_access_mask', 'a')
+    ->fields('a', array(
+      'accessmask',
+      'type',
+      'name',
+      'description',
+    ))
+    ->condition('type', 'Character', '=')
+    ->extend('PagerDefault')
+    ->limit(30)
+    ->extend('TableSort')
+    ->orderByHeader($header)
+    ->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
       $options[$row->accessmask] = array(
-        'mask' => $row->accessmask,
+        'accessmask' => $row->accessmask,
         'name' => $row->name,
         'description' => $row->description,
       );
@@ -297,6 +304,11 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
     '#default_value' => $selected,
     '#empty' => t('Accessmask not retrieved.'),
     '#weight' => 10,
+  );
+
+  $form['access_mask']['pager'] = array(
+    '#theme' => 'pager',
+    '#weight' => 20,
   );
 
   $form['submit_button'] = array(
@@ -357,42 +369,48 @@ function omni_eve_api_admin_list_blues_form($form, &$form_state) {
   $header = array(
     'deleted' => array(
       'data' => t('Deleted'),
-      'field' => 'n.deleted',
+      'field' => 'b.deleted',
     ),
-    'id' => array(
+    'contactID' => array(
       'data' => t('ID'),
-      'field' => 'n.id',
+      'field' => 'b.contactID',
     ),
-    'name' => array(
+    'contactName' => array(
       'data' => t('Name'),
-      'field' => 'n.name',
+      'field' => 'b.contactName',
     ),
     'standing' => array(
       'data' => t('Standing'),
-      'field' => 'n.standing',
+      'field' => 'b.standing',
     ),
     'manual' => array(
       'data' => t('Manually Entered'),
-      'field' => 'n.manual',
+      'field' => 'b.manual',
     ),
   );
 
   $options = $selected = array();
 
-  $result = db_select('oea_blue_standings', 'b')->fields('b', array(
-    'contactID',
-    'contactName',
-    'standing',
-    'deleted',
-    'manual',
-  ))->execute();
+  $result = db_select('oea_blue_standings', 'b')
+    ->fields('b', array(
+      'contactID',
+      'contactName',
+      'standing',
+      'deleted',
+      'manual',
+    ))
+    ->extend('PagerDefault')
+    ->limit(20)
+    ->extend('TableSort')
+    ->orderByHeader($header)
+    ->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
       $options[$row->contactID] = array(
         'deleted' => ($row->deleted) ? t('Yes') : t('No'),
-        'id' => $row->contactID,
-        'name' => $row->contactName,
+        'contactID' => $row->contactID,
+        'contactName' => $row->contactName,
         'standing' => $row->standing,
         'manual' => ($row->manual) ? t('Yes') : t('No'),
       );
@@ -417,6 +435,11 @@ function omni_eve_api_admin_list_blues_form($form, &$form_state) {
     '#default_value' => $selected,
     '#empty' => t('There are no standings.'),
     '#weight' => 10,
+  );
+
+  $form['list_blues']['page'] = array(
+    '#theme' => 'pager',
+    '#weight' => 20,
   );
 
   $form['submit_button'] = array(
@@ -585,25 +608,31 @@ function omni_eve_api_admin_list_whitelist_form($form, &$form_state) {
   $header = array(
     'deleted' => array(
       'data' => t('Deleted'),
-      'field' => 'n.deleted',
+      'field' => 'w.deleted',
     ),
     'characterid' => array(
       'data' => t('Character ID'),
-      'field' => 'n.characterid',
+      'field' => 'w.characterid',
     ),
     'charactername' => array(
       'data' => t('Character Name'),
-      'field' => 'n.charactername',
+      'field' => 'w.charactername',
     ),
   );
 
   $options = $selected = array();
 
-  $result = db_select('oea_whitelist', 'w')->fields('w', array(
-    'characterid',
-    'charactername',
-    'deleted',
-  ))->execute();
+  $result = db_select('oea_whitelist', 'w')
+    ->fields('w', array(
+      'characterid',
+      'charactername',
+      'deleted',
+    ))
+    ->extend('PagerDefault')
+    ->limit(20)
+    ->extend('TableSort')
+    ->orderByHeader($header)
+    ->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -633,6 +662,11 @@ function omni_eve_api_admin_list_whitelist_form($form, &$form_state) {
     '#default_value' => $selected,
     '#empty' => t('No Characters Whitelisted.'),
     '#weight' => 10,
+  );
+
+  $form['whitelist']['page'] = array(
+    '#theme' => 'pager',
+    '#weight' => 20,
   );
 
   $form['submit_button'] = array(

@@ -67,7 +67,10 @@ function omni_eve_api_get_xml($type, $query = array()) {
   if (empty($html)) {
     $html = omni_eve_api_curl_http_request($url, $query);
 
-    drupal_set_message(t('EVE API returned an error with the HTTP request: @error', array('@error' => $html->error)), 'error');
+    if (!empty($html->error)) {
+      drupal_set_message(t('EVE API returned an error with the HTTP request: @error', array('@error' => $html->error)), 'error');
+    }
+
     $error = $html->code;
   }
 
@@ -391,17 +394,16 @@ function omni_eve_api_api_error_msg($error_id) {
 }
 
 /**
- * Function that retrieves all API's associated with a user id.
+ * Function that retrieves a simple list of API's associated with a user id.
  *
  * @param int $uid
  *   A unique Drupal User ID.
  *
  * @return mixed
- *   A comlex array of character and api key information.
+ *   A simple array of character and api key information.
  */
-function omni_eve_api_list_api($uid) {
+function omni_eve_api_list_api_simple($uid) {
   $api_list = array();
-  $api_list['full'] = $api_list['simple'] = array();
 
   $result_a = db_select('oea_api_keys', 'a')->fields('a', array(
     'apiid',
@@ -414,15 +416,6 @@ function omni_eve_api_list_api($uid) {
 
   if ($result_a->rowCount()) {
     foreach ($result_a->fetchAll() as $row_a) {
-      $api_list['full'][$row_a->apiid] = array(
-        'apiid' => $row_a->apiid,
-        'keyid' => $row_a->keyid,
-        'vcode' => $row_a->vcode,
-        'errorid' => $row_a->errorid,
-        'updated' => $row_a->updated,
-        'created' => $row_a->created,
-      );
-
       if ($row_a->errorid == 403) {
         continue;
       }
@@ -440,17 +433,7 @@ function omni_eve_api_list_api($uid) {
 
       if ($result_b->rowCount()) {
         foreach ($result_b->fetchAll() as $row_b) {
-          $api_list['full'][$row_a->apiid]['characters'][$row_b->characterid] = array(
-            'characterid' => $row_b->characterid,
-            'charactername' => $row_b->charactername,
-            'corporationid' => $row_b->corporationid,
-            'corporationname' => $row_b->corporationname,
-            'corporationticker' => $row_b->corporationticker,
-            'allianceid' => $row_b->allianceid,
-            'alliancename' => $row_b->alliancename,
-            'allianceticker' => $row_b->allianceticker,
-          );
-          $api_list['simple']['characters'][$row_b->characterid] = array(
+          $api_list['characters'][$row_b->characterid] = array(
             'characterID' => $row_b->characterid,
             'characterName' => $row_b->charactername,
             'corporationID' => $row_b->corporationid,

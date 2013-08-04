@@ -169,7 +169,7 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
  */
 function omni_eve_api_user_select_main_character_form($form, &$form_state, $account) {
   $uid = $account->uid;
-  $uid_api_list = omni_eve_api_list_api($uid);
+  $uid_api_list = omni_eve_api_list_api_simple($uid);
 
   $form['main_character'] = array(
     '#type' => 'fieldset',
@@ -181,7 +181,7 @@ function omni_eve_api_user_select_main_character_form($form, &$form_state, $acco
     '#type' => 'select',
     '#title' => t('Select your Main Character'),
     '#default_value' => $account->charactername,
-    '#options' => omni_eve_api_list_valid_characters($uid_api_list['simple']),
+    '#options' => omni_eve_api_list_valid_characters($uid_api_list),
     '#description' => t('Detected valid Main Characters.'),
     '#required' => TRUE,
   );
@@ -300,79 +300,144 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
  */
 function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
   $uid = $account->uid;
-  $uid_api_list = omni_eve_api_list_api($uid);
+  $api_list = array();
 
   $header = array(
-    'edit' => array(
-      'data' => t('Edit'),
-      'field' => 'n.edit',
+    'action' => array(
+      'data' => t('Action'),
     ),
     'keyid' => array(
       'data' => t('API Key ID'),
-      'field' => 'n.keyid',
+      'field' => 'a.keyid',
     ),
     'vcode' => array(
       'data' => t('API Verification Code'),
-      'field' => 'n.vcode',
+      'field' => 'a.vcode',
     ),
     'characters' => array(
       'data' => t('Characters'),
-      'field' => 'n.characters',
     ),
     'updated' => array(
       'data' => t('Last Updated'),
-      'field' => 'n.updated',
+      'field' => 'a.updated',
     ),
     'created' => array(
       'data' => t('Created'),
-      'field' => 'n.created',
+      'field' => 'a.created',
     ),
-    'status' => array(
+    'errorid' => array(
       'data' => t('Status'),
-      'field' => 'n.status',
+      'field' => 'a.errorid',
     ),
   );
 
+
+  $result_a = db_select('oea_api_keys', 'a')
+    ->fields('a', array(
+      'apiid',
+      'keyid',
+      'vcode',
+      'errorid',
+      'updated',
+      'created',
+    ))
+    ->extend('PagerDefault')
+    ->limit(3)
+    ->extend('TableSort')
+    ->orderByHeader($header)
+    ->condition('drupalid', $uid, '=')
+    ->execute();
+
+  if ($result_a->rowCount()) {
+    foreach ($result_a->fetchAll() as $row_a) {
+      $api_list[$row_a->apiid] = array(
+        'apiid' => $row_a->apiid,
+        'keyid' => $row_a->keyid,
+        'vcode' => $row_a->vcode,
+        'errorid' => $row_a->errorid,
+        'updated' => $row_a->updated,
+        'created' => $row_a->created,
+      );
+
+      if ($row_a->errorid == 403) {
+        continue;
+      }
+
+      $result_b = db_select('oea_characters', 'c')->fields('c', array(
+        'characterid',
+        'charactername',
+        'corporationid',
+        'corporationname',
+        'corporationticker',
+        'allianceid',
+        'alliancename',
+        'allianceticker',
+      ))->condition('drupalid', $uid, '=')->condition('deleted', 0, '=')->condition('apiid', $row_a->apiid, '=')->execute();
+
+      if ($result_b->rowCount()) {
+        foreach ($result_b->fetchAll() as $row_b) {
+          $api_list[$row_a->apiid]['characters'][$row_b->characterid] = array(
+            'characterid' => $row_b->characterid,
+            'charactername' => $row_b->charactername,
+            'corporationid' => $row_b->corporationid,
+            'corporationname' => $row_b->corporationname,
+            'corporationticker' => $row_b->corporationticker,
+            'allianceid' => $row_b->allianceid,
+            'alliancename' => $row_b->alliancename,
+            'allianceticker' => $row_b->allianceticker,
+          );
+        }
+      }
+    }
+  }
+
   $options = array();
 
-  foreach ($uid_api_list['full'] as $uid_api_single) {
+  foreach ($api_list as $api_single) {
     $list_characters = '';
 
-    if (isset($uid_api_single['characters'])) {
-      foreach ($uid_api_single['characters'] as $characters) {
+    if (isset($api_single['characters'])) {
+      foreach ($api_single['characters'] as $characters) {
         $corp_alliance = ($characters['allianceid'] == 0) ? $characters['corporationname'] : $characters['corporationname'] . '/' . $characters['alliancename'];
         $list_characters .= '[' . $characters['corporationticker'] . '] ' . $characters['charactername'] . ' (' . $corp_alliance . ')';
         $list_characters .= '<br />';
       }
     }
 
-    $options[$uid_api_single['apiid']] = array(
-      'edit' => array(
+    $options[$api_single['apiid']] = array(
+      'action' => array(
         'data' => array(
           '#type' => 'link',
-          '#title' => t('Edit API # @api_key_id', array('@api_key_id' => $uid_api_single['apiid'])),
-          '#href' => 'user/' . $uid . '/omni_eve_api/update_api_key/' . $uid_api_single['apiid'],
+          // '#title' => t('Edit API # @api_key_id', array('@api_key_id' => $api_single['apiid'])),
+          '#title' => t('Edit'),
+          '#href' => 'user/' . $uid . '/omni_eve_api/update_api_key/' . $api_single['apiid'],
         ),
       ),
-      'keyid' => $uid_api_single['keyid'],
-      'vcode' => $string = (strlen($uid_api_single['vcode']) > 13) ? substr($uid_api_single['vcode'], 0, 10) . '...' : $uid_api_single['vcode'],
+      'keyid' => $api_single['keyid'],
+      'vcode' => $string = (strlen($api_single['vcode']) > 13) ? substr($api_single['vcode'], 0, 10) . '...' : $api_single['vcode'],
       'characters' => $list_characters,
-      'updated' => format_date(strtotime($uid_api_single['updated']), 'short'),
-      'created' => format_date(strtotime($uid_api_single['created']), 'short'),
-      'status' => omni_eve_api_api_error_msg($uid_api_single['errorid']),
+      'updated' => format_date(strtotime($api_single['updated']), 'short'),
+      'created' => format_date(strtotime($api_single['created']), 'short'),
+      'errorid' => omni_eve_api_api_error_msg($api_single['errorid']),
     );
   }
-
-  $form['list_api']['uid'] = array(
-    '#value' => $uid,
-    '#type' => 'hidden',
-  );
 
   $form['list_api']['api_keys'] = array(
     '#type' => 'tableselect',
     '#header' => $header,
     '#options' => $options,
     '#empty' => t('No API Keys associated with your account.'),
+    '#weight' => 0,
+  );
+
+  $form['list_api']['page'] = array(
+    '#theme' => 'pager',
+    '#weight' => 10,
+  );
+
+  $form['uid'] = array(
+    '#value' => $uid,
+    '#type' => 'hidden',
   );
 
   $form['submit_button'] = array(
@@ -667,7 +732,6 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
  */
 function omni_eve_api_user_teamspeak_form($form, &$form_state, $account) {
   $uid = $account->uid;
-  $uid_api_list = omni_eve_api_list_api($uid);
 
   $form['teamspeak'] = array(
     '#type' => 'fieldset',
