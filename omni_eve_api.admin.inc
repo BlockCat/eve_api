@@ -776,7 +776,6 @@ function omni_eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
  * @ingroup forms
  */
 function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
-  // omni_eve_api_cron_teamspeak_name(NULL);
   $form['teamspeak'] = array(
     '#type' => 'fieldset',
     '#title' => t('Configure Teamspeak Connection'),

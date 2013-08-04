@@ -61,9 +61,8 @@ function omni_eve_api_get_xml($type, $query = array()) {
 
   if ($cached = cache_get($cache_name, 'cache')) {
     $html = $cached->data;
+    $error = 200;
   }
-
-  $error = 200;
 
   if (empty($html)) {
     $html = omni_eve_api_curl_http_request($url, $query);
@@ -72,26 +71,29 @@ function omni_eve_api_get_xml($type, $query = array()) {
     $error = $html->code;
   }
 
-  if (isset($html)) {
+  if ($error < 400) {
     try {
-      $xml = new SimpleXMLElement($html->data);
+      $xml = @new SimpleXMLElement($html->data);
     }
     catch (Exception $e) {
       drupal_set_message(t('EVE API returned an error with the data retrieved: @error', array('@error' => $e->getMessage()), 'error'));
       $xml = NULL;
     }
 
-    if ($xml->error) {
+    if (!((boolean) $xml->isValid()) || FALSE !== strpos($html->data, '<!DOCTYPE html')) {
+      drupal_set_message(t('EVE API returned an error with the API data: Not valid XML'), 'error');
+      $xml = NULL;
+    }
+
+    if (isset($xml->errorCode)) {
       drupal_set_message(t('EVE API returned an error with the API data: @error', array('@error' => $xml->error)), 'error');
+      $error = $xml->errorCode . ' - ' . $this->errorMessage;
       $xml = NULL;
     }
   }
 
-  if (isset($xml) && isset($xml->cachedUntil)) {
+  if (isset($xml->cachedUntil)) {
     cache_set($cache_name, $html, 'cache', strtotime($xml->cachedUntil));
-    return $xml;
-  }
-  elseif (isset($xml)) {
     return $xml;
   }
   else {
@@ -147,8 +149,8 @@ function omni_eve_api_get_character_api($query) {
   $xml = omni_eve_api_get_xml('APIKeyInfo', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>' . print_r($xml, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
-    return array('error' => $xml);
+    watchdog('eve api', '<pre>Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    return array('error' => (int) $xml);
   }
 
   $api_data = array();
@@ -207,7 +209,7 @@ function omni_eve_api_get_corporation_info($query) {
   $xml = omni_eve_api_get_xml('CorporationSheet', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>' . print_r($xml, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
     return array('error' => $xml);
   }
 
@@ -236,7 +238,7 @@ function omni_eve_api_get_character_name($query) {
   $xml = omni_eve_api_get_xml('CharacterName', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>' . print_r($xml, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
     return array('error' => $xml);
   }
 
