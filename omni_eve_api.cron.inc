@@ -363,12 +363,25 @@ function omni_eve_api_cron_queue_users($item) {
 
       $characters = omni_eve_api_get_character_api($query);
 
-      if (isset($characters['error'])) {
+      if (isset($characters['error']) && $characters['error'] != 403) {
         $new_api_key_id = db_merge('oea_api_keys')->key(array('apiid' => $row->apiid))->fields(array(
           'apiid' => $row->apiid,
-          'errorid' => 2,
+          'errorid' => $characters['error'],
           'updated' => $updated,
         ))->execute();
+
+        db_update('oea_characters')->fields(array('errorid' => $characters['error']))->condition('apiid', $row->apiid, '=')->execute();
+
+        continue;
+      }
+      elseif (isset($characters['error']) && $characters['error'] == 403) {
+        $new_api_key_id = db_merge('oea_api_keys')->key(array('apiid' => $row->apiid))->fields(array(
+          'apiid' => $row->apiid,
+          'errorid' => $characters['error'],
+          'updated' => $updated,
+        ))->execute();
+
+        db_update('oea_characters')->fields(array('errorid' => $characters['error'], 'deleted' => 1))->condition('apiid', $row->apiid, '=')->execute();
 
         continue;
       }

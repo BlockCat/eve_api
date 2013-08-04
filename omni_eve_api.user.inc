@@ -359,7 +359,7 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
       'characters' => $list_characters,
       'updated' => format_date(strtotime($uid_api_single['updated']), 'short'),
       'created' => format_date(strtotime($uid_api_single['created']), 'short'),
-      'status' => $uid_api_single['errorid'],
+      'status' => omni_eve_api_api_error_msg($uid_api_single['errorid']),
     );
   }
 

@@ -72,9 +72,15 @@ function omni_eve_api_teamspeak_connection() {
  */
 function omni_eve_api_teamspeak_group_create(&$ts3, $role) {
   try {
-    $guest_id = omni_eve_api_teamspeak_group_get_id($ts3, 'Guest');
-    $teamspeakgid = $ts3->serverGroupCopy($guest_id, $role);
-    $ts3->serverGroupPermAssign($teamspeakgid, 'b_group_is_permanent', 1);
+    if ($copy_id = omni_eve_api_teamspeak_group_get_id($ts3, 'Default Corporation')) {
+      $teamspeakgid = $ts3->serverGroupCopy($copy_id, $role);
+      $ts3->serverGroupPermAssign($teamspeakgid, 'b_group_is_permanent', 1);
+    }
+    else {
+      $guest_id = omni_eve_api_teamspeak_group_get_id($ts3, 'Guest');
+      $teamspeakgid = $ts3->serverGroupCopy($guest_id, $role);
+      $ts3->serverGroupPermAssign($teamspeakgid, 'b_group_is_permanent', 1);
+    }
   }
   catch (TeamSpeak3_Exception $e){
     throw new Exception(t('Unable to create new group.'));

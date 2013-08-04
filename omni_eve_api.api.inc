@@ -63,21 +63,13 @@ function omni_eve_api_get_xml($type, $query = array()) {
     $html = $cached->data;
   }
 
-  $error = NULL;
+  $error = 200;
 
-  if (empty($username)) {
+  if (empty($html)) {
     $html = omni_eve_api_curl_http_request($url, $query);
 
-    if ($html->code >= 400) {
-      drupal_set_message(t('EVE API returned an error with the HTTP request: @error', array('@error' => $html->error)), 'error');
-      $error = $html;
-      $html = $xml = NULL;
-    }
-    elseif ($html->code != 200) {
-      drupal_set_message(t('EVE API returned an error with the HTTP request: @error', array('@error' => $html->error)), 'error');
-      $error = $html;
-      $html = $xml = NULL;
-    }
+    drupal_set_message(t('EVE API returned an error with the HTTP request: @error', array('@error' => $html->error)), 'error');
+    $error = $html->code;
   }
 
   if (isset($html)) {
@@ -97,6 +89,9 @@ function omni_eve_api_get_xml($type, $query = array()) {
 
   if (isset($xml) && isset($xml->cachedUntil)) {
     cache_set($cache_name, $html, 'cache', strtotime($xml->cachedUntil));
+    return $xml;
+  }
+  elseif (isset($xml)) {
     return $xml;
   }
   else {
@@ -363,6 +358,37 @@ function omni_eve_api_characters_exist($characters) {
 }
 
 /**
+ * Function that converts an Error ID to a readable message.
+ *
+ * @param int $error_id
+ *   An error ID number.
+ *
+ * @return string
+ *   An error message.
+ */
+function omni_eve_api_api_error_msg($error_id) {
+  switch ($error_id) {
+    case 0:
+      $message = t('OK');
+      break;
+
+    case 1:
+      $message = t('Invalid API Mask/Type/Expiry.');
+      break;
+
+    case 403:
+      $message = t('API Key Does Not Exist.');
+      break;
+
+    default:
+      $message = t('Unknown Error ID.');
+      break;
+  }
+
+  return $message;
+}
+
+/**
  * Function that retrieves all API's associated with a user id.
  *
  * @param int $uid
@@ -395,7 +421,7 @@ function omni_eve_api_list_api($uid) {
         'created' => $row_a->created,
       );
 
-      if ($row_a->errorid != 0) {
+      if ($row_a->errorid == 403) {
         continue;
       }
 
