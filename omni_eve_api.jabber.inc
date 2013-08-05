@@ -52,3 +52,43 @@ function omni_eve_api_jabber_connect() {
 function omni_eve_api_jabber_disconnect() {
   db_set_active();
 }
+
+/**
+ * Format the Jabber group or login name.
+ *
+ * @param string $name
+ *   The name to clean.
+ *
+ * @return string
+ *   The cleaned Jabber group or login name.
+ */
+function omni_eve_api_jabber_format_name($name) {
+  $name = strtolower($name);
+  $name = str_replace(" ", "_", $name);
+  $name = str_replace("'","_", $name);
+
+  if (strlen($name) > 50) {
+    $name = substr($name, 0, 50);
+  }
+
+  return $name;
+}
+
+/**
+ * Format the Jabber display name.
+ *
+ * @param string $name
+ *   The name to clean.
+ *
+ * @return string
+ *   The users Jabber display name.
+ */
+function omni_eve_api_jabber_format_display_name($name) {
+  $name = str_replace("'","_", $name);
+
+  if (strlen($name) > 50) {
+    $name = substr($name, 0, 50);
+  }
+
+  return $name;
+}

@@ -1078,6 +1078,18 @@ function omni_eve_api_admin_jabber_form_validate($form, &$form_state) {
 
   if ((int) $form_state['values']['enable']) {
     try {
+      if (variable_get('omni_eve_api_jabber_enable', FALSE) === FALSE) {
+        $jabber_database = array(
+          'host' => variable_get('omni_eve_api_jabber_host', '127.0.0.1'),
+          'database' => variable_get('omni_eve_api_jabber_database', 'Jabber'),
+          'username' => variable_get('omni_eve_api_jabber_username', 'Username'),
+          'password' => variable_get('omni_eve_api_jabber_password', 'Password'),
+          'driver' => 'mysql',
+        );
+
+        Database::addConnectionInfo('Jabber', 'default', $jabber_database);
+      }
+
       omni_eve_api_jabber_connect();
       omni_eve_api_jabber_test_connection();
       omni_eve_api_jabber_disconnect();
