@@ -1031,7 +1031,7 @@ function omni_eve_api_admin_jabber_form($form, &$form_state) {
   $form['jabber']['username'] = array(
     '#type' => 'textfield',
     '#title' => t('Username'),
-    '#description' => t('The Username required to connect to the Jabber Database.'),
+    '#description' => t('The username required to connect to the Jabber Database.'),
     '#required' => TRUE,
     '#maxlength' => 100,
     '#weight' => 20,
@@ -1041,17 +1041,35 @@ function omni_eve_api_admin_jabber_form($form, &$form_state) {
   $form['jabber']['password'] = array(
     '#type' => 'textfield',
     '#title' => t('Password'),
-    '#description' => t('The Password required to connect to the Jabber Database.'),
+    '#description' => t('The password required to connect to the Jabber Database.'),
     '#maxlength' => 100,
     '#weight' => 30,
     '#default_value' => variable_get('omni_eve_api_jabber_password', 'Password'),
+  );
+
+  $form['jabber']['url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Openfire Admin URL'),
+    '#description' => t('The web address to the Openfire admin page. Default http://localhost:9090'),
+    '#maxlength' => 100,
+    '#weight' => 40,
+    '#default_value' => variable_get('omni_eve_api_jabber_url', 'http://localhost:9090'),
+  );
+
+  $form['jabber']['secret'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Openfire Secret Password'),
+    '#description' => t('The Openfire secret password to access the User Service.'),
+    '#maxlength' => 100,
+    '#weight' => 50,
+    '#default_value' => variable_get('omni_eve_api_jabber_secret', 'Password'),
   );
 
   $form['jabber']['enable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable Jabber Connection.'),
     '#default_value' => variable_get('omni_eve_api_jabber_enable', FALSE),
-    '#weight' => 40,
+    '#weight' => 60,
   );
 
   $form['submit_button'] = array(
@@ -1075,6 +1093,8 @@ function omni_eve_api_admin_jabber_form_validate($form, &$form_state) {
   variable_set('omni_eve_api_jabber_database', (string) $form_state['values']['database']);
   variable_set('omni_eve_api_jabber_username', (string) $form_state['values']['username']);
   variable_set('omni_eve_api_jabber_password', (string) $form_state['values']['password']);
+  variable_set('omni_eve_api_jabber_url', (string) $form_state['values']['url']);
+  variable_set('omni_eve_api_jabber_secret', (string) $form_state['values']['secret']);
 
   if ((int) $form_state['values']['enable']) {
     try {
@@ -1098,6 +1118,8 @@ function omni_eve_api_admin_jabber_form_validate($form, &$form_state) {
       form_set_error('enable', t('Please check settings and try again. Error: @error', array('@error' => $e->getMessage())));
       variable_set('omni_eve_api_jabber_enable', FALSE);
     }
+
+    // Add check for url and secret.
   }
 }
 
