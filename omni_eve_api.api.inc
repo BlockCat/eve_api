@@ -144,7 +144,7 @@ function omni_eve_api_get_character_info($charactername) {
   else {
     $api_data = FALSE;
   }
-  
+
   return $api_data;
 }
 
