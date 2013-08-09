@@ -4,7 +4,7 @@
  * Functions related to connecting to Jabber.
  */
 
-if (variable_get('omni_eve_api_jabber_enable', FALSE)) {
+if (variable_get('omni_eve_api_jabber_enable', FALSE) === TRUE) {
   $jabber_database = array(
     'host' => variable_get('omni_eve_api_jabber_host', '127.0.0.1'),
     'database' => variable_get('omni_eve_api_jabber_database', 'Jabber'),
@@ -25,24 +25,28 @@ function omni_eve_api_jabber_test_connection() {
       ->fields('u', array(
         'username',
       ))
-      ->range(0,1)
+      ->range(0, 1)
       ->execute();
   }
   catch (PDOException $e) {
-    throw new Exception($e->getMessage());
+    throw new OeaException($e->getMessage());
   }
 }
 
 /**
  * Connect to the Jabber Database.
  */
-function omni_eve_api_jabber_connect() {
+function omni_eve_api_jabber_connect($check = FALSE) {
+  if (variable_get('omni_eve_api_jabber_enable', FALSE) === FALSE && !$check) {
+    throw new OeaException(t('Jabber Connection disabled.'));
+  }
+
   try {
     db_set_active('Jabber');
   }
   catch (PDOException $e) {
     db_set_active();
-    throw new Exception($e->getMessage());
+    throw new OeaException($e->getMessage());
   }
 }
 
@@ -65,7 +69,7 @@ function omni_eve_api_jabber_disconnect() {
 function omni_eve_api_jabber_format_name($name) {
   $name = strtolower($name);
   $name = str_replace(" ", "_", $name);
-  $name = str_replace("'","_", $name);
+  $name = str_replace("'", "_", $name);
 
   if (strlen($name) > 50) {
     $name = substr($name, 0, 50);
@@ -84,7 +88,7 @@ function omni_eve_api_jabber_format_name($name) {
  *   The users Jabber display name.
  */
 function omni_eve_api_jabber_format_display_name($name) {
-  $name = str_replace("'","_", $name);
+  $name = str_replace("'", "_", $name);
 
   if (strlen($name) > 50) {
     $name = substr($name, 0, 50);
@@ -93,92 +97,161 @@ function omni_eve_api_jabber_format_display_name($name) {
   return $name;
 }
 
-function omni_eve_api_jabber_user_update($charactername, $email, $groups, $password = '') {
-  $query = array(
-    'name' => omni_eve_api_jabber_format_display_name($charactername),
-    'email' => $email,
-    'groups' => implode(",", $groups),
-  );
-
-  if (!empty($password)) {
-    $password = array(
-      'password' => $password,
-    );
-
-    $query = array_merge($query, $password);
+/**
+ * Checks to see if exists and Inserts a new Group if it does not exist.
+ *
+ * @param string $name
+ *   The group name to add.
+ * @param string $description
+ *   The description of the group.
+ *
+ * @return bool
+ *   Returns a true on success.
+ */
+function omni_eve_api_jabber_group_add($name, $description = '') {
+  if (variable_get('omni_eve_api_jabber_enable', FALSE) === FALSE) {
+    throw new OeaException(t('Jabber Connection disabled.'));
   }
 
-  $result = omni_eve_api_jabber_query('update', $charactername, $query);
+  try {
+    omni_eve_api_jabber_connect();
+
+    $clean_name = omni_eve_api_jabber_format_name($name);
+
+    $result = db_select('ofGroup', 'g')->fields('g', array(
+      'groupName',
+    ))->condition('groupName', $clean_name, '=')->execute();
+
+    if ($result->rowCount()) {
+      omni_eve_api_jabber_disconnect();
+
+      return TRUE;
+    }
+
+    db_merge('ofGroup')->key(array('groupName' => $clean_name))->fields(array(
+      'groupName' => $clean_name,
+      'description' => $description,
+    ))->execute();
+
+    db_insert('ofGroupProp')->fields(array(
+      'groupName' => $clean_name,
+      'name' => 'sharedRoster.showInRoster',
+      'propValue' => 'onlyGroup',
+    ))->execute();
+
+    db_insert('ofGroupProp')->fields(array(
+      'groupName' => $clean_name,
+      'name' => 'sharedRoster.displayName',
+      'propValue' => $name,
+    ))->execute();
+
+    db_insert('ofGroupProp')->fields(array(
+      'groupName' => $clean_name,
+      'name' => 'sharedRoster.groupList',
+      'propValue' => '',
+    ))->execute();
+
+    omni_eve_api_jabber_disconnect();
+  }
+  catch (PDOException $e) {
+    omni_eve_api_jabber_disconnect();
+    throw new OeaException($e->getMessage());
+  }
+
+  return TRUE;
 }
 
-function omni_eve_api_jabber_user_add($charactername, $email, $groups, $password) {
-  $query = array(
-    'name' => omni_eve_api_jabber_format_display_name($charactername),
-    'password' => $password,
-    'email' => $email,
-    'groups' => implode(",", $groups),
-  );
+/**
+ * Prepares a URL query to do various tasks through the Jabber User Service.
+ *
+ * @param string $type
+ *   What we are doing.
+ * @param string $charactername
+ *   The login name of the user we are modifying..
+ * @param array $query
+ *   (optional) Additional options as needed for each $type.
+ *
+ * @return mixed
+ *   Returns a true on success, false on failure or message.
+ */
+function omni_eve_api_jabber_url_query($type, $charactername = '', array $query = array()) {
+  if (variable_get('omni_eve_api_jabber_enable', FALSE) === FALSE && $type != 'check') {
+    throw new OeaException(t('Jabber Connection disabled.'));
+  }
 
-  $result = omni_eve_api_jabber_query('add', $charactername, $query);
-}
+  try {
+    switch ($type) {
+      case 'enable':
+      case 'disable':
+      case 'delete':
+        if (empty($charactername)) {
+          return FALSE;
+        }
 
-function omni_eve_api_jabber_user_delete($charactername) {
-  $result = omni_eve_api_jabber_query('add', $charactername);
-}
+        $query = array();
+        $default_query = array(
+          'type' => $type,
+          'secret' => variable_get('omni_eve_api_jabber_secret', 'Password'),
+          'username' => omni_eve_api_jabber_format_name($charactername),
+        );
+        break;
 
-function omni_eve_api_jabber_user_disable($charactername) {
-  $result = omni_eve_api_jabber_query('disable', $charactername);
-}
+      case 'add':
+      case 'update':
+      case 'add_roster':
+      case 'update_roster':
+      case 'delete_roster':
+        if (empty($query) || empty($charactername)) {
+          return FALSE;
+        }
 
-function omni_eve_api_jabber_user_enable($charactername) {
-  $result = omni_eve_api_jabber_query('enable', $charactername);
-}
+        $default_query = array(
+          'type' => $type,
+          'secret' => variable_get('omni_eve_api_jabber_secret', 'Password'),
+          'username' => omni_eve_api_jabber_format_name($charactername),
+        );
+        break;
 
-function omni_eve_api_jabber_query($type, $charactername, array $query = array()) {
-  switch ($type) {
-    case 'add':
-    case 'update':
-    case 'add_roster':
-    case 'update_roster':
-    case 'delete_roster':
-      if (empty($query)) {
+      case 'check':
+        $query = array();
+        $default_query = array(
+          'secret' => variable_get('omni_eve_api_jabber_secret', 'Password'),
+        );
+        break;
+
+      default:
         return FALSE;
-      }
-      break;
+    }
 
-    case 'enable':
-    case 'disable':
-    case 'delete':
-      $query = array();
-      break;
+    $query = array_merge($query, $default_query);
+    $query = drupal_http_build_query($query);
 
-    default:
-      return FALSE;
-      break;
+    $url = variable_get('omni_eve_api_jabber_url', 'http://localhost:9090') . '/plugins/userService/userservice?' . $query;
+    $result = omni_eve_api_jabber_url_send_query($url);
+
+    if ($result == 'ok') {
+      return TRUE;
+    }
+    else {
+      return $result;
+    }
   }
-
-  $default_query = array(
-    'type' => $type,
-    'secret' => variable_get('omni_eve_api_jabber_secret', 'Password'),
-    'username' => omni_eve_api_jabber_format_name($charactername),
-  );
-
-  $query = array_merge($query, $default_query);
-
-  $query = drupal_http_build_query($query);
-
-  $url = variable_get('omni_eve_api_jabber_url', 'http://localhost:9090') . '/plugins/userService/userservice?' . $query;
-  $result = omni_eve_api_jabber_send_query($url);
-
-  if ($result == 'ok') {
-    return TRUE;
-  }
-  else {
-    return $result;
+  catch (PDOException $e) {
+    db_set_active();
+    throw new OeaException($e->getMessage());
   }
 }
 
-function omni_eve_api_jabber_send_query($url) {
+/**
+ * Sends the URL query to do various tasks through the Jabber User Service.
+ *
+ * @param string $url
+ *   URL to send to the Jabber User Service.
+ *
+ * @return mixed
+ *   Returns the XML object on success, NULL on error.
+ */
+function omni_eve_api_jabber_url_send_query($url) {
   $html = omni_eve_api_curl_http_request($url, array(), 'GET');
 
   if (!empty($html->error)) {

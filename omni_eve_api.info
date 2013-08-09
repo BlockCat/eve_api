@@ -3,4 +3,5 @@ description = An EVE API interface that will integrate EVE, Drupal, Teamspeak, a
 core = 7.x
 dependencies[] = ctools
 dependencies[] = elysia_cron
+dependencies[] = libraries
 configure = admin/settings/omni_eve_api

@@ -25,6 +25,11 @@ function omni_eve_api_cronapi($op, $job = NULL) {
     'rule' => '*/5 * * * *',
   );
 
+  $items['omni_eve_api_jabber_user_cron'] = array(
+    'description' => 'Update user permissions in Jabber every 5 minutes.',
+    'rule' => '*/5 * * * *',
+  );
+
   $items['omni_eve_api_teamspeak_name_cron'] = array(
     'description' => 'Check usernames in Teamspeak every minute.',
     'rule' => '* * * * *',
@@ -99,6 +104,28 @@ function omni_eve_api_teamspeak_user_cron() {
 /**
  * Implements hook_cron().
  */
+function omni_eve_api_jabber_user_cron() {
+  if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_jabber_enable', FALSE)) {
+    $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role');
+    $queue->createQueue();
+    $item = NULL;
+    $queue->createItem($item);
+
+    $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user');
+    $queue->createQueue();
+    $result = db_select('users', 'u')->fields('u', array('uid', 'name'))->condition('status', 1, '=')->condition('characterid', 0, '!=')->execute();
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $item) {
+        $queue->createItem(array('uid' => $item->uid, 'name' => $item->name));
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
 function omni_eve_api_teamspeak_name_cron() {
   if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_ts3_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_name');
@@ -125,6 +152,14 @@ function omni_eve_api_cron_queue_info() {
   );
   $queue['omni_eve_api_cron_teamspeak_role'] = array(
     'worker callback' => 'omni_eve_api_cron_teamspeak_role',
+    'time' => 15,
+  );
+  $queue['omni_eve_api_cron_jabber_user'] = array(
+    'worker callback' => 'omni_eve_api_cron_jabber_user',
+    'time' => 15,
+  );
+  $queue['omni_eve_api_cron_jabber_role'] = array(
+    'worker callback' => 'omni_eve_api_cron_jabber_role',
     'time' => 15,
   );
   $queue['omni_eve_api_cron_queue_users'] = array(
@@ -215,7 +250,7 @@ function omni_eve_api_cron_teamspeak_user($item) {
       }
     }
   }
-  catch (Exception $e) {
+  catch (OeaException $e) {
     return FALSE;
   }
 
@@ -247,7 +282,7 @@ function omni_eve_api_cron_teamspeak_name($item) {
 
       $query = db_select('oea_characters', 'c');
       $query->condition('c.deleted', 0);
-      $query->join('users', 'u', 'c.charactername = u.charactername');
+      $query->join('users', 'u', 'c.charactername = u.name');
       $query->fields('c', array('charactername'));
       $query->condition('u.teamspeakuid', $teamspeakuid);
       $result = $query->execute();
@@ -281,7 +316,7 @@ function omni_eve_api_cron_teamspeak_name($item) {
       }
     }
   }
-  catch (Exception $e) {
+  catch (OeaException $e) {
     return FALSE;
   }
 
@@ -328,7 +363,107 @@ function omni_eve_api_cron_teamspeak_role($item) {
       omni_eve_api_teamspeak_group_create($ts3, $rname);
     }
   }
-  catch (Exception $e) {
+  catch (OeaException $e) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/**
+ * Update user permissions in Jabber based on roles.
+ *
+ * @param mixed $item
+ *   whatever was added to the queue via queue->createItem()
+ */
+function omni_eve_api_cron_jabber_user($item) {
+  try {
+    $user_roles = array();
+
+    $query = db_select('oea_alliance_corporations', 'oea');
+    $query->fields('oea', array('corporationname', 'corporationticker'));
+    $result = $query->execute();
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $row) {
+        $corp_info[$row->corporationname] = $row->corporationticker;
+      }
+    }
+
+    $uid = $item['uid'];
+    $charactername = $item['name'];
+
+    $query = db_select('users_roles', 'ur');
+    $query->join('role', 'r', 'r.rid = ur.rid');
+    $query->fields('r', array('rid', 'name'));
+    $query->condition('uid', $uid, '=');
+    $result = $query->execute();
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $row) {
+        $rname = $row->name;
+
+        foreach ($corp_info as $key => $value) {
+          if ($key == $rname) {
+            $rname = $value;
+          }
+        }
+
+        $user_roles[] = omni_eve_api_jabber_format_name($rname);
+      }
+    }
+
+    $query = array(
+      'groups' => implode(",", $user_roles),
+    );
+
+    $result = omni_eve_api_jabber_url_query('update', $charactername, $query);
+  }
+  catch (OeaException $e) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/**
+ * Sync Jabber Permissions with Drupal roles.
+ *
+ * @param mixed $item
+ *   whatever was added to the queue via queue->createItem()
+ */
+function omni_eve_api_cron_jabber_role($item) {
+  try {
+    $roles = user_roles();
+    $corp_info = array();
+
+    $query = db_select('oea_alliance_corporations', 'oea');
+    $query->fields('oea', array('corporationname', 'corporationticker'));
+    $result = $query->execute();
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $row) {
+        $corp_info[$row->corporationname] = $row->corporationticker;
+      }
+    }
+
+    foreach ($roles as $rid => $rname) {
+      if ($rid == 1 || $rid == 2) {
+        continue;
+      }
+
+      $description = $rname;
+
+      foreach ($corp_info as $key => $value) {
+        if ($key == $rname) {
+          $rname = $value;
+        }
+      }
+
+      omni_eve_api_jabber_group_add($rname, $description);
+    }
+  }
+  catch (OeaException $e) {
     return FALSE;
   }
 
@@ -403,7 +538,7 @@ function omni_eve_api_cron_queue_users($item) {
         }
       }
       else {
-        if ($characters['expires'] || $characters['type'] != 'Account' || $characters['accessMask'] != variable_get('omni_eve_api_access_mask', 268435455)) {
+        if ($characters['expires'] || $characters['type'] != 'Account' || ($characters['accessMask'] & variable_get('omni_eve_api_access_mask', 268435455)) != variable_get('omni_eve_api_access_mask', 268435455)) {
           drupal_set_message(t('Invalid API Mask/Type/Expiry, characters disabled.'), 'status');
           $error = 1;
         }
@@ -466,12 +601,29 @@ function omni_eve_api_cron_queue_users($item) {
       $ts3 = omni_eve_api_teamspeak_connection();
       omni_eve_api_teamspeak_user_delete($ts3, $row['teamspeakdbid']);
     }
-    catch (Exception $e) {
+    catch (OeaException $e) {
+      // Log Error ?
+    }
+
+    try {
+      omni_eve_api_jabber_connect();
+      $row = db_select('users', 'u')->fields('u', array('name'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
+
+      $result = db_select('ofUser', 'u')->fields('u', array(
+        'username',
+      ))->condition('username', omni_eve_api_jabber_format_name($row['name']), '=')->execute();
+
+      if ($result->rowCount()) {
+        omni_eve_api_jabber_url_query('delete', $account->name);
+      }
+
+      omni_eve_api_jabber_disconnect();
+    }
+    catch (OeaException $e) {
       // Log Error ?
     }
 
     db_update('users')->fields(array(
-      'charactername' => '',
       'teamspeakuid' => 0,
       'teamspeakdbid' => 0,
       'characterid' => 0,
@@ -479,8 +631,8 @@ function omni_eve_api_cron_queue_users($item) {
     return FALSE;
   }
   else {
-    $row = db_select('users', 'u')->fields('u', array('charactername'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
-    $character_data = omni_eve_api_get_character_info($row['charactername']);
+    $row = db_select('users', 'u')->fields('u', array('name'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
+    $character_data = omni_eve_api_get_character_info($row['name']);
 
     if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
       $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(

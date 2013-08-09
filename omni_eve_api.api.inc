@@ -114,7 +114,8 @@ function omni_eve_api_get_xml($type, $query = array()) {
  *   A complex array of a single character information.
  */
 function omni_eve_api_get_character_info($charactername) {
-  $row = db_select('oea_characters', 'c')->fields('c', array(
+  $result = db_select('oea_characters', 'c')->fields('c', array(
+    'drupalid',
     'charactername',
     'characterid',
     'corporationname',
@@ -123,19 +124,27 @@ function omni_eve_api_get_character_info($charactername) {
     'allianceid',
     'alliancename',
     'allianceticker',
-  ))->condition('charactername', $charactername, '=')->execute()->fetchAssoc();
+  ))->condition('charactername', $charactername, '=')->execute();
 
-  $api_data = array(
-    'characterName' => $row['charactername'],
-    'characterID' => $row['characterid'],
-    'corporationName' => $row['corporationname'],
-    'corporationID' => $row['corporationid'],
-    'corporationTicker' => $row['corporationticker'],
-    'allianceID' => $row['allianceid'],
-    'allianceName' => $row['alliancename'],
-    'allianceTicker' => $row['allianceticker'],
-  );
+  if ($result->rowCount()) {
+    $row = $result->fetchAssoc();
 
+    $api_data = array(
+      'uid' => $row['drupalid'],
+      'characterName' => $row['charactername'],
+      'characterID' => $row['characterid'],
+      'corporationName' => $row['corporationname'],
+      'corporationID' => $row['corporationid'],
+      'corporationTicker' => $row['corporationticker'],
+      'allianceID' => $row['allianceid'],
+      'allianceName' => $row['alliancename'],
+      'allianceTicker' => $row['allianceticker'],
+    );
+  }
+  else {
+    $api_data = FALSE;
+  }
+  
   return $api_data;
 }
 
@@ -302,7 +311,7 @@ function omni_eve_api_verify_blue($characters) {
  * @return array
  *   A simple array of characters blue to the alliance.
  */
-function omni_eve_api_list_valid_characters($characters) {
+function omni_eve_api_list_valid_characters($characters, $empty) {
   $chars = array();
 
   if (!empty($characters)) {
@@ -324,7 +333,7 @@ function omni_eve_api_list_valid_characters($characters) {
   }
 
   if (empty($chars)) {
-    $chars[''] = 'No Characters Found';
+    $chars[$empty] = 'No Characters Found';
   }
 
   return $chars;
@@ -349,6 +358,7 @@ function omni_eve_api_characters_exist($characters) {
         'characterid',
         'drupalid',
       ))->condition('characterid', $character['characterID'], '=')->condition('deleted', 0, '=')->execute();
+
       if ($result->rowCount()) {
         $chars[] = $character['characterName'];
       }

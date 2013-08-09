@@ -4,7 +4,33 @@
  * Functions related to connecting to Teamspeak3.
  */
 
-module_load_include('php', 'omni_eve_api', 'libraries/TeamSpeak3/TeamSpeak3');
+// Load the TeamSpeak 3 PHP Framework Library.
+if (($library = libraries_load('TeamSpeak3')) && !empty($library['loaded'])) {
+  variable_set('omni_eve_api_ts3_framework_installed', TRUE);
+}
+else {
+  variable_set('omni_eve_api_ts3_framework_installed', FALSE);
+  variable_set('omni_eve_api_ts3_enable', FALSE);
+}
+
+/**
+ * Check the TeamSpeak 3 PHP Framework version.
+ *
+ * @return string
+ *   The version of the TeamSpeak 3 PHP Framework.
+ */
+function omni_eve_api_teamspeak_get_version() {
+  $path = libraries_get_path('TeamSpeak3');
+
+  if (file_exists($path . '/TeamSpeak3.php')) {
+    require_once $path . '/TeamSpeak3.php';
+    $teamspeak_version = TeamSpeak3::LIB_VERSION;
+    return $teamspeak_version;
+  }
+  else {
+    return '0.0.0';
+  }
+}
 
 /**
  * Generates the Teamspeak name as specified in Teamspeak Settings.
@@ -42,8 +68,8 @@ function omni_eve_api_teamspeak_format_name($charactername) {
  *   The Teamspeak connection object.
  */
 function omni_eve_api_teamspeak_connection() {
-  if (variable_get('omni_eve_api_ts3_enable', FALSE) === FALSE) {
-    throw new Exception(t('Teamspeak 3 Connection disabled.'));
+  if (variable_get('omni_eve_api_ts3_enable', FALSE) === FALSE && variable_get('omni_eve_api_ts3_framework_installed', FALSE)) {
+    throw new OeaException(t('Teamspeak 3 Connection disabled.'));
   }
 
   try {
@@ -52,8 +78,8 @@ function omni_eve_api_teamspeak_connection() {
     $ts3->whoamiSet('client_nickname', 'OEABOT');
     $ts3->setPredefinedQueryName('OEABOT');
   }
-  catch (TeamSpeak3_Exception $e){
-    throw new Exception(t('Teamspeak 3 Connection failed. Error: @error', array('@error' => $e->getMessage())));
+  catch (TeamSpeak3_Exception $e) {
+    throw new OeaException(t('Teamspeak 3 Connection failed. Error: @error', array('@error' => $e->getMessage())));
   }
 
   return $ts3;
@@ -82,8 +108,8 @@ function omni_eve_api_teamspeak_group_create(&$ts3, $role) {
       $ts3->serverGroupPermAssign($teamspeakgid, 'b_group_is_permanent', 1);
     }
   }
-  catch (TeamSpeak3_Exception $e){
-    throw new Exception(t('Unable to create new group.'));
+  catch (TeamSpeak3_Exception $e) {
+    throw new OeaException(t('Unable to create new group.'));
   }
 
   return $teamspeakgid;
@@ -104,7 +130,7 @@ function omni_eve_api_teamspeak_group_get_id(&$ts3, $role) {
   try {
     $teamspeakgid = $ts3->serverGroupGetByName($role);
   }
-  catch (TeamSpeak3_Exception $e){
+  catch (TeamSpeak3_Exception $e) {
     $teamspeakgid = FALSE;
   }
 
@@ -124,7 +150,7 @@ function omni_eve_api_teamspeak_get_groups(&$ts3) {
   try {
     $teamspeak_data = $ts3->serverGroupList();
   }
-  catch (TeamSpeak3_Exception $e){
+  catch (TeamSpeak3_Exception $e) {
     return FALSE;
   }
 
@@ -144,8 +170,8 @@ function omni_eve_api_teamspeak_user_list(&$ts3) {
   try {
     $teamspeak_user_list = $ts3->clientList();
   }
-  catch (TeamSpeak3_Exception $e){
-    throw new Exception(t('Unable to get list of active users. Error: @error', array('@error' => $e->getMessage())));
+  catch (TeamSpeak3_Exception $e) {
+    throw new OeaException(t('Unable to get list of active users. Error: @error', array('@error' => $e->getMessage())));
   }
 
   return $teamspeak_user_list;
@@ -166,8 +192,8 @@ function omni_eve_api_teamspeak_user_info(&$ts3, $teamspeakdbid) {
   try {
     $teamspeak_user_info = $ts3->clientInfoDb($teamspeakdbid);
   }
-  catch (TeamSpeak3_Exception $e){
-    throw new Exception(t('Unable to get user info. Error: @error', array('@error' => $e->getMessage())));
+  catch (TeamSpeak3_Exception $e) {
+    throw new OeaException(t('Unable to get user info. Error: @error', array('@error' => $e->getMessage())));
   }
 
   return $teamspeak_user_info;
@@ -188,8 +214,8 @@ function omni_eve_api_teamspeak_user_by_name(&$ts3, $teamspeak_name) {
   try {
     $teamspeak_data = $ts3->clientGetByName($teamspeak_name);
   }
-  catch (TeamSpeak3_Exception $e){
-    throw new Exception(t('Unable to find user.'));
+  catch (TeamSpeak3_Exception $e) {
+    throw new OeaException(t('Unable to find user.'));
   }
 
   return $teamspeak_data;
@@ -210,7 +236,7 @@ function omni_eve_api_teamspeak_user_delete(&$ts3, $teamspeakdbid) {
   try {
     $ts3->clientDeleteDb($teamspeakdbid);
   }
-  catch (TeamSpeak3_Exception $e){
+  catch (TeamSpeak3_Exception $e) {
     return FALSE;
   }
 
@@ -233,7 +259,7 @@ function omni_eve_api_teamspeak_user_get_groups(&$ts3, $teamspeakdbid) {
   try {
     $teamspeak_data = $ts3->clientGetServerGroupsByDbid($teamspeakdbid);
   }
-  catch (TeamSpeak3_Exception $e){
+  catch (TeamSpeak3_Exception $e) {
     return FALSE;
   }
 
@@ -257,7 +283,7 @@ function omni_eve_api_teamspeak_user_remove_group(&$ts3, $teamspeakgid, $teamspe
   try {
     $ts3->serverGroupClientDel($teamspeakgid, $teamspeakdbid);
   }
-  catch (TeamSpeak3_Exception $e){
+  catch (TeamSpeak3_Exception $e) {
     return FALSE;
   }
 
@@ -281,7 +307,7 @@ function omni_eve_api_teamspeak_user_add_group(&$ts3, $teamspeakgid, $teamspeakd
   try {
     $ts3->serverGroupClientAdd($teamspeakgid, $teamspeakdbid);
   }
-  catch (TeamSpeak3_Exception $e){
+  catch (TeamSpeak3_Exception $e) {
     return FALSE;
   }
 
