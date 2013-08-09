@@ -349,6 +349,7 @@ function omni_eve_api_characters_exist($characters) {
         'characterid',
         'drupalid',
       ))->condition('characterid', $character['characterID'], '=')->condition('deleted', 0, '=')->execute();
+
       if ($result->rowCount()) {
         $chars[] = $character['characterName'];
       }

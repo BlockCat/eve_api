@@ -908,7 +908,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#value' => t('Submit'),
   );
 
-  if (variable_get('omni_eve_api_ts3_enable', FALSE)) {
+  if (variable_get('omni_eve_api_ts3_enable', FALSE) && variable_get('omni_eve_api_ts3_framework_installed', FALSE) !== FALSE) {
     try {
       $teamspeakgroups = array();
 
@@ -930,7 +930,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
         '#weight' => 80,
       );
     }
-    catch (Exception $e) {
+    catch (OeaException $e) {
       $form['teamspeak']['omni_eve_api_ts3_bypass_group'] = array(
         '#type' => 'markup',
         '#prefix' => '<p>',
@@ -939,6 +939,10 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
         '#weight' => 80,
       );
     }
+  }
+
+  if (variable_get('omni_eve_api_ts3_framework_installed', FALSE) === FALSE) {
+    $form['submit_button']['#disabled'] = TRUE;
   }
 
   $form['#validate'] = array('omni_eve_api_admin_teamspeak_form_validate');
@@ -963,15 +967,20 @@ function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
   variable_set('omni_eve_api_ts3_nickname', (string) $form_state['values']['nickname']);
   variable_set('omni_eve_api_ts3_bypass_group', (int) $form_state['values']['omni_eve_api_ts3_bypass_group']);
 
-  if ((int) $form_state['values']['enable']) {
-    try {
-      $query = 'serverquery://' . (string) $form_state['values']['query_username'] . ':' . (string) $form_state['values']['query_password'] . '@' . (string) $form_state['values']['hostname'] . ':' . (int) $form_state['values']['query_port'] . '/?server_port=' . (int) $form_state['values']['server_port'] . '&blocking=0';
-      $ts3 = TeamSpeak3::factory($query);
+  if (variable_get('omni_eve_api_ts3_framework_installed', FALSE) !== FALSE) {
+    if ((int) $form_state['values']['enable']) {
+      try {
+        $query = 'serverquery://' . (string) $form_state['values']['query_username'] . ':' . (string) $form_state['values']['query_password'] . '@' . (string) $form_state['values']['hostname'] . ':' . (int) $form_state['values']['query_port'] . '/?server_port=' . (int) $form_state['values']['server_port'] . '&blocking=0';
+        $ts3 = TeamSpeak3::factory($query);
+      }
+      catch (TeamSpeak3_Exception $e) {
+        form_set_error('enable', t('Teamspeak 3 Connection failed, check settings and try again. Error: @error', array('@error' => $e->getMessage())));
+        variable_set('omni_eve_api_ts3_enable', FALSE);
+      }
     }
-    catch (TeamSpeak3_Exception $e){
-      form_set_error('enable', t('Teamspeak 3 Connection failed, check settings and try again. Error: @error', array('@error' => $e->getMessage())));
-      variable_set('omni_eve_api_ts3_enable', FALSE);
-    }
+  }
+  else {
+    form_set_error('enable', t('Teamspeak 3 PHP Framework not found, unable to enable Teamspeak 3 connection.'));
   }
 }
 
@@ -990,6 +999,8 @@ function omni_eve_api_admin_teamspeak_form_submit($form, &$form_state) {
   }
 
   menu_rebuild();
+
+  drupal_set_message(t('Teamspeak Settings Updated.'));
 }
 
 /**
@@ -1065,11 +1076,20 @@ function omni_eve_api_admin_jabber_form($form, &$form_state) {
     '#default_value' => variable_get('omni_eve_api_jabber_secret', 'Password'),
   );
 
+  $form['jabber']['domain'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Jabber Domain'),
+    '#description' => t('The domain appended to the Jabber login username. (ex. user@yourdomain.com)'),
+    '#maxlength' => 100,
+    '#weight' => 60,
+    '#default_value' => variable_get('omni_eve_api_jabber_domain', 'yourdomain.com'),
+  );
+
   $form['jabber']['enable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable Jabber Connection.'),
     '#default_value' => variable_get('omni_eve_api_jabber_enable', FALSE),
-    '#weight' => 60,
+    '#weight' => 70,
   );
 
   $form['submit_button'] = array(
@@ -1095,6 +1115,7 @@ function omni_eve_api_admin_jabber_form_validate($form, &$form_state) {
   variable_set('omni_eve_api_jabber_password', (string) $form_state['values']['password']);
   variable_set('omni_eve_api_jabber_url', (string) $form_state['values']['url']);
   variable_set('omni_eve_api_jabber_secret', (string) $form_state['values']['secret']);
+  variable_set('omni_eve_api_jabber_domain', (string) $form_state['values']['domain']);
 
   if ((int) $form_state['values']['enable']) {
     try {
@@ -1110,16 +1131,28 @@ function omni_eve_api_admin_jabber_form_validate($form, &$form_state) {
         Database::addConnectionInfo('Jabber', 'default', $jabber_database);
       }
 
-      omni_eve_api_jabber_connect();
+      omni_eve_api_jabber_connect(TRUE);
       omni_eve_api_jabber_test_connection();
       omni_eve_api_jabber_disconnect();
     }
-    catch (Exception $e){
-      form_set_error('enable', t('Please check settings and try again. Error: @error', array('@error' => $e->getMessage())));
+    catch (OeaException $e) {
+      omni_eve_api_jabber_disconnect();
+      form_set_error('enable', t('Please check database settings and try again. Error: @error', array('@error' => $e->getMessage())));
       variable_set('omni_eve_api_jabber_enable', FALSE);
     }
 
-    // Add check for url and secret.
+    try {
+      $result = omni_eve_api_jabber_url_query('check');
+
+      if ($result != 'IllegalArgumentException') {
+        form_set_error('enable', t('Please check your Openfire URL settings and try again.'));
+        variable_set('omni_eve_api_jabber_enable', FALSE);
+      }
+    }
+    catch (OeaException $e) {
+      form_set_error('enable', t('Please check your Openfire URL settings and try again.'));
+      variable_set('omni_eve_api_jabber_enable', FALSE);
+    }
   }
 }
 
@@ -1137,4 +1170,6 @@ function omni_eve_api_admin_jabber_form_submit($form, &$form_state) {
   }
 
   menu_rebuild();
+
+  drupal_set_message(t('Jabber Settings Updated.'));
 }

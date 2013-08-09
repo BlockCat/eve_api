@@ -133,6 +133,11 @@ function omni_eve_api_subtask_finish(&$form_state) {
 function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
   unset($form['actions']);
 
+  $account = $form['#user'];
+  $register = ($form['#user']->uid > 0 ? FALSE : TRUE);
+
+  $admin = user_access('administer users');
+
   $form['account']['#type'] = 'fieldset';
   $form['account']['#title'] = t('Blue Status Verified');
   $form['account']['#description'] = t('Please select your main character from the drop down box.  This character will be used to identify yourself throughout the site and various tools.');
@@ -208,13 +213,16 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
     drupal_goto('user/register');
   }
 
-  $form['account']['charactername'] = array(
+  $form['account']['name'] = array(
     '#type' => 'select',
     '#title' => t('Select your Main Character'),
-    '#default_value' => '',
+    '#default_value' => (!$register ? $account->name : ''),
     '#options' => omni_eve_api_list_valid_characters($characters),
     '#description' => t('Detected valid Main Characters.'),
     '#required' => TRUE,
+    '#attributes' => array('class' => array('username')),
+    '#access' => ($register || $admin),
+    '#weight' => -10,
   );
 }
 
@@ -223,7 +231,7 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
  *
  * @see omni_eve_api_user_register_form_submit()
  */
-function omni_eve_api_user_register_form_validate($form, &$form_state) {
+function omni_eve_api_user_register_form_validate(&$form, &$form_state) {
   $keyid = (int) $form_state['signup_object']['keyid'];
   $vcode = (string) $form_state['signup_object']['vcode'];
 
@@ -278,8 +286,8 @@ function omni_eve_api_user_register_form_validate($form, &$form_state) {
     $selected_charactername[] = $character['characterName'];
   }
 
-  if (!in_array((string) $form_state['values']['charactername'], $selected_charactername)) {
-    form_set_error('charactername', t('You must select a main character!'));
+  if (!in_array((string) $form_state['values']['name'], $selected_charactername)) {
+    form_set_error('name', t('You must select a main character!'));
   }
 }
 
@@ -288,7 +296,7 @@ function omni_eve_api_user_register_form_validate($form, &$form_state) {
  *
  * @see omni_eve_api_user_register_form_validate()
  */
-function omni_eve_api_user_register_form_submit($form, &$form_state) {
+function omni_eve_api_user_register_form_submit(&$form, &$form_state) {
   $uid = $form_state['user']->uid;
   $keyid = $form_state['signup_object']['keyid'];
   $vcode = $form_state['signup_object']['vcode'];
@@ -324,7 +332,7 @@ function omni_eve_api_user_register_form_submit($form, &$form_state) {
       'allianceticker' => (string) $character['allianceTicker'],
     ))->execute();
 
-    if ((string) $form_state['values']['charactername'] == (string) $character['characterName']) {
+    if ((string) $form_state['values']['name'] == (string) $character['characterName']) {
       $charactername = $character['characterName'];
       $characterid = $character['characterID'];
       $corporationname = $character['corporationName'];
@@ -344,7 +352,7 @@ function omni_eve_api_user_register_form_submit($form, &$form_state) {
 
   db_update('users')->fields(array(
       'characterid' => $characterid,
-      'charactername' => $charactername,
+      'name' => $charactername,
       'signature' => '',
     ))->condition('uid', $uid, '=')->execute();
 }
