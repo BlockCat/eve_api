@@ -401,7 +401,7 @@ function omni_eve_api_requirements($phase) {
   // Define the Version Number.
   $oea_version = '1.0.1.1';
 
-  // Report Omni EVE API version
+  // Report Omni EVE API version.
   if ($phase == 'runtime') {
     $requirements['omni_eve_api'] = array(
       'title' => $t('Omni EVE API'),
