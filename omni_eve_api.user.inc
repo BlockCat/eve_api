@@ -188,11 +188,6 @@ function omni_eve_api_user_select_main_character_form($form, &$form_state, $acco
     '#required' => TRUE,
   );
 
-  $form['main_character']['uid'] = array(
-    '#value' => $uid,
-    '#type' => 'hidden',
-  );
-
   $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
