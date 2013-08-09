@@ -1052,7 +1052,8 @@ function omni_eve_api_form_user_profile_form_alter(&$form, &$form_state) {
  *       information has been retrieved via hook_libraries_info() or info files.
  *     - pre-detect: Callbacks registered in this group are applied after the
  *       library path has been determined and before the version callback is
- *       invoked. At this point the following additional information is available:
+ *       invoked. At this point the following additional information is 
+ *       available:
  *       - $library['library path']: The path on the file system to the library.
  *     - post-detect: Callbacks registered in this group are applied after the
  *       library has been successfully detected. At this point the library

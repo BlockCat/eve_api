@@ -380,27 +380,25 @@ function omni_eve_api_uninstall() {
 
 /**
  * Implements hook_requirements().
+ * 
+ * x.x.x.x
+ * | | | `-- Patch Version Number.
+ * | | |
+ * | | `---- 0 = Alpha.
+ * | |       1 = Beta.
+ * | |       2 = RC.
+ * | |       3 = Release.
+ * | |
+ * | `------ Minor Version Change.
+ * |
+ * `-------- Major Version Change.
  */
 function omni_eve_api_requirements($phase) {
   $requirements = array();
   // Ensure translations don't break during installation.
   $t = get_t();
 
-  /**
-   * Define the Version Number.
-   * 
-   * x.x.x.x
-   * | | | `-- Patch Version Number.
-   * | | |
-   * | | `---- 0 = Alpha.
-   * | |       1 = Beta.
-   * | |       2 = RC.
-   * | |       3 = Release.
-   * | |
-   * | `------ Minor Version Change.
-   * |
-   * `-------- Major Version Change.
-   */
+  // Define the Version Number.
   $oea_version = '1.0.1.1';
 
   // Report Omni EVE API version
