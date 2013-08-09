@@ -13,6 +13,13 @@
  * @ingroup forms
  */
 function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
+  if (!isset($form_state['user'])) {
+    $form_state['user'] = $account;
+  }
+  else {
+    $account = $form_state['user'];
+  }
+
   $uid = $account->uid;
 
   $form['enter_api'] = array(
@@ -40,11 +47,6 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
     '#weight' => 10,
   );
 
-  $form['enter_api']['uid'] = array(
-    '#value' => $uid,
-    '#type' => 'hidden',
-  );
-
   $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Add API Key'),
@@ -62,8 +64,8 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
  * @see omni_eve_api_user_add_api_form_submit()
  */
 function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
-  $uid = $form_state['values']['uid'];
-  $account = user_load($uid);
+  $account = $form_state['user'];
+  $uid = $account->uid;
 
   $query = array(
     'keyid' => $form_state['values']['keyid'],
@@ -112,8 +114,8 @@ function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
  * @see omni_eve_api_user_add_api_form_validate()
  */
 function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
-  $uid = $form_state['values']['uid'];
-  $account = user_load($uid);
+  $account = $form_state['user'];
+  $uid = $account->uid;
   $keyid = $form_state['values']['keyid'];
   $vcode = $form_state['values']['vcode'];
 
@@ -170,6 +172,13 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
  * @ingroup forms
  */
 function omni_eve_api_user_select_main_character_form($form, &$form_state, $account) {
+  if (!isset($form_state['user'])) {
+    $form_state['user'] = $account;
+  }
+  else {
+    $account = $form_state['user'];
+  }
+
   $uid = $account->uid;
   $uid_api_list = omni_eve_api_list_api_simple($uid);
 
@@ -186,11 +195,6 @@ function omni_eve_api_user_select_main_character_form($form, &$form_state, $acco
     '#options' => omni_eve_api_list_valid_characters($uid_api_list, $account->name),
     '#description' => t('Detected valid Main Characters.'),
     '#required' => TRUE,
-  );
-
-  $form['main_character']['uid'] = array(
-    '#value' => $uid,
-    '#type' => 'hidden',
   );
 
   $form['submit_button'] = array(
@@ -210,8 +214,8 @@ function omni_eve_api_user_select_main_character_form($form, &$form_state, $acco
  * @see omni_eve_api_user_select_main_character_form_submit()
  */
 function omni_eve_api_user_select_main_character_form_validate($form, &$form_state) {
-  $uid = $form_state['values']['uid'];
-  $account = user_load($uid);
+  $account = $form_state['user'];
+  $uid = $account->uid;
 
   if ($account->name == $form_state['values']['name'] && $account->characterid != 0 && !empty($form_state['values']['name'])) {
     form_set_error('name', t('You have not selected a different character or you are unable to change characters.'));
@@ -230,8 +234,8 @@ function omni_eve_api_user_select_main_character_form_validate($form, &$form_sta
  * @see omni_eve_api_user_select_main_character_form_validate()
  */
 function omni_eve_api_user_select_main_character_form_submit($form, &$form_state) {
-  $uid = $form_state['values']['uid'];
-  $account = user_load($uid);
+  $account = $form_state['user'];
+  $uid = $account->uid;
 
   try {
     omni_eve_api_jabber_connect();
@@ -326,6 +330,13 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
  * @ingroup forms
  */
 function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
+  if (!isset($form_state['user'])) {
+    $form_state['user'] = $account;
+  }
+  else {
+    $account = $form_state['user'];
+  }
+
   $uid = $account->uid;
   $api_list = array();
 
@@ -456,11 +467,6 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
     '#weight' => 10,
   );
 
-  $form['list_api']['uid'] = array(
-    '#value' => $uid,
-    '#type' => 'hidden',
-  );
-
   $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Delete'),
@@ -489,8 +495,8 @@ function omni_eve_api_user_list_api_form_validate($form, &$form_state) {
  * @see omni_eve_api_user_list_api_form_validate()
  */
 function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
-  $uid = $form_state['values']['uid'];
-  $account = user_load($uid);
+  $account = $form_state['user'];
+  $uid = $account->uid;
 
   foreach ($form_state['values']['api_keys'] as $api_key_id) {
     if ($api_key_id == 0) {
@@ -583,6 +589,13 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
  * @ingroup forms
  */
 function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_key_id) {
+  if (!isset($form_state['user'])) {
+    $form_state['user'] = $account;
+  }
+  else {
+    $account = $form_state['user'];
+  }
+
   $uid = $account->uid;
 
   $result = db_select('oea_api_keys', 'a')->fields('a', array(
@@ -628,11 +641,6 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_k
     '#weight' => 10,
   );
 
-  $form['update_api']['uid'] = array(
-    '#value' => $uid,
-    '#type' => 'hidden',
-  );
-
   $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Update API Key'),
@@ -651,8 +659,8 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_k
  * @see omni_eve_api_user_update_api_form_submit()
  */
 function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
-  $uid = $form_state['values']['uid'];
-  $account = user_load($uid);
+  $account = $form_state['user'];
+  $uid = $account->uid;
   $api_key_id = $form_state['values']['api_key_id'];
 
   $query = array(
@@ -699,8 +707,8 @@ function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
  * @see omni_eve_api_user_update_api_form_validate()
  */
 function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
-  $uid = $form_state['values']['uid'];
-  $account = user_load($uid);
+  $account = $form_state['user'];
+  $uid = $account->uid;
 
   $keyid = $form_state['values']['keyid'];
   $vcode = $form_state['values']['vcode'];
@@ -796,6 +804,13 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
  * @ingroup forms
  */
 function omni_eve_api_user_teamspeak_form($form, &$form_state, $account) {
+  if (!isset($form_state['user'])) {
+    $form_state['user'] = $account;
+  }
+  else {
+    $account = $form_state['user'];
+  }
+
   $uid = $account->uid;
 
   $form['teamspeak'] = array(
@@ -835,11 +850,6 @@ function omni_eve_api_user_teamspeak_form($form, &$form_state, $account) {
     '#weight' => 20,
   );
 
-  $form['teamspeak']['uid'] = array(
-    '#value' => $uid,
-    '#type' => 'hidden',
-  );
-
   $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Register'),
@@ -861,8 +871,8 @@ function omni_eve_api_user_teamspeak_form($form, &$form_state, $account) {
  * @see omni_eve_api_user_teamspeak_form_submit()
  */
 function omni_eve_api_user_teamspeak_form_validate($form, &$form_state) {
-  $uid = $form_state['values']['uid'];
-  $account = user_load($uid);
+  $account = $form_state['user'];
+  $uid = $account->uid;
 
   if ($account->characterid == 0) {
     drupal_goto('user/' . $uid . '/omni_eve_api/select_main_character');
@@ -884,8 +894,8 @@ function omni_eve_api_user_teamspeak_form_validate($form, &$form_state) {
  * @see omni_eve_api_user_teamspeak_form_validate()
  */
 function omni_eve_api_user_teamspeak_form_submit($form, &$form_state) {
-  $uid = $form_state['values']['uid'];
-  $account = user_load($uid);
+  $account = $form_state['user'];
+  $uid = $account->uid;
 
   try {
     $ts3 = omni_eve_api_teamspeak_connection();
@@ -921,6 +931,13 @@ function omni_eve_api_user_teamspeak_form_submit($form, &$form_state) {
  * @ingroup forms
  */
 function omni_eve_api_user_jabber_form($form, &$form_state, $account) {
+  if (!isset($form_state['user'])) {
+    $form_state['user'] = $account;
+  }
+  else {
+    $account = $form_state['user'];
+  }
+
   $uid = $account->uid;
 
   $form['jabber'] = array(
@@ -958,11 +975,6 @@ function omni_eve_api_user_jabber_form($form, &$form_state, $account) {
     );
   }
 
-  $form['jabber']['uid'] = array(
-    '#value' => $uid,
-    '#type' => 'hidden',
-  );
-
   $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Register'),
@@ -984,8 +996,8 @@ function omni_eve_api_user_jabber_form($form, &$form_state, $account) {
  * @see omni_eve_api_user_jabber_form_submit()
  */
 function omni_eve_api_user_jabber_form_validate($form, &$form_state) {
-  $uid = $form_state['values']['uid'];
-  $account = user_load($uid);
+  $account = $form_state['user'];
+  $uid = $account->uid;
 
   if ($account->characterid == 0) {
     drupal_goto('user/' . $uid . '/omni_eve_api/select_main_character');
@@ -1015,8 +1027,8 @@ function omni_eve_api_user_jabber_form_validate($form, &$form_state) {
  * @see omni_eve_api_user_jabber_form_validate()
  */
 function omni_eve_api_user_jabber_form_submit($form, &$form_state) {
-  $uid = $form_state['values']['uid'];
-  $account = user_load($uid);
+  $account = $form_state['user'];
+  $uid = $account->uid;
 
   $roles = user_roles();
   $user_roles = $all_roles = array();
