@@ -115,7 +115,7 @@ function omni_eve_api_get_xml($type, $query = array()) {
  */
 function omni_eve_api_get_character_info($charactername) {
   $result = db_select('oea_characters', 'c')->fields('c', array(
-    'drupalid',
+    'uid',
     'charactername',
     'characterid',
     'corporationname',
@@ -130,7 +130,7 @@ function omni_eve_api_get_character_info($charactername) {
     $row = $result->fetchAssoc();
 
     $api_data = array(
-      'uid' => $row['drupalid'],
+      'uid' => $row['uid'],
       'characterName' => $row['charactername'],
       'characterID' => $row['characterid'],
       'corporationName' => $row['corporationname'],
@@ -189,6 +189,28 @@ function omni_eve_api_get_character_api($query) {
       ), $corp_info);
     }
   }
+
+  return $api_data;
+}
+
+/**
+ * Function to retrieve a single characters character sheet.
+ *
+ * @param array $query
+ *   The URL variables to pass through the URL.
+ *
+ * @return array
+ *   A complex array of character sheet information.
+ */
+function omni_eve_api_get_character_sheet($query) {
+  $xml = omni_eve_api_get_xml('CharacterSheet', $query);
+
+  if (!isset($xml->cachedUntil)) {
+    watchdog('eve api', '<pre>Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    return array('error' => (int) $xml);
+  }
+
+  $api_data = array();
 
   return $api_data;
 }
@@ -356,7 +378,7 @@ function omni_eve_api_characters_exist($characters) {
       $result = db_select('oea_characters', 'c')->fields('c', array(
         'apiid',
         'characterid',
-        'drupalid',
+        'uid',
       ))->condition('characterid', $character['characterID'], '=')->condition('deleted', 0, '=')->execute();
 
       if ($result->rowCount()) {
@@ -422,7 +444,7 @@ function omni_eve_api_list_api_simple($uid) {
     'errorid',
     'updated',
     'created',
-  ))->condition('drupalid', $uid, '=')->execute();
+  ))->condition('uid', $uid, '=')->execute();
 
   if ($result_a->rowCount()) {
     foreach ($result_a->fetchAll() as $row_a) {
@@ -439,7 +461,7 @@ function omni_eve_api_list_api_simple($uid) {
         'allianceid',
         'alliancename',
         'allianceticker',
-      ))->condition('drupalid', $uid, '=')->condition('deleted', 0, '=')->condition('apiid', $row_a->apiid, '=')->execute();
+      ))->condition('uid', $uid, '=')->condition('deleted', 0, '=')->condition('apiid', $row_a->apiid, '=')->execute();
 
       if ($result_b->rowCount()) {
         foreach ($result_b->fetchAll() as $row_b) {

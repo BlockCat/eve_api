@@ -17,7 +17,7 @@ function omni_eve_api_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
-      'drupalid' => array(
+      'uid' => array(
         'description' => 'The link between api and drupal account.',
         'type' => 'int',
         'not null' => TRUE,
@@ -74,7 +74,7 @@ function omni_eve_api_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'drupalid' => array(
+      'uid' => array(
         'description' => 'The link between api and drupal account.',
         'type' => 'int',
         'not null' => TRUE,

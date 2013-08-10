@@ -311,7 +311,7 @@ function omni_eve_api_user_register_form_submit(&$form, &$form_state) {
   $created = date('Y-m-d H:i:s', time());
 
   $new_api_key_id = db_insert('oea_api_keys')->fields(array(
-    'drupalid' => (int) $uid,
+    'uid' => (int) $uid,
     'keyid' => (int) $keyid,
     'vcode' => (string) $vcode,
     'updated' => (string) $created,
@@ -321,7 +321,7 @@ function omni_eve_api_user_register_form_submit(&$form, &$form_state) {
   foreach ($characters['characters'] as $character) {
     db_merge('oea_characters')->key(array('characterid' => (int) $character['characterID']))->fields(array(
       'characterid' => (int) $character['characterID'],
-      'drupalid' => (int) $uid,
+      'uid' => (int) $uid,
       'apiid' => (int) $new_api_key_id,
       'charactername' => (string) $character['characterName'],
       'corporationid' => (int) $character['corporationID'],

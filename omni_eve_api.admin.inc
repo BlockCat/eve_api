@@ -295,7 +295,7 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
         'description' => $row->description,
       );
 
-      if (($access_mask & (int) $row->accessmask) == TRUE || (int) $row->accessmask == 8388608) {
+      if (($access_mask & (int) $row->accessmask) == TRUE) {
         $selected[$row->accessmask] = TRUE;
       }
     }
@@ -310,7 +310,9 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
 
   $form['access_mask']['current_mask'] = array(
     '#type' => 'markup',
+    '#prefix' => '<p>',
     '#markup' => t('Current Mask: @access_mask', array('@access_mask' => $access_mask)),
+    '#suffix' => '</p>',
     '#weight' => 0,
   );
 
@@ -323,6 +325,7 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
     '#weight' => 10,
   );
 
+  $form['access_mask']['access_mask'][8]['#disabled'] = TRUE;
   $form['access_mask']['access_mask'][8388608]['#disabled'] = TRUE;
 
   $form['access_mask']['pager'] = array(
@@ -355,7 +358,7 @@ function omni_eve_api_admin_access_mask_form_validate($form, &$form_state) {
  * @see omni_eve_api_admin_access_mask_form_validate()
  */
 function omni_eve_api_admin_access_mask_form_submit($form, &$form_state) {
-  $new_access_mask = 8388608;
+  $new_access_mask = 8388616;
 
   foreach ($form_state['values']['access_mask'] as $access_bit) {
     $new_access_mask = $new_access_mask + $access_bit;
@@ -368,10 +371,19 @@ function omni_eve_api_admin_access_mask_form_submit($form, &$form_state) {
   if ($access_mask != $new_access_mask) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
     $queue->createQueue();
-    $result = db_select('users', 'u')->fields('u', array('uid'))->condition('status', 1, '=')->execute();
+    $query = db_select('oea_api_keys', 'ak');
+    $query->join('users', 'u', 'ak.uid = u.uid');
+    $query->fields('ak', array(
+      'uid',
+    ));
+    $query->distinct();
+    $query->condition('u.status', 1, '=');
+    $result = $query->execute();
 
-    foreach ($result->fetchAll() as $item) {
-      $queue->createItem($item->uid);
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $item) {
+        $queue->createItem($item->uid);
+      }
     }
   }
 
@@ -503,10 +515,19 @@ function omni_eve_api_admin_list_blues_form_submit($form, &$form_state) {
   if ($is_change) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
     $queue->createQueue();
-    $result = db_select('users', 'u')->fields('u', array('uid'))->condition('status', 1, '=')->execute();
+    $query = db_select('oea_api_keys', 'ak');
+    $query->join('users', 'u', 'ak.uid = u.uid');
+    $query->fields('ak', array(
+      'uid',
+    ));
+    $query->distinct();
+    $query->condition('u.status', 1, '=');
+    $result = $query->execute();
 
-    foreach ($result->fetchAll() as $item) {
-      $queue->createItem($item->uid);
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $item) {
+        $queue->createItem($item->uid);
+      }
     }
   }
 
@@ -610,10 +631,19 @@ function omni_eve_api_admin_add_blues_form_submit($form, &$form_state) {
 
   $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
   $queue->createQueue();
-  $result = db_select('users', 'u')->fields('u', array('uid'))->condition('status', 1, '=')->execute();
+  $query = db_select('oea_api_keys', 'ak');
+  $query->join('users', 'u', 'ak.uid = u.uid');
+  $query->fields('ak', array(
+    'uid',
+  ));
+  $query->distinct();
+  $query->condition('u.status', 1, '=');
+  $result = $query->execute();
 
-  foreach ($result->fetchAll() as $item) {
-    $queue->createItem($item->uid);
+  if ($result->rowCount()) {
+    foreach ($result->fetchAll() as $item) {
+      $queue->createItem($item->uid);
+    }
   }
 
   drupal_set_message(t('A new Blue standing has been added!'));

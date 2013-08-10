@@ -71,10 +71,19 @@ function omni_eve_api_users_cron() {
   if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
     $queue->createQueue();
-    $result = db_select('users', 'u')->fields('u', array('uid'))->condition('status', 1, '=')->execute();
+    $query = db_select('oea_api_keys', 'ak');
+    $query->join('users', 'u', 'ak.uid = u.uid');
+    $query->fields('ak', array(
+      'uid',
+    ));
+    $query->distinct();
+    $query->condition('u.status', 1, '=');
+    $result = $query->execute();
 
-    foreach ($result->fetchAll() as $item) {
-      $queue->createItem($item->uid);
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $item) {
+        $queue->createItem($item->uid);
+      }
     }
   }
 }
@@ -482,7 +491,7 @@ function omni_eve_api_cron_queue_users($item) {
 
   $query = db_select('oea_api_keys', 'a');
   $query->fields('a', array('apiid', 'keyid', 'vcode'));
-  $query->condition('drupalid', $uid, '=');
+  $query->condition('uid', $uid, '=');
   $result = $query->execute();
 
   $updated = date('Y-m-d H:i:s', time());
@@ -555,7 +564,7 @@ function omni_eve_api_cron_queue_users($item) {
       foreach ($characters['characters'] as $character) {
         db_merge('oea_characters')->key(array('characterid' => $character['characterID']))->fields(array(
           'characterid' => $character['characterID'],
-          'drupalid' => $uid,
+          'uid' => $uid,
           'apiid' => $row->apiid,
           'charactername' => $character['characterName'],
           'corporationid' => $character['corporationID'],

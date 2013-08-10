@@ -133,7 +133,7 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
     $created = date('Y-m-d H:i:s', time());
 
     $new_api_key_id = db_insert('oea_api_keys')->fields(array(
-      'drupalid' => $uid,
+      'uid' => $uid,
       'keyid' => $keyid,
       'vcode' => $vcode,
       'updated' => $created,
@@ -143,7 +143,7 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
     foreach ($characters['characters'] as $character) {
       db_merge('oea_characters')->key(array('characterid' => $character['characterID']))->fields(array(
         'characterid' => $character['characterID'],
-        'drupalid' => $uid,
+        'uid' => $uid,
         'apiid' => $new_api_key_id,
         'charactername' => $character['characterName'],
         'corporationid' => $character['corporationID'],
@@ -382,7 +382,7 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
     ->limit(3)
     ->extend('TableSort')
     ->orderByHeader($header)
-    ->condition('drupalid', $uid, '=')
+    ->condition('uid', $uid, '=')
     ->execute();
 
   if ($result_a->rowCount()) {
@@ -405,7 +405,7 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
         'allianceid',
         'alliancename',
         'allianceticker',
-      ))->condition('drupalid', $uid, '=')->condition('deleted', 0, '=')->condition('apiid', $row_a->apiid, '=')->execute();
+      ))->condition('uid', $uid, '=')->condition('deleted', 0, '=')->condition('apiid', $row_a->apiid, '=')->execute();
 
       if ($result_b->rowCount()) {
         foreach ($result_b->fetchAll() as $row_b) {
@@ -721,7 +721,7 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
 
   db_merge('oea_api_keys')->key(array('apiid' => $api_key_id))->fields(array(
     'apiid' => $api_key_id,
-    'drupalid' => $uid,
+    'uid' => $uid,
     'keyid' => $keyid,
     'vcode' => $vcode,
     'updated' => $updated,
@@ -731,7 +731,7 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
   foreach ($characters['characters'] as $character) {
     db_merge('oea_characters')->key(array('characterid' => $character['characterID']))->fields(array(
       'characterid' => $character['characterID'],
-      'drupalid' => $uid,
+      'uid' => $uid,
       'apiid' => $api_key_id,
       'charactername' => $character['characterName'],
       'corporationid' => $character['corporationID'],
