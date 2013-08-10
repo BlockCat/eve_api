@@ -42,7 +42,7 @@ function omni_eve_api_cronapi($op, $job = NULL) {
  * Implements hook_cron().
  */
 function omni_eve_api_general_cron() {
-  if (variable_get('omni_eve_api_enable_cron', TRUE)) {
+  if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_enable', FALSE)) {
     $item = NULL;
 
     // Run cron for standings, but have nothing to pass so passing a NULL
@@ -68,7 +68,7 @@ function omni_eve_api_general_cron() {
  * Implements hook_cron().
  */
 function omni_eve_api_users_cron() {
-  if (variable_get('omni_eve_api_enable_cron', TRUE)) {
+  if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
     $queue->createQueue();
     $result = db_select('users', 'u')->fields('u', array('uid'))->condition('status', 1, '=')->execute();
@@ -83,7 +83,7 @@ function omni_eve_api_users_cron() {
  * Implements hook_cron().
  */
 function omni_eve_api_teamspeak_user_cron() {
-  if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_ts3_enable', FALSE)) {
+  if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_ts3_enable', FALSE) && variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role');
     $queue->createQueue();
     $item = NULL;
@@ -105,7 +105,7 @@ function omni_eve_api_teamspeak_user_cron() {
  * Implements hook_cron().
  */
 function omni_eve_api_jabber_user_cron() {
-  if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_jabber_enable', FALSE)) {
+  if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_jabber_enable', FALSE) && variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role');
     $queue->createQueue();
     $item = NULL;
@@ -127,7 +127,7 @@ function omni_eve_api_jabber_user_cron() {
  * Implements hook_cron().
  */
 function omni_eve_api_teamspeak_name_cron() {
-  if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_ts3_enable', FALSE)) {
+  if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_ts3_enable', FALSE) && variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_name');
     $queue->createQueue();
     $item = NULL;

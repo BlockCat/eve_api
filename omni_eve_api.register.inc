@@ -391,6 +391,11 @@ function omni_eve_api_enter_api_form($form, &$form_state) {
     '#weight' => 10,
   );
 
+  if (!variable_get('omni_eve_api_enable', FALSE)) {
+    drupal_set_message(t('Registrations temporarily disabled.'), 'error');
+    $form['buttons']['next']['#disabled'] = TRUE;
+  }
+
   $form['#validate'][] = 'omni_eve_api_enter_api_form_validate';
   $form['#submit'][] = 'omni_eve_api_enter_api_form_submit';
 

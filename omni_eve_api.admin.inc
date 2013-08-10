@@ -172,6 +172,13 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
     '#default_value' => variable_get('omni_eve_api_corp_vcode', ''),
   );
 
+  $form['enter_api']['enable'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable Omni EVE API.'),
+    '#default_value' => variable_get('omni_eve_api_enable', FALSE),
+    '#weight' => 20,
+  );
+
   $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Update'),
@@ -199,11 +206,13 @@ function omni_eve_api_admin_alliance_api_key_form_validate($form, &$form_state) 
   if (isset($characters['error'])) {
     form_set_error('omni_eve_api_corp_keyid', t('There was an error with the API.'));
     form_set_error('omni_eve_api_corp_vcode');
+    variable_set('omni_eve_api_enable', FALSE);
   }
   else {
     if ($characters['expires'] || $characters['type'] != 'Corporation' || $characters['accessMask'] != 67108863) {
       form_set_error('omni_eve_api_corp_keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to your Alliance Executor or Corporation CEO, the "Type" drop down box is set to "Corporation", and that the "No Expiry" checkbox is ticked.'));
       form_set_error('omni_eve_api_corp_vcode');
+      variable_set('omni_eve_api_enable', FALSE);
     }
 
     $form_state['values']['characters'] = $characters;
@@ -218,8 +227,9 @@ function omni_eve_api_admin_alliance_api_key_form_validate($form, &$form_state) 
 function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
   $characters = $form_state['values']['characters'];
 
+  variable_set('omni_eve_api_enable', (bool) $form_state['values']['enable']);
   variable_set('omni_eve_api_corp_keyid', (int) $form_state['values']['omni_eve_api_corp_keyid']);
-  variable_set('omni_eve_api_corp_vcode', $form_state['values']['omni_eve_api_corp_vcode']);
+  variable_set('omni_eve_api_corp_vcode', (string) $form_state['values']['omni_eve_api_corp_vcode']);
 
   // It's not pretty but it works.
   foreach ($characters['characters'] as $character) {
@@ -227,7 +237,12 @@ function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
     variable_set('omni_eve_api_corporationID', (int) $character['corporationID']);
   }
 
-  omni_eve_api_general_cron();
+  menu_rebuild();
+
+  if ((bool) $form_state['values']['enable']) {
+    omni_eve_api_general_cron();
+  }
+
   drupal_set_message(t('The Alliance API Info is set to be retrieved on the next cron job, it can take up to a minute for the cron task to be triggered.'));
 }
 
@@ -977,7 +992,7 @@ function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
   variable_set('omni_eve_api_ts3_bypass_group', (int) $form_state['values']['omni_eve_api_ts3_bypass_group']);
 
   if (variable_get('omni_eve_api_ts3_framework_installed', FALSE) !== FALSE) {
-    if ((int) $form_state['values']['enable']) {
+    if ((bool) $form_state['values']['enable']) {
       try {
         $query = 'serverquery://' . (string) $form_state['values']['query_username'] . ':' . (string) $form_state['values']['query_password'] . '@' . (string) $form_state['values']['hostname'] . ':' . (int) $form_state['values']['query_port'] . '/?server_port=' . (int) $form_state['values']['server_port'] . '&blocking=0';
         $ts3 = TeamSpeak3::factory($query);
@@ -999,7 +1014,7 @@ function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
  * @see omni_eve_api_admin_teamspeak_form_validate()
  */
 function omni_eve_api_admin_teamspeak_form_submit($form, &$form_state) {
-  if ((int) $form_state['values']['enable']) {
+  if ((bool) $form_state['values']['enable']) {
     variable_set('omni_eve_api_ts3_enable', TRUE);
     omni_eve_api_cron_teamspeak_role(1);
   }
@@ -1126,7 +1141,7 @@ function omni_eve_api_admin_jabber_form_validate($form, &$form_state) {
   variable_set('omni_eve_api_jabber_secret', (string) $form_state['values']['secret']);
   variable_set('omni_eve_api_jabber_domain', (string) $form_state['values']['domain']);
 
-  if ((int) $form_state['values']['enable']) {
+  if ((bool) $form_state['values']['enable']) {
     try {
       if (variable_get('omni_eve_api_jabber_enable', FALSE) === FALSE) {
         $jabber_database = array(
@@ -1171,7 +1186,7 @@ function omni_eve_api_admin_jabber_form_validate($form, &$form_state) {
  * @see omni_eve_api_admin_jabber_form_validate()
  */
 function omni_eve_api_admin_jabber_form_submit($form, &$form_state) {
-  if ((int) $form_state['values']['enable']) {
+  if ((bool) $form_state['values']['enable']) {
     variable_set('omni_eve_api_jabber_enable', TRUE);
   }
   else {
