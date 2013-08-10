@@ -312,27 +312,6 @@ function omni_eve_api_schema() {
 
 /**
  * Implements hook_install().
- * 
- * variable_set('omni_eve_api_blue_role', 2);
- * variable_set('omni_eve_api_alliance_role', 2);
- * variable_set('omni_eve_api_unverified_role', 2);
- * variable_set('omni_eve_api_access_mask', 268435455);
- * variable_set('omni_eve_api_ts3_host', '127.0.0.1');
- * variable_set('omni_eve_api_ts3_server_address', 'teamspeak.com');
- * variable_set('omni_eve_api_ts3_server_port', 9987);
- * variable_set('omni_eve_api_ts3_server_password', '');
- * variable_set('omni_eve_api_ts3_query_port', 10011);
- * variable_set('omni_eve_api_ts3_query_username', 'Username');
- * variable_set('omni_eve_api_ts3_query_password', 'Password');
- * variable_set('omni_eve_api_ts3_nickname', '[@corp] @name');
- * variable_set('omni_eve_api_ts3_bypass_group', 0);
- * variable_set('omni_eve_api_jabber_host', '127.0.0.1');
- * variable_set('omni_eve_api_jabber_database', 'Jabber');
- * variable_set('omni_eve_api_jabber_username', 'Username');
- * variable_set('omni_eve_api_jabber_password', 'Password');
- * variable_set('omni_eve_api_jabber_url', 'http://localhost:9090');
- * variable_set('omni_eve_api_jabber_secret', 'Password');
- * variable_set('omni_eve_api_jabber_domain', 'yourdomain.com');
  */
 function omni_eve_api_install() {
   db_add_field('users', 'characterid', array(
@@ -368,6 +347,33 @@ function omni_eve_api_install() {
   variable_set('eve_user_picture_dimensions', 128);
   variable_set('eve_avatar_https', 'https://image.eveonline.com/Character/');
   variable_set('eve_avatar_http', 'http://image.eveonline.com/Character/');
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_get_standings');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_get_alliance_corporations');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_get_access_mask');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_name');
+  $queue->createQueue();
 }
 
 /**
@@ -377,6 +383,33 @@ function omni_eve_api_uninstall() {
   db_drop_field('users', 'characterid');
   db_drop_field('users', 'teamspeakuid');
   db_drop_field('users', 'teamspeakdbid');
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_get_standings');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_get_alliance_corporations');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_get_access_mask');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_name');
+  $queue->deleteQueue();
 }
 
 /**

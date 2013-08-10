@@ -269,7 +269,7 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
     $character_is_blue = TRUE;
   }
 
-  if ($character['allianceID'] == variable_get('omni_eve_api_allianceID', 0) || $character['corporationID'] == variable_get('omni_eve_api_corporationID', 0)) {
+  if ($character_data['allianceID'] == variable_get('omni_eve_api_allianceID', 0) || $character_data['corporationID'] == variable_get('omni_eve_api_corporationID', 0)) {
     $character_is_blue = TRUE;
   }
 
@@ -308,11 +308,9 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
   }
 
   $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
-  $queue->createQueue();
   $queue->createItem($uid);
 
   $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
-  $queue->createQueue();
   $queue->createItem(array('uid' => $uid, 'teamspeakdbid' => $account->teamspeakdbid));
 
   drupal_set_message(t('New main character selected!'));
@@ -564,12 +562,10 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
   }
 
   $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
-  $queue->createQueue();
   $queue->createItem($uid);
 
   $row = db_select('users', 'u')->fields('u', array('teamspeakdbid'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
   $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
-  $queue->createQueue();
   $queue->createItem(array('uid' => $uid, 'teamspeakdbid' => $row['teamspeakdbid']));
 
   drupal_set_message(t('API keys successfully deleted!'));

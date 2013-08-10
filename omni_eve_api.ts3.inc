@@ -20,12 +20,19 @@ else {
  *   The version of the TeamSpeak 3 PHP Framework.
  */
 function omni_eve_api_teamspeak_get_version() {
-  $path = libraries_get_path('TeamSpeak3');
+  $libraries = libraries_get_libraries();
 
-  if (file_exists($path . '/TeamSpeak3.php')) {
-    require_once $path . '/TeamSpeak3.php';
-    $teamspeak_version = TeamSpeak3::LIB_VERSION;
-    return $teamspeak_version;
+  if (isset($libraries['TeamSpeak3'])) {
+    $path = libraries_get_path('TeamSpeak3');
+
+    if (file_exists($path . '/TeamSpeak3.php')) {
+      require_once $path . '/TeamSpeak3.php';
+      $teamspeak_version = TeamSpeak3::LIB_VERSION;
+      return $teamspeak_version;
+    }
+    else {
+      return '0.0.0';
+    }
   }
   else {
     return '0.0.0';

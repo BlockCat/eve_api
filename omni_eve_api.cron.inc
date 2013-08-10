@@ -43,24 +43,14 @@ function omni_eve_api_cronapi($op, $job = NULL) {
  */
 function omni_eve_api_general_cron($force = FALSE) {
   if (variable_get('omni_eve_api_enable', FALSE) || $force) {
-    $item = NULL;
-
-    // Run cron for standings, but have nothing to pass so passing a NULL
-    // variable.
     $queue = DrupalQueue::get('omni_eve_api_cron_get_standings');
-    $queue->createQueue();
-    $queue->createItem($item);
+    $queue->createItem(1);
 
-    // Run cron for corporations in the alliance, but have nothing to pass so
-    // passing a NULL variable.
     $queue = DrupalQueue::get('omni_eve_api_cron_get_alliance_corporations');
-    $queue->createQueue();
-    $queue->createItem($item);
+    $queue->createItem(1);
 
-    // Run cron to get latest access mask definitions.
     $queue = DrupalQueue::get('omni_eve_api_cron_get_access_mask');
-    $queue->createQueue();
-    $queue->createItem($item);
+    $queue->createItem(1);
   }
 }
 
@@ -70,7 +60,6 @@ function omni_eve_api_general_cron($force = FALSE) {
 function omni_eve_api_users_cron() {
   if (variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
-    $queue->createQueue();
     $query = db_select('oea_api_keys', 'ak');
     $query->join('users', 'u', 'ak.uid = u.uid');
     $query->fields('ak', array(
@@ -94,17 +83,18 @@ function omni_eve_api_users_cron() {
 function omni_eve_api_teamspeak_user_cron() {
   if (variable_get('omni_eve_api_ts3_enable', FALSE) && variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role');
-    $queue->createQueue();
-    $item = NULL;
-    $queue->createItem($item);
+    $queue->createItem(1);
 
     $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
-    $queue->createQueue();
     $result = db_select('users', 'u')->fields('u', array('uid', 'teamspeakdbid'))->condition('status', 1, '=')->condition('teamspeakuid', 0, '!=')->execute();
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
-        $queue->createItem(array('uid' => $item->uid, 'teamspeakdbid' => $item->teamspeakdbid));
+        $queue->createItem(array(
+          'uid' => $item->uid,
+          'teamspeakdbid' => $item->teamspeakdbid,
+          'runs' => 1,
+        ));
       }
     }
   }
@@ -116,17 +106,18 @@ function omni_eve_api_teamspeak_user_cron() {
 function omni_eve_api_jabber_user_cron() {
   if (variable_get('omni_eve_api_jabber_enable', FALSE) && variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role');
-    $queue->createQueue();
-    $item = NULL;
-    $queue->createItem($item);
+    $queue->createItem(1);
 
     $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user');
-    $queue->createQueue();
     $result = db_select('users', 'u')->fields('u', array('uid', 'name'))->condition('status', 1, '=')->condition('characterid', 0, '!=')->execute();
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
-        $queue->createItem(array('uid' => $item->uid, 'name' => $item->name));
+        $queue->createItem(array(
+          'uid' => $item->uid,
+          'name' => $item->name,
+          'runs' => 1,
+        ));
       }
     }
   }
@@ -138,9 +129,7 @@ function omni_eve_api_jabber_user_cron() {
 function omni_eve_api_teamspeak_name_cron() {
   if (variable_get('omni_eve_api_ts3_enable', FALSE) && variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_name');
-    $queue->createQueue();
-    $item = NULL;
-    $queue->createItem($item);
+    $queue->createItem(1);
   }
 }
 
@@ -197,6 +186,11 @@ function omni_eve_api_cron_queue_info() {
  *   whatever was added to the queue via queue->createItem()
  */
 function omni_eve_api_cron_teamspeak_user($item) {
+  if ($item['runs'] == 11) {
+    watchdog('eve api', 'Cron Update Teamspeak User Permissions task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    return FALSE;
+  }
+
   try {
     $roles = user_roles();
     $valid_roles = $user_roles = array();
@@ -260,6 +254,10 @@ function omni_eve_api_cron_teamspeak_user($item) {
     }
   }
   catch (OeaException $e) {
+    $item['runs'] = $item['runs'] + 1;
+    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
+    $queue->createItem($item);
+
     return FALSE;
   }
 
@@ -273,6 +271,11 @@ function omni_eve_api_cron_teamspeak_user($item) {
  *   whatever was added to the queue via queue->createItem()
  */
 function omni_eve_api_cron_teamspeak_name($item) {
+  if ($item == 11) {
+    watchdog('eve api', 'Cron Check Teamspeak Names task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    return FALSE;
+  }
+
   try {
     $ts3 = omni_eve_api_teamspeak_connection();
     $teamspeak_user_list = omni_eve_api_teamspeak_user_list($ts3);
@@ -326,6 +329,10 @@ function omni_eve_api_cron_teamspeak_name($item) {
     }
   }
   catch (OeaException $e) {
+    $item = $item + 1;
+    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_name');
+    $queue->createItem($item);
+
     return FALSE;
   }
 
@@ -339,6 +346,11 @@ function omni_eve_api_cron_teamspeak_name($item) {
  *   whatever was added to the queue via queue->createItem()
  */
 function omni_eve_api_cron_teamspeak_role($item) {
+  if ($item == 11) {
+    watchdog('eve api', 'Cron Sync Teamspeak Roles task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    return FALSE;
+  }
+
   try {
     $roles = user_roles();
     $ts3 = omni_eve_api_teamspeak_connection();
@@ -373,6 +385,10 @@ function omni_eve_api_cron_teamspeak_role($item) {
     }
   }
   catch (OeaException $e) {
+    $item = $item + 1;
+    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role');
+    $queue->createItem($item);
+
     return FALSE;
   }
 
@@ -386,6 +402,11 @@ function omni_eve_api_cron_teamspeak_role($item) {
  *   whatever was added to the queue via queue->createItem()
  */
 function omni_eve_api_cron_jabber_user($item) {
+  if ($item['runs'] == 11) {
+    watchdog('eve api', 'Cron Update Jabber User Roles task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    return FALSE;
+  }
+
   try {
     $user_roles = array();
 
@@ -429,6 +450,10 @@ function omni_eve_api_cron_jabber_user($item) {
     $result = omni_eve_api_jabber_url_query('update', $charactername, $query);
   }
   catch (OeaException $e) {
+    $item['runs'] = $item['runs'] + 1;
+    $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user');
+    $queue->createItem($item);
+
     return FALSE;
   }
 
@@ -442,6 +467,11 @@ function omni_eve_api_cron_jabber_user($item) {
  *   whatever was added to the queue via queue->createItem()
  */
 function omni_eve_api_cron_jabber_role($item) {
+  if ($item == 11) {
+    watchdog('eve api', 'Cron Sync Jabber Roles task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    return FALSE;
+  }
+
   try {
     $roles = user_roles();
     $corp_info = array();
@@ -473,6 +503,10 @@ function omni_eve_api_cron_jabber_role($item) {
     }
   }
   catch (OeaException $e) {
+    $item = $item + 1;
+    $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role');
+    $queue->createItem($item);
+
     return FALSE;
   }
 
@@ -637,7 +671,6 @@ function omni_eve_api_cron_queue_users($item) {
       'teamspeakdbid' => 0,
       'characterid' => 0,
       ))->condition('uid', $uid, '=')->execute();
-    return FALSE;
   }
   else {
     $row = db_select('users', 'u')->fields('u', array('name'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
@@ -685,9 +718,9 @@ function omni_eve_api_cron_queue_users($item) {
       $blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2));
       user_multiple_role_edit(array($uid), 'add_role', $blue_role->rid);
     }
-
-    return TRUE;
   }
+
+  return TRUE;
 }
 
 /**
@@ -700,6 +733,11 @@ function omni_eve_api_cron_queue_users($item) {
  *   A complex array if an error is generated, or TRUE if no error.
  */
 function omni_eve_api_cron_get_standings($item = NULL) {
+  if ($item == 11) {
+    watchdog('eve api', 'Cron Standings task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    return FALSE;
+  }
+
   $query = array(
     'keyid' => variable_get('omni_eve_api_corp_keyid', ''),
     'vcode' => variable_get('omni_eve_api_corp_vcode', ''),
@@ -708,7 +746,12 @@ function omni_eve_api_cron_get_standings($item = NULL) {
 
   if (!isset($xml->cachedUntil)) {
     watchdog('eve api', '<pre>Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
-    return array('error' => $xml);
+
+    $item = $item + 1;
+    $queue = DrupalQueue::get('omni_eve_api_cron_get_standings');
+    $queue->createItem($item);
+
+    return FALSE;
   }
 
   db_update('oea_blue_standings')->fields(array('checked' => 1))->condition('manual', 0, '=')->execute();
@@ -742,11 +785,21 @@ function omni_eve_api_cron_get_standings($item = NULL) {
  *   A complex array if an error is generated, or TRUE if no error.
  */
 function omni_eve_api_cron_get_alliance_corporations($item = NULL) {
+  if ($item == 11) {
+    watchdog('eve api', 'Cron Import Alliance API task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    return FALSE;
+  }
+
   $xml = omni_eve_api_get_xml('AllianceList');
 
   if (!isset($xml->cachedUntil)) {
     watchdog('eve api', '<pre>Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
-    return array('error' => $xml);
+
+    $item = $item + 1;
+    $queue = DrupalQueue::get('omni_eve_api_cron_get_alliance_corporations');
+    $queue->createItem($item);
+
+    return FALSE;
   }
 
   db_update('oea_alliance_corporations')->fields(array('deleted' => 1))->condition('manual', 0, '=')->execute();
@@ -830,11 +883,21 @@ function omni_eve_api_cron_get_alliance_corporations($item = NULL) {
  *   A complex array if an error is generated, or TRUE if no error.
  */
 function omni_eve_api_cron_get_access_mask($item = NULL) {
+  if ($item == 11) {
+    watchdog('eve api', 'Cron Access Mask task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    return FALSE;
+  }
+
   $xml = omni_eve_api_get_xml('callList');
 
   if (!isset($xml->cachedUntil)) {
     watchdog('eve api', '<pre>Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
-    return array('error' => $xml);
+
+    $item = $item + 1;
+    $queue = DrupalQueue::get('omni_eve_api_cron_get_access_mask');
+    $queue->createItem($item);
+
+    return FALSE;
   }
 
   db_truncate('oea_access_mask')->execute();

@@ -79,7 +79,7 @@ function omni_eve_api_get_xml($type, $query = array()) {
       $xml = @new SimpleXMLElement($html->data);
     }
     catch (Exception $e) {
-      drupal_set_message(t('EVE API returned an error with the data retrieved: @error', array('@error' => $e->getMessage()), 'error'));
+      drupal_set_message(t('EVE API returned an error with the data retrieved: @error', array('@error' => $e->getMessage())), 'error');
       $xml = NULL;
     }
 

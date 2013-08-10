@@ -100,8 +100,6 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
 
   if (!empty($uids)) {
     user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_blue_role', 2));
-    // user_multiple_role_edit($uids, 'add_role',
-    // (int) $form_state['values']['omni_eve_api_blue_role']);
   }
 
   $uids = array();
@@ -115,8 +113,6 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
 
   if (!empty($uids)) {
     user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_alliance_role', 2));
-    // user_multiple_role_edit($uids, 'add_role',
-    // (int) $form_state['values']['omni_eve_api_alliance_role']);
   }
 
   $uids = array();
@@ -130,8 +126,6 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
 
   if (!empty($uids)) {
     user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_unverified_role', 2));
-    // user_multiple_role_edit($uids, 'add_role',
-    // (int) $form_state['values']['omni_eve_api_unverified_role']);
   }
 
   variable_set('omni_eve_api_blue_role', (int) $form_state['values']['omni_eve_api_blue_role']);
@@ -391,7 +385,6 @@ function omni_eve_api_admin_access_mask_form_submit($form, &$form_state) {
 
   if ($access_mask != $new_access_mask) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
-    $queue->createQueue();
     $query = db_select('oea_api_keys', 'ak');
     $query->join('users', 'u', 'ak.uid = u.uid');
     $query->fields('ak', array(
@@ -540,7 +533,6 @@ function omni_eve_api_admin_list_blues_form_submit($form, &$form_state) {
 
   if ($is_change) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
-    $queue->createQueue();
     $query = db_select('oea_api_keys', 'ak');
     $query->join('users', 'u', 'ak.uid = u.uid');
     $query->fields('ak', array(
@@ -661,7 +653,6 @@ function omni_eve_api_admin_add_blues_form_submit($form, &$form_state) {
   ))->execute();
 
   $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
-  $queue->createQueue();
   $query = db_select('oea_api_keys', 'ak');
   $query->join('users', 'u', 'ak.uid = u.uid');
   $query->fields('ak', array(
@@ -1022,7 +1013,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
         '#title' => t('Select Teamspeak Bypass Group'),
         '#description' => t('Please select a Teamspeak Group for users to bypass the name and registration check.'),
         '#options' => $teamspeakgroups,
-        '#default_value' => variable_get('omni_eve_api_ts3_bypass_group', 0),
+        '#default_value' => variable_get('omni_eve_api_ts3_bypass_group', 0) == 0 ? '' : variable_get('omni_eve_api_ts3_bypass_group', 0),
         '#weight' => 80,
       );
     }
