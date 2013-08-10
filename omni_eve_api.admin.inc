@@ -53,6 +53,11 @@ function omni_eve_api_admin_roles_form($form, &$form_state) {
     '#value' => t('Submit'),
   );
 
+  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+    drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
+    $form['submit_button']['#disabled'] = TRUE;
+  }
+
   $form['#validate'] = array('omni_eve_api_admin_roles_form_validate');
   $form['#submit'] = array('omni_eve_api_admin_roles_form_submit');
 
@@ -184,6 +189,12 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
     '#value' => t('Update'),
   );
 
+  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+    drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
+    $form['enter_api']['enable']['#default_value'] = TRUE;
+    $form['submit_button']['#disabled'] = TRUE;
+  }
+
   $form['#validate'] = array('omni_eve_api_admin_alliance_api_key_form_validate');
   $form['#submit'] = array('omni_eve_api_admin_alliance_api_key_form_submit');
 
@@ -236,13 +247,18 @@ function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
     variable_set('omni_eve_api_corporationID', (int) $character['corporationID']);
   }
 
-  menu_rebuild();
-
   if ((bool) $form_state['values']['enable']) {
+    variable_set('omni_eve_api_first_run', TRUE);
     omni_eve_api_general_cron(TRUE);
+    drupal_set_message(t('The Alliance API Info is set to be retrieved on the next cron job, it can take up to a minute for the cron task to be triggered.'));
+  }
+  else {
+    variable_set('omni_eve_api_first_run', FALSE);
+    variable_set('omni_eve_api_enable', FALSE);
+    drupal_set_message(t('Registrations have been disabled, Omni EVE API cron tasks have been disabled, and all user menus have been disabled.'));
   }
 
-  drupal_set_message(t('The Alliance API Info is set to be retrieved on the next cron job, it can take up to a minute for the cron task to be triggered.'));
+  menu_rebuild();
 }
 
 /**
@@ -337,6 +353,11 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
     '#type' => 'submit',
     '#value' => t('Update Mask'),
   );
+
+  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+    drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
+    $form['submit_button']['#disabled'] = TRUE;
+  }
 
   $form['#validate'] = array('omni_eve_api_admin_access_mask_form_validate');
   $form['#submit'] = array('omni_eve_api_admin_access_mask_form_submit');
@@ -480,6 +501,11 @@ function omni_eve_api_admin_list_blues_form($form, &$form_state) {
     '#value' => t('Update Blues'),
   );
 
+  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+    drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
+    $form['submit_button']['#disabled'] = TRUE;
+  }
+
   $form['#validate'] = array('omni_eve_api_admin_list_blues_form_validate');
   $form['#submit'] = array('omni_eve_api_admin_list_blues_form_submit');
 
@@ -563,6 +589,11 @@ function omni_eve_api_admin_add_blues_form($form, &$form_state) {
     '#type' => 'submit',
     '#value' => t('Add Blue'),
   );
+
+  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+    drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
+    $form['submit_button']['#disabled'] = TRUE;
+  }
 
   $form_state['redirect'] = 'admin/settings/omni_eve_api/list_blues';
   $form['#validate'] = array('omni_eve_api_admin_add_blues_form_validate');
@@ -727,6 +758,11 @@ function omni_eve_api_admin_list_whitelist_form($form, &$form_state) {
     '#value' => t('Update Whitelist'),
   );
 
+  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+    drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
+    $form['submit_button']['#disabled'] = TRUE;
+  }
+
   $form['#validate'] = array('omni_eve_api_admin_list_whitelist_form_validate');
   $form['#submit'] = array('omni_eve_api_admin_list_whitelist_form_submit');
 
@@ -795,6 +831,11 @@ function omni_eve_api_admin_add_whitelist_form($form, &$form_state) {
     '#type' => 'submit',
     '#value' => t('Add Whitelist'),
   );
+
+  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+    drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
+    $form['submit_button']['#disabled'] = TRUE;
+  }
 
   $form_state['redirect'] = 'admin/settings/omni_eve_api/list_whitelist';
   $form['#validate'] = array('omni_eve_api_admin_add_whitelist_form_validate');
@@ -996,6 +1037,11 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     }
   }
 
+  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+    drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
+    $form['submit_button']['#disabled'] = TRUE;
+  }
+
   if (variable_get('omni_eve_api_ts3_framework_installed', FALSE) === FALSE) {
     $form['submit_button']['#disabled'] = TRUE;
   }
@@ -1146,6 +1192,11 @@ function omni_eve_api_admin_jabber_form($form, &$form_state) {
     '#default_value' => variable_get('omni_eve_api_jabber_enable', FALSE),
     '#weight' => 70,
   );
+
+  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+    drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
+    $form['submit_button']['#disabled'] = TRUE;
+  }
 
   $form['submit_button'] = array(
     '#type' => 'submit',
