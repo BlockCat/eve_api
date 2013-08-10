@@ -227,7 +227,6 @@ function omni_eve_api_admin_alliance_api_key_form_validate($form, &$form_state) 
 function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
   $characters = $form_state['values']['characters'];
 
-  variable_set('omni_eve_api_enable', (bool) $form_state['values']['enable']);
   variable_set('omni_eve_api_corp_keyid', (int) $form_state['values']['omni_eve_api_corp_keyid']);
   variable_set('omni_eve_api_corp_vcode', (string) $form_state['values']['omni_eve_api_corp_vcode']);
 
@@ -240,7 +239,7 @@ function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
   menu_rebuild();
 
   if ((bool) $form_state['values']['enable']) {
-    omni_eve_api_general_cron();
+    omni_eve_api_general_cron(TRUE);
   }
 
   drupal_set_message(t('The Alliance API Info is set to be retrieved on the next cron job, it can take up to a minute for the cron task to be triggered.'));

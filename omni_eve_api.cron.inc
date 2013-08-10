@@ -41,8 +41,8 @@ function omni_eve_api_cronapi($op, $job = NULL) {
 /**
  * Implements hook_cron().
  */
-function omni_eve_api_general_cron() {
-  if (variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_enable', FALSE)) {
+function omni_eve_api_general_cron($force = FALSE) {
+  if ((variable_get('omni_eve_api_enable_cron', TRUE) && variable_get('omni_eve_api_enable', FALSE)) || $force) {
     $item = NULL;
 
     // Run cron for standings, but have nothing to pass so passing a NULL
@@ -803,6 +803,7 @@ function omni_eve_api_cron_get_alliance_corporations($item = NULL) {
 
   db_delete('oea_alliance_corporations')->condition('deleted', 1, '=')->execute();
 
+  variable_set('omni_eve_api_enable', TRUE);
   return TRUE;
 }
 
