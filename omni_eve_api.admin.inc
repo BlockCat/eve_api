@@ -290,12 +290,12 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
       $options[$row->accessmask] = array(
-        'accessmask' => $row->accessmask,
+        'accessmask' => (int) $row->accessmask,
         'name' => $row->name,
         'description' => $row->description,
       );
 
-      if (($access_mask & $row->accessmask) == TRUE) {
+      if (($access_mask & (int) $row->accessmask) == TRUE || (int) $row->accessmask == 8388608) {
         $selected[$row->accessmask] = TRUE;
       }
     }
@@ -322,6 +322,8 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
     '#empty' => t('Accessmask not retrieved.'),
     '#weight' => 10,
   );
+
+  $form['access_mask']['access_mask'][8388608]['#disabled'] = TRUE;
 
   $form['access_mask']['pager'] = array(
     '#theme' => 'pager',
@@ -353,7 +355,7 @@ function omni_eve_api_admin_access_mask_form_validate($form, &$form_state) {
  * @see omni_eve_api_admin_access_mask_form_validate()
  */
 function omni_eve_api_admin_access_mask_form_submit($form, &$form_state) {
-  $new_access_mask = 0;
+  $new_access_mask = 8388608;
 
   foreach ($form_state['values']['access_mask'] as $access_bit) {
     $new_access_mask = $new_access_mask + $access_bit;

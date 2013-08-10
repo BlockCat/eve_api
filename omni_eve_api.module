@@ -50,7 +50,7 @@ function omni_eve_api_menu() {
   );
 
   $items['admin/settings/omni_eve_api'] = array(
-    'title' => 'Omni EVE API',
+    'title' => 'EVE API',
     'description' => 'Edit your Alliance API Key if you have not done so, enter it now.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('omni_eve_api_admin_alliance_api_key_form'),
@@ -161,7 +161,7 @@ function omni_eve_api_menu() {
 
   if (variable_get('omni_eve_api_enable', FALSE)) {
     $items['user/%user/omni_eve_api'] = array(
-      'title' => 'Omni EVE API',
+      'title' => 'EVE API',
       'page callback' => 'drupal_get_form',
       'page arguments' => array(
         'omni_eve_api_user_list_api_form',
