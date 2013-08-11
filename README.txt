@@ -15,10 +15,10 @@ site then processes checks to verify if the character meets certain criteria,
 such as standings. If the character passes the criteria the user is allowed
 to join and is added to the appropriate roles at registration.
 
-Teamspeak 3 and Jabber have been fully integrated. Users are able to register
-on the site to gain roles and access in Teamspeak 3 and Jabber without any
-admin interaction. Roles are mirrored in Teamspeak 3 and Jabber. Any role a
-user has in Drupal will add the role to the user in Teamspeak 3 and Jabber.
+TeamSpeak 3 and Jabber have been fully integrated. Users are able to register
+on the site to gain roles and access in TeamSpeak 3 and Jabber without any
+admin interaction. Roles are mirrored in TeamSpeak 3 and Jabber. Any role a
+user has in Drupal will add the role to the user in TeamSpeak 3 and Jabber.
 
 This module was inspired by the https://code.google.com/p/temars-eve-api/
 Temars EVE API for SMF.
@@ -44,7 +44,7 @@ DEPENDENCIES
 INSTALLATION
 ------------
 
- 1. Download the Teamspeak 3 PHP Framework.
+ 1. Download the TeamSpeak 3 PHP Framework.
 
     http://goo.gl/YJavKs
 
@@ -76,7 +76,7 @@ INSTALLATION
     admin/settings/omni_eve_api. Registrations will be disabled until a valid
     Alliance API Key is entered. Create or retrieve your Alliance API Key from
     http://goo.gl/LDks44 and enter the "Key ID" and "Verification Code" in the
-    appropriate fields. Be sure to tick the checkbox "Enable Omni EVE API" and
+    appropriate fields. Be sure to tick the check box "Enable Omni EVE API" and
     click on "Update". It may take up to a minute for the cron task to run and
     pull the data from the EVE API. Once data has been successfully retrieved
     the module will be enabled and user registrations will be turned back on.
@@ -85,15 +85,15 @@ CONFIGURE TEAMSPEAK 3
 ---------------------
 
  1. Log in as an administrator on your Drupal site and go to the EVE API
-    Teamspeak 3 settings page at admin/settings/omni_eve_api/teamspeak.
+    TeamSpeak 3 settings page at admin/settings/omni_eve_api/teamspeak.
 
  2. Enter all the information as requested in the fields. Be sure to tick the
-    checkbox "Enable Teamspeak 3 Connection" and click on "Submit".
+    check box "Enable TeamSpeak 3 Connection" and click on "Submit".
 
- 3. You will be notified if the connection to the Teamspeak 3 server is
-    successfull.
+ 3. You will be notified if the connection to the TeamSpeak 3 server is
+    successful.
 
- 4. If the Teamspeak 3 connection is successful, you will have the option to
+ 4. If the TeamSpeak 3 connection is successful, you will have the option to
     select a Bypass Group. Users in the Bypass Group will not be pestered or
     kicked if not registered or if the name is not correct on the server.
 
@@ -104,6 +104,6 @@ CONFIGURE OPENFIRE (JABBER)
     Jabber settings page at admin/settings/omni_eve_api/jabber.
 
  2. Enter all the information as requested in the fields. Be sure to tick the
-    checkbox "Enable Jabber Connection" and click on "Submit".
+    check box "Enable Jabber Connection" and click on "Submit".
 
- 3. You will be notified if the connection to the Jabber server is successfull.
+ 3. You will be notified if the connection to the Jabber server is successful.
