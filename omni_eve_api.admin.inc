@@ -920,7 +920,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
   $form['teamspeak']['server_address'] = array(
     '#type' => 'textfield',
     '#title' => t('Server Address'),
-    '#description' => t('The Teamspeak 3 server address used to connect to your Teamspeak Server.'),
+    '#description' => t('The Teamspeak 3 server address users will use to connect to your Teamspeak Server.'),
     '#required' => TRUE,
     '#maxlength' => 100,
     '#weight' => 0,
@@ -930,7 +930,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
   $form['teamspeak']['server_port'] = array(
     '#type' => 'textfield',
     '#title' => t('Server Port'),
-    '#description' => t('The port used to connect to Teamspeak 3. (Default: 9987)'),
+    '#description' => t('The Teamspeak 3 server port users will use to connect to your Teamspeak Server. (Default: 9987)'),
     '#required' => TRUE,
     '#maxlength' => 6,
     '#weight' => 10,
