@@ -4,6 +4,9 @@
  * Functions related to allowing users to alter the user settings and options.
  */
 
+module_load_include('inc', 'omni_eve_api', 'omni_eve_api.api');
+module_load_include('inc', 'omni_eve_api', 'omni_eve_api.cron');
+
 /**
  * Form constructor for the user add API form.
  *

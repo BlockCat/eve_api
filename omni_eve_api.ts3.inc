@@ -4,41 +4,6 @@
  * Functions related to connecting to Teamspeak3.
  */
 
-// Load the TeamSpeak 3 PHP Framework Library.
-if (($library = libraries_load('TeamSpeak3')) && !empty($library['loaded'])) {
-  variable_set('omni_eve_api_ts3_framework_installed', TRUE);
-}
-else {
-  variable_set('omni_eve_api_ts3_framework_installed', FALSE);
-  variable_set('omni_eve_api_ts3_enable', FALSE);
-}
-
-/**
- * Check the TeamSpeak 3 PHP Framework version.
- *
- * @return string
- *   The version of the TeamSpeak 3 PHP Framework.
- */
-function omni_eve_api_teamspeak_get_version() {
-  $libraries = libraries_get_libraries();
-
-  if (isset($libraries['TeamSpeak3'])) {
-    $path = libraries_get_path('TeamSpeak3');
-
-    if (file_exists($path . '/TeamSpeak3.php')) {
-      require_once $path . '/TeamSpeak3.php';
-      $teamspeak_version = TeamSpeak3::LIB_VERSION;
-      return $teamspeak_version;
-    }
-    else {
-      return '0.0.0';
-    }
-  }
-  else {
-    return '0.0.0';
-  }
-}
-
 /**
  * Generates the Teamspeak name as specified in Teamspeak Settings.
  *

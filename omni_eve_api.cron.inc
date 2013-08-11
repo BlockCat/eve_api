@@ -4,39 +4,7 @@
  * Functions related to controlling and adding cron jobs.
  */
 
-/**
- * Implements hook_cronapi().
- */
-function omni_eve_api_cronapi($op, $job = NULL) {
-  $items = array();
-
-  $items['omni_eve_api_general_cron'] = array(
-    'description' => 'General cron, called once a day.',
-    'rule' => '4 0 * * *',
-  );
-
-  $items['omni_eve_api_users_cron'] = array(
-    'description' => 'Pull API for each user every hour.',
-    'rule' => '0 * * * *',
-  );
-
-  $items['omni_eve_api_teamspeak_user_cron'] = array(
-    'description' => 'Update user permissions in Teamspeak every 5 minutes.',
-    'rule' => '*/5 * * * *',
-  );
-
-  $items['omni_eve_api_jabber_user_cron'] = array(
-    'description' => 'Update user permissions in Jabber every 5 minutes.',
-    'rule' => '*/5 * * * *',
-  );
-
-  $items['omni_eve_api_teamspeak_name_cron'] = array(
-    'description' => 'Check usernames in Teamspeak every minute.',
-    'rule' => '* * * * *',
-  );
-
-  return $items;
-}
+module_load_include('inc', 'omni_eve_api', 'omni_eve_api.api');
 
 /**
  * Implements hook_cron().

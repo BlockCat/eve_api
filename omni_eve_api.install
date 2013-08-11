@@ -443,62 +443,64 @@ function omni_eve_api_uninstall() {
 
 /**
  * Implements hook_requirements().
- * 
- * x.x.x.x
- * | | | `-- Patch Version Number.
- * | | |
- * | | `---- 0 = Alpha.
- * | |       1 = Beta.
- * | |       2 = RC.
- * | |       3 = Release.
- * | |
- * | `------ Minor Version Change.
- * |
- * `-------- Major Version Change.
  */
 function omni_eve_api_requirements($phase) {
   $requirements = array();
   // Ensure translations don't break during installation.
   $t = get_t();
 
-  // Define the Version Number.
-  $oea_version = '1.0.1.1';
-
-  // Report Omni EVE API version.
   if ($phase == 'runtime') {
+    // Report Omni EVE API version.
     $requirements['omni_eve_api'] = array(
       'title' => $t('Omni EVE API'),
-      'value' => $oea_version,
+      'value' => omni_eve_api_version(),
       'severity' => REQUIREMENT_INFO,
     );
-  }
 
-  if ($phase == 'runtime' || $phase == 'install') {
+    // Set the Jabber Database for access on the fly.
+    if (variable_get('omni_eve_api_jabber_enable', FALSE)) {
+      $jabber_database = array(
+        'host' => variable_get('omni_eve_api_jabber_host', '127.0.0.1'),
+        'database' => variable_get('omni_eve_api_jabber_database', 'Jabber'),
+        'username' => variable_get('omni_eve_api_jabber_username', 'Username'),
+        'password' => variable_get('omni_eve_api_jabber_password', 'Password'),
+        'driver' => 'mysql',
+      );
+
+      Database::addConnectionInfo('Jabber', 'default', $jabber_database);
+    }
+
+    // Load the TeamSpeak 3 Library if possible.
     $requirements['teamspeak3'] = array(
       'title' => $t('Teamspeak 3 PHP Framework Library'),
     );
 
     $libraries = libraries_get_libraries();
+
     if (isset($libraries['TeamSpeak3'])) {
-      $path = libraries_get_path('TeamSpeak3');
-      if (file_exists($path . '/TeamSpeak3.php')) {
-        require_once $path . '/TeamSpeak3.php';
-        $teamspeak_version = TeamSpeak3::LIB_VERSION;
-        $requirements['teamspeak3']['value'] = $teamspeak_version;
-        $requirements['teamspeak3']['severity'] = REQUIREMENT_INFO;
+      if (($library = libraries_load('TeamSpeak3')) && !empty($library['loaded'])) {
+        variable_set('omni_eve_api_ts3_framework_installed', TRUE);
+
+        $requirements['teamspeak3']['value'] = 'Found (' . TeamSpeak3::LIB_VERSION . ')';
+        $requirements['teamspeak3']['severity'] = REQUIREMENT_OK;
+
+        return $requirements;
       }
       else {
         $requirements['teamspeak3']['value'] = $t('Not Found');
-        $requirements['teamspeak3']['severity'] = REQUIREMENT_ERROR;
+        $requirements['teamspeak3']['severity'] = REQUIREMENT_WARNING;
         $requirements['teamspeak3']['description'] = $t('The TeamSpeak3.php was not found within the uploaded Teamspeak 3 PHP Framework library. Please verify all files were uploaded correctly.');
       }
     }
     else {
       $requirements['teamspeak3']['value'] = $t('Not Installed');
-      $requirements['teamspeak3']['severity'] = REQUIREMENT_ERROR;
+      $requirements['teamspeak3']['severity'] = REQUIREMENT_WARNING;
       $requirements['teamspeak3']['description'] = $t('Please install the Teamspeak 3 PHP Framework library %url.', array('%url' => 'http://addons.teamspeak.com/directory/tools/integration/TeamSpeak-3-PHP-Framework.html'));
     }
   }
+
+  variable_set('omni_eve_api_ts3_framework_installed', FALSE);
+  variable_set('omni_eve_api_ts3_enable', FALSE);
 
   return $requirements;
 }

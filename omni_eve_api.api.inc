@@ -4,6 +4,9 @@
  * Functions related to retrieving and manipulating data from the EVE API.
  */
 
+module_load_include('inc', 'omni_eve_api', 'omni_eve_api.ts3');
+module_load_include('inc', 'omni_eve_api', 'omni_eve_api.jabber');
+
 /**
  * Function to retrieve the XML.
  *
@@ -224,7 +227,7 @@ function omni_eve_api_get_character_sheet($query) {
  * @return string
  *   The Alliance ticker for the $allianceid.
  */
-function _omni_eve_api_get_alliance_ticker($allianceid) {
+function omni_eve_api_get_alliance_ticker($allianceid) {
   $row = db_select('oea_alliance_info', 'a')->fields('a', array('allianceticker'))->condition('allianceid', $allianceid, '=')->execute()->fetchAssoc();
 
   return $row['allianceticker'];
@@ -253,7 +256,7 @@ function omni_eve_api_get_corporation_info($query) {
     'corporationTicker' => (string) $xml->result->ticker,
     'allianceID' => (int) $xml->result->allianceID,
     'allianceName' => (string) $xml->result->allianceName,
-    'allianceTicker' => _omni_eve_api_get_alliance_ticker((int) $xml->result->allianceID),
+    'allianceTicker' => omni_eve_api_get_alliance_ticker((int) $xml->result->allianceID),
   );
 
   return $api_data;
