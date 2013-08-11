@@ -915,6 +915,8 @@ function omni_eve_api_user_role_delete($role) {
  * Implements hook_user_delete().
  */
 function omni_eve_api_user_delete($account) {
+  module_load_include('inc', 'omni_eve_api', 'omni_eve_api.api');
+
   try {
     omni_eve_api_jabber_connect();
     $result = db_select('ofUser', 'u')->fields('u', array(
@@ -1093,7 +1095,7 @@ function omni_eve_api_get_eve_avatar($characterid) {
   global $is_https;
 
   $eve_avatar = $is_https ? variable_get('eve_avatar_https', 'https://image.eveonline.com/Character/') : variable_get('eve_avatar_http', 'http://image.eveonline.com/Character/');
-  $eve_avatar .= $characterid . '_' . variable_get('eve_user_picture_dimensions', '128x128') . '.jpg';
+  $eve_avatar .= $characterid . '_' . variable_get('eve_user_picture_dimensions', '128') . '.jpg';
 
   return url($eve_avatar);
 }
@@ -1102,6 +1104,8 @@ function omni_eve_api_get_eve_avatar($characterid) {
  * Implements hook_form_FORM_ID_alter() for user_profile_form().
  */
 function omni_eve_api_form_user_profile_form_alter(&$form, &$form_state) {
+  module_load_include('inc', 'omni_eve_api', 'omni_eve_api.api');
+
   $account = $form['#user'];
 
   $register = ($account->uid > 0 ? FALSE : TRUE);
