@@ -71,95 +71,95 @@ function omni_eve_api_menu() {
     'file' => 'omni_eve_api.admin.inc',
   );
 
-  $items['admin/settings/omni_eve_api/settings'] = array(
-    'title' => 'Roles',
-    'description' => 'From here you can change various settings.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_admin_roles_form'),
-    'access arguments' => array('administer omni_eve_api settings'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 10,
-    'file' => 'omni_eve_api.admin.inc',
-  );
-
-  $items['admin/settings/omni_eve_api/access_mask'] = array(
-    'title' => 'Access Mask',
-    'description' => 'Edit your Access Mask that is required to register on the site.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_admin_access_mask_form'),
-    'access arguments' => array('administer omni_eve_api settings'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 20,
-    'file' => 'omni_eve_api.admin.inc',
-  );
-
-  $items['admin/settings/omni_eve_api/teamspeak'] = array(
-    'title' => 'Teamspeak',
-    'description' => 'Configure and edit Teamspeak 3 connection settings.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_admin_teamspeak_form'),
-    'access arguments' => array('administer omni_eve_api settings'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 30,
-    'file' => 'omni_eve_api.admin.inc',
-  );
-
-  $items['admin/settings/omni_eve_api/jabber'] = array(
-    'title' => 'Jabber',
-    'description' => 'Configure and edit Jabber connection settings.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_admin_jabber_form'),
-    'access arguments' => array('administer omni_eve_api settings'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 40,
-    'file' => 'omni_eve_api.admin.inc',
-  );
-
-  $items['admin/settings/omni_eve_api/list_blues'] = array(
-    'title' => 'Blues',
-    'description' => 'You can remove Blues and Add Blues from here.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_admin_list_blues_form'),
-    'access arguments' => array('administer omni_eve_api settings'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 50,
-    'file' => 'omni_eve_api.admin.inc',
-  );
-
-  $items['admin/settings/omni_eve_api/list_blues/add_blue'] = array(
-    'title' => 'Add Blue',
-    'description' => 'You can manually add blues from here.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_admin_add_blues_form'),
-    'access arguments' => array('administer omni_eve_api settings'),
-    'type' => MENU_LOCAL_ACTION,
-    'weight' => 0,
-    'file' => 'omni_eve_api.admin.inc',
-  );
-
-  $items['admin/settings/omni_eve_api/list_whitelist'] = array(
-    'title' => 'Whitelist',
-    'description' => 'You can remove Whitelisted API Characters and Add Whitelisted API Characters from here.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_admin_list_whitelist_form'),
-    'access arguments' => array('administer omni_eve_api settings'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 60,
-    'file' => 'omni_eve_api.admin.inc',
-  );
-
-  $items['admin/settings/omni_eve_api/list_whitelist/add_whitelist'] = array(
-    'title' => 'Add Whitelist',
-    'description' => 'You can manually add Whitelisted API Characters from here.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('omni_eve_api_admin_add_whitelist_form'),
-    'access arguments' => array('administer omni_eve_api settings'),
-    'type' => MENU_LOCAL_ACTION,
-    'weight' => 0,
-    'file' => 'omni_eve_api.admin.inc',
-  );
-
   if (variable_get('omni_eve_api_enable', FALSE)) {
+    $items['admin/settings/omni_eve_api/settings'] = array(
+      'title' => 'Roles',
+      'description' => 'From here you can change various settings.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('omni_eve_api_admin_roles_form'),
+      'access arguments' => array('administer omni_eve_api settings'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 10,
+      'file' => 'omni_eve_api.admin.inc',
+    );
+
+    $items['admin/settings/omni_eve_api/access_mask'] = array(
+      'title' => 'Access Mask',
+      'description' => 'Edit your Access Mask that is required to register on the site.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('omni_eve_api_admin_access_mask_form'),
+      'access arguments' => array('administer omni_eve_api settings'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 20,
+      'file' => 'omni_eve_api.admin.inc',
+    );
+
+    $items['admin/settings/omni_eve_api/teamspeak'] = array(
+      'title' => 'Teamspeak',
+      'description' => 'Configure and edit Teamspeak 3 connection settings.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('omni_eve_api_admin_teamspeak_form'),
+      'access arguments' => array('administer omni_eve_api settings'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 30,
+      'file' => 'omni_eve_api.admin.inc',
+    );
+
+    $items['admin/settings/omni_eve_api/jabber'] = array(
+      'title' => 'Jabber',
+      'description' => 'Configure and edit Jabber connection settings.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('omni_eve_api_admin_jabber_form'),
+      'access arguments' => array('administer omni_eve_api settings'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 40,
+      'file' => 'omni_eve_api.admin.inc',
+    );
+
+    $items['admin/settings/omni_eve_api/list_blues'] = array(
+      'title' => 'Blues',
+      'description' => 'You can remove Blues and Add Blues from here.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('omni_eve_api_admin_list_blues_form'),
+      'access arguments' => array('administer omni_eve_api settings'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 50,
+      'file' => 'omni_eve_api.admin.inc',
+    );
+
+    $items['admin/settings/omni_eve_api/list_blues/add_blue'] = array(
+      'title' => 'Add Blue',
+      'description' => 'You can manually add blues from here.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('omni_eve_api_admin_add_blues_form'),
+      'access arguments' => array('administer omni_eve_api settings'),
+      'type' => MENU_LOCAL_ACTION,
+      'weight' => 0,
+      'file' => 'omni_eve_api.admin.inc',
+    );
+
+    $items['admin/settings/omni_eve_api/list_whitelist'] = array(
+      'title' => 'Whitelist',
+      'description' => 'You can remove Whitelisted API Characters and Add Whitelisted API Characters from here.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('omni_eve_api_admin_list_whitelist_form'),
+      'access arguments' => array('administer omni_eve_api settings'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 60,
+      'file' => 'omni_eve_api.admin.inc',
+    );
+
+    $items['admin/settings/omni_eve_api/list_whitelist/add_whitelist'] = array(
+      'title' => 'Add Whitelist',
+      'description' => 'You can manually add Whitelisted API Characters from here.',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('omni_eve_api_admin_add_whitelist_form'),
+      'access arguments' => array('administer omni_eve_api settings'),
+      'type' => MENU_LOCAL_ACTION,
+      'weight' => 0,
+      'file' => 'omni_eve_api.admin.inc',
+    );
+
     $items['user/%user/omni_eve_api'] = array(
       'title' => 'EVE API',
       'page callback' => 'drupal_get_form',
