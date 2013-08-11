@@ -1037,6 +1037,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
   }
 
   if (variable_get('omni_eve_api_ts3_framework_installed', FALSE) === FALSE) {
+    drupal_set_message(t('TeamSpeak 3 PHP Framework Library is not installed, please read the README.txt for instructions on how to install the library.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
 
