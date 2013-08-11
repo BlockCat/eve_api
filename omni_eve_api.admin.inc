@@ -173,7 +173,7 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
 
   $form['enter_api']['enable'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Enable Omni EVE API.'),
+    '#title' => t('Enable Omni EVE API'),
     '#default_value' => variable_get('omni_eve_api_enable', FALSE),
     '#weight' => 20,
   );
@@ -985,7 +985,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
 
   $form['teamspeak']['enable'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Enable Teamspeak 3 Connection.'),
+    '#title' => t('Enable Teamspeak 3 Connection'),
     '#default_value' => variable_get('omni_eve_api_ts3_enable', FALSE),
     '#weight' => 70,
   );
@@ -1179,7 +1179,7 @@ function omni_eve_api_admin_jabber_form($form, &$form_state) {
 
   $form['jabber']['enable'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Enable Jabber Connection.'),
+    '#title' => t('Enable Jabber Connection'),
     '#default_value' => variable_get('omni_eve_api_jabber_enable', FALSE),
     '#weight' => 70,
   );

@@ -343,10 +343,6 @@ function omni_eve_api_install() {
   variable_set('omni_eve_api_ts3_framework_installed', FALSE);
   variable_set('omni_eve_api_ts3_enable', FALSE);
   variable_set('omni_eve_api_jabber_enable', FALSE);
-  variable_set('user_picture_dimensions', '128x128');
-  variable_set('eve_user_picture_dimensions', 128);
-  variable_set('eve_avatar_https', 'https://image.eveonline.com/Character/');
-  variable_set('eve_avatar_http', 'http://image.eveonline.com/Character/');
 
   $queue = DrupalQueue::get('omni_eve_api_cron_get_standings');
   $queue->createQueue();
@@ -383,6 +379,39 @@ function omni_eve_api_uninstall() {
   db_drop_field('users', 'characterid');
   db_drop_field('users', 'teamspeakuid');
   db_drop_field('users', 'teamspeakdbid');
+
+  variable_del('omni_eve_api_enable');
+  variable_del('omni_eve_api_first_run');
+  variable_del('omni_eve_api_ts3_framework_installed');
+  variable_del('omni_eve_api_ts3_enable');
+  variable_del('omni_eve_api_jabber_enable');
+  variable_del('user_picture_dimensions');
+  variable_del('eve_user_picture_dimensions');
+  variable_del('eve_avatar_https');
+  variable_del('eve_avatar_http');
+  variable_del('omni_eve_api_alliance_role');
+  variable_del('omni_eve_api_unverified_role');
+  variable_del('omni_eve_api_corp_keyid');
+  variable_del('omni_eve_api_corp_vcode');
+  variable_del('omni_eve_api_access_mask');
+  variable_del('omni_eve_api_ts3_host');
+  variable_del('omni_eve_api_ts3_server_address');
+  variable_del('omni_eve_api_ts3_server_port');
+  variable_del('omni_eve_api_ts3_server_password');
+  variable_del('omni_eve_api_ts3_query_port');
+  variable_del('omni_eve_api_ts3_query_username');
+  variable_del('omni_eve_api_ts3_query_password');
+  variable_del('omni_eve_api_ts3_nickname');
+  variable_del('omni_eve_api_ts3_bypass_group');
+  variable_del('omni_eve_api_jabber_host');
+  variable_del('omni_eve_api_jabber_database');
+  variable_del('omni_eve_api_jabber_username');
+  variable_del('omni_eve_api_jabber_password');
+  variable_del('omni_eve_api_jabber_url');
+  variable_del('omni_eve_api_jabber_secret');
+  variable_del('omni_eve_api_jabber_domain');
+  variable_del('omni_eve_api_allianceID');
+  variable_del('omni_eve_api_corporationID');
 
   $queue = DrupalQueue::get('omni_eve_api_cron_get_standings');
   $queue->deleteQueue();
