@@ -30,8 +30,8 @@ class OeaException extends Exception {
 }
 
 /**
-* Implements hook_hook_info().
-*/
+ * Implements hook_hook_info().
+ */
 function omni_eve_api_hook_info() {
   $hooks = array();
 
@@ -1162,7 +1162,7 @@ function omni_eve_api_teamspeak_get_version() {
       require_once $path . '/TeamSpeak3.php';
 
       $teamspeak_version = TeamSpeak3::LIB_VERSION;
- 
+
       return $teamspeak_version;
     }
     else {
