@@ -314,7 +314,7 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
   $queue->createItem($uid);
 
   $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
-  $queue->createItem(array('uid' => $uid, 'teamspeakdbid' => $account->teamspeakdbid));
+  $queue->createItem(array('uid' => $uid, 'teamspeakdbid' => $account->teamspeakdbid, 'runs' => 1));
 
   drupal_set_message(t('New main character selected!'));
 }
@@ -569,7 +569,7 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
 
   $row = db_select('users', 'u')->fields('u', array('teamspeakdbid'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
   $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
-  $queue->createItem(array('uid' => $uid, 'teamspeakdbid' => $row['teamspeakdbid']));
+  $queue->createItem(array('uid' => $uid, 'teamspeakdbid' => $row['teamspeakdbid'], 'runs' => 1));
 
   drupal_set_message(t('API keys successfully deleted!'));
 }
