@@ -908,7 +908,7 @@ function omni_eve_api_user_teamspeak_form_submit($form, &$form_state) {
         'teamspeakdbid' => $teamspeakdbid,
       ))->condition('uid', $uid, '=')->execute();
 
-    omni_eve_api_cron_teamspeak_user(array('uid' => $uid, 'teamspeakdbid' => $teamspeakdbid));
+    omni_eve_api_cron_teamspeak_user(array('uid' => $uid, 'teamspeakdbid' => $teamspeakdbid, 'runs' => 1));
 
     // Need to assign roles.
     drupal_set_message(t('Teamspeak access granted.'));
