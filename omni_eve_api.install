@@ -344,6 +344,9 @@ function omni_eve_api_install() {
   variable_set('omni_eve_api_ts3_enable', FALSE);
   variable_set('omni_eve_api_jabber_enable', FALSE);
 
+  // We set this because we use 128x128 for EVE avatar's.
+  variable_set('user_picture_dimensions', '128x128');
+
   $queue = DrupalQueue::get('omni_eve_api_cron_get_standings');
   $queue->createQueue();
 

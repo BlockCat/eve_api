@@ -3,7 +3,7 @@
  * @file
  * Functions related to connecting to Teamspeak3.
  */
-
+ 
 /**
  * Generates the Teamspeak name as specified in Teamspeak Settings.
  *
@@ -39,9 +39,18 @@ function omni_eve_api_teamspeak_format_name($charactername) {
  * @return object
  *   The Teamspeak connection object.
  */
-function omni_eve_api_teamspeak_connection() {
-  if (variable_get('omni_eve_api_ts3_enable', FALSE) === FALSE && variable_get('omni_eve_api_ts3_framework_installed', FALSE)) {
+function omni_eve_api_teamspeak_connection($check = FALSE) {
+  if ((!variable_get('omni_eve_api_ts3_enable', FALSE) || !variable_get('omni_eve_api_ts3_framework_installed', FALSE)) && !$check) {
     throw new OeaException(t('Teamspeak 3 Connection disabled.'));
+  }
+
+  // Load the TeamSpeak 3 PHP Framework Library.
+  if (($library = libraries_load('TeamSpeak3')) && !empty($library['loaded'])) {
+    variable_set('omni_eve_api_ts3_framework_installed', TRUE);
+  }
+  else {
+    variable_set('omni_eve_api_ts3_framework_installed', FALSE);
+    variable_set('omni_eve_api_ts3_enable', FALSE);
   }
 
   try {

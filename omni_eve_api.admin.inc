@@ -1063,14 +1063,13 @@ function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
   variable_set('omni_eve_api_ts3_nickname', (string) $form_state['values']['nickname']);
   variable_set('omni_eve_api_ts3_bypass_group', (int) $form_state['values']['omni_eve_api_ts3_bypass_group']);
 
-  if (variable_get('omni_eve_api_ts3_framework_installed', FALSE) !== FALSE) {
+  if (variable_get('omni_eve_api_ts3_framework_installed', FALSE)) {
     if ((bool) $form_state['values']['enable']) {
       try {
-        $query = 'serverquery://' . (string) $form_state['values']['query_username'] . ':' . (string) $form_state['values']['query_password'] . '@' . (string) $form_state['values']['hostname'] . ':' . (int) $form_state['values']['query_port'] . '/?server_port=' . (int) $form_state['values']['server_port'] . '&blocking=0';
-        $ts3 = TeamSpeak3::factory($query);
+        $ts3 = omni_eve_api_teamspeak_connection(TRUE);
       }
-      catch (TeamSpeak3_Exception $e) {
-        form_set_error('enable', t('Teamspeak 3 Connection failed, check settings and try again. Error: @error', array('@error' => $e->getMessage())));
+      catch (OeaException $e) {
+        form_set_error('enable', $e->getMessage());
         variable_set('omni_eve_api_ts3_enable', FALSE);
       }
     }
