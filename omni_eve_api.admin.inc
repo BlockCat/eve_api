@@ -1061,7 +1061,6 @@ function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
   variable_set('omni_eve_api_ts3_query_username', (string) $form_state['values']['query_username']);
   variable_set('omni_eve_api_ts3_query_password', (string) $form_state['values']['query_password']);
   variable_set('omni_eve_api_ts3_nickname', (string) $form_state['values']['nickname']);
-  variable_set('omni_eve_api_ts3_bypass_group', (int) $form_state['values']['omni_eve_api_ts3_bypass_group']);
 
   if (variable_get('omni_eve_api_ts3_framework_installed', FALSE)) {
     if ((bool) $form_state['values']['enable']) {
@@ -1086,6 +1085,7 @@ function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
  */
 function omni_eve_api_admin_teamspeak_form_submit($form, &$form_state) {
   if ((bool) $form_state['values']['enable']) {
+    variable_set('omni_eve_api_ts3_bypass_group', (int) $form_state['values']['omni_eve_api_ts3_bypass_group']);
     variable_set('omni_eve_api_ts3_enable', TRUE);
     omni_eve_api_cron_teamspeak_role(1);
   }
