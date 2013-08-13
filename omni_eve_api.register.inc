@@ -188,7 +188,11 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
     }
   }
 
-  $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid'))->condition('characterid', $whitelist_characters, 'IN')->condition('deleted', 0, '=')->execute();
+  $result = db_query('SELECT characterid FROM {oea_whitelist} WHERE deleted = 0 AND characterid IN (:characterids)', array(
+    ':characterids' => $whitelist_characters,
+  ));
+  $result->execute();
+
   if ($result->rowCount()) {
     if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
       form_set_error('keyid', t('Unknown Error, please try again.'));
@@ -259,7 +263,11 @@ function omni_eve_api_user_register_form_validate(&$form, &$form_state) {
     }
   }
 
-  $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid'))->condition('characterid', $whitelist_characters, 'IN')->condition('deleted', 0, '=')->execute();
+  $result = db_query('SELECT characterid FROM {oea_whitelist} WHERE deleted = 0 AND characterid IN (:characterids)', array(
+    ':characterids' => $whitelist_characters,
+  ));
+  $result->execute();
+
   if ($result->rowCount()) {
     if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
       form_set_error('keyid', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
@@ -431,7 +439,11 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state) {
       }
     }
 
-    $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid'))->condition('characterid', $whitelist_characters, 'IN')->condition('deleted', 0, '=')->execute();
+    $result = db_query('SELECT characterid FROM {oea_whitelist} WHERE deleted = 0 AND characterid IN (:characterids)', array(
+      ':characterids' => $whitelist_characters,
+    ));
+    $result->execute();
+
     if ($result->rowCount()) {
       if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
         form_set_error('keyid', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));

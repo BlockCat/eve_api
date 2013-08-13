@@ -9,13 +9,8 @@
  */
 function omni_eve_api_jabber_test_connection() {
   try {
-    // Convert to db_query().
-    $result = db_select('ofUser', 'u')
-      ->fields('u', array(
-        'username',
-      ))
-      ->range(0, 1)
-      ->execute();
+    $result = db_query('SELECT username FROM {ofUser} LIMIT 1');
+    $result->execute();
   }
   catch (PDOException $e) {
     throw new OeaException($e->getMessage());
@@ -118,9 +113,10 @@ function omni_eve_api_jabber_group_add($name, $description = '') {
 
     $clean_name = (string) omni_eve_api_jabber_format_name($name);
 
-    $result = db_select('ofGroup', 'g')->fields('g', array(
-      'groupName',
-    ))->condition('groupName', $clean_name, '=')->execute();
+    $result = db_query('SELECT groupName FROM {ofGroup} WHERE groupName = :groupName', array(
+      ':groupName' => $clean_name,
+    ));
+    $result->execute();
 
     if ($result->rowCount()) {
       omni_eve_api_jabber_disconnect();

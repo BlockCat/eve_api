@@ -93,7 +93,10 @@ function omni_eve_api_admin_roles_form_validate($form, &$form_state) {
  */
 function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
   $uids = array();
-  $result = db_select('users_roles', 'r')->fields('r', array('uid'))->condition('rid', (int) variable_get('omni_eve_api_blue_role', 2), '=')->execute();
+  $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
+    ':rid' => (int) variable_get('omni_eve_api_blue_role', 2),
+  ));
+  $result->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -106,7 +109,10 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
   }
 
   $uids = array();
-  $result = db_select('users_roles', 'r')->fields('r', array('uid'))->condition('rid', (int) variable_get('omni_eve_api_alliance_role', 2), '=')->execute();
+  $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
+    ':rid' => (int) variable_get('omni_eve_api_alliance_role', 2),
+  ));
+  $result->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -119,7 +125,10 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
   }
 
   $uids = array();
-  $result = db_select('users_roles', 'r')->fields('r', array('uid'))->condition('rid', (int) variable_get('omni_eve_api_unverified_role', 2), '=')->execute();
+  $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
+    ':rid' => (int) variable_get('omni_eve_api_unverified_role', 2),
+  ));
+  $result->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -389,15 +398,8 @@ function omni_eve_api_admin_access_mask_form_submit($form, &$form_state) {
   if ($access_mask != $new_access_mask) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
 
-    // Convert to db_query().
-    $query = db_select('oea_api_keys', 'ak');
-    $query->join('users', 'u', 'ak.uid = u.uid');
-    $query->fields('ak', array(
-      'uid',
-    ));
-    $query->distinct();
-    $query->condition('u.status', 1, '=');
-    $result = $query->execute();
+    $result = db_query('SELECT DISTINT ak.uid FROM {oea_api_keys} ak LEFT JOIN {users} u ON (ak.uid = u.uid) WHERE u.status = 1');
+    $result->execute();
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
@@ -539,15 +541,8 @@ function omni_eve_api_admin_list_blues_form_submit($form, &$form_state) {
   if ($is_change) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
 
-    // Convert to db_query().
-    $query = db_select('oea_api_keys', 'ak');
-    $query->join('users', 'u', 'ak.uid = u.uid');
-    $query->fields('ak', array(
-      'uid',
-    ));
-    $query->distinct();
-    $query->condition('u.status', 1, '=');
-    $result = $query->execute();
+    $result = db_query('SELECT DISTINT ak.uid FROM {oea_api_keys} ak LEFT JOIN {users} u ON (ak.uid = u.uid) WHERE u.status = 1');
+    $result->execute();
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
@@ -607,13 +602,19 @@ function omni_eve_api_admin_add_blues_form($form, &$form_state) {
  * @see omni_eve_api_admin_add_blues_form_submit()
  */
 function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
-  $result = db_select('oea_blue_standings', 'b')->fields('b', array('contactID'))->condition('contactID', (int) $form_state['values']['id'], '=')->execute();
+  $result = db_query('SELECT contactID FROM {oea_blue_standings} WHERE contactID = :contactID', array(
+    ':contactID' => (int) $form_state['values']['id'],
+  ));
+  $result->execute();
 
   if ($result->rowCount()) {
     form_set_error('id', t('Character/Corporation/Alliance already added to the standings.'));
   }
 
-  $result = db_select('oea_alliance_corporations', 'a')->fields('a', array('corporationid'))->condition('deleted', 0, '=')->condition('corporationid', (int) $form_state['values']['id'], '=')->execute();
+  $result = db_query('SELECT corporationid FROM {oea_alliance_corporations} WHERE deleted = 0 AND corporationid = :corporationid', array(
+    ':corporationid' => (int) $form_state['values']['id'],
+  ));
+  $result->execute();
 
   if ($result->rowCount()) {
     form_set_error('id', t('Corporation already listed as an Alliance Corporation.'));
@@ -629,16 +630,20 @@ function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
     form_set_error('id', t('There was an error with the API.'));
   }
   else {
-    $alliance_info = db_select('oea_alliance_info', 'a')->fields('a', array('alliancename'))->condition('allianceid', (int) $form_state['values']['id'], '=')->execute()->fetchAssoc();
+    $result = db_query('SELECT alliancename FROM {oea_alliance_info} WHERE allianceid = :allianceid', array(
+      ':allianceid' => (int) $form_state['values']['id'],
+    ));
+    $result->execute();
 
     if (isset($corp_info['corporationName'])) {
-      $form_state['values']['name'] = $corp_info['corporationName'];
+      $form_state['values']['name'] = (string) $corp_info['corporationName'];
     }
     elseif (isset($char_info[(int) $form_state['values']['id']])) {
       $form_state['values']['name'] = $char_info[(int) $form_state['values']['id']];
     }
-    elseif ($alliance_info->rowCount()) {
-      $form_state['values']['name'] = $row['alliancename'];
+    elseif ($result->rowCount()) {
+      $row = $result->fetchAssoc();
+      $form_state['values']['name'] = (string) $row['alliancename'];
     }
     else {
       form_set_error('id', t('No match found.'));
@@ -661,15 +666,8 @@ function omni_eve_api_admin_add_blues_form_submit($form, &$form_state) {
 
   $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
 
-  // Convert to db_query().
-  $query = db_select('oea_api_keys', 'ak');
-  $query->join('users', 'u', 'ak.uid = u.uid');
-  $query->fields('ak', array(
-    'uid',
-  ));
-  $query->distinct();
-  $query->condition('u.status', 1, '=');
-  $result = $query->execute();
+  $result = db_query('SELECT DISTINT ak.uid FROM {oea_api_keys} ak LEFT JOIN {users} u ON (ak.uid = u.uid) WHERE u.status = 1');
+  $result->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $item) {

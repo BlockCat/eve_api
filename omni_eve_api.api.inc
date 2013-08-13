@@ -132,17 +132,10 @@ function omni_eve_api_get_xml($type, $query = array()) {
  *   A complex array of a single character information.
  */
 function omni_eve_api_get_character_info($charactername) {
-  $result = db_select('oea_characters', 'c')->fields('c', array(
-    'uid',
-    'charactername',
-    'characterid',
-    'corporationname',
-    'corporationid',
-    'corporationticker',
-    'allianceid',
-    'alliancename',
-    'allianceticker',
-  ))->condition('charactername', (string) $charactername, '=')->execute();
+  $result = db_query('SELECT uid, charactername, characterid, corporationname, corporationid, corporationticker, allianceid, alliancename, allianceticker FROM {oea_characters} WHERE charactername = :charactername', array(
+    ':charactername' => (string) $charactername,
+  ));
+  $result->execute();
 
   if ($result->rowCount()) {
     $row = $result->fetchAssoc();
@@ -243,7 +236,11 @@ function omni_eve_api_get_character_sheet($query) {
  *   The Alliance ticker for the $allianceid.
  */
 function omni_eve_api_get_alliance_ticker($allianceid) {
-  $row = db_select('oea_alliance_info', 'a')->fields('a', array('allianceticker'))->condition('allianceid', (int) $allianceid, '=')->execute()->fetchAssoc();
+  $result = db_query('SELECT allianceticker FROM {oea_alliance_info} WHERE allianceid = :allianceid', array(
+    ':allianceid' => (int) $allianceid,
+  ));
+  $result->execute();
+  $row = $result->fetchAssoc();
 
   return $row['allianceticker'];
 }
@@ -320,11 +317,15 @@ function omni_eve_api_verify_blue($characters) {
   }
 
   foreach ($characters['characters'] as $character) {
-    $result = db_select('oea_blue_standings', 'a')->fields('a', array('contactID'))->condition('contactID', array(
-      (int) $character['characterID'],
-      (int) $character['corporationID'],
-      (int) $character['allianceID'],
-    ), 'IN')->condition('standing', 0, '>')->condition('deleted', 0, '=')->execute();
+    $result = db_query('SELECT contactID FROM {oea_blue_standings} WHERE standing > 0 AND deleted = 0 AND contactID IN (:contactIDs)', array(
+      ':contactIDs' => array(
+        (int) $character['characterID'],
+        (int) $character['corporationID'],
+        (int) $character['allianceID'],
+      ),
+    ));
+    $result->execute();
+
     if ($result->rowCount()) {
       return TRUE;
     }
@@ -333,7 +334,11 @@ function omni_eve_api_verify_blue($characters) {
       return TRUE;
     }
 
-    $result = db_select('oea_alliance_corporations', 'c')->fields('c', array('corporationid'))->condition('corporationid', (int) $character['corporationID'], '=')->execute();
+    $result = db_query('SELECT corporationid FROM {oea_alliance_corporations} WHERE corporationid = :corporationid', array(
+      ':corporationid' => (int) $character['corporationID'],
+    ));
+    $result->execute();
+
     if ($result->rowCount()) {
       return TRUE;
     }
@@ -356,18 +361,24 @@ function omni_eve_api_list_valid_characters($characters, $empty) {
 
   if (!empty($characters)) {
     foreach ($characters['characters'] as $character) {
-      $result = db_select('oea_blue_standings', 'a')->fields('a', array('contactID'))->condition('contactID', array(
-        (int) $character['characterID'],
-        (int) $character['corporationID'],
-        (int) $character['allianceID'],
-      ), 'IN')->condition('standing', 0, '>')->condition('deleted', 0, '=')->execute();
+       $result = db_query('SELECT contactID FROM {oea_blue_standings} WHERE standing > 0 AND deleted = 0 AND contactID IN (:contactIDs)', array(
+        ':contactIDs' => array(
+          (int) $character['characterID'],
+          (int) $character['corporationID'],
+          (int) $character['allianceID'],
+        ),
+      ));
+      $result->execute();
 
       if ($result->rowCount()) {
         $chars[check_plain($character['characterName'])] = check_plain($character['characterName']);
         continue;
       }
 
-      $result = db_select('oea_alliance_corporations', 'c')->fields('c', array('corporationid'))->condition('corporationid', $character['corporationID'], '=')->execute();
+      $result = db_query('SELECT corporationid FROM {oea_alliance_corporations} WHERE corporationid = :corporationid', array(
+        ':corporationid' => (int) $character['corporationID'],
+      ));
+      $result->execute();
 
       if ($result->rowCount()) {
         $chars[check_plain($character['characterName'])] = check_plain($character['characterName']);
@@ -396,11 +407,10 @@ function omni_eve_api_characters_exist($characters) {
 
   if (!empty($characters)) {
     foreach ($characters['characters'] as $character) {
-      $result = db_select('oea_characters', 'c')->fields('c', array(
-        'apiid',
-        'characterid',
-        'uid',
-      ))->condition('characterid', (int) $character['characterID'], '=')->condition('deleted', 0, '=')->execute();
+      $result = db_query('SELECT characterid FROM {oea_characters} WHERE deleted = 0 AND characterid = :characterid', array(
+        ':characterid' => (int) $character['characterID'],
+      ));
+      $result->execute();
 
       if ($result->rowCount()) {
         $chars[] = $character['characterName'];
@@ -459,14 +469,10 @@ function omni_eve_api_list_api_simple($uid) {
   $uid = (int) $uid;
   $api_list = array();
 
-  $result_a = db_select('oea_api_keys', 'a')->fields('a', array(
-    'apiid',
-    'keyid',
-    'vcode',
-    'errorid',
-    'updated',
-    'created',
-  ))->condition('uid', $uid, '=')->execute();
+  $result_a = db_query('SELECT apiid, keyid, vcode, errorid, updated, created FROM {oea_api_keys} WHERE uid = :uid', array(
+    ':uid' => $uid,
+  ));
+  $result_a->execute();
 
   if ($result_a->rowCount()) {
     foreach ($result_a->fetchAll() as $row_a) {
@@ -474,16 +480,11 @@ function omni_eve_api_list_api_simple($uid) {
         continue;
       }
 
-      $result_b = db_select('oea_characters', 'c')->fields('c', array(
-        'characterid',
-        'charactername',
-        'corporationid',
-        'corporationname',
-        'corporationticker',
-        'allianceid',
-        'alliancename',
-        'allianceticker',
-      ))->condition('uid', $uid, '=')->condition('deleted', 0, '=')->condition('apiid', (int) $row_a->apiid, '=')->execute();
+      $result_b = db_query('SELECT characterid, charactername, corporationid, corporationname, corporationticker, allianceid, alliancename, allianceticker FROM {oea_api_keys} WHERE deleted = 0 AND uid = :uid AND apiid = :apiid', array(
+        ':uid' => $uid,
+        ':apiid' => (int) $row_a->apiid,
+      ));
+      $result_b->execute();
 
       if ($result_b->rowCount()) {
         foreach ($result_b->fetchAll() as $row_b) {
