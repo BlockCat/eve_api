@@ -338,6 +338,25 @@ function omni_eve_api_install() {
     'description' => 'Teamspeak 3 Database ID',
   ));
 
+  $roles = array(
+    'omni_eve_api_blue_role' => 'Alliance Blue',
+    'omni_eve_api_alliance_role' => 'Alliance Member',
+    'omni_eve_api_unverified_role' => 'Unverified',
+    'omni_eve_api_ceo_role' => 'CEO',
+    'omni_eve_api_director_role' => 'Director',
+  );
+
+  foreach ($roles as $variable => $role) {
+    if (!($role = user_role_load_by_name($role))) {
+      $user_role = new stdClass();
+      $user_role->name = $role;
+      user_role_save($user_role);
+    }
+
+    $role_data = user_role_load_by_name($role);
+    variable_set($variable, (int) $role_data->rid);
+  }
+
   variable_set('omni_eve_api_enable', FALSE);
   variable_set('omni_eve_api_first_run', FALSE);
   variable_set('omni_eve_api_ts3_framework_installed', FALSE);
