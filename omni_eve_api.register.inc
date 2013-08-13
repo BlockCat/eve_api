@@ -422,6 +422,12 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state) {
     'vcode' => (string) $form_state['values']['vcode'],
   );
 
+  if (empty($form_state['values']['keyid']) || empty($form_state['values']['vcode'])) {
+    form_set_error('keyid', t('Invalid input, please try again.'));
+    form_set_error('vcode');
+    return;
+  }
+
   $characters = omni_eve_api_get_character_api($query);
 
   if (isset($characters['error'])) {
