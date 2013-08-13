@@ -205,8 +205,8 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
  */
 function omni_eve_api_admin_alliance_api_key_form_validate($form, &$form_state) {
   $query = array(
-    'keyid' => $form_state['values']['omni_eve_api_corp_keyid'],
-    'vcode' => $form_state['values']['omni_eve_api_corp_vcode'],
+    'keyid' => (int) $form_state['values']['omni_eve_api_corp_keyid'],
+    'vcode' => (string) $form_state['values']['omni_eve_api_corp_vcode'],
   );
 
   $characters = omni_eve_api_get_character_api($query);
@@ -233,7 +233,7 @@ function omni_eve_api_admin_alliance_api_key_form_validate($form, &$form_state) 
  * @see omni_eve_api_admin_alliance_api_key_form_validate()
  */
 function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
-  $characters = $form_state['values']['characters'];
+  $characters = (array) $form_state['values']['characters'];
 
   variable_set('omni_eve_api_corp_keyid', (int) $form_state['values']['omni_eve_api_corp_keyid']);
   variable_set('omni_eve_api_corp_vcode', (string) $form_state['values']['omni_eve_api_corp_vcode']);
@@ -303,9 +303,9 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
       $options[$row->accessmask] = array(
-        'accessmask' => (int) $row->accessmask,
-        'name' => $row->name,
-        'description' => $row->description,
+        'accessmask' => check_plain((int) $row->accessmask),
+        'name' => check_plain($row->name),
+        'description' => check_plain($row->description),
       );
 
       if (($access_mask & (int) $row->accessmask) == TRUE) {
@@ -378,8 +378,8 @@ function omni_eve_api_admin_access_mask_form_validate($form, &$form_state) {
 function omni_eve_api_admin_access_mask_form_submit($form, &$form_state) {
   $new_access_mask = 8388616;
 
-  foreach ($form_state['values']['access_mask'] as $access_bit) {
-    $new_access_mask = $new_access_mask + $access_bit;
+  foreach ((array) $form_state['values']['access_mask'] as $access_bit) {
+    $new_access_mask = $new_access_mask + (int) $access_bit;
   }
 
   $access_mask = variable_get('omni_eve_api_access_mask', 268435455);
@@ -461,9 +461,9 @@ function omni_eve_api_admin_list_blues_form($form, &$form_state) {
     foreach ($result->fetchAll() as $row) {
       $options[$row->contactID] = array(
         'deleted' => ($row->deleted) ? t('Yes') : t('No'),
-        'contactID' => $row->contactID,
-        'contactName' => $row->contactName,
-        'standing' => $row->standing,
+        'contactID' => check_plain($row->contactID),
+        'contactName' => check_plain($row->contactName),
+        'standing' => check_plain($row->standing),
         'manual' => ($row->manual) ? t('Yes') : t('No'),
       );
 
@@ -529,8 +529,8 @@ function omni_eve_api_admin_list_blues_form_submit($form, &$form_state) {
   $deleted_blues = array();
   $is_change = FALSE;
 
-  foreach ($form_state['values']['blues'] as $blue_id) {
-    $deleted_blues[] = $blue_id;
+  foreach ((array) $form_state['values']['blues'] as $blue_id) {
+    $deleted_blues[] = (int) $blue_id;
     $is_change = TRUE;
   }
 
@@ -653,8 +653,8 @@ function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
  */
 function omni_eve_api_admin_add_blues_form_submit($form, &$form_state) {
   db_insert('oea_blue_standings')->fields(array(
-    'contactID' => $form_state['values']['id'],
-    'contactName' => $form_state['values']['name'],
+    'contactID' => (int) $form_state['values']['id'],
+    'contactName' => (string) $form_state['values']['name'],
     'standing' => 1,
     'manual' => 1,
   ))->execute();
@@ -722,8 +722,8 @@ function omni_eve_api_admin_list_whitelist_form($form, &$form_state) {
     foreach ($result->fetchAll() as $row) {
       $options[$row->characterid] = array(
         'deleted' => ($row->deleted) ? t('Yes') : t('No'),
-        'characterid' => $row->characterid,
-        'charactername' => $row->charactername,
+        'characterid' => check_plain($row->characterid),
+        'charactername' => check_plain($row->charactername),
       );
 
       if ($row->deleted) {
@@ -785,9 +785,11 @@ function omni_eve_api_admin_list_whitelist_form_validate($form, &$form_state) {
 function omni_eve_api_admin_list_whitelist_form_submit($form, &$form_state) {
   db_update('oea_whitelist')->fields(array('deleted' => 0))->execute();
   $deleted_whitelist = array();
-  foreach ($form_state['values']['whitelist'] as $whitelist) {
-    $deleted_whitelist[] = $whitelist;
+
+  foreach ((array) $form_state['values']['whitelist'] as $whitelist) {
+    $deleted_whitelist[] = (int) $whitelist;
   }
+
   db_update('oea_whitelist')->fields(array('deleted' => 1))->condition('characterid', $deleted_whitelist, 'IN')->execute();
 
   drupal_set_message(t('The Alliance White List have been updated.'));
@@ -851,8 +853,8 @@ function omni_eve_api_admin_add_whitelist_form($form, &$form_state) {
  */
 function omni_eve_api_admin_add_whitelist_form_validate($form, &$form_state) {
   $query = array(
-    'keyid' => $form_state['values']['keyid'],
-    'vcode' => $form_state['values']['vcode'],
+    'keyid' => (int) $form_state['values']['keyid'],
+    'vcode' => (array) $form_state['values']['vcode'],
   );
 
   $characters = omni_eve_api_get_character_api($query);
@@ -884,12 +886,12 @@ In addition the "Type" drop down box is set to "Character", and that the "No Exp
  * @see omni_eve_api_admin_add_whitelist_form_validate()
  */
 function omni_eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
-  $characters = $form_state['values']['characters'];
+  $characters = (array) $form_state['values']['characters'];
 
   foreach ($characters['characters'] as $character) {
-    db_merge('oea_whitelist')->key(array('characterid' => $character['characterID']))->fields(array(
-      'characterid' => $character['characterID'],
-      'charactername' => $character['characterName'],
+    db_merge('oea_whitelist')->key(array('characterid' => (int) $character['characterID']))->fields(array(
+      'characterid' => (int) $character['characterID'],
+      'charactername' => (string) $character['characterName'],
       'deleted' => 0,
     ))->execute();
   }

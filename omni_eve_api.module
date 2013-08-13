@@ -709,7 +709,7 @@ function omni_eve_api_user_delete($account) {
     omni_eve_api_jabber_connect();
     $result = db_select('ofUser', 'u')->fields('u', array(
       'username',
-    ))->condition('username', omni_eve_api_jabber_format_name($account->name), '=')->execute();
+    ))->condition('username', (string) omni_eve_api_jabber_format_name($account->name), '=')->execute();
 
     if ($result->rowCount()) {
       omni_eve_api_jabber_url_query('delete', $account->name);
@@ -729,8 +729,10 @@ function omni_eve_api_user_delete($account) {
     // Log Error ?
   }
 
-  db_delete('oea_characters')->condition('uid', $account->uid)->execute();
-  db_delete('oea_api_keys')->condition('uid', $account->uid)->execute();
+  $uid = (int) $account->uid;
+
+  db_delete('oea_characters')->condition('uid', $uid)->execute();
+  db_delete('oea_api_keys')->condition('uid', $uid)->execute();
 }
 
 /**

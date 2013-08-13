@@ -194,8 +194,8 @@ function omni_eve_api_cron_teamspeak_user($item) {
       $valid_roles[$rname] = $rid;
     }
 
-    $uid = $item['uid'];
-    $teamspeakdbid = $item['teamspeakdbid'];
+    $uid = (int) $item['uid'];
+    $teamspeakdbid = (int) $item['teamspeakdbid'];
     $ts3 = omni_eve_api_teamspeak_connection();
 
     $query = db_select('users_roles', 'ur');
@@ -397,8 +397,8 @@ function omni_eve_api_cron_jabber_user($item) {
       }
     }
 
-    $uid = $item['uid'];
-    $charactername = $item['name'];
+    $uid = (int) $item['uid'];
+    $charactername = (string) $item['name'];
 
     $query = db_select('users_roles', 'ur');
     $query->join('role', 'r', 'r.rid = ur.rid');
@@ -498,7 +498,7 @@ function omni_eve_api_cron_jabber_role($item) {
  *   whatever was added to the queue via queue->createItem()
  */
 function omni_eve_api_cron_queue_users($item) {
-  $uid = $item;
+  $uid = (int) $item;
   $all_characters = array();
 
   $query = db_select('oea_api_keys', 'a');
@@ -520,24 +520,24 @@ function omni_eve_api_cron_queue_users($item) {
       $characters = omni_eve_api_get_character_api($query);
 
       if (isset($characters['error']) && $characters['error'] != 403) {
-        $new_api_key_id = db_merge('oea_api_keys')->key(array('apiid' => $row->apiid))->fields(array(
-          'apiid' => $row->apiid,
-          'errorid' => $characters['error'],
-          'updated' => $updated,
+        $new_api_key_id = db_merge('oea_api_keys')->key(array('apiid' => (int) $row->apiid))->fields(array(
+          'apiid' => (int) $row->apiid,
+          'errorid' => (int) $characters['error'],
+          'updated' => (string) $updated,
         ))->execute();
 
-        db_update('oea_characters')->fields(array('errorid' => $characters['error']))->condition('apiid', $row->apiid, '=')->execute();
+        db_update('oea_characters')->fields(array('errorid' => (int) $characters['error']))->condition('apiid', (int) $row->apiid, '=')->execute();
 
         continue;
       }
       elseif (isset($characters['error']) && $characters['error'] == 403) {
-        $new_api_key_id = db_merge('oea_api_keys')->key(array('apiid' => $row->apiid))->fields(array(
-          'apiid' => $row->apiid,
-          'errorid' => $characters['error'],
-          'updated' => $updated,
+        $new_api_key_id = db_merge('oea_api_keys')->key(array('apiid' => (int) $row->apiid))->fields(array(
+          'apiid' => (int) $row->apiid,
+          'errorid' => (int) $characters['error'],
+          'updated' => (string) $updated,
         ))->execute();
 
-        db_update('oea_characters')->fields(array('errorid' => $characters['error'], 'deleted' => 1))->condition('apiid', $row->apiid, '=')->execute();
+        db_update('oea_characters')->fields(array('errorid' => (int) $characters['error'], 'deleted' => 1))->condition('apiid', (int) $row->apiid, '=')->execute();
 
         continue;
       }
@@ -546,7 +546,7 @@ function omni_eve_api_cron_queue_users($item) {
 
       if (!empty($characters)) {
         foreach ($characters['characters'] as $character) {
-          $whitelist_characters[] = $character['characterID'];
+          $whitelist_characters[] = (int) $character['characterID'];
         }
       }
 
@@ -565,28 +565,28 @@ function omni_eve_api_cron_queue_users($item) {
         }
       }
 
-      $new_api_key_id = db_merge('oea_api_keys')->key(array('apiid' => $row->apiid))->fields(array(
-        'apiid' => $row->apiid,
-        'errorid' => $error,
-        'updated' => $updated,
+      $new_api_key_id = db_merge('oea_api_keys')->key(array('apiid' => (int) $row->apiid))->fields(array(
+        'apiid' => (int) $row->apiid,
+        'errorid' => (int) $error,
+        'updated' => (string) $updated,
       ))->execute();
 
-      db_update('oea_characters')->fields(array('errorid' => $error, 'deleted' => 1))->condition('apiid', $row->apiid, '=')->execute();
+      db_update('oea_characters')->fields(array('errorid' => (int) $error, 'deleted' => 1))->condition('apiid', (int) $row->apiid, '=')->execute();
 
       foreach ($characters['characters'] as $character) {
-        db_merge('oea_characters')->key(array('characterid' => $character['characterID']))->fields(array(
-          'characterid' => $character['characterID'],
-          'uid' => $uid,
-          'apiid' => $row->apiid,
-          'charactername' => $character['characterName'],
-          'corporationid' => $character['corporationID'],
-          'corporationname' => $character['corporationName'],
-          'corporationticker' => $character['corporationTicker'],
-          'allianceid' => $character['allianceID'],
-          'alliancename' => $character['allianceName'],
-          'allianceticker' => $character['allianceTicker'],
+        db_merge('oea_characters')->key(array('characterid' => (int) $character['characterID']))->fields(array(
+          'characterid' => (int) $character['characterID'],
+          'uid' => (int) $uid,
+          'apiid' => (int) $row->apiid,
+          'charactername' => (string) $character['characterName'],
+          'corporationid' => (int) $character['corporationID'],
+          'corporationname' => (string) $character['corporationName'],
+          'corporationticker' => (string) $character['corporationTicker'],
+          'allianceid' => (int) $character['allianceID'],
+          'alliancename' => (string) $character['allianceName'],
+          'allianceticker' => (string) $character['allianceTicker'],
           'deleted' => 0,
-          'errorid' => $error,
+          'errorid' => (int) $error,
         ))->execute();
       }
 
@@ -633,7 +633,7 @@ function omni_eve_api_cron_queue_users($item) {
 
       $result = db_select('ofUser', 'u')->fields('u', array(
         'username',
-      ))->condition('username', omni_eve_api_jabber_format_name($row['name']), '=')->execute();
+      ))->condition('username', (string) omni_eve_api_jabber_format_name($row['name']), '=')->execute();
 
       if ($result->rowCount()) {
         omni_eve_api_jabber_url_query('delete', $account->name);
@@ -898,10 +898,10 @@ function omni_eve_api_cron_get_access_mask($item = NULL) {
       }
 
       db_insert('oea_access_mask')->fields(array(
-        'accessmask' => $row_b->accessMask,
-        'type' => $row_b->type,
-        'name' => $row_b->name,
-        'description' => $row_b->description,
+        'accessmask' => (int) $row_b->accessMask,
+        'type' => (string) $row_b->type,
+        'name' => (string) $row_b->name,
+        'description' => (string) $row_b->description,
       ))->execute();
     }
   }

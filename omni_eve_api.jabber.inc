@@ -118,7 +118,7 @@ function omni_eve_api_jabber_group_add($name, $description = '') {
   try {
     omni_eve_api_jabber_connect();
 
-    $clean_name = omni_eve_api_jabber_format_name($name);
+    $clean_name = (string) omni_eve_api_jabber_format_name($name);
 
     $result = db_select('ofGroup', 'g')->fields('g', array(
       'groupName',
@@ -132,7 +132,7 @@ function omni_eve_api_jabber_group_add($name, $description = '') {
 
     db_merge('ofGroup')->key(array('groupName' => $clean_name))->fields(array(
       'groupName' => $clean_name,
-      'description' => $description,
+      'description' => (string) $description,
     ))->execute();
 
     db_insert('ofGroupProp')->fields(array(
@@ -144,7 +144,7 @@ function omni_eve_api_jabber_group_add($name, $description = '') {
     db_insert('ofGroupProp')->fields(array(
       'groupName' => $clean_name,
       'name' => 'sharedRoster.displayName',
-      'propValue' => $name,
+      'propValue' => (string) $name,
     ))->execute();
 
     db_insert('ofGroupProp')->fields(array(
