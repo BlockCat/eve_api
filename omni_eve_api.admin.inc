@@ -1006,7 +1006,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#value' => t('Submit'),
   );
 
-  if (variable_get('omni_eve_api_ts3_enable', FALSE) && variable_get('omni_eve_api_ts3_framework_installed', FALSE) !== FALSE) {
+  if (variable_get('omni_eve_api_ts3_enable', FALSE) && variable_get('omni_eve_api_ts3_framework_installed', FALSE)) {
     try {
       $teamspeakgroups = array();
 
@@ -1044,7 +1044,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  if (variable_get('omni_eve_api_ts3_framework_installed', FALSE)) {
+  if (!variable_get('omni_eve_api_ts3_framework_installed', FALSE)) {
     drupal_set_message(t('TeamSpeak 3 PHP Framework Library is not installed, please read the README.txt for instructions on how to install the library.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
@@ -1227,18 +1227,6 @@ function omni_eve_api_admin_jabber_form_validate($form, &$form_state) {
 
   if ((bool) $form_state['values']['enable']) {
     try {
-      if (variable_get('omni_eve_api_jabber_enable', FALSE)) {
-        $jabber_database = array(
-          'host' => variable_get('omni_eve_api_jabber_host', '127.0.0.1'),
-          'database' => variable_get('omni_eve_api_jabber_database', 'Jabber'),
-          'username' => variable_get('omni_eve_api_jabber_username', 'Username'),
-          'password' => variable_get('omni_eve_api_jabber_password', 'Password'),
-          'driver' => 'mysql',
-        );
-
-        Database::addConnectionInfo('Jabber', 'default', $jabber_database);
-      }
-
       omni_eve_api_jabber_connect(TRUE);
       omni_eve_api_jabber_test_connection();
       omni_eve_api_jabber_disconnect();

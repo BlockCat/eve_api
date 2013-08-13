@@ -26,22 +26,20 @@ function omni_eve_api_jabber_test_connection() {
  * Connect to the Jabber Database.
  */
 function omni_eve_api_jabber_connect($check = FALSE) {
-  if (variable_get('omni_eve_api_jabber_enable', FALSE) && !$check) {
+  if (!variable_get('omni_eve_api_jabber_enable', FALSE) && !$check) {
     throw new OeaException(t('Jabber Connection disabled.'));
   }
 
   // Set the Jabber Database for access on the fly.
-  if (variable_get('omni_eve_api_jabber_enable', FALSE)) {
-    $jabber_database = array(
-      'host' => variable_get('omni_eve_api_jabber_host', '127.0.0.1'),
-      'database' => variable_get('omni_eve_api_jabber_database', 'Jabber'),
-      'username' => variable_get('omni_eve_api_jabber_username', 'Username'),
-      'password' => variable_get('omni_eve_api_jabber_password', 'Password'),
-      'driver' => 'mysql',
-    );
+  $jabber_database = array(
+    'host' => variable_get('omni_eve_api_jabber_host', '127.0.0.1'),
+    'database' => variable_get('omni_eve_api_jabber_database', 'Jabber'),
+    'username' => variable_get('omni_eve_api_jabber_username', 'Username'),
+    'password' => variable_get('omni_eve_api_jabber_password', 'Password'),
+    'driver' => 'mysql',
+  );
 
-    Database::addConnectionInfo('Jabber', 'default', $jabber_database);
-  }
+  Database::addConnectionInfo('Jabber', 'default', $jabber_database);
 
   try {
     db_set_active('Jabber');
@@ -111,7 +109,7 @@ function omni_eve_api_jabber_format_display_name($name) {
  *   Returns a true on success.
  */
 function omni_eve_api_jabber_group_add($name, $description = '') {
-  if (variable_get('omni_eve_api_jabber_enable', FALSE)) {
+  if (!variable_get('omni_eve_api_jabber_enable', FALSE)) {
     throw new OeaException(t('Jabber Connection disabled.'));
   }
 
@@ -177,7 +175,7 @@ function omni_eve_api_jabber_group_add($name, $description = '') {
  *   Returns a true on success, false on failure or message.
  */
 function omni_eve_api_jabber_url_query($type, $charactername = '', array $query = array()) {
-  if (variable_get('omni_eve_api_jabber_enable', FALSE) && $type != 'check') {
+  if (!variable_get('omni_eve_api_jabber_enable', FALSE) && $type != 'check') {
     throw new OeaException(t('Jabber Connection disabled.'));
   }
 
