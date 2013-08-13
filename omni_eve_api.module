@@ -331,6 +331,7 @@ function omni_eve_api_permission() {
  * This is a flexible and powerful HTTP client implementation. Correctly
  * handles GET, POST, PUT or any other HTTP requests. Handles redirects.
  * Based on "cURL HTTP Request v1.5" by Vincenzo and minorOffense
+ * Based on "Yapeal (http://code.google.com/p/yapeal/)" by Kevin Burkholder
  * Modified for use with "Omni EVE API"
  *
  *
@@ -386,12 +387,7 @@ function omni_eve_api_curl_http_request($url, array $query = array(), $method = 
     'data' => $query,
     'headers' => array(),
     'method' => $method,
-    'max_redirects' => 3,
-    'timeout' => 60,
-    'context' => NULL,
-    'verify_ssl' => FALSE,
-    'verbose' => FALSE,
-    'cookiefile' => NULL,
+    'timeout' => 45,
     'http_proxy' => variable_get('http_proxy'),
     'https_proxy' => variable_get('https_proxy'),
   );
@@ -405,23 +401,46 @@ function omni_eve_api_curl_http_request($url, array $query = array(), $method = 
     $proxy = NULL;
   }
 
-  $curl_opt = array(
-    CURLOPT_HEADER => TRUE,
+  $curl = curl_version();
+  $user_agent = 'Drupal (+http://drupal.org/)';
+  $user_agent .= ' Omni EVE API/'. omni_eve_api_version();
+  $user_agent .= ' (' . PHP_OS . ' ' . php_uname('m') . ')';
+  $user_agent .= ' libcurl/' . $curl['version'];
+  $user_agent = trim($user_agent);
+
+  $ssl_version = $curl['ssl_version'];
+  $has_nss = (strpos($ssl_version, "NSS") > -1);
+
+  if($has_nss) {
+      $curl_opt = array(CURLOPT_SSL_CIPHER_LIST => 'rsa_aes_128_sha,rsa_aes_256_sha,rsa_3des_sha,rsa_rc4_128_sha,rsa_rc4_128_md5');
+  } else {
+      $curl_opt = array(CURLOPT_SSL_CIPHER_LIST => 'AES128-SHA AES256-SHA DES-CBC3-SHA RC4-SHA RC4-MD5');
+  }
+
+  $curl_opt += array(
+    CURLOPT_HEADER => FALSE,
+    CURLOPT_NOBODY => FALSE,
     CURLINFO_HEADER_OUT => TRUE,
     CURLOPT_TIMEOUT => $options['timeout'],
     CURLOPT_FOLLOWLOCATION => TRUE,
+    CURLOPT_FORBID_REUSE => FALSE,
+    CURLOPT_LOW_SPEED_LIMIT => 10,
+    CURLOPT_LOW_SPEED_TIME => ceil($options['timeout'] / 4),
+    CURLOPT_MAXCONNECTS => 5,
+    CURLOPT_CONNECTTIMEOUT => ceil($options['timeout'] / 2),
+    CURLOPT_ENCODING => 'gzip',
     CURLOPT_RETURNTRANSFER => TRUE,
-    CURLOPT_SSL_VERIFYPEER => $options['verify_ssl'],
-    CURLOPT_SSL_VERIFYHOST => $options['verify_ssl'],
-    CURLOPT_MAXREDIRS => $options['max_redirects'],
+    CURLOPT_BINARYTRANSFER => FALSE,
+    CURLOPT_SSL_VERIFYPEER => TRUE,
+    CURLOPT_CAINFO => drupal_get_path('module', 'omni_eve_api') . '/eveonline.crt',
+    CURLOPT_COOKIEJAR => drupal_get_path('module', 'omni_eve_api') . '/cookies.txt',
+    CURLOPT_COOKIEFILE => drupal_get_path('module', 'omni_eve_api') . '/cookies.txt',
+    CURLOPT_REFERER => 'http://danlee.ca/hg/',
+    CURLOPT_UNRESTRICTED_AUTH => TRUE,
+    CURLOPT_SSL_VERIFYHOST => 2,
+    CURLOPT_MAXREDIRS => 5,
+    CURLOPT_USERAGENT => $user_agent,
   );
-
-  if ($options['cookiefile']) {
-    $curl_opt += array(
-      CURLOPT_COOKIEJAR => $options['cookiefile'],
-      CURLOPT_COOKIEFILE => $options['cookiefile'],
-    );
-  }
 
   if (!empty($proxy)) {
     $proxy_options = array(
@@ -463,9 +482,6 @@ function omni_eve_api_curl_http_request($url, array $query = array(), $method = 
     $result->code = -1003;
     return $result;
   }
-
-  // Merge the default headers.
-  $options['headers'] += array('User-Agent' => 'Drupal (+http://drupal.org/)');
 
   // Only add Content-Length if we actually have any content or if it is a POST
   // or PUT request. Some non-standard servers get confused by Content-Length in
