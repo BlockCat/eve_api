@@ -361,7 +361,7 @@ function omni_eve_api_list_valid_characters($characters, $empty) {
 
   if (!empty($characters)) {
     foreach ($characters['characters'] as $character) {
-       $result = db_query('SELECT contactID FROM {oea_blue_standings} WHERE standing > 0 AND deleted = 0 AND contactID IN (:contactIDs)', array(
+      $result = db_query('SELECT contactID FROM {oea_blue_standings} WHERE standing > 0 AND deleted = 0 AND contactID IN (:contactIDs)', array(
         ':contactIDs' => array(
           (int) $character['characterID'],
           (int) $character['corporationID'],
