@@ -175,7 +175,7 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
     '#title' => t('Verification Code'),
     '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@url" target="_blank">here</a>.', array('@url' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=67108863')),
     '#required' => TRUE,
-    '#maxlength' => 80,
+    '#maxlength' => 64,
     '#weight' => 10,
     '#default_value' => variable_get('omni_eve_api_corp_vcode', ''),
   );
@@ -210,9 +210,18 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
  * @see omni_eve_api_admin_alliance_api_key_form_submit()
  */
 function omni_eve_api_admin_alliance_api_key_form_validate($form, &$form_state) {
+  $keyid = (int) $form_state['values']['omni_eve_api_corp_keyid'];
+  $vcode = (string) $form_state['values']['omni_eve_api_corp_vcode'];
+
+  if (empty($keyid) || empty($vcode) || preg_match('/[^a-z0-9]/i', $vcode) || preg_match('/[^0-9]/', $form_state['values']['omni_eve_api_corp_keyid']) || strlen($vcode) > 64 || strlen($vcode) < 20) {
+    form_set_error('omni_eve_api_corp_keyid', t('Invalid input, please try again.'));
+    form_set_error('omni_eve_api_corp_vcode');
+    return;
+  }
+
   $query = array(
-    'keyid' => (int) $form_state['values']['omni_eve_api_corp_keyid'],
-    'vcode' => (string) $form_state['values']['omni_eve_api_corp_vcode'],
+    'keyid' => $keyid,
+    'vcode' => $vcode,
   );
 
   $characters = omni_eve_api_get_character_api($query);
@@ -814,7 +823,7 @@ function omni_eve_api_admin_add_whitelist_form($form, &$form_state) {
     '#title' => t('Verification Code'),
     '#description' => t('Please enter the Verification Code.'),
     '#required' => TRUE,
-    '#maxlength' => 80,
+    '#maxlength' => 64,
     '#weight' => 10,
   );
 
@@ -841,16 +850,25 @@ function omni_eve_api_admin_add_whitelist_form($form, &$form_state) {
  * @see omni_eve_api_admin_add_whitelist_form_submit()
  */
 function omni_eve_api_admin_add_whitelist_form_validate($form, &$form_state) {
+  $keyid = (int) $form_state['values']['keyid'];
+  $vcode = (string) $form_state['values']['vcode'];
+
+  if (empty($keyid) || empty($vcode) || preg_match('/[^a-z0-9]/i', $vcode) || preg_match('/[^0-9]/', $form_state['values']['keyid']) || strlen($vcode) > 64 || strlen($vcode) < 20) {
+    form_set_error('keyid', t('Invalid input, please try again.'));
+    form_set_error('vcode');
+    return;
+  }
+
   $query = array(
-    'keyid' => (int) $form_state['values']['keyid'],
-    'vcode' => (array) $form_state['values']['vcode'],
+    'keyid' => $keyid,
+    'vcode' => $vcode,
   );
 
   $characters = omni_eve_api_get_character_api($query);
 
   if (isset($characters['error'])) {
-    form_set_error('omni_eve_api_corp_keyid', t('There was an error with the API.'));
-    form_set_error('omni_eve_api_corp_vcode');
+    form_set_error('keyid', t('There was an error with the API.'));
+    form_set_error('vcode');
   }
   else {
     if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {

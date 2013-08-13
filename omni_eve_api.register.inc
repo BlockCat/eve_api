@@ -397,7 +397,7 @@ function omni_eve_api_enter_api_form($form, &$form_state) {
     '#title' => t('Verification Code'),
     '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@mask" target="_blank">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask', 268435455))),
     '#required' => TRUE,
-    '#maxlength' => 80,
+    '#maxlength' => 64,
     '#weight' => 10,
   );
 
@@ -417,16 +417,19 @@ function omni_eve_api_enter_api_form($form, &$form_state) {
  * @see omni_eve_api_enter_api_form_submit()
  */
 function omni_eve_api_enter_api_form_validate($form, &$form_state) {
-  $query = array(
-    'keyid' => (int) $form_state['values']['keyid'],
-    'vcode' => (string) $form_state['values']['vcode'],
-  );
+  $keyid = (int) $form_state['values']['keyid'];
+  $vcode = (string) $form_state['values']['vcode'];
 
-  if (empty($form_state['values']['keyid']) || empty($form_state['values']['vcode'])) {
+  if (empty($keyid) || empty($vcode) || preg_match('/[^a-z0-9]/i', $vcode) || preg_match('/[^0-9]/', $form_state['values']['keyid']) || strlen($vcode) > 64 || strlen($vcode) < 20) {
     form_set_error('keyid', t('Invalid input, please try again.'));
     form_set_error('vcode');
     return;
   }
+
+  $query = array(
+    'keyid' => $keyid,
+    'vcode' => $vcode,
+  );
 
   $characters = omni_eve_api_get_character_api($query);
 

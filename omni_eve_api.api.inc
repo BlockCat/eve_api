@@ -171,7 +171,7 @@ function omni_eve_api_get_character_api($query) {
   $xml = omni_eve_api_get_xml('APIKeyInfo', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Failed getting Character API Data. (' . print_r($query) . ') Error: ' . print_r($xml) . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Failed getting Character API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
     return array('error' => (int) $xml);
   }
 
@@ -216,7 +216,7 @@ function omni_eve_api_get_character_sheet($query) {
   $xml = omni_eve_api_get_xml('CharacterSheet', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Failed getting Character Sheet API Data. (' . print_r($query) . ') Error: ' . print_r($xml) . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Failed getting Character Sheet API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
     return array('error' => (int) $xml);
   }
 
@@ -256,7 +256,7 @@ function omni_eve_api_get_corporation_info($query) {
   $xml = omni_eve_api_get_xml('CorporationSheet', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Failed getting Corporation API Data. (' . print_r($query) . ') Error: ' . print_r($xml) . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Failed getting Corporation API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
     return array('error' => $xml);
   }
 
@@ -285,7 +285,7 @@ function omni_eve_api_get_character_name($query) {
   $xml = omni_eve_api_get_xml('CharacterName', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Failed getting Character Name API Data. (' . print_r($query) . ') Error: ' . print_r($xml) . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Failed getting Character Name API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
     return array('error' => $xml);
   }
 
@@ -472,7 +472,7 @@ function omni_eve_api_list_api_simple($uid) {
         continue;
       }
 
-      $result_b = db_query('SELECT characterid, charactername, corporationid, corporationname, corporationticker, allianceid, alliancename, allianceticker FROM {oea_api_keys} WHERE deleted = 0 AND uid = :uid AND apiid = :apiid', array(
+      $result_b = db_query('SELECT characterid, charactername, corporationid, corporationname, corporationticker, allianceid, alliancename, allianceticker FROM {oea_characters} WHERE deleted = 0 AND uid = :uid AND apiid = :apiid', array(
         ':uid' => $uid,
         ':apiid' => (int) $row_a->apiid,
       ));

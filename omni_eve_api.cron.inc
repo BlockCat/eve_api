@@ -583,7 +583,7 @@ function omni_eve_api_cron_queue_users($item) {
       db_update('oea_characters')->fields(array('errorid' => (int) $error, 'deleted' => 1))->condition('apiid', (int) $row->apiid, '=')->execute();
 
       foreach ($characters['characters'] as $character) {
-        if ($row['name'] == (string) $character['characterName']) {
+        if ($account['name'] == (string) $character['characterName']) {
           $character_found = TRUE;
         }
 
@@ -741,7 +741,7 @@ function omni_eve_api_cron_get_standings($item = NULL) {
   $xml = omni_eve_api_get_xml('ContactList', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Failed getting Alliance Contact List API Data. (' . print_r($query) . ') Error: ' . print_r($xml) . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Failed getting Alliance Contact List API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
 
     $item = $item + 1;
     $queue = DrupalQueue::get('omni_eve_api_cron_get_standings');
@@ -789,7 +789,7 @@ function omni_eve_api_cron_get_alliance_corporations($item = NULL) {
   $xml = omni_eve_api_get_xml('AllianceList');
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Failed getting Alliance List API Data. (' . print_r($query) . ') Error: ' . print_r($xml) . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Failed getting Alliance List API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
 
     $item = $item + 1;
     $queue = DrupalQueue::get('omni_eve_api_cron_get_alliance_corporations');
@@ -888,7 +888,7 @@ function omni_eve_api_cron_get_access_mask($item = NULL) {
   $xml = omni_eve_api_get_xml('callList');
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Failed getting Access Mask API Data. (' . print_r($query) . ') Error: ' . print_r($xml) . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Failed getting Access Mask API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
 
     $item = $item + 1;
     $queue = DrupalQueue::get('omni_eve_api_cron_get_access_mask');
