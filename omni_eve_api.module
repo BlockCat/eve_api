@@ -698,7 +698,6 @@ function omni_eve_api_role_list() {
   $roles = array();
 
   $result = db_query('SELECT rid, name FROM {role}');
-  $result->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -732,7 +731,6 @@ function omni_eve_api_user_delete($account) {
     $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
       ':username' => (string) omni_eve_api_jabber_format_name($account->name),
     ));
-    $result->execute();
 
     if ($result->rowCount()) {
       omni_eve_api_jabber_url_query('delete', $account->name);

@@ -191,7 +191,6 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
   $result = db_query('SELECT characterid FROM {oea_whitelist} WHERE deleted = 0 AND characterid IN (:characterids)', array(
     ':characterids' => $whitelist_characters,
   ));
-  $result->execute();
 
   if ($result->rowCount()) {
     if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
@@ -266,7 +265,6 @@ function omni_eve_api_user_register_form_validate(&$form, &$form_state) {
   $result = db_query('SELECT characterid FROM {oea_whitelist} WHERE deleted = 0 AND characterid IN (:characterids)', array(
     ':characterids' => $whitelist_characters,
   ));
-  $result->execute();
 
   if ($result->rowCount()) {
     if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
@@ -442,7 +440,6 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state) {
     $result = db_query('SELECT characterid FROM {oea_whitelist} WHERE deleted = 0 AND characterid IN (:characterids)', array(
       ':characterids' => $whitelist_characters,
     ));
-    $result->execute();
 
     if ($result->rowCount()) {
       if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {

@@ -96,7 +96,6 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
   $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
     ':rid' => (int) variable_get('omni_eve_api_blue_role', 2),
   ));
-  $result->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -112,7 +111,6 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
   $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
     ':rid' => (int) variable_get('omni_eve_api_alliance_role', 2),
   ));
-  $result->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -128,7 +126,6 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
   $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
     ':rid' => (int) variable_get('omni_eve_api_unverified_role', 2),
   ));
-  $result->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -399,7 +396,6 @@ function omni_eve_api_admin_access_mask_form_submit($form, &$form_state) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
 
     $result = db_query('SELECT DISTINT ak.uid FROM {oea_api_keys} ak LEFT JOIN {users} u ON (ak.uid = u.uid) WHERE u.status = 1');
-    $result->execute();
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
@@ -542,7 +538,6 @@ function omni_eve_api_admin_list_blues_form_submit($form, &$form_state) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
 
     $result = db_query('SELECT DISTINT ak.uid FROM {oea_api_keys} ak LEFT JOIN {users} u ON (ak.uid = u.uid) WHERE u.status = 1');
-    $result->execute();
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
@@ -605,7 +600,6 @@ function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
   $result = db_query('SELECT contactID FROM {oea_blue_standings} WHERE contactID = :contactID', array(
     ':contactID' => (int) $form_state['values']['id'],
   ));
-  $result->execute();
 
   if ($result->rowCount()) {
     form_set_error('id', t('Character/Corporation/Alliance already added to the standings.'));
@@ -614,7 +608,6 @@ function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
   $result = db_query('SELECT corporationid FROM {oea_alliance_corporations} WHERE deleted = 0 AND corporationid = :corporationid', array(
     ':corporationid' => (int) $form_state['values']['id'],
   ));
-  $result->execute();
 
   if ($result->rowCount()) {
     form_set_error('id', t('Corporation already listed as an Alliance Corporation.'));
@@ -633,7 +626,6 @@ function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
     $result = db_query('SELECT alliancename FROM {oea_alliance_info} WHERE allianceid = :allianceid', array(
       ':allianceid' => (int) $form_state['values']['id'],
     ));
-    $result->execute();
 
     if (isset($corp_info['corporationName'])) {
       $form_state['values']['name'] = (string) $corp_info['corporationName'];
@@ -667,7 +659,6 @@ function omni_eve_api_admin_add_blues_form_submit($form, &$form_state) {
   $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
 
   $result = db_query('SELECT DISTINT ak.uid FROM {oea_api_keys} ak LEFT JOIN {users} u ON (ak.uid = u.uid) WHERE u.status = 1');
-  $result->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $item) {
