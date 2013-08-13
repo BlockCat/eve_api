@@ -678,7 +678,7 @@ function omni_eve_api_cron_queue_users($item) {
       user_multiple_role_edit(array($uid), 'add_role', $alliance_role->rid);
     }
     else {
-    // Convert to db_query().
+      // Convert to db_query().
       $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
         'corporationid',
         'corporationname',
