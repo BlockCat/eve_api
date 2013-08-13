@@ -252,7 +252,16 @@ function omni_eve_api_jabber_url_query($type, $charactername = '', array $query 
  *   Returns the XML object on success, NULL on error.
  */
 function omni_eve_api_jabber_url_send_query($url) {
-  $html = omni_eve_api_curl_http_request($url, array(), 'GET');
+  if (!$has_curl || $open_basedir) {
+    $options = array(
+      'method' => 'GET',
+    );
+
+    $html = drupal_http_request($url, $options);
+  }
+  else {
+    $html = omni_eve_api_curl_http_request($url, array(), 'GET');
+  }
 
   if (!empty($html->error)) {
     drupal_set_message(t('EVE API returned an error with the HTTP request: @error', array('@error' => $html->error)), 'error');

@@ -68,7 +68,19 @@ function omni_eve_api_get_xml($type, $query = array()) {
   }
 
   if (empty($html)) {
-    $html = omni_eve_api_curl_http_request($url, $query);
+    if (!$has_curl || $open_basedir) {
+      $options = array(
+        'method' => 'POST',
+        'data' => drupal_http_build_query($query),
+        'timeout' => 45,
+        'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
+      );
+
+      $html = drupal_http_request($url, $options);
+    }
+    else {
+      $html = omni_eve_api_curl_http_request($url, $query);
+    }
 
     if (!empty($html->error)) {
       drupal_set_message(t('EVE API returned an error with the HTTP request: @error', array('@error' => $html->error)), 'error');

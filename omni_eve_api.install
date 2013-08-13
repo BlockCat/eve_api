@@ -471,29 +471,30 @@ function omni_eve_api_requirements($phase) {
   // Ensure translations don't break during installation.
   $t = get_t();
 
-  $has_curl = function_exists('curl_init');
-  $open_basedir = ini_get('open_basedir');
-
-  $requirements['curl'] = array(
-    'title' => $t('cURL'),
-    'value' => $has_curl ? $t('Enabled') : $t('Not found'),
-  );
-
-  if (!$has_curl) {
-    $requirements['curl']['severity'] = REQUIREMENT_ERROR;
-    $requirements['curl']['description'] = $t('Omni EVE API could not be installed because the PHP <a href="@curl_url">cURL</a> library is not available.', array('@curl_url' => 'http://php.net/manual/en/curl.setup.php'));
-  }
-
-  $requirements['php_open_basedir'] = array(
-    'title' => $t('PHP open_basedir restriction'),
-    'value' => $open_basedir ? $t('Enabled') : $t('Disabled'),
-  );
-  if ($open_basedir) {
-    $requirements['php_open_basedir']['severity'] = REQUIREMENT_ERROR;
-    $requirements['php_open_basedir']['description'] = $t('Omni EVE API requires the PHP <a href="@open_basedir-url">open_basedir</a> restriction to be disabled. Check your webserver configuration or contact your web host.', array('@open_basedir-url' => 'http://php.net/manual/en/ini.core.php#ini.open-basedir'));
-  }
-
   if ($phase == 'runtime') {
+    $has_curl = function_exists('curl_init');
+    $open_basedir = ini_get('open_basedir');
+
+    $requirements['curl'] = array(
+      'title' => $t('cURL'),
+      'value' => $has_curl ? $t('Enabled') : $t('Not found'),
+    );
+
+    if (!$has_curl) {
+      $requirements['curl']['severity'] = REQUIREMENT_WARNING;
+      $requirements['curl']['description'] = $t('Omni EVE API prefers cURL, please install the PHP <a href="@curl_url">cURL</a> library.', array('@curl_url' => 'http://php.net/manual/en/curl.setup.php'));
+    }
+
+    $requirements['php_open_basedir'] = array(
+      'title' => $t('PHP open_basedir restriction'),
+      'value' => $open_basedir ? $t('Enabled') : $t('Disabled'),
+    );
+
+    if ($open_basedir) {
+      $requirements['php_open_basedir']['severity'] = REQUIREMENT_WARNING;
+      $requirements['php_open_basedir']['description'] = $t('Omni EVE API prefers cURL, cURL requires the PHP <a href="@open_basedir-url">open_basedir</a> restriction to be disabled. Check your webserver configuration or contact your web host.', array('@open_basedir-url' => 'http://php.net/manual/en/ini.core.php#ini.open-basedir'));
+    }
+
     // Report Omni EVE API version.
     $requirements['omni_eve_api'] = array(
       'title' => $t('Omni EVE API'),
