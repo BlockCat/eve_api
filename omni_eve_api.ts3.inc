@@ -3,7 +3,7 @@
  * @file
  * Functions related to connecting to Teamspeak3.
  */
- 
+
 /**
  * Generates the Teamspeak name as specified in Teamspeak Settings.
  *

@@ -314,7 +314,11 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
   $queue->createItem($uid);
 
   $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
-  $queue->createItem(array('uid' => $uid, 'teamspeakdbid' => $account->teamspeakdbid, 'runs' => 1));
+  $queue->createItem(array(
+    'uid' => $uid,
+    'teamspeakdbid' => $account->teamspeakdbid,
+    'runs' => 1,
+  ));
 
   drupal_set_message(t('New main character selected!'));
 }
@@ -500,12 +504,12 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
   $uid = $account->uid;
 
   foreach ($form_state['values']['api_keys'] as $api_key_id) {
-    if ($api_key_id == 0) {
+    if ($api_key_id == 0 && !is_int($api_key_id)) {
       continue;
     }
 
-    db_delete('oea_api_keys')->condition('apiid', $api_key_id)->execute();
-    db_update('oea_characters')->fields(array('deleted' => 1))->condition('apiid', $api_key_id)->execute();
+    db_delete('oea_api_keys')->condition('apiid', (int) $api_key_id)->execute();
+    db_update('oea_characters')->fields(array('deleted' => 1))->condition('apiid', (int) $api_key_id)->execute();
   }
 
   $query = db_select('oea_characters', 'c');
@@ -569,7 +573,11 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
 
   $row = db_select('users', 'u')->fields('u', array('teamspeakdbid'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
   $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
-  $queue->createItem(array('uid' => $uid, 'teamspeakdbid' => $row['teamspeakdbid'], 'runs' => 1));
+  $queue->createItem(array(
+    'uid' => $uid,
+    'teamspeakdbid' => $row['teamspeakdbid'],
+    'runs' => 1,
+  ));
 
   drupal_set_message(t('API keys successfully deleted!'));
 }
@@ -908,7 +916,11 @@ function omni_eve_api_user_teamspeak_form_submit($form, &$form_state) {
         'teamspeakdbid' => $teamspeakdbid,
       ))->condition('uid', $uid, '=')->execute();
 
-    omni_eve_api_cron_teamspeak_user(array('uid' => $uid, 'teamspeakdbid' => $teamspeakdbid, 'runs' => 1));
+    omni_eve_api_cron_teamspeak_user(array(
+      'uid' => $uid,
+      'teamspeakdbid' => $teamspeakdbid,
+      'runs' => 1,
+    ));
 
     // Need to assign roles.
     drupal_set_message(t('Teamspeak access granted.'));

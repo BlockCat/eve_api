@@ -452,6 +452,28 @@ function omni_eve_api_requirements($phase) {
   // Ensure translations don't break during installation.
   $t = get_t();
 
+  $has_curl = function_exists('curl_init');
+  $open_basedir = ini_get('open_basedir');
+
+  $requirements['curl'] = array(
+    'title' => $t('cURL'),
+    'value' => $has_curl ? $t('Enabled') : $t('Not found'),
+  );
+
+  if (!$has_curl) {
+    $requirements['curl']['severity'] = REQUIREMENT_ERROR;
+    $requirements['curl']['description'] = $t('Omni EVE API could not be installed because the PHP <a href="@curl_url">cURL</a> library is not available.', array('@curl_url' => 'http://php.net/manual/en/curl.setup.php'));
+  }
+
+  $requirements['php_open_basedir'] = array(
+    'title' => $t('PHP open_basedir restriction'),
+    'value' => $open_basedir ? $t('Enabled') : $t('Disabled'),
+  );
+  if ($open_basedir) {
+    $requirements['php_open_basedir']['severity'] = REQUIREMENT_ERROR;
+    $requirements['php_open_basedir']['description'] = $t('Omni EVE API requires the PHP <a href="@open_basedir-url">open_basedir</a> restriction to be disabled. Check your webserver configuration or contact your web host.', array('@open_basedir-url' => 'http://php.net/manual/en/ini.core.php#ini.open-basedir'));
+  }
+
   if ($phase == 'runtime') {
     // Report Omni EVE API version.
     $requirements['omni_eve_api'] = array(
@@ -459,19 +481,6 @@ function omni_eve_api_requirements($phase) {
       'value' => omni_eve_api_version(),
       'severity' => REQUIREMENT_INFO,
     );
-
-    // Set the Jabber Database for access on the fly.
-    if (variable_get('omni_eve_api_jabber_enable', FALSE)) {
-      $jabber_database = array(
-        'host' => variable_get('omni_eve_api_jabber_host', '127.0.0.1'),
-        'database' => variable_get('omni_eve_api_jabber_database', 'Jabber'),
-        'username' => variable_get('omni_eve_api_jabber_username', 'Username'),
-        'password' => variable_get('omni_eve_api_jabber_password', 'Password'),
-        'driver' => 'mysql',
-      );
-
-      Database::addConnectionInfo('Jabber', 'default', $jabber_database);
-    }
 
     // Load the TeamSpeak 3 Library if possible.
     $requirements['teamspeak3'] = array(

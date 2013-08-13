@@ -400,7 +400,6 @@ function omni_eve_api_enter_api_form($form, &$form_state) {
   }
 
   $form['#validate'][] = 'omni_eve_api_enter_api_form_validate';
-  $form['#submit'][] = 'omni_eve_api_enter_api_form_submit';
 
   return $form;
 }
@@ -455,12 +454,4 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state) {
       form_set_error('vcode');
     }
   }
-}
-
-/**
- * Form submission handler for omni_eve_api_enter_api_form().
- *
- * @see omni_eve_api_enter_api_form_validate()
- */
-function omni_eve_api_enter_api_form_submit($form, &$form_state) {
 }
