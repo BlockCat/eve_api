@@ -403,7 +403,7 @@ function omni_eve_api_curl_http_request($url, array $query = array(), $method = 
 
   $curl = curl_version();
   $user_agent = 'Drupal (+http://drupal.org/)';
-  $user_agent .= ' Omni EVE API/'. omni_eve_api_version();
+  $user_agent .= ' Omni EVE API/' . omni_eve_api_version();
   $user_agent .= ' (' . PHP_OS . ' ' . php_uname('m') . ')';
   $user_agent .= ' libcurl/' . $curl['version'];
   $user_agent = trim($user_agent);
@@ -411,10 +411,11 @@ function omni_eve_api_curl_http_request($url, array $query = array(), $method = 
   $ssl_version = $curl['ssl_version'];
   $has_nss = (strpos($ssl_version, "NSS") > -1);
 
-  if($has_nss) {
-      $curl_opt = array(CURLOPT_SSL_CIPHER_LIST => 'rsa_aes_128_sha,rsa_aes_256_sha,rsa_3des_sha,rsa_rc4_128_sha,rsa_rc4_128_md5');
-  } else {
-      $curl_opt = array(CURLOPT_SSL_CIPHER_LIST => 'AES128-SHA AES256-SHA DES-CBC3-SHA RC4-SHA RC4-MD5');
+  if ($has_nss) {
+    $curl_opt = array(CURLOPT_SSL_CIPHER_LIST => 'rsa_aes_128_sha,rsa_aes_256_sha,rsa_3des_sha,rsa_rc4_128_sha,rsa_rc4_128_md5');
+  }
+  else {
+    $curl_opt = array(CURLOPT_SSL_CIPHER_LIST => 'AES128-SHA AES256-SHA DES-CBC3-SHA RC4-SHA RC4-MD5');
   }
 
   $curl_opt += array(
