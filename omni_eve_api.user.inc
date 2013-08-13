@@ -523,6 +523,7 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
   $result = $query->execute();
 
   if (!$result->rowCount()) {
+    // Convert to db_query().
     $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
       'corporationid',
       'corporationname',
@@ -1044,6 +1045,7 @@ function omni_eve_api_user_jabber_form_submit($form, &$form_state) {
   $roles = user_roles();
   $user_roles = $all_roles = array();
 
+  // Convert to db_query().
   $query = db_select('oea_alliance_corporations', 'oea');
   $query->fields('oea', array('corporationname', 'corporationticker'));
   $result = $query->execute();

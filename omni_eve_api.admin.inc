@@ -388,6 +388,8 @@ function omni_eve_api_admin_access_mask_form_submit($form, &$form_state) {
 
   if ($access_mask != $new_access_mask) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
+
+    // Convert to db_query().
     $query = db_select('oea_api_keys', 'ak');
     $query->join('users', 'u', 'ak.uid = u.uid');
     $query->fields('ak', array(
@@ -536,6 +538,8 @@ function omni_eve_api_admin_list_blues_form_submit($form, &$form_state) {
 
   if ($is_change) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
+
+    // Convert to db_query().
     $query = db_select('oea_api_keys', 'ak');
     $query->join('users', 'u', 'ak.uid = u.uid');
     $query->fields('ak', array(
@@ -656,6 +660,8 @@ function omni_eve_api_admin_add_blues_form_submit($form, &$form_state) {
   ))->execute();
 
   $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
+
+  // Convert to db_query().
   $query = db_select('oea_api_keys', 'ak');
   $query->join('users', 'u', 'ak.uid = u.uid');
   $query->fields('ak', array(

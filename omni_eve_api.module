@@ -673,6 +673,7 @@ function omni_eve_api_curl_http_request($url, array $query = array(), $method = 
 function omni_eve_api_role_list() {
   $roles = array();
 
+  // Convert to db_query().
   $result = db_select('role', 'r')->fields('r', array(
     'rid',
     'name',

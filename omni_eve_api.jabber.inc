@@ -9,6 +9,7 @@
  */
 function omni_eve_api_jabber_test_connection() {
   try {
+    // Convert to db_query().
     $result = db_select('ofUser', 'u')
       ->fields('u', array(
         'username',

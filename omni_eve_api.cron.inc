@@ -28,6 +28,8 @@ function omni_eve_api_general_cron($force = FALSE) {
 function omni_eve_api_users_cron() {
   if (variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
+
+    // Convert to db_query().
     $query = db_select('oea_api_keys', 'ak');
     $query->join('users', 'u', 'ak.uid = u.uid');
     $query->fields('ak', array(
@@ -54,6 +56,8 @@ function omni_eve_api_teamspeak_user_cron() {
     $queue->createItem(1);
 
     $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
+
+    // Convert to db_query().
     $result = db_select('users', 'u')->fields('u', array('uid', 'teamspeakdbid'))->condition('status', 1, '=')->condition('teamspeakuid', 0, '!=')->execute();
 
     if ($result->rowCount()) {
@@ -77,6 +81,8 @@ function omni_eve_api_jabber_user_cron() {
     $queue->createItem(1);
 
     $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user');
+
+    // Convert to db_query().
     $result = db_select('users', 'u')->fields('u', array('uid', 'name'))->condition('status', 1, '=')->condition('characterid', 0, '!=')->execute();
 
     if ($result->rowCount()) {
@@ -163,6 +169,7 @@ function omni_eve_api_cron_teamspeak_user($item) {
     $roles = user_roles();
     $valid_roles = $user_roles = array();
 
+    // Convert to db_query().
     $query = db_select('oea_alliance_corporations', 'oea');
     $query->fields('oea', array('corporationname', 'corporationticker'));
     $result = $query->execute();
@@ -324,6 +331,7 @@ function omni_eve_api_cron_teamspeak_role($item) {
     $ts3 = omni_eve_api_teamspeak_connection();
     $corp_info = array();
 
+    // Convert to db_query().
     $query = db_select('oea_alliance_corporations', 'oea');
     $query->fields('oea', array('corporationname', 'corporationticker'));
     $result = $query->execute();
@@ -378,6 +386,7 @@ function omni_eve_api_cron_jabber_user($item) {
   try {
     $user_roles = array();
 
+    // Convert to db_query().
     $query = db_select('oea_alliance_corporations', 'oea');
     $query->fields('oea', array('corporationname', 'corporationticker'));
     $result = $query->execute();
@@ -444,6 +453,7 @@ function omni_eve_api_cron_jabber_role($item) {
     $roles = user_roles();
     $corp_info = array();
 
+    // Convert to db_query().
     $query = db_select('oea_alliance_corporations', 'oea');
     $query->fields('oea', array('corporationname', 'corporationticker'));
     $result = $query->execute();
@@ -585,6 +595,7 @@ function omni_eve_api_cron_queue_users($item) {
   }
 
   if (!omni_eve_api_verify_blue($all_characters)) {
+    // Convert to db_query().
     $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
       'corporationid',
       'corporationname',
@@ -667,6 +678,7 @@ function omni_eve_api_cron_queue_users($item) {
       user_multiple_role_edit(array($uid), 'add_role', $alliance_role->rid);
     }
     else {
+    // Convert to db_query().
       $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
         'corporationid',
         'corporationname',
@@ -816,6 +828,7 @@ function omni_eve_api_cron_get_alliance_corporations($item = NULL) {
     }
   }
 
+  // Convert to db_query().
   $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
     'corporationid',
     'corporationname',
