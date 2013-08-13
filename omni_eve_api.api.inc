@@ -236,6 +236,10 @@ function omni_eve_api_get_character_sheet($query) {
  *   The Alliance ticker for the $allianceid.
  */
 function omni_eve_api_get_alliance_ticker($allianceid) {
+  if (empty($allianceid)) {
+    $allianceid = 0;
+  }
+
   $result = db_query('SELECT allianceticker FROM {oea_alliance_info} WHERE allianceid = :allianceid', array(
     ':allianceid' => (int) $allianceid,
   ));
