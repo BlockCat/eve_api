@@ -68,6 +68,9 @@ function omni_eve_api_get_xml($type, $query = array()) {
   }
 
   if (empty($html)) {
+    $has_curl = function_exists('curl_init');
+    $open_basedir = ini_get('open_basedir');
+
     if (!$has_curl || $open_basedir) {
       $options = array(
         'method' => 'POST',

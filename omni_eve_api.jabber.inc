@@ -252,6 +252,9 @@ function omni_eve_api_jabber_url_query($type, $charactername = '', array $query 
  *   Returns the XML object on success, NULL on error.
  */
 function omni_eve_api_jabber_url_send_query($url) {
+  $has_curl = function_exists('curl_init');
+  $open_basedir = ini_get('open_basedir');
+
   if (!$has_curl || $open_basedir) {
     $options = array(
       'method' => 'GET',
