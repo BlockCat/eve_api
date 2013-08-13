@@ -413,6 +413,8 @@ function omni_eve_api_uninstall() {
   variable_del('eve_avatar_http');
   variable_del('omni_eve_api_alliance_role');
   variable_del('omni_eve_api_unverified_role');
+  variable_del('omni_eve_api_ceo_role');
+  variable_del('omni_eve_api_director_role');
   variable_del('omni_eve_api_corp_keyid');
   variable_del('omni_eve_api_corp_vcode');
   variable_del('omni_eve_api_access_mask');

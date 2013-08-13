@@ -864,7 +864,7 @@ function omni_eve_api_admin_add_whitelist_form_validate($form, &$form_state) {
     form_set_error('omni_eve_api_corp_vcode');
   }
   else {
-    if ($characters['expires'] || $characters['accessMask'] != 8388680) {
+    if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
       form_set_error('keyid', t('Please ensure that only the following boxes are highlighted and selected for the API: (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet))
 <br />
 In addition the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));

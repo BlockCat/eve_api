@@ -500,6 +500,15 @@ function omni_eve_api_cron_jabber_role($item) {
 function omni_eve_api_cron_queue_users($item) {
   $uid = (int) $item;
   $all_characters = array();
+	$account = db_select('users', 'u')
+		->fields('u', array(
+			'name',
+			'teamspeakdbid',
+			'name',
+		))
+		->condition('uid', $uid, '=')
+		->execute()
+		->fetchAssoc();
 
   $query = db_select('oea_api_keys', 'a');
   $query->fields('a', array('apiid', 'keyid', 'vcode'));
@@ -507,6 +516,8 @@ function omni_eve_api_cron_queue_users($item) {
   $result = $query->execute();
 
   $updated = date('Y-m-d H:i:s', time());
+
+	$character_found = FALSE;
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -553,14 +564,12 @@ function omni_eve_api_cron_queue_users($item) {
       $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid'))->condition('characterid', $whitelist_characters, 'IN')->condition('deleted', 0, '=')->execute();
 
       if ($result->rowCount()) {
-        if ($characters['expires'] || $characters['accessMask'] != 8388680) {
-          drupal_set_message(t('Invalid API Mask/Type/Expiry, characters disabled.'), 'status');
+        if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
           $error = 1;
         }
       }
       else {
         if ($characters['expires'] || $characters['type'] != 'Account' || ($characters['accessMask'] & variable_get('omni_eve_api_access_mask', 268435455)) != variable_get('omni_eve_api_access_mask', 268435455)) {
-          drupal_set_message(t('Invalid API Mask/Type/Expiry, characters disabled.'), 'status');
           $error = 1;
         }
       }
@@ -574,6 +583,10 @@ function omni_eve_api_cron_queue_users($item) {
       db_update('oea_characters')->fields(array('errorid' => (int) $error, 'deleted' => 1))->condition('apiid', (int) $row->apiid, '=')->execute();
 
       foreach ($characters['characters'] as $character) {
+      	if ($row['name'] == (string) $character['characterName']) {
+      		$character_found = TRUE;
+      	}
+
         db_merge('oea_characters')->key(array('characterid' => (int) $character['characterID']))->fields(array(
           'characterid' => (int) $character['characterID'],
           'uid' => (int) $uid,
@@ -594,7 +607,7 @@ function omni_eve_api_cron_queue_users($item) {
     }
   }
 
-  if (!omni_eve_api_verify_blue($all_characters)) {
+  if (!omni_eve_api_verify_blue($all_characters) || !$character_found) {
     // Convert to db_query().
     $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
       'corporationid',
@@ -604,7 +617,7 @@ function omni_eve_api_cron_queue_users($item) {
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
         if ($corporation_role = user_role_load_by_name($row->corporationname)) {
-          user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
+          user_multiple_role_edit(array($uid), 'remove_role', (int) $corporation_role->rid);
         }
       }
     }
@@ -619,9 +632,8 @@ function omni_eve_api_cron_queue_users($item) {
     user_multiple_role_edit(array($uid), 'add_role', $default_role->rid);
 
     try {
-      $row = db_select('users', 'u')->fields('u', array('teamspeakdbid'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
       $ts3 = omni_eve_api_teamspeak_connection();
-      omni_eve_api_teamspeak_user_delete($ts3, $row['teamspeakdbid']);
+      omni_eve_api_teamspeak_user_delete($ts3, $account['teamspeakdbid']);
     }
     catch (OeaException $e) {
       // Log Error ?
@@ -629,14 +641,13 @@ function omni_eve_api_cron_queue_users($item) {
 
     try {
       omni_eve_api_jabber_connect();
-      $row = db_select('users', 'u')->fields('u', array('name'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
 
       $result = db_select('ofUser', 'u')->fields('u', array(
         'username',
-      ))->condition('username', (string) omni_eve_api_jabber_format_name($row['name']), '=')->execute();
+      ))->condition('username', (string) omni_eve_api_jabber_format_name($account['name']), '=')->execute();
 
       if ($result->rowCount()) {
-        omni_eve_api_jabber_url_query('delete', $account->name);
+        omni_eve_api_jabber_url_query('delete', $account['name']);
       }
 
       omni_eve_api_jabber_disconnect();
@@ -652,8 +663,7 @@ function omni_eve_api_cron_queue_users($item) {
       ))->condition('uid', $uid, '=')->execute();
   }
   else {
-    $row = db_select('users', 'u')->fields('u', array('name'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
-    $character_data = omni_eve_api_get_character_info($row['name']);
+    $character_data = omni_eve_api_get_character_info($account['name']);
 
     if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
       $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
@@ -670,6 +680,9 @@ function omni_eve_api_cron_queue_users($item) {
       }
 
       user_multiple_role_edit(array($uid), 'add_role', $corporation_role->rid);
+
+	    $default_role = user_role_load(variable_get('omni_eve_api_unverified_role', 2));
+	    user_multiple_role_edit(array($uid), 'remove_role', $default_role->rid);
 
       $blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2));
       user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
@@ -691,6 +704,9 @@ function omni_eve_api_cron_queue_users($item) {
           }
         }
       }
+
+	    $default_role = user_role_load(variable_get('omni_eve_api_unverified_role', 2));
+	    user_multiple_role_edit(array($uid), 'remove_role', $default_role->rid);
 
       $alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2));
       user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
@@ -725,7 +741,7 @@ function omni_eve_api_cron_get_standings($item = NULL) {
   $xml = omni_eve_api_get_xml('ContactList', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Failed getting Alliance Contact List API Data. (' . print_r($query) . ') Error: ' . print_r($xml) . '</pre>', NULL, WATCHDOG_WARNING);
 
     $item = $item + 1;
     $queue = DrupalQueue::get('omni_eve_api_cron_get_standings');
@@ -773,7 +789,7 @@ function omni_eve_api_cron_get_alliance_corporations($item = NULL) {
   $xml = omni_eve_api_get_xml('AllianceList');
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Failed getting Alliance List API Data. (' . print_r($query) . ') Error: ' . print_r($xml) . '</pre>', NULL, WATCHDOG_WARNING);
 
     $item = $item + 1;
     $queue = DrupalQueue::get('omni_eve_api_cron_get_alliance_corporations');
@@ -872,7 +888,7 @@ function omni_eve_api_cron_get_access_mask($item = NULL) {
   $xml = omni_eve_api_get_xml('callList');
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Failed getting Access Mask API Data. (' . print_r($query) . ') Error: ' . print_r($xml) . '</pre>', NULL, WATCHDOG_WARNING);
 
     $item = $item + 1;
     $queue = DrupalQueue::get('omni_eve_api_cron_get_access_mask');

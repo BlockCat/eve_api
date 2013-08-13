@@ -179,7 +179,7 @@ function omni_eve_api_get_character_api($query) {
   $xml = omni_eve_api_get_xml('APIKeyInfo', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Failed getting Character API Data. (' . print_r($query) . ') Error: ' . print_r($xml) . '</pre>', NULL, WATCHDOG_WARNING);
     return array('error' => (int) $xml);
   }
 
@@ -224,7 +224,7 @@ function omni_eve_api_get_character_sheet($query) {
   $xml = omni_eve_api_get_xml('CharacterSheet', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Failed getting Character Sheet API Data. (' . print_r($query) . ') Error: ' . print_r($xml) . '</pre>', NULL, WATCHDOG_WARNING);
     return array('error' => (int) $xml);
   }
 
@@ -261,7 +261,7 @@ function omni_eve_api_get_corporation_info($query) {
   $xml = omni_eve_api_get_xml('CorporationSheet', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Failed getting Corporation API Data. (' . print_r($query) . ') Error: ' . print_r($xml) . '</pre>', NULL, WATCHDOG_WARNING);
     return array('error' => $xml);
   }
 
@@ -290,7 +290,7 @@ function omni_eve_api_get_character_name($query) {
   $xml = omni_eve_api_get_xml('CharacterName', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Failed getting Character Name API Data. (' . print_r($query) . ') Error: ' . print_r($xml) . '</pre>', NULL, WATCHDOG_WARNING);
     return array('error' => $xml);
   }
 
