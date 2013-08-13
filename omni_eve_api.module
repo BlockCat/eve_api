@@ -408,40 +408,39 @@ function omni_eve_api_curl_http_request($url, array $query = array(), $method = 
   $user_agent .= ' libcurl/' . $curl['version'];
   $user_agent = trim($user_agent);
 
-  $ssl_version = $curl['ssl_version'];
-  $has_nss = (strpos($ssl_version, "NSS") > -1);
-
-  if ($has_nss) {
-    $curl_opt = array(CURLOPT_SSL_CIPHER_LIST => 'rsa_aes_128_sha,rsa_aes_256_sha,rsa_3des_sha,rsa_rc4_128_sha,rsa_rc4_128_md5');
-  }
-  else {
-    $curl_opt = array(CURLOPT_SSL_CIPHER_LIST => 'AES128-SHA AES256-SHA DES-CBC3-SHA RC4-SHA RC4-MD5');
-  }
-
-  $curl_opt += array(
-    CURLOPT_HEADER => FALSE,
-    CURLOPT_NOBODY => FALSE,
+  $curl_opt = array(
+    CURLOPT_HEADER => TRUE,
     CURLINFO_HEADER_OUT => TRUE,
     CURLOPT_TIMEOUT => $options['timeout'],
     CURLOPT_FOLLOWLOCATION => TRUE,
+    CURLOPT_RETURNTRANSFER => TRUE,
+    CURLOPT_MAXREDIRS => 5,
+    CURLOPT_NOBODY => FALSE,
     CURLOPT_FORBID_REUSE => FALSE,
     CURLOPT_LOW_SPEED_LIMIT => 10,
     CURLOPT_LOW_SPEED_TIME => ceil($options['timeout'] / 4),
     CURLOPT_MAXCONNECTS => 5,
     CURLOPT_CONNECTTIMEOUT => ceil($options['timeout'] / 2),
-    CURLOPT_ENCODING => 'gzip',
-    CURLOPT_RETURNTRANSFER => TRUE,
-    CURLOPT_BINARYTRANSFER => FALSE,
-    CURLOPT_SSL_VERIFYPEER => TRUE,
-    CURLOPT_CAINFO => drupal_get_path('module', 'omni_eve_api') . '/eveonline.crt',
-    CURLOPT_COOKIEJAR => drupal_get_path('module', 'omni_eve_api') . '/cookies.txt',
-    CURLOPT_COOKIEFILE => drupal_get_path('module', 'omni_eve_api') . '/cookies.txt',
     CURLOPT_REFERER => 'http://danlee.ca/hg/',
     CURLOPT_UNRESTRICTED_AUTH => TRUE,
-    CURLOPT_SSL_VERIFYHOST => 2,
-    CURLOPT_MAXREDIRS => 5,
+    CURLOPT_ENCODING => 'gzip',
+    CURLOPT_BINARYTRANSFER => FALSE,
     CURLOPT_USERAGENT => $user_agent,
+    CURLOPT_SSL_VERIFYPEER => TRUE,
+    CURLOPT_SSL_VERIFYHOST => 2,
+    CURLOPT_CAINFO => drupal_get_path('module', 'omni_eve_api') . '/eveonline.crt',
+    CURLOPT_COOKIEJAR => drupal_get_path('module', 'omni_eve_api') . '/cookies.txt',
   );
+
+  $ssl_version = $curl['ssl_version'];
+  $has_nss = (strpos($ssl_version, "NSS") > -1);
+
+  if ($has_nss) {
+    $curl_opt += array(CURLOPT_SSL_CIPHER_LIST => 'rsa_aes_128_sha,rsa_aes_256_sha,rsa_3des_sha,rsa_rc4_128_sha,rsa_rc4_128_md5');
+  }
+  else {
+    $curl_opt += array(CURLOPT_SSL_CIPHER_LIST => 'AES128-SHA AES256-SHA DES-CBC3-SHA RC4-SHA RC4-MD5');
+  }
 
   if (!empty($proxy)) {
     $proxy_options = array(
@@ -483,6 +482,11 @@ function omni_eve_api_curl_http_request($url, array $query = array(), $method = 
     $result->code = -1003;
     return $result;
   }
+
+  // Merge the default headers.
+  $options['headers'] += array(
+    'User-Agent' => 'Drupal (+http://drupal.org/)',
+  );
 
   // Only add Content-Length if we actually have any content or if it is a POST
   // or PUT request. Some non-standard servers get confused by Content-Length in
