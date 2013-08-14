@@ -234,7 +234,6 @@ function omni_eve_api_user_select_main_character_form($form, &$form_state, $acco
 
   $uid = $account->uid;
 
-
   $form['main_character'] = array(
     '#type' => 'fieldset',
     '#title' => t('Valid Characters'),
