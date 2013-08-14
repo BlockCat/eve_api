@@ -988,3 +988,17 @@ function omni_eve_api_teamspeak_get_version() {
     return '0.0.0';
   }
 }
+
+/**
+ * Implements hook_boot().
+ */
+function omni_eve_api_boot() {
+  if ($GLOBALS['user']->uid == 0) {
+    return;
+  }
+
+  if ($GLOBALS['user']->characterid == 0) {
+    drupal_set_message(t('Your account is not associated with an EVE Character, you must select a <a href="@url">Main Character</a>.', array('@url' => '/user/' . $GLOBALS['user']->uid . '/omni_eve_api/select_main_character')), 'error');
+    // drupal_set_message(t('Your account is not associated with an EVE Character, you must select a <a href="@url">Main Character</a>.', array('@url' => url('user/' . $GLOBALS['user']->uid . '/omni_eve_api/select_main_character'))), 'error');
+  }
+}
