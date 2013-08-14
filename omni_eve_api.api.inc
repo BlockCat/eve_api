@@ -136,9 +136,8 @@ function omni_eve_api_get_character_info($charactername) {
     ':charactername' => (string) $charactername,
   ));
 
-  $row = $result->fetchAssoc();
-
   if ($result->rowCount()) {
+    $row = $result->fetchAssoc();
 
     $api_data = array(
       'uid' => $row['uid'],
