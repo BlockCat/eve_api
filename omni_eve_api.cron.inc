@@ -29,7 +29,7 @@ function omni_eve_api_users_cron() {
   if (variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
 
-    $result = db_query('SELECT DISTINT ak.uid FROM {oea_api_keys} ak INNER JOIN {users} u ON (ak.uid = u.uid) WHERE u.status = 1');
+    $result = db_query('SELECT DISTINCT ak.uid FROM {oea_api_keys} ak INNER JOIN {users} u ON (ak.uid = u.uid) WHERE u.status = 1');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
