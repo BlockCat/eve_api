@@ -29,15 +29,7 @@ function omni_eve_api_users_cron() {
   if (variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
 
-    // Convert to db_query().
-    $query = db_select('oea_api_keys', 'ak');
-    $query->join('users', 'u', 'ak.uid = u.uid');
-    $query->fields('ak', array(
-      'uid',
-    ));
-    $query->distinct();
-    $query->condition('u.status', 1, '=');
-    $result = $query->execute();
+    $result = db_query('SELECT DISTINT ak.uid FROM {oea_api_keys} ak INNER JOIN {users} u ON (ak.uid = u.uid) WHERE u.status = 1');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
@@ -56,9 +48,7 @@ function omni_eve_api_teamspeak_user_cron() {
     $queue->createItem(1);
 
     $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
-
-    // Convert to db_query().
-    $result = db_select('users', 'u')->fields('u', array('uid', 'teamspeakdbid'))->condition('status', 1, '=')->condition('teamspeakuid', 0, '!=')->execute();
+    $result = db_query('SELECT uid FROM {users} WHERE status = 1 AND teamspeakuid != 0');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
@@ -81,9 +71,7 @@ function omni_eve_api_jabber_user_cron() {
     $queue->createItem(1);
 
     $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user');
-
-    // Convert to db_query().
-    $result = db_select('users', 'u')->fields('u', array('uid', 'name'))->condition('status', 1, '=')->condition('characterid', 0, '!=')->execute();
+    $result = db_query('SELECT uid FROM {users} WHERE status = 1 AND characterid != 0');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
@@ -169,10 +157,7 @@ function omni_eve_api_cron_teamspeak_user($item) {
     $roles = user_roles();
     $valid_roles = $user_roles = array();
 
-    // Convert to db_query().
-    $query = db_select('oea_alliance_corporations', 'oea');
-    $query->fields('oea', array('corporationname', 'corporationticker'));
-    $result = $query->execute();
+    $result = db_query('SELECT corporationname, corporationticker FROM {oea_alliance_corporations}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -198,11 +183,9 @@ function omni_eve_api_cron_teamspeak_user($item) {
     $teamspeakdbid = (int) $item['teamspeakdbid'];
     $ts3 = omni_eve_api_teamspeak_connection();
 
-    $query = db_select('users_roles', 'ur');
-    $query->join('role', 'r', 'r.rid = ur.rid');
-    $query->fields('r', array('rid', 'name'));
-    $query->condition('uid', $uid, '=');
-    $result = $query->execute();
+    $result = db_query('SELECT r.rid, r.name FROM {users_roles} ur INNER JOIN {role} r ON (r.rid = ur.rid) WHERE ur.uid = :uid', array(
+      ':uid' => $uid,
+    ));
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -267,12 +250,9 @@ function omni_eve_api_cron_teamspeak_name($item) {
       $teamspeakuid = (string) $teamspeak_user->client_unique_identifier;
       $teamspeaknickname = (string) $teamspeak_user->client_nickname;
 
-      $query = db_select('oea_characters', 'c');
-      $query->condition('c.deleted', 0);
-      $query->join('users', 'u', 'c.charactername = u.name');
-      $query->fields('c', array('charactername'));
-      $query->condition('u.teamspeakuid', $teamspeakuid);
-      $result = $query->execute();
+      $result = db_query('SELECT c.charactername FROM {oea_characters} c INNER JOIN {users} u ON (c.charactername = u.name) WHERE c.deleted = 0 AND u.teamspeakuid = :teamspeakuid', array(
+        ':teamspeakuid' => $teamspeakuid,
+      ));
 
       if (!$result->rowCount()) {
         $teamspeak_user->message(t('[color=red]Your Teamspeak ID is not registered on our server.[/color]'));
@@ -331,10 +311,7 @@ function omni_eve_api_cron_teamspeak_role($item) {
     $ts3 = omni_eve_api_teamspeak_connection();
     $corp_info = array();
 
-    // Convert to db_query().
-    $query = db_select('oea_alliance_corporations', 'oea');
-    $query->fields('oea', array('corporationname', 'corporationticker'));
-    $result = $query->execute();
+    $result = db_query('SELECT corporationname, corporationticker FROM {oea_alliance_corporations}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -386,10 +363,7 @@ function omni_eve_api_cron_jabber_user($item) {
   try {
     $user_roles = array();
 
-    // Convert to db_query().
-    $query = db_select('oea_alliance_corporations', 'oea');
-    $query->fields('oea', array('corporationname', 'corporationticker'));
-    $result = $query->execute();
+    $result = db_query('SELECT corporationname, corporationticker FROM {oea_alliance_corporations}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -400,11 +374,9 @@ function omni_eve_api_cron_jabber_user($item) {
     $uid = (int) $item['uid'];
     $charactername = (string) $item['name'];
 
-    $query = db_select('users_roles', 'ur');
-    $query->join('role', 'r', 'r.rid = ur.rid');
-    $query->fields('r', array('rid', 'name'));
-    $query->condition('uid', $uid, '=');
-    $result = $query->execute();
+    $result = db_query('SELECT r.rid, r.name FROM {users_roles} ur INNER JOIN {role} r ON (r.rid = ur.rid) WHERE ur.uid = :uid', array(
+      ':uid' => $uid,
+    ));
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -453,10 +425,7 @@ function omni_eve_api_cron_jabber_role($item) {
     $roles = user_roles();
     $corp_info = array();
 
-    // Convert to db_query().
-    $query = db_select('oea_alliance_corporations', 'oea');
-    $query->fields('oea', array('corporationname', 'corporationticker'));
-    $result = $query->execute();
+    $result = db_query('SELECT corporationname, corporationticker FROM {oea_alliance_corporations}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -500,20 +469,15 @@ function omni_eve_api_cron_jabber_role($item) {
 function omni_eve_api_cron_queue_users($item) {
   $uid = (int) $item;
   $all_characters = array();
-  $account = db_select('users', 'u')
-    ->fields('u', array(
-      'name',
-      'teamspeakdbid',
-      'name',
-    ))
-    ->condition('uid', $uid, '=')
-    ->execute()
-    ->fetchAssoc();
 
-  $query = db_select('oea_api_keys', 'a');
-  $query->fields('a', array('apiid', 'keyid', 'vcode'));
-  $query->condition('uid', $uid, '=');
-  $result = $query->execute();
+  $result = db_query('SELECT name, teamspeakdbid FROM {users_roles} WHERE uid = :uid', array(
+    ':uid' => $uid,
+  ));
+  $account = $result->fetchAssoc();
+
+  $result = db_query('SELECT apiid, keyid, vcode FROM {oea_api_keys} WHERE uid = :uid', array(
+    ':uid' => $uid,
+  ));
 
   $updated = date('Y-m-d H:i:s', time());
 
@@ -561,7 +525,9 @@ function omni_eve_api_cron_queue_users($item) {
         }
       }
 
-      $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid'))->condition('characterid', $whitelist_characters, 'IN')->condition('deleted', 0, '=')->execute();
+      $result = db_query('SELECT characterid FROM {oea_whitelist} WHERE deleted = 0 AND characterid IN (:characterids)', array(
+        ':characterids' => $whitelist_characters,
+      ));
 
       if ($result->rowCount()) {
         if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
@@ -608,11 +574,7 @@ function omni_eve_api_cron_queue_users($item) {
   }
 
   if (!omni_eve_api_verify_blue($all_characters) || !$character_found) {
-    // Convert to db_query().
-    $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
-      'corporationid',
-      'corporationname',
-    ))->condition('deleted', 0, '=')->execute();
+    $result = db_query('SELECT corporationid, corporationname FROM {oea_alliance_corporations} WHERE deleted = 0');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -642,9 +604,9 @@ function omni_eve_api_cron_queue_users($item) {
     try {
       omni_eve_api_jabber_connect();
 
-      $result = db_select('ofUser', 'u')->fields('u', array(
-        'username',
-      ))->condition('username', (string) omni_eve_api_jabber_format_name($account['name']), '=')->execute();
+      $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
+        ':username' => (string) omni_eve_api_jabber_format_name($account['name']),
+      ));
 
       if ($result->rowCount()) {
         omni_eve_api_jabber_url_query('delete', $account['name']);
@@ -665,12 +627,9 @@ function omni_eve_api_cron_queue_users($item) {
   else {
     $character_data = omni_eve_api_get_character_info($account['name']);
 
-    if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
-      $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
-        'corporationid',
-        'corporationname',
-      ))->condition('deleted', 0, '=')->execute();
+    $result = db_query('SELECT corporationid, corporationname FROM {oea_alliance_corporations} WHERE deleted = 0');
 
+    if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
       if ($result->rowCount()) {
         foreach ($result->fetchAll() as $row) {
           if (($corporation_role_2 = user_role_load_by_name($row->corporationname)) && $row->corporationid != $character_data['corporationID']) {
@@ -691,12 +650,6 @@ function omni_eve_api_cron_queue_users($item) {
       user_multiple_role_edit(array($uid), 'add_role', $alliance_role->rid);
     }
     else {
-      // Convert to db_query().
-      $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
-        'corporationid',
-        'corporationname',
-      ))->condition('deleted', 0, '=')->execute();
-
       if ($result->rowCount()) {
         foreach ($result->fetchAll() as $row) {
           if ($corporation_role = user_role_load_by_name($row->corporationname)) {
@@ -844,11 +797,7 @@ function omni_eve_api_cron_get_alliance_corporations($item = NULL) {
     }
   }
 
-  // Convert to db_query().
-  $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
-    'corporationid',
-    'corporationname',
-  ))->condition('deleted', 1, '=')->execute();
+  $result = db_query('SELECT corporationid, corporationname FROM {oea_alliance_corporations} WHERE deleted = 1');
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {

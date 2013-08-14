@@ -98,7 +98,10 @@ function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
       }
     }
 
-    $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid'))->condition('characterid', $whitelist_characters, 'IN')->condition('deleted', 0, '=')->execute();
+    $result = db_query('SELECT characterid FROM {oea_whitelist} WHERE deleted = 0 AND characterid IN (:characterids)', array(
+      ':characterids' => $whitelist_characters,
+    ));
+
     if ($result->rowCount()) {
       if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
         form_set_error('keyid', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
@@ -250,9 +253,10 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
 
   try {
     omni_eve_api_jabber_connect();
-    $result = db_select('ofUser', 'u')->fields('u', array(
-      'username',
-    ))->condition('username', (string) omni_eve_api_jabber_format_name($account->name), '=')->execute();
+
+    $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
+      ':username' => (string) omni_eve_api_jabber_format_name($account->name),
+    ));
 
     if ($result->rowCount()) {
       omni_eve_api_jabber_url_query('delete', $account->name);
@@ -271,11 +275,14 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
 
   $character_is_blue = FALSE;
 
-  $result = db_select('oea_blue_standings', 'a')->fields('a', array('contactID'))->condition('contactID', array(
-    (int) $character_data['characterID'],
-    (int) $character_data['corporationID'],
-    (int) $character_data['allianceID'],
-  ), 'IN')->condition('standing', 0, '>')->condition('deleted', 0, '=')->execute();
+  $result = db_query('SELECT contactID FROM {oea_blue_standings} WHERE standing > 0 AND deleted = 0 AND contactID IN (:contactIDs)', array(
+    ':contactIDs' => array(
+      (int) $character_data['characterID'],
+      (int) $character_data['corporationID'],
+      (int) $character_data['allianceID'],
+    ),
+  ));
+
   if ($result->rowCount()) {
     $character_is_blue = TRUE;
   }
@@ -284,7 +291,10 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
     $character_is_blue = TRUE;
   }
 
-  $result = db_select('oea_alliance_corporations', 'c')->fields('c', array('corporationid'))->condition('corporationid', (int) $character_data['corporationID'], '=')->execute();
+  $result = db_query('SELECT corporationid FROM {oea_alliance_corporations} WHERE corporationid = :corporationid', array(
+    ':corporationid' => (int) $character_data['corporationID'],
+  ));
+
   if ($result->rowCount()) {
     $character_is_blue = TRUE;
   }
@@ -409,16 +419,10 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
         'created' => $row_a->created,
       );
 
-      $result_b = db_select('oea_characters', 'c')->fields('c', array(
-        'characterid',
-        'charactername',
-        'corporationid',
-        'corporationname',
-        'corporationticker',
-        'allianceid',
-        'alliancename',
-        'allianceticker',
-      ))->condition('uid', $uid, '=')->condition('deleted', 0, '=')->condition('apiid', (int) $row_a->apiid, '=')->execute();
+      $result_b = db_query('SELECT characterid, charactername, corporationid, corporationname, corporationticker, allianceid, alliancename, allianceticker FROM {oea_characters} WHERE deleted = 0 AND uid = :uid AND apiid = :apiid', array(
+        ':uid' => $uid,
+        ':apiid' => (int) $row_a->apiid,
+      ));
 
       if ($result_b->rowCount()) {
         foreach ($result_b->fetchAll() as $row_b) {
@@ -520,22 +524,12 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
     db_update('oea_characters')->fields(array('deleted' => 1))->condition('apiid', (int) $api_key_id)->execute();
   }
 
-  $query = db_select('oea_characters', 'c');
-  $query->condition('c.deleted', 0);
-  $query->join('users', 'u', 'c.charactername = u.name');
-  $query->fields('c', array(
-    'charactername',
-    'characterid',
+  $result = db_query('SELECT c.charactername, c.characterid FROM {oea_characters} c INNER JOIN {users} u ON (c.charactername = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
+    ':uid' => $uid,
   ));
-  $query->condition('u.uid', $uid);
-  $result = $query->execute();
 
   if (!$result->rowCount()) {
-    // Convert to db_query().
-    $result = db_select('oea_alliance_corporations', 'ac')->fields('ac', array(
-      'corporationid',
-      'corporationname',
-    ))->condition('deleted', 0, '=')->execute();
+    $result = db_query('SELECT corporationid, corporationname FROM {oea_alliance_corporations} WHERE deleted = 0');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -556,9 +550,10 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
 
     try {
       omni_eve_api_jabber_connect();
-      $result = db_select('ofUser', 'u')->fields('u', array(
-        'username',
-      ))->condition('username', (string) omni_eve_api_jabber_format_name($account->name), '=')->execute();
+
+      $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
+        ':username' => (string) omni_eve_api_jabber_format_name($account->name),
+      ));
 
       if ($result->rowCount()) {
         omni_eve_api_jabber_url_query('delete', $account->name);
@@ -580,8 +575,11 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
   $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
   $queue->createItem($uid);
 
-  $row = db_select('users', 'u')->fields('u', array('teamspeakdbid'))->condition('uid', $uid, '=')->execute()->fetchAssoc();
   $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
+  $result = db_query('SELECT teamspeakdbid FROM {users} WHERE uid = :uid', array(
+    'uid' => $uid,
+  ));
+  $row = $result->fetchAssoc();
   $queue->createItem(array(
     'uid' => $uid,
     'teamspeakdbid' => $row['teamspeakdbid'],
@@ -614,10 +612,9 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_k
 
   $uid = (int) $account->uid;
 
-  $result = db_select('oea_api_keys', 'a')->fields('a', array(
-    'keyid',
-    'vcode',
-  ))->condition('apiid', (int) $api_key_id, '=')->execute();
+  $result = db_query('SELECT keyid, vcode FROM {oea_api_keys} WHERE apiid = :apiid', array(
+    ':apiid' => (int) $api_key_id,
+  ));
 
   if (!$result->rowCount()) {
     drupal_goto('user/' . $uid . '/omni_eve_api');
@@ -709,7 +706,10 @@ function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
       }
     }
 
-    $result = db_select('oea_whitelist', 'w')->fields('w', array('characterid'))->condition('characterid', $whitelist_characters, 'IN')->condition('deleted', 0, '=')->execute();
+    $result = db_query('SELECT characterid FROM {oea_whitelist} WHERE deleted = 0 AND characterid IN (:characterids)', array(
+      ':characterids' => $whitelist_characters,
+    ));
+
     if ($result->rowCount()) {
       if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
         form_set_error('keyid', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
@@ -769,22 +769,17 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
     ))->execute();
   }
 
-  $query = db_select('oea_characters', 'c');
-  $query->condition('c.deleted', 0);
-  $query->join('users', 'u', 'c.charactername = u.name');
-  $query->fields('c', array(
-    'charactername',
-    'characterid',
+  $result = db_query('SELECT c.charactername, c.characterid FROM {oea_characters} c INNER JOIN {users} u ON (c.charactername = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
+    ':uid' => $uid,
   ));
-  $query->condition('u.uid', $uid);
-  $result = $query->execute();
 
   if (!$result->rowCount()) {
     try {
       omni_eve_api_jabber_connect();
-      $result = db_select('ofUser', 'u')->fields('u', array(
-        'username',
-      ))->condition('username', (string) omni_eve_api_jabber_format_name($account->name), '=')->execute();
+
+      $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
+        ':username' => (string) omni_eve_api_jabber_format_name($account->name),
+      ));
 
       if ($result->rowCount()) {
         omni_eve_api_jabber_url_query('delete', $account->name);
@@ -1034,9 +1029,9 @@ function omni_eve_api_user_jabber_form_validate($form, &$form_state) {
   try {
     omni_eve_api_jabber_connect();
 
-    $result = db_select('ofUser', 'u')->fields('u', array(
-      'username',
-    ))->condition('username', (string) omni_eve_api_jabber_format_name($account->name), '=')->execute();
+    $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
+      ':username' => (string) omni_eve_api_jabber_format_name($account->name),
+    ));
 
     if (!$result->rowCount() && empty($form_state['values']['jabber_password'])) {
       form_set_error('jabber_password', t('You are registering for the first time, you must enter a password.'));
@@ -1061,10 +1056,7 @@ function omni_eve_api_user_jabber_form_submit($form, &$form_state) {
   $roles = user_roles();
   $user_roles = $all_roles = array();
 
-  // Convert to db_query().
-  $query = db_select('oea_alliance_corporations', 'oea');
-  $query->fields('oea', array('corporationname', 'corporationticker'));
-  $result = $query->execute();
+  $result = db_query('SELECT corporationname, corporationticker FROM {oea_alliance_corporations}');
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -1099,9 +1091,9 @@ function omni_eve_api_user_jabber_form_submit($form, &$form_state) {
       'groups' => implode(",", $user_roles),
     );
 
-    $result = db_select('ofUser', 'u')->fields('u', array(
-      'username',
-    ))->condition('username', (string) omni_eve_api_jabber_format_name($account->name), '=')->execute();
+    $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
+      ':username' => (string) omni_eve_api_jabber_format_name($account->name),
+    ));
 
     if ($result->rowCount()) {
       $type = 'update';
