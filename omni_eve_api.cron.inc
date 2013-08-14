@@ -470,7 +470,7 @@ function omni_eve_api_cron_queue_users($item) {
   $uid = (int) $item;
   $all_characters = array();
 
-  $result = db_query('SELECT name, teamspeakdbid FROM {users_roles} WHERE uid = :uid', array(
+  $result = db_query('SELECT name, teamspeakdbid FROM {users} WHERE uid = :uid', array(
     ':uid' => $uid,
   ));
   $account = $result->fetchAssoc();

@@ -170,6 +170,45 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
       ))->execute();
     }
 
+    $result = db_query('SELECT c.charactername, c.characterid FROM {oea_characters} c INNER JOIN {users} u ON (c.charactername = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
+      ':uid' => $uid,
+    ));
+
+    if (!$result->rowCount()) {
+      try {
+        omni_eve_api_jabber_connect();
+
+        $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
+          ':username' => (string) omni_eve_api_jabber_format_name($account->name),
+        ));
+
+        if ($result->rowCount()) {
+          omni_eve_api_jabber_url_query('delete', $account->name);
+        }
+
+        omni_eve_api_jabber_disconnect();
+      }
+      catch (OeaException $e) {
+        // Log Error ?
+      }
+
+      try {
+        $ts3 = omni_eve_api_teamspeak_connection();
+        omni_eve_api_teamspeak_user_delete($ts3, $account->teamspeakdbid);
+      }
+      catch (OeaException $e) {
+        // Log Error ?
+      }
+
+      db_update('users')->fields(array(
+        'teamspeakuid' => 0,
+        'teamspeakdbid' => 0,
+        'characterid' => 0,
+      ))->condition('uid', $uid, '=')->execute();
+      $form_state['redirect'] = 'user/' . $uid . '/omni_eve_api/select_main_character';
+      drupal_set_message(t('Please select a new Main Character'));
+    }
+
     drupal_set_message(t('API Key successfully added!'));
   }
 }
@@ -194,7 +233,7 @@ function omni_eve_api_user_select_main_character_form($form, &$form_state, $acco
   }
 
   $uid = $account->uid;
-  $uid_api_list = omni_eve_api_list_api_simple($uid);
+
 
   $form['main_character'] = array(
     '#type' => 'fieldset',
@@ -206,10 +245,23 @@ function omni_eve_api_user_select_main_character_form($form, &$form_state, $acco
     '#type' => 'select',
     '#title' => t('Select your Main Character'),
     '#default_value' => $account->name,
-    '#options' => omni_eve_api_list_valid_characters($uid_api_list, $account->name),
     '#description' => t('Detected valid Main Characters.'),
     '#required' => TRUE,
   );
+
+  $uid_api_list = omni_eve_api_list_api_simple($uid);
+  $valid_characters_list = omni_eve_api_list_valid_characters($uid_api_list, $account->name);
+
+  $result = db_query('SELECT characterid FROM {users} WHERE characterid = 0 AND uid = :uid', array(
+    ':uid' => $uid,
+  ));
+
+  if ($result->rowCount()) {
+    $form['main_character']['name']['#default_value'] = '';
+    $valid_characters_list = array('' => t('-- Select a New Character --')) + $valid_characters_list;
+  }
+
+  $form['main_character']['name']['#options'] = $valid_characters_list;
 
   $form['submit_button'] = array(
     '#type' => 'submit',
@@ -232,8 +284,9 @@ function omni_eve_api_user_select_main_character_form_validate($form, &$form_sta
   $uid = $account->uid;
 
   if ($account->name == (string) $form_state['values']['name'] && $account->characterid != 0 && !empty($form_state['values']['name'])) {
-    form_set_error('name', t('You have not selected a different character or you are unable to change characters.'));
+    form_set_error('name', t('You have not selected a new character or you are unable to change characters.'));
   }
+
   $charactername = (string) $form_state['values']['name'];
   $character_data = omni_eve_api_get_character_info($charactername);
 
@@ -270,6 +323,20 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
 
   $old_charactername = $account->name;
   $old_character_data = omni_eve_api_get_character_info($old_charactername);
+
+  if ($corporation_role = user_role_load_by_name($old_character_data['corporationName'])) {
+    user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
+
+    $alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2));
+    user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
+  }
+  elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2))) {
+    user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
+  }
+
+  $default_role = user_role_load(variable_get('omni_eve_api_unverified_role', 2));
+  user_multiple_role_edit(array($uid), 'remove_role', $default_role->rid);
+
   $charactername = (string) $form_state['values']['name'];
   $character_data = omni_eve_api_get_character_info($charactername);
 
@@ -299,21 +366,6 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
     $character_is_blue = TRUE;
   }
 
-  if ($corporation_role = user_role_load_by_name($old_character_data['corporationName'])) {
-    user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
-
-    $alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2));
-    user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
-  }
-  elseif ($blue_role = user_role_load(variable_get('omni_eve_api_blue_role', 2))) {
-    user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
-  }
-
-  $default_role = user_role_load(variable_get('omni_eve_api_unverified_role', 2));
-  user_multiple_role_edit(array($uid), 'remove_role', $default_role->rid);
-
-  db_update('users')->fields(array('characterid' => (int) $character_data['characterID'], 'name' => (string) $character_data['characterName']))->condition('uid', $uid, '=')->execute();
-
   if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
     user_multiple_role_edit(array($uid), 'add_role', $corporation_role->rid);
 
@@ -327,6 +379,8 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
     $default_role = user_role_load(variable_get('omni_eve_api_unverified_role', 2));
     user_multiple_role_edit(array($uid), 'add_role', $default_role->rid);
   }
+
+  db_update('users')->fields(array('characterid' => (int) $character_data['characterID'], 'name' => (string) $character_data['characterName']))->condition('uid', $uid, '=')->execute();
 
   $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
   $queue->createItem($uid);
