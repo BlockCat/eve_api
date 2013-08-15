@@ -41,7 +41,7 @@ DEPENDENCIES
  - Openfire (Jabber) (Optional)
  http://www.igniterealtime.org/downloads/index.jsp
 
- - cURL (For PHP) (Optional)
+ - cURL (libcurl For PHP) (Optional)
  http://www.php.net/manual/en/curl.installation.php
 
 INSTALLATION

@@ -421,7 +421,7 @@ function omni_eve_api_curl_http_request($url, array $query = array(), $method = 
     CURLOPT_LOW_SPEED_TIME => ceil($options['timeout'] / 4),
     CURLOPT_MAXCONNECTS => 5,
     CURLOPT_CONNECTTIMEOUT => ceil($options['timeout'] / 2),
-    CURLOPT_REFERER => 'http://danlee.ca/hg/',
+    CURLOPT_REFERER => 'http://danlee.ca/git/',
     CURLOPT_UNRESTRICTED_AUTH => TRUE,
     CURLOPT_ENCODING => 'gzip',
     CURLOPT_BINARYTRANSFER => FALSE,
