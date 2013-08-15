@@ -404,7 +404,7 @@ function omni_eve_api_admin_access_mask_form_submit($form, &$form_state) {
   if ($access_mask != $new_access_mask) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
 
-    $result = db_query('SELECT DISTINCT ak.uid FROM {oea_api_keys} ak INNER JOIN {users} u ON (ak.uid = u.uid) WHERE u.status = 1');
+    $result = db_query('SELECT DISTINCT uid FROM {oea_characters}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
@@ -546,7 +546,7 @@ function omni_eve_api_admin_list_blues_form_submit($form, &$form_state) {
   if ($is_change) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
 
-    $result = db_query('SELECT DISTINCT ak.uid FROM {oea_api_keys} ak INNER JOIN {users} u ON (ak.uid = u.uid) WHERE u.status = 1');
+    $result = db_query('SELECT DISTINCT uid FROM {oea_characters}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
@@ -667,7 +667,7 @@ function omni_eve_api_admin_add_blues_form_submit($form, &$form_state) {
 
   $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
 
-  $result = db_query('SELECT DISTINCT ak.uid FROM {oea_api_keys} ak INNER JOIN {users} u ON (ak.uid = u.uid) WHERE u.status = 1');
+  $result = db_query('SELECT DISTINCT uid FROM {oea_characters}');
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $item) {

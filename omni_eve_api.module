@@ -717,6 +717,18 @@ function omni_eve_api_user_role_delete($role) {
   if ($role->rid == variable_get('omni_eve_api_blue_role', 2)) {
     variable_set('omni_eve_api_blue_role', 2);
   }
+  if ($role->rid == variable_get('omni_eve_api_alliance_role', 2)) {
+    variable_set('omni_eve_api_alliance_role', 2);
+  }
+  if ($role->rid == variable_get('omni_eve_api_unverified_role', 2)) {
+    variable_set('omni_eve_api_unverified_role', 2);
+  }
+  if ($role->rid == variable_get('omni_eve_api_ceo_role', 2)) {
+    variable_set('omni_eve_api_ceo_role', 2);
+  }
+  if ($role->rid == variable_get('omni_eve_api_director_role', 2)) {
+    variable_set('omni_eve_api_director_role', 2);
+  }
 }
 
 /**

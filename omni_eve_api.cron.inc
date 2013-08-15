@@ -29,7 +29,7 @@ function omni_eve_api_users_cron() {
   if (variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
 
-    $result = db_query('SELECT DISTINCT ak.uid FROM {oea_api_keys} ak INNER JOIN {users} u ON (ak.uid = u.uid) WHERE u.status = 1');
+    $result = db_query('SELECT DISTINCT uid FROM {oea_characters}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
@@ -48,13 +48,14 @@ function omni_eve_api_teamspeak_user_cron() {
     $queue->createItem(1);
 
     $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
-    $result = db_query('SELECT uid FROM {users} WHERE status = 1 AND teamspeakuid != 0');
+    $result = db_query('SELECT uid, teamspeakdbid, status FROM {users} WHERE characterid != 0 AND teamspeakuid != 0');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
         $queue->createItem(array(
           'uid' => $item->uid,
           'teamspeakdbid' => $item->teamspeakdbid,
+          'status' => $item->status,
           'runs' => 1,
         ));
       }
@@ -71,13 +72,14 @@ function omni_eve_api_jabber_user_cron() {
     $queue->createItem(1);
 
     $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user');
-    $result = db_query('SELECT uid FROM {users} WHERE status = 1 AND characterid != 0');
+    $result = db_query('SELECT uid, name, status FROM {users} WHERE characterid != 0');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
         $queue->createItem(array(
           'uid' => $item->uid,
           'name' => $item->name,
+          'status' => $item->status,
           'runs' => 1,
         ));
       }
