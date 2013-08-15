@@ -130,7 +130,7 @@ function omni_eve_api_jabber_group_add($name, $description = '') {
     db_insert('ofGroupProp')->fields(array(
       'groupName' => $clean_name,
       'name' => 'sharedRoster.showInRoster',
-      'propValue' => 'onlyGroup',
+      'propValue' => 'everybody',
     ))->execute();
 
     db_insert('ofGroupProp')->fields(array(
