@@ -315,7 +315,8 @@ function omni_eve_api_verify_blue($characters) {
   }
 
   foreach ($characters['characters'] as $character) {
-    $result = db_query('SELECT contactID FROM {oea_blue_standings} WHERE standing > 0 AND deleted = 0 AND contactID IN (:contactIDs)', array(
+    $result = db_query('SELECT contactID FROM {oea_blue_standings} WHERE standing >= :standing AND deleted = 0 AND contactID IN (:contactIDs)', array(
+      ':standing' => (float) variable_get('omni_eve_api_required_standing', 0.1),
       ':contactIDs' => array(
         (int) $character['characterID'],
         (int) $character['corporationID'],

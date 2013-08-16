@@ -48,7 +48,25 @@ function omni_eve_api_admin_roles_form($form, &$form_state) {
     '#description' => t('Please select the default role for Unverified members.'),
     '#options' => $role_list,
     '#default_value' => variable_get('omni_eve_api_unverified_role', 2),
-    '#weight' => 10,
+    '#weight' => 20,
+  );
+
+  $form['roles']['omni_eve_api_ceo_role'] = array(
+    '#type' => 'select',
+    '#title' => t('Select Role for CEOs'),
+    '#description' => t('Please select the default role for CEOs.'),
+    '#options' => $role_list,
+    '#default_value' => variable_get('omni_eve_api_ceo_role', 2),
+    '#weight' => 30,
+  );
+
+  $form['roles']['omni_eve_api_director_role'] = array(
+    '#type' => 'select',
+    '#title' => t('Select Role for Directors'),
+    '#description' => t('Please select the default role for directors.'),
+    '#options' => $role_list,
+    '#default_value' => variable_get('omni_eve_api_director_role', 2),
+    '#weight' => 40,
   );
 
   $form['submit_button'] = array(
@@ -84,6 +102,14 @@ function omni_eve_api_admin_roles_form_validate($form, &$form_state) {
   if (user_role_load((int) $form_state['values']['omni_eve_api_unverified_role']) == FALSE) {
     form_set_error('omni_eve_api_unverified_role', t('The role does not exist.'));
   }
+
+  if (user_role_load((int) $form_state['values']['omni_eve_api_ceo_role']) == FALSE) {
+    form_set_error('omni_eve_api_ceo_role', t('The role does not exist.'));
+  }
+
+  if (user_role_load((int) $form_state['values']['omni_eve_api_director_role']) == FALSE) {
+    form_set_error('omni_eve_api_director_role', t('The role does not exist.'));
+  }
 }
 
 /**
@@ -92,54 +118,101 @@ function omni_eve_api_admin_roles_form_validate($form, &$form_state) {
  * @see omni_eve_api_admin_roles_form_validate()
  */
 function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
-  $uids = array();
-  $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
-    ':rid' => (int) variable_get('omni_eve_api_blue_role', 2),
-  ));
+  if ((int) variable_get('omni_eve_api_blue_role', 2) != 2) {
+    $uids = array();
+    $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
+      ':rid' => (int) variable_get('omni_eve_api_blue_role', 2),
+    ));
 
-  if ($result->rowCount()) {
-    foreach ($result->fetchAll() as $row) {
-      $uids[] = $row->uid;
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $row) {
+        $uids[] = $row->uid;
+      }
+    }
+
+    if (!empty($uids)) {
+      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_blue_role', 2));
+      user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['omni_eve_api_blue_role']);
     }
   }
 
-  if (!empty($uids)) {
-    user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_blue_role', 2));
-  }
+  if ((int) variable_get('omni_eve_api_alliance_role', 2) != 2) {
+    $uids = array();
+    $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
+      ':rid' => (int) variable_get('omni_eve_api_alliance_role', 2),
+    ));
 
-  $uids = array();
-  $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
-    ':rid' => (int) variable_get('omni_eve_api_alliance_role', 2),
-  ));
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $row) {
+        $uids[] = $row->uid;
+      }
+    }
 
-  if ($result->rowCount()) {
-    foreach ($result->fetchAll() as $row) {
-      $uids[] = $row->uid;
+    if (!empty($uids)) {
+      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_alliance_role', 2));
+      user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['omni_eve_api_alliance_role']);
     }
   }
 
-  if (!empty($uids)) {
-    user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_alliance_role', 2));
-  }
+  if ((int) variable_get('omni_eve_api_unverified_role', 2) != 2) {
+    $uids = array();
+    $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
+      ':rid' => (int) variable_get('omni_eve_api_unverified_role', 2),
+    ));
 
-  $uids = array();
-  $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
-    ':rid' => (int) variable_get('omni_eve_api_unverified_role', 2),
-  ));
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $row) {
+        $uids[] = $row->uid;
+      }
+    }
 
-  if ($result->rowCount()) {
-    foreach ($result->fetchAll() as $row) {
-      $uids[] = $row->uid;
+    if (!empty($uids)) {
+      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_unverified_role', 2));
+      user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['omni_eve_api_unverified_role']);
     }
   }
 
-  if (!empty($uids)) {
-    user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_unverified_role', 2));
+  if ((int) variable_get('omni_eve_api_ceo_role', 2) != 2) {
+    $uids = array();
+    $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
+      ':rid' => (int) variable_get('omni_eve_api_ceo_role', 2),
+    ));
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $row) {
+        $uids[] = $row->uid;
+      }
+    }
+
+    if (!empty($uids)) {
+      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_ceo_role', 2));
+      user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['omni_eve_api_ceo_role']);
+    }
+  }
+
+  if ((int) variable_get('omni_eve_api_director_role', 2) != 2) {
+    $uids = array();
+    $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
+      ':rid' => (int) variable_get('omni_eve_api_director_role', 2),
+    ));
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $row) {
+        $uids[] = $row->uid;
+      }
+    }
+
+    if (!empty($uids)) {
+      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_director_role', 2));
+      user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['omni_eve_api_director_role']);
+    }
   }
 
   variable_set('omni_eve_api_blue_role', (int) $form_state['values']['omni_eve_api_blue_role']);
   variable_set('omni_eve_api_alliance_role', (int) $form_state['values']['omni_eve_api_alliance_role']);
   variable_set('omni_eve_api_unverified_role', (int) $form_state['values']['omni_eve_api_unverified_role']);
+  variable_set('omni_eve_api_ceo_role', (int) $form_state['values']['omni_eve_api_ceo_role']);
+  variable_set('omni_eve_api_director_role', (int) $form_state['values']['omni_eve_api_director_role']);
 
   drupal_set_message(t('The roles have been updated and will be updated with the next scheduled cron tasks.'));
 }
@@ -276,12 +349,12 @@ function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
 /**
  * Form constructor for the altering the access mask form.
  *
- * @see omni_eve_api_admin_access_mask_form_validate()
- * @see omni_eve_api_admin_access_mask_form_submit()
+ * @see omni_eve_api_admin_registration_form_validate()
+ * @see omni_eve_api_admin_registration_form_submit()
  *
  * @ingroup forms
  */
-function omni_eve_api_admin_access_mask_form($form, &$form_state) {
+function omni_eve_api_admin_registration_form($form, &$form_state) {
   $header = array(
     'accessmask' => array(
       'data' => t('Mask'),
@@ -329,14 +402,38 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
     }
   }
 
-  $form['access_mask'] = array(
+  $form['registration'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Modify Registration Settings'),
+    '#description' => t('Edit your required user and active registration settings.'),
+    '#weight' => 0,
+  );
+
+  $form['registration']['settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Settings'),
+    '#description' => t('Various settings you can modify.'),
+    '#weight' => 0,
+  );
+
+  $form['registration']['settings']['standing'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Standings'),
+    '#description' => t('Set the required standing to register on the site. Standing required will be equal to or greater than the value supplied.  Accepted values are 10.0 to -10.0'),
+    '#maxlength' => 5,
+    '#weight' => 0,
+    '#required' => TRUE,
+    '#default_value' => (float) variable_get('omni_eve_api_required_standing', 0.1),
+  );
+
+  $form['registration']['mask'] = array(
     '#type' => 'fieldset',
     '#title' => t('Edit Access Mask'),
     '#description' => t('Edit your Access Mask that is required to register on the site.'),
     '#weight' => 0,
   );
 
-  $form['access_mask']['current_mask'] = array(
+  $form['registration']['mask']['current_mask'] = array(
     '#type' => 'markup',
     '#prefix' => '<p>',
     '#markup' => t('Current Mask: @access_mask', array('@access_mask' => $access_mask)),
@@ -344,7 +441,7 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
     '#weight' => 0,
   );
 
-  $form['access_mask']['access_mask'] = array(
+  $form['registration']['mask']['access_mask'] = array(
     '#type' => 'tableselect',
     '#header' => $header,
     '#options' => $options,
@@ -353,10 +450,10 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
     '#weight' => 10,
   );
 
-  $form['access_mask']['access_mask'][8]['#disabled'] = TRUE;
-  $form['access_mask']['access_mask'][8388608]['#disabled'] = TRUE;
+  $form['registration']['mask']['access_mask'][8]['#disabled'] = TRUE;
+  $form['registration']['mask']['access_mask'][8388608]['#disabled'] = TRUE;
 
-  $form['access_mask']['pager'] = array(
+  $form['registration']['pager'] = array(
     '#theme' => 'pager',
     '#weight' => 20,
   );
@@ -371,26 +468,31 @@ function omni_eve_api_admin_access_mask_form($form, &$form_state) {
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  $form['#validate'] = array('omni_eve_api_admin_access_mask_form_validate');
-  $form['#submit'] = array('omni_eve_api_admin_access_mask_form_submit');
+  $form['#validate'] = array('omni_eve_api_admin_registration_form_validate');
+  $form['#submit'] = array('omni_eve_api_admin_registration_form_submit');
 
   return $form;
 }
 
 /**
- * Form validation handler for omni_eve_api_admin_access_mask_form().
+ * Form validation handler for omni_eve_api_admin_registration_form().
  *
- * @see omni_eve_api_admin_access_mask_form_submit()
+ * @see omni_eve_api_admin_registration_form_submit()
  */
-function omni_eve_api_admin_access_mask_form_validate($form, &$form_state) {
+function omni_eve_api_admin_registration_form_validate($form, &$form_state) {
+  if ((float) $form_state['values']['standing'] != round($form_state['values']['standing'], 1) || $form_state['values']['standing'] != (float) $form_state['values']['standing'] || (float) $form_state['values']['standing'] < -10.0 || (float) $form_state['values']['standing'] > 10.0) {
+    form_set_error('standing', t('Standings are required to be between -10.0 and 10.0'));
+  }
 }
 
 /**
- * Form submission handler for omni_eve_api_admin_access_mask_form().
+ * Form submission handler for omni_eve_api_admin_registration_form().
  *
- * @see omni_eve_api_admin_access_mask_form_validate()
+ * @see omni_eve_api_admin_registration_form_validate()
  */
-function omni_eve_api_admin_access_mask_form_submit($form, &$form_state) {
+function omni_eve_api_admin_registration_form_submit($form, &$form_state) {
+  variable_set('omni_eve_api_required_standing', round((float) $form_state['values']['standing'], 1));
+
   $new_access_mask = 8388616;
 
   foreach ((array) $form_state['values']['access_mask'] as $access_bit) {
@@ -413,7 +515,7 @@ function omni_eve_api_admin_access_mask_form_submit($form, &$form_state) {
     }
   }
 
-  drupal_set_message(t('The required API Access Mask has been updated, please be advised any user with incorrect API Masks will have the roles removed.'));
+  drupal_set_message(t('The registration settings have been updated, please be advised any user with incorrect API Masks or standing will have the roles removed.'));
 }
 
 /**
@@ -917,7 +1019,7 @@ function omni_eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
 function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
   $form['teamspeak'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Configure Teamspeak Connection'),
+    '#title' => t('Configure Teamspeak 3 Connection'),
     '#description' => t('Configure Teamspeak 3 connection settings.'),
     '#weight' => 0,
   );
@@ -991,16 +1093,6 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#default_value' => variable_get('omni_eve_api_ts3_query_password', 'Password'),
   );
 
-  $form['teamspeak']['nickname'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Username Format'),
-    '#description' => t('The format that each user must have when connecting to Teamspeak 3. You can use the following variables:<br />@corp - Corporation Ticker<br />@alliance - Alliance Ticker<br />@name - EVE Character Name'),
-    '#required' => TRUE,
-    '#maxlength' => 50,
-    '#weight' => 60,
-    '#default_value' => variable_get('omni_eve_api_ts3_nickname', '[@corp] @name'),
-  );
-
   $form['teamspeak']['enable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable Teamspeak 3 Connection'),
@@ -1012,39 +1104,6 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#type' => 'submit',
     '#value' => t('Submit'),
   );
-
-  if (variable_get('omni_eve_api_ts3_enable', FALSE) && variable_get('omni_eve_api_ts3_framework_installed', FALSE)) {
-    try {
-      $teamspeakgroups = array();
-
-      $ts3 = omni_eve_api_teamspeak_connection();
-      $teamspeak_groups = $ts3->serverGroupList();
-
-      foreach ($teamspeak_groups as $teamspeak_group) {
-        if ((int) $teamspeak_group->type == 1 && (string) $teamspeak_group->name != 'Guest') {
-          $teamspeakgroups[(int) $teamspeak_group->sgid] = check_plain((string) $teamspeak_group->name);
-        }
-      }
-
-      $form['teamspeak']['omni_eve_api_ts3_bypass_group'] = array(
-        '#type' => 'select',
-        '#title' => t('Select Teamspeak Bypass Group'),
-        '#description' => t('Please select a Teamspeak Group for users to bypass the name and registration check.'),
-        '#options' => $teamspeakgroups,
-        '#default_value' => variable_get('omni_eve_api_ts3_bypass_group', 0) == 0 ? '' : variable_get('omni_eve_api_ts3_bypass_group', 0),
-        '#weight' => 80,
-      );
-    }
-    catch (OeaException $e) {
-      $form['teamspeak']['omni_eve_api_ts3_bypass_group'] = array(
-        '#type' => 'markup',
-        '#prefix' => '<p>',
-        '#markup' => t('Teamspeak 3 Connection failed, check settings and try again. Error: @error', array('@error' => $e->getMessage())),
-        '#suffix' => '</p>',
-        '#weight' => 80,
-      );
-    }
-  }
 
   if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
@@ -1075,7 +1134,6 @@ function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
   variable_set('omni_eve_api_ts3_query_port', (int) $form_state['values']['query_port']);
   variable_set('omni_eve_api_ts3_query_username', (string) $form_state['values']['query_username']);
   variable_set('omni_eve_api_ts3_query_password', (string) $form_state['values']['query_password']);
-  variable_set('omni_eve_api_ts3_nickname', (string) $form_state['values']['nickname']);
 
   if (variable_get('omni_eve_api_ts3_framework_installed', FALSE)) {
     if ((bool) $form_state['values']['enable']) {
@@ -1100,7 +1158,6 @@ function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
  */
 function omni_eve_api_admin_teamspeak_form_submit($form, &$form_state) {
   if ((bool) $form_state['values']['enable']) {
-    variable_set('omni_eve_api_ts3_bypass_group', (int) $form_state['values']['omni_eve_api_ts3_bypass_group']);
     variable_set('omni_eve_api_ts3_enable', TRUE);
     omni_eve_api_cron_teamspeak_role(1);
   }
@@ -1109,6 +1166,329 @@ function omni_eve_api_admin_teamspeak_form_submit($form, &$form_state) {
   }
 
   menu_rebuild();
+
+  drupal_set_message(t('Teamspeak Settings Updated.'));
+}
+
+/**
+ * Form constructor for the teamspeak connection form.
+ *
+ * @see omni_eve_api_user_teamspeak_settings_form_validate()
+ * @see omni_eve_api_user_teamspeak_settings_form_submit()
+ *
+ * @ingroup forms
+ */
+function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
+  $form['teamspeak_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Teamspeak 3 Settings'),
+    '#description' => t('Teamspeak 3 settings and options.'),
+    '#weight' => 0,
+  );
+
+  $form['teamspeak_settings']['nickname'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Username Format'),
+    '#description' => t('The format that each user must have when connecting to Teamspeak 3. You can use the following variables:<br />@corp - Corporation Ticker<br />@alliance - Alliance Ticker<br />@name - EVE Character Name'),
+    '#required' => TRUE,
+    '#maxlength' => 50,
+    '#weight' => 0,
+    '#default_value' => variable_get('omni_eve_api_ts3_nickname', '[@corp] @name'),
+  );
+
+  try {
+    $teamspeakgroups = array();
+
+    $ts3 = omni_eve_api_teamspeak_connection();
+    $teamspeak_groups = $ts3->serverGroupList();
+
+    foreach ($teamspeak_groups as $teamspeak_group) {
+      if ((int) $teamspeak_group->type == 1 && (string) $teamspeak_group->name != 'Guest') {
+        $teamspeakgroups[(int) $teamspeak_group->sgid] = check_plain((string) $teamspeak_group->name);
+      }
+    }
+
+    $form['teamspeak_settings']['bypass_group'] = array(
+      '#type' => 'select',
+      '#title' => t('Select Teamspeak Bypass Group'),
+      '#description' => t('Please select a Teamspeak Group for users to bypass the name and registration check.'),
+      '#options' => $teamspeakgroups,
+      '#default_value' => variable_get('omni_eve_api_ts3_bypass_group', 0) == 0 ? '' : variable_get('omni_eve_api_ts3_bypass_group', 0),
+      '#weight' => 10,
+    );
+  }
+  catch (OeaException $e) {
+    $form['teamspeak_settings']['bypass_group'] = array(
+      '#type' => 'markup',
+      '#prefix' => '<p>',
+      '#markup' => t('Teamspeak 3 Connection failed, check settings and try again. Error: @error', array('@error' => $e->getMessage())),
+      '#suffix' => '</p>',
+      '#weight' => 10,
+    );
+  }
+
+  $selectable_options = array(
+    1 => '1 Minute',
+    5 => '5 Minutes',
+    10 => '10 Minutes',
+    15 => '15 Minutes',
+    20 => '20 Minutes',
+    25 => '25 Minutes',
+    30 => '30 Minutes',
+    35 => '35 Minutes',
+    40 => '40 Minutes',
+    45 => '45 Minutes',
+    50 => '50 Minutes',
+    55 => '55 Minutes',
+    60 => '1 Hour',
+  );
+
+  $form['teamspeak_settings']['reg'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Registration Notification'),
+    '#description' => t('Options releated to non-registered Teamspeak users.'),
+    '#weight' => 20,
+  );
+
+  $form['teamspeak_settings']['reg']['reg_time'] = array(
+    '#type' => 'select',
+    '#title' => t('User Register Time Limit'),
+    '#description' => t('How long until the registration options are enforced.'),
+    '#weight' => 0,
+    '#options' => $selectable_options,
+    '#default_value' => variable_get('omni_eve_api_ts3_cron_reg_time', 10),
+  );
+
+  $header = array(
+    'type' => array(
+      'data' => t('Type'),
+    ),
+    'message' => array(
+      'data' => t('Custom Message'),
+    ),
+  );
+
+  $options = $selected = array();
+
+  $options['reg_message_enable'] = array(
+    'type' => t('Message'),
+    'message' => array(
+      'data' => array(
+        '#type' => 'textfield',
+        '#value' => variable_get('omni_eve_api_ts3_cron_reg_message', ''),
+        '#maxlength' => 100,
+        '#attributes' => array(
+          'name' => 'reg_message',
+        ),
+      ),
+    ),
+  );
+
+  $options['reg_poke_enable'] = array(
+    'type' => t('Poke'),
+    'message' => array(
+      'data' => array(
+        '#type' => 'textfield',
+        '#value' => variable_get('omni_eve_api_ts3_cron_reg_poke', ''),
+        '#maxlength' => 100,
+        '#attributes' => array(
+          'name' => 'reg_poke',
+        ),
+      ),
+    ),
+  );
+
+  $options['reg_kick_enable'] = array(
+    'type' => t('Kick'),
+    'message' => array(
+      'data' => array(
+        '#type' => 'textfield',
+        '#value' => variable_get('omni_eve_api_ts3_cron_reg_kick', ''),
+        '#maxlength' => 100,
+        '#attributes' => array(
+          'name' => 'reg_kick',
+        ),
+      ),
+    ),
+  );
+
+  $options['reg_ban_enable'] = array(
+    'type' => t('Ban'),
+    'message' => array(
+      'data' => array(
+        '#type' => 'textfield',
+        '#value' => variable_get('omni_eve_api_ts3_cron_reg_ban', ''),
+        '#maxlength' => 100,
+        '#attributes' => array(
+          'name' => 'reg_ban',
+        ),
+      ),
+    ),
+  );
+
+  $selected['reg_message_enable'] = variable_get('omni_eve_api_ts3_cron_reg_message_enable', FALSE);
+  $selected['reg_poke_enable'] = variable_get('omni_eve_api_ts3_cron_reg_poke_enable', FALSE);
+  $selected['reg_kick_enable'] = variable_get('omni_eve_api_ts3_cron_reg_kick_enable', FALSE);
+  $selected['reg_ban_enable'] = variable_get('omni_eve_api_ts3_cron_reg_ban_enable', FALSE);
+
+  $form['teamspeak_settings']['reg']['reg_options'] = array(
+    '#type' => 'tableselect',
+    '#header' => $header,
+    '#options' => $options,
+    '#default_value' => $selected,
+    '#weight' => 10,
+  );
+
+  $form['teamspeak_settings']['user'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Nickname Notification'),
+    '#description' => t('Options releated to registered Teamspeak users with incorrect nicknames.'),
+    '#weight' => 30,
+  );
+
+  $form['teamspeak_settings']['user']['user_time'] = array(
+    '#type' => 'select',
+    '#title' => t('Correct Name Time Limit'),
+    '#description' => t('How long until the incorrect nickname options are enforced.'),
+    '#weight' => 0,
+    '#options' => $selectable_options,
+    '#default_value' => variable_get('omni_eve_api_ts3_cron_user_time', 10),
+  );
+
+  $options = $selected = array();
+
+  $options['user_message_enable'] = array(
+    'type' => t('Message'),
+    'message' => array(
+      'data' => array(
+        '#type' => 'textfield',
+        '#value' => variable_get('omni_eve_api_ts3_cron_user_message', ''),
+        '#maxlength' => 100,
+        '#attributes' => array(
+          'name' => 'user_message',
+        ),
+      ),
+    ),
+  );
+
+  $options['user_poke_enable'] = array(
+    'type' => t('Poke'),
+    'message' => array(
+      'data' => array(
+        '#type' => 'textfield',
+        '#value' => variable_get('omni_eve_api_ts3_cron_user_poke', ''),
+        '#maxlength' => 100,
+        '#attributes' => array(
+          'name' => 'user_poke',
+        ),
+      ),
+    ),
+  );
+
+  $options['user_kick_enable'] = array(
+    'type' => t('Kick'),
+    'message' => array(
+      'data' => array(
+        '#type' => 'textfield',
+        '#value' => variable_get('omni_eve_api_ts3_cron_user_kick', ''),
+        '#maxlength' => 100,
+        '#attributes' => array(
+          'name' => 'user_kick',
+        ),
+      ),
+    ),
+  );
+
+  $options['user_ban_enable'] = array(
+    'type' => t('Ban'),
+    'message' => array(
+      'data' => array(
+        '#type' => 'textfield',
+        '#value' => variable_get('omni_eve_api_ts3_cron_user_ban', ''),
+        '#maxlength' => 100,
+        '#attributes' => array(
+          'name' => 'user_ban',
+        ),
+      ),
+    ),
+  );
+
+  $selected['user_message_enable'] = variable_get('omni_eve_api_ts3_cron_user_message_enable', FALSE);
+  $selected['user_poke_enable'] = variable_get('omni_eve_api_ts3_cron_user_poke_enable', FALSE);
+  $selected['user_kick_enable'] = variable_get('omni_eve_api_ts3_cron_user_kick_enable', FALSE);
+  $selected['user_ban_enable'] = variable_get('omni_eve_api_ts3_cron_user_ban_enable', FALSE);
+
+  $form['teamspeak_settings']['user']['user_options'] = array(
+    '#type' => 'tableselect',
+    '#header' => $header,
+    '#options' => $options,
+    '#default_value' => $selected,
+    '#weight' => 10,
+  );
+
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+
+  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+    drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
+    $form['submit_button']['#disabled'] = TRUE;
+  }
+
+  if (!variable_get('omni_eve_api_ts3_framework_installed', FALSE)) {
+    drupal_set_message(t('TeamSpeak 3 PHP Framework Library is not installed, please read the README.txt for instructions on how to install the library.'));
+    $form['submit_button']['#disabled'] = TRUE;
+  }
+
+  $form['#validate'] = array('omni_eve_api_user_teamspeak_settings_form_validate');
+  $form['#submit'] = array('omni_eve_api_user_teamspeak_settings_form_submit');
+
+  return $form;
+}
+
+/**
+ * Form validation handler for omni_eve_api_user_teamspeak_settings_form().
+ *
+ * @see omni_eve_api_user_teamspeak_settings_form_submit()
+ */
+function omni_eve_api_user_teamspeak_settings_form_validate($form, &$form_state) {
+  if (!variable_get('omni_eve_api_ts3_framework_installed', FALSE)) {
+    form_set_error('enable', t('Teamspeak 3 PHP Framework not found, unable to enable Teamspeak 3 connection.'));
+  }
+}
+
+/**
+ * Form submission handler for omni_eve_api_user_teamspeak_settings_form().
+ *
+ * @see omni_eve_api_user_teamspeak_settings_form_validate()
+ */
+function omni_eve_api_user_teamspeak_settings_form_submit($form, &$form_state) {
+  variable_set('omni_eve_api_ts3_bypass_group', (int) $form_state['values']['bypass_group']);
+  variable_set('omni_eve_api_ts3_nickname', (string) $form_state['values']['nickname']);
+  variable_set('omni_eve_api_ts3_cron_reg_time', (int) $form_state['values']['reg_time']);
+  variable_set('omni_eve_api_ts3_cron_user_time', (int) $form_state['values']['user_time']);
+
+  variable_set('omni_eve_api_ts3_cron_reg_message', (string) $form_state['input']['reg_message']);
+  variable_set('omni_eve_api_ts3_cron_reg_poke', (string) $form_state['input']['reg_poke']);
+  variable_set('omni_eve_api_ts3_cron_reg_kick', (string) $form_state['input']['reg_kick']);
+  variable_set('omni_eve_api_ts3_cron_reg_ban', (string) $form_state['input']['reg_ban']);
+  variable_set('omni_eve_api_ts3_cron_user_message', (string) $form_state['input']['user_message']);
+  variable_set('omni_eve_api_ts3_cron_user_poke', (string) $form_state['input']['user_poke']);
+  variable_set('omni_eve_api_ts3_cron_user_kick', (string) $form_state['input']['user_kick']);
+  variable_set('omni_eve_api_ts3_cron_user_ban', (string) $form_state['input']['user_ban']);
+
+  $form_state['redirect'] = 'admin/settings/omni_eve_api/teamspeak';
+
+  foreach ((array) $form_state['values']['reg_options'] as $field => $value) {
+    $field = 'omni_eve_api_ts3_cron_' . (string) $field;
+    variable_set($field, (bool) $value);
+  }
+
+  foreach ((array) $form_state['values']['user_options'] as $field => $value) {
+    $field = 'omni_eve_api_ts3_cron_' . (string) $field;
+    variable_set($field, (bool) $value);
+  }
 
   drupal_set_message(t('Teamspeak Settings Updated.'));
 }

@@ -130,10 +130,10 @@ function omni_eve_api_menu() {
       'weight' => 10,
     ) + $admin_base;
 
-    $items['admin/settings/omni_eve_api/access_mask'] = array(
-      'title' => 'Access Mask',
-      'description' => 'Edit your Access Mask that is required to register on the site.',
-      'page arguments' => array('omni_eve_api_admin_access_mask_form'),
+    $items['admin/settings/omni_eve_api/registration'] = array(
+      'title' => 'Registration',
+      'description' => 'Edit your Access Mask and required standing to register on the site.',
+      'page arguments' => array('omni_eve_api_admin_registration_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 20,
     ) + $admin_base;
@@ -145,6 +145,15 @@ function omni_eve_api_menu() {
       'type' => MENU_LOCAL_TASK,
       'weight' => 30,
     ) + $admin_base;
+
+    if (variable_get('omni_eve_api_ts3_enable', FALSE)) {
+      $items['admin/settings/omni_eve_api/teamspeak/settings'] = array(
+        'title' => 'Settings',
+        'page arguments' => array('omni_eve_api_user_teamspeak_settings_form'),
+        'type' => MENU_LOCAL_ACTION,
+        'weight' => 0,
+      ) + $admin_base;
+    }
 
     $items['admin/settings/omni_eve_api/jabber'] = array(
       'title' => 'Jabber',
@@ -917,8 +926,8 @@ function omni_eve_api_get_account_user_picture($account) {
 function omni_eve_api_get_eve_avatar($characterid) {
   global $is_https;
 
-  $eve_avatar = $is_https ? variable_get('eve_avatar_https', 'https://image.eveonline.com/Character/') : variable_get('eve_avatar_http', 'http://image.eveonline.com/Character/');
-  $eve_avatar .= $characterid . '_' . variable_get('eve_user_picture_dimensions', '128') . '.jpg';
+  $eve_avatar = $is_https ? variable_get('omni_eve_api_avatar_https', 'https://image.eveonline.com/Character/') : variable_get('omni_eve_api_avatar_http', 'http://image.eveonline.com/Character/');
+  $eve_avatar .= $characterid . '_' . variable_get('omni_eve_api_user_picture_dimensions', '128') . '.jpg';
 
   return url($eve_avatar);
 }
