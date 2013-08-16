@@ -423,7 +423,7 @@ function omni_eve_api_admin_registration_form($form, &$form_state) {
     '#maxlength' => 5,
     '#weight' => 0,
     '#required' => TRUE,
-    '#default_value' => (float) variable_get('omni_eve_api_required_standing', 0.1),
+    '#default_value' => round((float) variable_get('omni_eve_api_required_standing', 0.1), 1),
   );
 
   $form['registration']['mask'] = array(
@@ -1322,7 +1322,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
       'data' => array(
         '#type' => 'textfield',
         '#value' => variable_get('omni_eve_api_ts3_cron_reg_message', ''),
-        '#maxlength' => 100,
+        '#maxlength' => 50,
         '#attributes' => array(
           'name' => 'reg_message',
         ),
@@ -1336,7 +1336,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
       'data' => array(
         '#type' => 'textfield',
         '#value' => variable_get('omni_eve_api_ts3_cron_reg_poke', ''),
-        '#maxlength' => 100,
+        '#maxlength' => 50,
         '#attributes' => array(
           'name' => 'reg_poke',
         ),
@@ -1350,7 +1350,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
       'data' => array(
         '#type' => 'textfield',
         '#value' => variable_get('omni_eve_api_ts3_cron_reg_kick', ''),
-        '#maxlength' => 100,
+        '#maxlength' => 50,
         '#attributes' => array(
           'name' => 'reg_kick',
         ),
@@ -1364,7 +1364,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
       'data' => array(
         '#type' => 'textfield',
         '#value' => variable_get('omni_eve_api_ts3_cron_reg_ban', ''),
-        '#maxlength' => 100,
+        '#maxlength' => 50,
         '#attributes' => array(
           'name' => 'reg_ban',
         ),
@@ -1418,7 +1418,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
       'data' => array(
         '#type' => 'textfield',
         '#value' => variable_get('omni_eve_api_ts3_cron_user_message', ''),
-        '#maxlength' => 100,
+        '#maxlength' => 50,
         '#attributes' => array(
           'name' => 'user_message',
         ),
@@ -1432,7 +1432,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
       'data' => array(
         '#type' => 'textfield',
         '#value' => variable_get('omni_eve_api_ts3_cron_user_poke', ''),
-        '#maxlength' => 100,
+        '#maxlength' => 50,
         '#attributes' => array(
           'name' => 'user_poke',
         ),
@@ -1446,7 +1446,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
       'data' => array(
         '#type' => 'textfield',
         '#value' => variable_get('omni_eve_api_ts3_cron_user_kick', ''),
-        '#maxlength' => 100,
+        '#maxlength' => 50,
         '#attributes' => array(
           'name' => 'user_kick',
         ),
@@ -1460,7 +1460,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
       'data' => array(
         '#type' => 'textfield',
         '#value' => variable_get('omni_eve_api_ts3_cron_user_ban', ''),
-        '#maxlength' => 100,
+        '#maxlength' => 50,
         '#attributes' => array(
           'name' => 'user_ban',
         ),

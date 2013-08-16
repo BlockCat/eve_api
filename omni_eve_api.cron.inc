@@ -300,7 +300,7 @@ function omni_eve_api_cron_teamspeak_user_check($item) {
           if (time() >= ($teamspeak_user->client_lastconnected + (60 * variable_get('omni_eve_api_ts3_cron_reg_time', 10)))) {
             $teamspeak_user->ban((60 * variable_get('omni_eve_api_ts3_cron_reg_ban_time', 10)), t('You should have registered at @homepage  You are banned for @time minutes.', array(
               '@homepage' => url('user/register', array('absolute' => TRUE)),
-              '@time' => (60 * variable_get('omni_eve_api_ts3_cron_reg_ban_time', 10)),
+              '@time' => (variable_get('omni_eve_api_ts3_cron_reg_ban_time', 10)),
             )));
             omni_eve_api_teamspeak_user_delete($ts3, $teamspeak_user->client_database_id);
           } 
@@ -314,12 +314,50 @@ function omni_eve_api_cron_teamspeak_user_check($item) {
       $expected_teamspeaknickname = omni_eve_api_teamspeak_format_name($row['charactername']);
 
       if ($teamspeaknickname != $expected_teamspeaknickname) {
-        $teamspeak_user->message(t('[color=red]Your nickname is incorrect.[/color]'));
-        $teamspeak_user->message(t('[color=red]If you do not correct your nickname within 10 minutes[/color]'));
-        $teamspeak_user->message(t('[color=red]Nickname expected: @nickname[/color]', array('@nickname' => $expected_teamspeaknickname)));
+        if (variable_get('omni_eve_api_ts3_cron_user_message_enable', FALSE)) {
+          $teamspeak_user->message('[color=red]' . t('Your nickname is incorrect.') . '[/color]');
 
-        if (time() >= ($teamspeak_user->client_lastconnected + 600)) {
-          $teamspeak_user->kick(TeamSpeak3::KICK_SERVER, t('You were told, fix your nickname!'));
+          if (variable_get('omni_eve_api_ts3_cron_user_kick_enable', FALSE) || variable_get('omni_eve_api_ts3_cron_user_ban_enable', FALSE)) {
+            $teamspeak_user->message('[color=red]' . t('If you do not fix your nickname within @time minutes', array('@time' => variable_get('omni_eve_api_ts3_cron_user_time', 10))) . '[/color]');
+            $teamspeak_user->message('[color=red]' . t('you will be removed from the server.'));
+          }
+
+          $teamspeak_user->message('[color=red]' . t('Nickname expected: @nickname', array('@nickname' => $expected_teamspeaknickname)) . '[/color]');
+
+          if (!empty(variable_get('omni_eve_api_ts3_cron_user_message', ''))) {
+            $teamspeak_user->message('[color=red]' . variable_get('omni_eve_api_ts3_cron_user_message', '') . '[/color]');
+          }
+        }
+
+        if (variable_get('omni_eve_api_ts3_cron_user_poke_enable', FALSE)) {
+          $message = t('Your nickname is incorrect');
+
+          if (variable_get('omni_eve_api_ts3_cron_user_kick_enable', FALSE) || variable_get('omni_eve_api_ts3_cron_user_ban_enable', FALSE)) {
+            $message .= t(', within @time minutes or you will be removed from the server', array('@time' => variable_get('omni_eve_api_ts3_cron_user_time', 10)));
+          }
+
+          $message .= '!';
+
+          $teamspeak_user->poke($message);
+          $teamspeak_user->poke(t('Nickname expected: @nickname', array('@nickname' => $expected_teamspeaknickname)));
+
+          if (!empty(variable_get('omni_eve_api_ts3_cron_user_poke', ''))) {
+            $teamspeak_user->poke(variable_get('omni_eve_api_ts3_cron_user_poke', ''));
+          }
+        }
+
+        if (variable_get('omni_eve_api_ts3_cron_user_kick_enable', FALSE)) {
+          if (time() >= ($teamspeak_user->client_lastconnected + (60 * variable_get('omni_eve_api_ts3_cron_user_time', 10)))) {
+            $teamspeak_user->kick(TeamSpeak3::KICK_SERVER, t('To register, go to @homepage', array('@homepage' => url('user/register', array('absolute' => TRUE)))));
+          }          
+        }
+
+        if (variable_get('omni_eve_api_ts3_cron_user_ban_enable', FALSE)) {
+          if (time() >= ($teamspeak_user->client_lastconnected + (60 * variable_get('omni_eve_api_ts3_cron_user_time', 10)))) {
+            $teamspeak_user->ban((60 * variable_get('omni_eve_api_ts3_cron_user_ban_time', 10)), t('You should have fixed your nickname, you are banned for @time minutes.', array(
+              '@time' => (variable_get('omni_eve_api_ts3_cron_user_ban_time', 10)),
+            )));
+          } 
         }
       }
     }
