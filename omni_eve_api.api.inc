@@ -108,7 +108,7 @@ function omni_eve_api_get_xml($type, $query = array()) {
 
     if (isset($xml->errorCode)) {
       drupal_set_message(t('EVE API returned an error with the API data: @error', array('@error' => $xml->error)), 'error');
-      $error = $xml->errorCode . ' - ' . $this->errorMessage;
+      $error = $xml->errorCode . ' - ' . $xml->errorMessage;
       $xml = NULL;
     }
   }

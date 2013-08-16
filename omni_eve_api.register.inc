@@ -89,7 +89,7 @@ function omni_eve_api_get_page_cache($name) {
  */
 function omni_eve_api_set_page_cache($name, $data) {
   ctools_include('object-cache');
-  $cache = ctools_object_cache_set('omni_eve_api', $name, $data);
+  ctools_object_cache_set('omni_eve_api', $name, $data);
 }
 
 /**
@@ -213,7 +213,7 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
     drupal_goto('user/register');
   }
 
-  if ($chars = omni_eve_api_characters_exist($characters)) {
+  if (omni_eve_api_characters_exist($characters)) {
     form_set_error('keyid', t('Unknown Error, please try again.'));
     form_set_error('vcode');
     drupal_goto('user/register');

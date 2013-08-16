@@ -10,6 +10,7 @@
 function omni_eve_api_jabber_test_connection() {
   try {
     $result = db_query('SELECT username FROM {ofUser} LIMIT 1');
+    unset($result);
   }
   catch (PDOException $e) {
     throw new OeaException($e->getMessage());

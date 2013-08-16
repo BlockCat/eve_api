@@ -1139,6 +1139,7 @@ function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
     if ((bool) $form_state['values']['enable']) {
       try {
         $ts3 = omni_eve_api_teamspeak_connection(TRUE);
+        unset($ts3);
       }
       catch (OeaException $e) {
         form_set_error('enable', $e->getMessage());
@@ -1294,7 +1295,6 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     '#options' => $selectable_options,
     '#default_value' => variable_get('omni_eve_api_ts3_cron_reg_time', 10),
   );
-
 
   $form['teamspeak_settings']['reg']['reg_ban_time'] = array(
     '#type' => 'select',

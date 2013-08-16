@@ -297,7 +297,7 @@ function omni_eve_api_cron_teamspeak_user_check($item) {
           if (time() >= ($teamspeak_user->client_lastconnected + (60 * variable_get('omni_eve_api_ts3_cron_reg_time', 10)))) {
             $teamspeak_user->kick(TeamSpeak3::KICK_SERVER, t('To register, go to @homepage', array('@homepage' => url('user/register', array('absolute' => TRUE)))));
             omni_eve_api_teamspeak_user_delete($ts3, $teamspeak_user->client_database_id);
-          }          
+          }
         }
 
         if (variable_get('omni_eve_api_ts3_cron_reg_ban_enable', FALSE)) {
@@ -307,7 +307,7 @@ function omni_eve_api_cron_teamspeak_user_check($item) {
               '@time' => (variable_get('omni_eve_api_ts3_cron_reg_ban_time', 10)),
             )));
             omni_eve_api_teamspeak_user_delete($ts3, $teamspeak_user->client_database_id);
-          } 
+          }
         }
 
         continue;
@@ -357,7 +357,7 @@ function omni_eve_api_cron_teamspeak_user_check($item) {
         if (variable_get('omni_eve_api_ts3_cron_user_kick_enable', FALSE)) {
           if (time() >= ($teamspeak_user->client_lastconnected + (60 * variable_get('omni_eve_api_ts3_cron_user_time', 10)))) {
             $teamspeak_user->kick(TeamSpeak3::KICK_SERVER, t('To register, go to @homepage', array('@homepage' => url('user/register', array('absolute' => TRUE)))));
-          }          
+          }
         }
 
         if (variable_get('omni_eve_api_ts3_cron_user_ban_enable', FALSE)) {
@@ -365,7 +365,7 @@ function omni_eve_api_cron_teamspeak_user_check($item) {
             $teamspeak_user->ban((60 * variable_get('omni_eve_api_ts3_cron_user_ban_time', 10)), t('You should have fixed your nickname, you are banned for @time minutes.', array(
               '@time' => (variable_get('omni_eve_api_ts3_cron_user_ban_time', 10)),
             )));
-          } 
+          }
         }
       }
     }
@@ -590,7 +590,7 @@ function omni_eve_api_cron_api_user_sync($item) {
       $characters = omni_eve_api_get_character_api($query);
 
       if (isset($characters['error']) && $characters['error'] != 403) {
-        $new_api_key_id = db_merge('oea_api_keys')->key(array('apiid' => (int) $row->apiid))->fields(array(
+        db_merge('oea_api_keys')->key(array('apiid' => (int) $row->apiid))->fields(array(
           'apiid' => (int) $row->apiid,
           'errorid' => (int) $characters['error'],
           'updated' => (string) $updated,
@@ -601,7 +601,7 @@ function omni_eve_api_cron_api_user_sync($item) {
         continue;
       }
       elseif (isset($characters['error']) && $characters['error'] == 403) {
-        $new_api_key_id = db_merge('oea_api_keys')->key(array('apiid' => (int) $row->apiid))->fields(array(
+        db_merge('oea_api_keys')->key(array('apiid' => (int) $row->apiid))->fields(array(
           'apiid' => (int) $row->apiid,
           'errorid' => (int) $characters['error'],
           'updated' => (string) $updated,
@@ -635,7 +635,7 @@ function omni_eve_api_cron_api_user_sync($item) {
         }
       }
 
-      $new_api_key_id = db_merge('oea_api_keys')->key(array('apiid' => (int) $row->apiid))->fields(array(
+      db_merge('oea_api_keys')->key(array('apiid' => (int) $row->apiid))->fields(array(
         'apiid' => (int) $row->apiid,
         'errorid' => (int) $error,
         'updated' => (string) $updated,
@@ -837,7 +837,7 @@ function omni_eve_api_cron_api_alliance_sync($item = NULL) {
   $xml = omni_eve_api_get_xml('AllianceList');
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Failed getting Alliance List API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Failed getting Alliance List API Data. Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
 
     $item = $item + 1;
     $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_sync');
@@ -932,7 +932,7 @@ function omni_eve_api_cron_api_mask_sync($item = NULL) {
   $xml = omni_eve_api_get_xml('callList');
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Failed getting Access Mask API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', '<pre>Failed getting Access Mask API Data. Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
 
     $item = $item + 1;
     $queue = DrupalQueue::get('omni_eve_api_cron_api_mask_sync');

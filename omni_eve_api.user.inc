@@ -23,8 +23,6 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
     $account = $form_state['user'];
   }
 
-  $uid = $account->uid;
-
   $form['enter_api'] = array(
     '#type' => 'fieldset',
     '#title' => t('Verify Blue Status'),
@@ -68,7 +66,6 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
  */
 function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
   $account = $form_state['user'];
-  $uid = $account->uid;
   $keyid = (int) $form_state['values']['keyid'];
   $vcode = (string) $form_state['values']['vcode'];
 
@@ -483,6 +480,8 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
       }
     }
 
+    $string = (strlen($api_single['vcode']) > 13) ? substr($api_single['vcode'], 0, 10) . '...' : $api_single['vcode'];
+
     $options[$api_single['apiid']] = array(
       'action' => array(
         'data' => array(
@@ -492,7 +491,7 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
         ),
       ),
       'keyid' => check_plain($api_single['keyid']),
-      'vcode' => check_plain($string = (strlen($api_single['vcode']) > 13) ? substr($api_single['vcode'], 0, 10) . '...' : $api_single['vcode']),
+      'vcode' => check_plain($string),
       'characters' => check_plain($list_characters),
       'updated' => format_date(strtotime($api_single['updated']), 'short'),
       'created' => format_date(strtotime($api_single['created']), 'short'),
@@ -702,8 +701,6 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_k
  */
 function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
   $account = $form_state['user'];
-  $uid = $account->uid;
-  $api_key_id = (int) $form_state['values']['api_key_id'];
   $keyid = (int) $form_state['values']['keyid'];
   $vcode = (string) $form_state['values']['vcode'];
 
@@ -930,6 +927,7 @@ function omni_eve_api_user_teamspeak_form_validate($form, &$form_state) {
     $ts3 = omni_eve_api_teamspeak_connection();
     $teamspeak_name = omni_eve_api_teamspeak_format_name($account->name);
     $teamspeak_data = omni_eve_api_teamspeak_user_by_name($ts3, $teamspeak_name);
+    unset($teamspeak_data);
   }
   catch (OeaException $e) {
     form_set_error('teamspeak', $e->getMessage());
@@ -1080,7 +1078,6 @@ function omni_eve_api_user_jabber_form_validate($form, &$form_state) {
  */
 function omni_eve_api_user_jabber_form_submit($form, &$form_state) {
   $account = $form_state['user'];
-  $uid = $account->uid;
 
   $roles = user_roles();
   $user_roles = $all_roles = array();
