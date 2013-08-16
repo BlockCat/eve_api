@@ -11,13 +11,13 @@ module_load_include('inc', 'omni_eve_api', 'omni_eve_api.api');
  */
 function omni_eve_api_general_cron($force = FALSE) {
   if (variable_get('omni_eve_api_enable', FALSE) || $force) {
-    $queue = DrupalQueue::get('omni_eve_api_cron_get_standings');
+    $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_fetch');
     $queue->createItem(1);
 
-    $queue = DrupalQueue::get('omni_eve_api_cron_get_alliance_corporations');
+    $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_sync');
     $queue->createItem(1);
 
-    $queue = DrupalQueue::get('omni_eve_api_cron_get_access_mask');
+    $queue = DrupalQueue::get('omni_eve_api_cron_api_mask_sync');
     $queue->createItem(1);
   }
 }
@@ -27,7 +27,7 @@ function omni_eve_api_general_cron($force = FALSE) {
  */
 function omni_eve_api_users_cron() {
   if (variable_get('omni_eve_api_enable', FALSE)) {
-    $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
+    $queue = DrupalQueue::get('omni_eve_api_cron_api_user_sync');
 
     $result = db_query('SELECT DISTINCT uid FROM {oea_characters}');
 
@@ -44,10 +44,10 @@ function omni_eve_api_users_cron() {
  */
 function omni_eve_api_teamspeak_user_cron() {
   if (variable_get('omni_eve_api_ts3_enable', FALSE) && variable_get('omni_eve_api_enable', FALSE)) {
-    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role');
+    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role_sync');
     $queue->createItem(1);
 
-    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
+    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_sync');
     $result = db_query('SELECT uid, teamspeakdbid, status FROM {users} WHERE characterid != 0 AND teamspeakuid != 0');
 
     if ($result->rowCount()) {
@@ -68,10 +68,10 @@ function omni_eve_api_teamspeak_user_cron() {
  */
 function omni_eve_api_jabber_user_cron() {
   if (variable_get('omni_eve_api_jabber_enable', FALSE) && variable_get('omni_eve_api_enable', FALSE)) {
-    $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role');
+    $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role_sync');
     $queue->createItem(1);
 
-    $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user');
+    $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user_sync');
     $result = db_query('SELECT uid, name, status FROM {users} WHERE characterid != 0');
 
     if ($result->rowCount()) {
@@ -92,7 +92,7 @@ function omni_eve_api_jabber_user_cron() {
  */
 function omni_eve_api_teamspeak_name_cron() {
   if (variable_get('omni_eve_api_ts3_enable', FALSE) && variable_get('omni_eve_api_enable', FALSE)) {
-    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_name');
+    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_check');
     $queue->createItem(1);
   }
 }
@@ -104,40 +104,40 @@ function omni_eve_api_teamspeak_name_cron() {
  */
 function omni_eve_api_cron_queue_info() {
   $queue = array();
-  $queue['omni_eve_api_cron_teamspeak_user'] = array(
-    'worker callback' => 'omni_eve_api_cron_teamspeak_user',
+  $queue['omni_eve_api_cron_teamspeak_user_sync'] = array(
+    'worker callback' => 'omni_eve_api_cron_teamspeak_user_sync',
     'time' => 15,
   );
-  $queue['omni_eve_api_cron_teamspeak_name'] = array(
-    'worker callback' => 'omni_eve_api_cron_teamspeak_name',
+  $queue['omni_eve_api_cron_teamspeak_user_check'] = array(
+    'worker callback' => 'omni_eve_api_cron_teamspeak_user_check',
     'time' => 15,
   );
-  $queue['omni_eve_api_cron_teamspeak_role'] = array(
-    'worker callback' => 'omni_eve_api_cron_teamspeak_role',
+  $queue['omni_eve_api_cron_teamspeak_role_sync'] = array(
+    'worker callback' => 'omni_eve_api_cron_teamspeak_role_sync',
     'time' => 15,
   );
-  $queue['omni_eve_api_cron_jabber_user'] = array(
-    'worker callback' => 'omni_eve_api_cron_jabber_user',
+  $queue['omni_eve_api_cron_jabber_user_sync'] = array(
+    'worker callback' => 'omni_eve_api_cron_jabber_user_sync',
     'time' => 15,
   );
-  $queue['omni_eve_api_cron_jabber_role'] = array(
-    'worker callback' => 'omni_eve_api_cron_jabber_role',
+  $queue['omni_eve_api_cron_jabber_role_sync'] = array(
+    'worker callback' => 'omni_eve_api_cron_jabber_role_sync',
     'time' => 15,
   );
-  $queue['omni_eve_api_cron_queue_users'] = array(
-    'worker callback' => 'omni_eve_api_cron_queue_users',
+  $queue['omni_eve_api_cron_api_user_sync'] = array(
+    'worker callback' => 'omni_eve_api_cron_api_user_sync',
     'time' => 15,
   );
-  $queue['omni_eve_api_cron_get_standings'] = array(
-    'worker callback' => 'omni_eve_api_cron_get_standings',
+  $queue['omni_eve_api_cron_api_alliance_fetch'] = array(
+    'worker callback' => 'omni_eve_api_cron_api_alliance_fetch',
     'time' => 15,
   );
-  $queue['omni_eve_api_cron_get_access_mask'] = array(
-    'worker callback' => 'omni_eve_api_cron_get_access_mask',
+  $queue['omni_eve_api_cron_api_mask_sync'] = array(
+    'worker callback' => 'omni_eve_api_cron_api_mask_sync',
     'time' => 15,
   );
-  $queue['omni_eve_api_cron_get_alliance_corporations'] = array(
-    'worker callback' => 'omni_eve_api_cron_get_alliance_corporations',
+  $queue['omni_eve_api_cron_api_alliance_sync'] = array(
+    'worker callback' => 'omni_eve_api_cron_api_alliance_sync',
     'time' => 60,
   );
   return $queue;
@@ -149,7 +149,7 @@ function omni_eve_api_cron_queue_info() {
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
  */
-function omni_eve_api_cron_teamspeak_user($item) {
+function omni_eve_api_cron_teamspeak_user_sync($item) {
   if ($item['runs'] == 11) {
     watchdog('eve api', 'Cron Update Teamspeak User Permissions task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
     return FALSE;
@@ -215,7 +215,7 @@ function omni_eve_api_cron_teamspeak_user($item) {
   }
   catch (OeaException $e) {
     $item['runs'] = $item['runs'] + 1;
-    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
+    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_sync');
     $queue->createItem($item);
 
     return FALSE;
@@ -230,7 +230,7 @@ function omni_eve_api_cron_teamspeak_user($item) {
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
  */
-function omni_eve_api_cron_teamspeak_name($item) {
+function omni_eve_api_cron_teamspeak_user_check($item) {
   if ($item == 11) {
     watchdog('eve api', 'Cron Check Teamspeak Names task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
     return FALSE;
@@ -257,14 +257,53 @@ function omni_eve_api_cron_teamspeak_name($item) {
       ));
 
       if (!$result->rowCount()) {
-        $teamspeak_user->message(t('[color=red]Your Teamspeak ID is not registered on our server.[/color]'));
-        $teamspeak_user->message(t('[color=red]If you do not register within 10 minutes[/color]'));
-        $teamspeak_user->message(t('[color=red]you will be removed from the server.[/color]'));
-        $teamspeak_user->message(t('[color=red]To register, go to [url]@homepage[/url][/color]', array('@homepage' => url('user/register', array('absolute' => TRUE)))));
+        if (variable_get('omni_eve_api_ts3_cron_reg_message_enable', FALSE)) {
+          $teamspeak_user->message('[color=red]' . t('Your Teamspeak ID is not registered on our server.') . '[/color]');
 
-        if (time() >= ($teamspeak_user->client_lastconnected + 600)) {
-          omni_eve_api_teamspeak_user_delete($ts3, $teamspeak_user->client_database_id);
-          $teamspeak_user->kick(TeamSpeak3::KICK_SERVER, t('Please Register!'));
+          if (variable_get('omni_eve_api_ts3_cron_reg_kick_enable', FALSE) || variable_get('omni_eve_api_ts3_cron_reg_ban_enable', FALSE)) {
+            $teamspeak_user->message('[color=red]' . t('If you do not register within @time minutes', array('@time' => variable_get('omni_eve_api_ts3_cron_reg_time', 10))) . '[/color]');
+            $teamspeak_user->message('[color=red]' . t('you will be removed from the server.'));
+          }
+
+          $teamspeak_user->message('[color=red]' . t('To register, go to [url]@homepage[/url]', array('@homepage' => url('user/register', array('absolute' => TRUE)))) . '[/color]');
+
+          if (!empty(variable_get('omni_eve_api_ts3_cron_reg_message', ''))) {
+            $teamspeak_user->message('[color=red]' . variable_get('omni_eve_api_ts3_cron_reg_message', '') . '[/color]');
+          }
+        }
+
+        if (variable_get('omni_eve_api_ts3_cron_reg_poke_enable', FALSE)) {
+          $message = t('Please register');
+
+          if (variable_get('omni_eve_api_ts3_cron_reg_kick_enable', FALSE) || variable_get('omni_eve_api_ts3_cron_reg_ban_enable', FALSE)) {
+            $message .= t(' within @time minutes or you will be removed from the server', array('@time' => variable_get('omni_eve_api_ts3_cron_reg_time', 10)));
+          }
+
+          $message .= '!';
+
+          $teamspeak_user->poke($message);
+          $teamspeak_user->poke(t('To register, go to @homepage', array('@homepage' => url('user/register', array('absolute' => TRUE)))));
+
+          if (!empty(variable_get('omni_eve_api_ts3_cron_reg_poke', ''))) {
+            $teamspeak_user->poke(variable_get('omni_eve_api_ts3_cron_reg_poke', ''));
+          }
+        }
+
+        if (variable_get('omni_eve_api_ts3_cron_reg_kick_enable', FALSE)) {
+          if (time() >= ($teamspeak_user->client_lastconnected + (60 * variable_get('omni_eve_api_ts3_cron_reg_time', 10)))) {
+            $teamspeak_user->kick(TeamSpeak3::KICK_SERVER, t('To register, go to @homepage', array('@homepage' => url('user/register', array('absolute' => TRUE)))));
+            omni_eve_api_teamspeak_user_delete($ts3, $teamspeak_user->client_database_id);
+          }          
+        }
+
+        if (variable_get('omni_eve_api_ts3_cron_reg_ban_enable', FALSE)) {
+          if (time() >= ($teamspeak_user->client_lastconnected + (60 * variable_get('omni_eve_api_ts3_cron_reg_time', 10)))) {
+            $teamspeak_user->ban((60 * variable_get('omni_eve_api_ts3_cron_reg_ban_time', 10)), t('You should have registered at @homepage  You are banned for @time minutes.', array(
+              '@homepage' => url('user/register', array('absolute' => TRUE)),
+              '@time' => (60 * variable_get('omni_eve_api_ts3_cron_reg_ban_time', 10)),
+            )));
+            omni_eve_api_teamspeak_user_delete($ts3, $teamspeak_user->client_database_id);
+          } 
         }
 
         continue;
@@ -287,7 +326,7 @@ function omni_eve_api_cron_teamspeak_name($item) {
   }
   catch (OeaException $e) {
     $item = $item + 1;
-    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_name');
+    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_check');
     $queue->createItem($item);
 
     return FALSE;
@@ -302,7 +341,7 @@ function omni_eve_api_cron_teamspeak_name($item) {
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
  */
-function omni_eve_api_cron_teamspeak_role($item) {
+function omni_eve_api_cron_teamspeak_role_sync($item) {
   if ($item == 11) {
     watchdog('eve api', 'Cron Sync Teamspeak Roles task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
     return FALSE;
@@ -341,7 +380,7 @@ function omni_eve_api_cron_teamspeak_role($item) {
   }
   catch (OeaException $e) {
     $item = $item + 1;
-    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role');
+    $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role_sync');
     $queue->createItem($item);
 
     return FALSE;
@@ -356,7 +395,7 @@ function omni_eve_api_cron_teamspeak_role($item) {
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
  */
-function omni_eve_api_cron_jabber_user($item) {
+function omni_eve_api_cron_jabber_user_sync($item) {
   if ($item['runs'] == 11) {
     watchdog('eve api', 'Cron Update Jabber User Roles task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
     return FALSE;
@@ -382,6 +421,11 @@ function omni_eve_api_cron_jabber_user($item) {
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
+        if ($row->rid == variable_get('omni_eve_api_unverified_role', 2)) {
+          $result = omni_eve_api_jabber_url_query('delete', $charactername);
+          return TRUE;
+        }
+
         $rname = $row->name;
 
         foreach ($corp_info as $key => $value) {
@@ -392,17 +436,20 @@ function omni_eve_api_cron_jabber_user($item) {
 
         $user_roles[] = omni_eve_api_jabber_format_name($rname);
       }
+
+      $query = array(
+        'groups' => implode(",", $user_roles),
+      );
+
+      $result = omni_eve_api_jabber_url_query('update', $charactername, $query);
     }
-
-    $query = array(
-      'groups' => implode(",", $user_roles),
-    );
-
-    $result = omni_eve_api_jabber_url_query('update', $charactername, $query);
+    else {
+      $result = omni_eve_api_jabber_url_query('delete', $charactername);
+    }
   }
   catch (OeaException $e) {
     $item['runs'] = $item['runs'] + 1;
-    $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user');
+    $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user_sync');
     $queue->createItem($item);
 
     return FALSE;
@@ -417,7 +464,7 @@ function omni_eve_api_cron_jabber_user($item) {
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
  */
-function omni_eve_api_cron_jabber_role($item) {
+function omni_eve_api_cron_jabber_role_sync($item) {
   if ($item == 11) {
     watchdog('eve api', 'Cron Sync Jabber Roles task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
     return FALSE;
@@ -453,7 +500,7 @@ function omni_eve_api_cron_jabber_role($item) {
   }
   catch (OeaException $e) {
     $item = $item + 1;
-    $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role');
+    $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role_sync');
     $queue->createItem($item);
 
     return FALSE;
@@ -468,7 +515,7 @@ function omni_eve_api_cron_jabber_role($item) {
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
  */
-function omni_eve_api_cron_queue_users($item) {
+function omni_eve_api_cron_api_user_sync($item) {
   $uid = (int) $item;
   $all_characters = array();
 
@@ -683,7 +730,7 @@ function omni_eve_api_cron_queue_users($item) {
  * @return mixed
  *   A complex array if an error is generated, or TRUE if no error.
  */
-function omni_eve_api_cron_get_standings($item = NULL) {
+function omni_eve_api_cron_api_alliance_fetch($item = NULL) {
   if ($item == 11) {
     watchdog('eve api', 'Cron Standings task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
     return FALSE;
@@ -699,7 +746,7 @@ function omni_eve_api_cron_get_standings($item = NULL) {
     watchdog('eve api', '<pre>Failed getting Alliance Contact List API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
 
     $item = $item + 1;
-    $queue = DrupalQueue::get('omni_eve_api_cron_get_standings');
+    $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_fetch');
     $queue->createItem($item);
 
     return FALSE;
@@ -735,7 +782,7 @@ function omni_eve_api_cron_get_standings($item = NULL) {
  * @return mixed
  *   A complex array if an error is generated, or TRUE if no error.
  */
-function omni_eve_api_cron_get_alliance_corporations($item = NULL) {
+function omni_eve_api_cron_api_alliance_sync($item = NULL) {
   if ($item == 11) {
     watchdog('eve api', 'Cron Import Alliance API task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
     return FALSE;
@@ -747,7 +794,7 @@ function omni_eve_api_cron_get_alliance_corporations($item = NULL) {
     watchdog('eve api', '<pre>Failed getting Alliance List API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
 
     $item = $item + 1;
-    $queue = DrupalQueue::get('omni_eve_api_cron_get_alliance_corporations');
+    $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_sync');
     $queue->createItem($item);
 
     return FALSE;
@@ -830,7 +877,7 @@ function omni_eve_api_cron_get_alliance_corporations($item = NULL) {
  * @return mixed
  *   A complex array if an error is generated, or TRUE if no error.
  */
-function omni_eve_api_cron_get_access_mask($item = NULL) {
+function omni_eve_api_cron_api_mask_sync($item = NULL) {
   if ($item == 11) {
     watchdog('eve api', 'Cron Access Mask task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
     return FALSE;
@@ -842,7 +889,7 @@ function omni_eve_api_cron_get_access_mask($item = NULL) {
     watchdog('eve api', '<pre>Failed getting Access Mask API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
 
     $item = $item + 1;
-    $queue = DrupalQueue::get('omni_eve_api_cron_get_access_mask');
+    $queue = DrupalQueue::get('omni_eve_api_cron_api_mask_sync');
     $queue->createItem($item);
 
     return FALSE;

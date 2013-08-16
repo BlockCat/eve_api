@@ -369,31 +369,31 @@ function omni_eve_api_install() {
   // We set this because we use 128x128 for EVE avatar's.
   variable_set('user_picture_dimensions', '128x128');
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_get_standings');
+  $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_fetch');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_get_alliance_corporations');
+  $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_get_access_mask');
+  $queue = DrupalQueue::get('omni_eve_api_cron_api_mask_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
+  $queue = DrupalQueue::get('omni_eve_api_cron_api_user_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role');
+  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
+  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role');
+  $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user');
+  $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_name');
+  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_check');
   $queue->createQueue();
 }
 
@@ -434,6 +434,7 @@ function omni_eve_api_uninstall() {
   variable_del('omni_eve_api_ts3_cron_reg_poke');
   variable_del('omni_eve_api_ts3_cron_reg_kick');
   variable_del('omni_eve_api_ts3_cron_reg_ban');
+  variable_del('omni_eve_api_ts3_cron_reg_ban_time');
   variable_del('omni_eve_api_ts3_cron_reg_message_enable');
   variable_del('omni_eve_api_ts3_cron_reg_poke_enable');
   variable_del('omni_eve_api_ts3_cron_reg_kick_enable');
@@ -443,6 +444,7 @@ function omni_eve_api_uninstall() {
   variable_del('omni_eve_api_ts3_cron_user_poke');
   variable_del('omni_eve_api_ts3_cron_user_kick');
   variable_del('omni_eve_api_ts3_cron_user_ban');
+  variable_del('omni_eve_api_ts3_cron_user_ban_time');
   variable_del('omni_eve_api_ts3_cron_user_message_enable');
   variable_del('omni_eve_api_ts3_cron_user_poke_enable');
   variable_del('omni_eve_api_ts3_cron_user_kick_enable');
@@ -458,31 +460,31 @@ function omni_eve_api_uninstall() {
   variable_del('omni_eve_api_allianceID');
   variable_del('omni_eve_api_corporationID');
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_get_standings');
+  $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_fetch');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_get_alliance_corporations');
+  $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_get_access_mask');
+  $queue = DrupalQueue::get('omni_eve_api_cron_api_mask_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
+  $queue = DrupalQueue::get('omni_eve_api_cron_api_user_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role');
+  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
+  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role');
+  $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user');
+  $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_name');
+  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_check');
   $queue->deleteQueue();
 }
 

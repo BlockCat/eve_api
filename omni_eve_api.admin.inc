@@ -504,7 +504,7 @@ function omni_eve_api_admin_registration_form_submit($form, &$form_state) {
   variable_set('omni_eve_api_access_mask', $new_access_mask);
 
   if ($access_mask != $new_access_mask) {
-    $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
+    $queue = DrupalQueue::get('omni_eve_api_cron_api_user_sync');
 
     $result = db_query('SELECT DISTINCT uid FROM {oea_characters}');
 
@@ -646,7 +646,7 @@ function omni_eve_api_admin_list_blues_form_submit($form, &$form_state) {
   db_update('oea_blue_standings')->fields(array('deleted' => 1))->condition('contactID', $deleted_blues, 'IN')->execute();
 
   if ($is_change) {
-    $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
+    $queue = DrupalQueue::get('omni_eve_api_cron_api_user_sync');
 
     $result = db_query('SELECT DISTINCT uid FROM {oea_characters}');
 
@@ -767,7 +767,7 @@ function omni_eve_api_admin_add_blues_form_submit($form, &$form_state) {
     'manual' => 1,
   ))->execute();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
+  $queue = DrupalQueue::get('omni_eve_api_cron_api_user_sync');
 
   $result = db_query('SELECT DISTINCT uid FROM {oea_characters}');
 
@@ -1159,7 +1159,7 @@ function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
 function omni_eve_api_admin_teamspeak_form_submit($form, &$form_state) {
   if ((bool) $form_state['values']['enable']) {
     variable_set('omni_eve_api_ts3_enable', TRUE);
-    omni_eve_api_cron_teamspeak_role(1);
+    omni_eve_api_cron_teamspeak_role_sync(1);
   }
   else {
     variable_set('omni_eve_api_ts3_enable', FALSE);
@@ -1243,6 +1243,42 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     60 => '1 Hour',
   );
 
+  $long_selectable_options = array(
+    120 => '2 Hours',
+    180 => '3 Hours',
+    240 => '4 Hours',
+    300 => '5 Hours',
+    360 => '6 Hours',
+    420 => '7 Hours',
+    480 => '8 Hours',
+    540 => '9 Hours',
+    600 => '10 Hours',
+    660 => '11 Hours',
+    720 => '12 Hours',
+    780 => '13 Hours',
+    840 => '14 Hours',
+    900 => '15 Hours',
+    960 => '16 Hours',
+    1020 => '17 Hours',
+    1080 => '18 Hours',
+    1140 => '19 Hours',
+    1200 => '20 Hours',
+    1260 => '21 Hours',
+    1320 => '22 Hours',
+    1380 => '23 Hours',
+    1440 => '1 Day',
+    2880 => '2 Days',
+    4320 => '3 Days',
+    5760 => '4 Days',
+    7200 => '5 Days',
+    8640 => '6 Days',
+    10080 => '1 Week',
+    20160 => '2 Weeks',
+    30240 => '3 Weeks',
+    43200 => '1 Month',
+    525600 => '1 Year',
+  );
+
   $form['teamspeak_settings']['reg'] = array(
     '#type' => 'fieldset',
     '#title' => t('Registration Notification'),
@@ -1257,6 +1293,16 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     '#weight' => 0,
     '#options' => $selectable_options,
     '#default_value' => variable_get('omni_eve_api_ts3_cron_reg_time', 10),
+  );
+
+
+  $form['teamspeak_settings']['reg']['reg_ban_time'] = array(
+    '#type' => 'select',
+    '#title' => t('Ban Time'),
+    '#description' => t('How long to ban the user.'),
+    '#weight' => 10,
+    '#options' => ($selectable_options + $long_selectable_options),
+    '#default_value' => variable_get('omni_eve_api_ts3_cron_reg_ban_time', 10),
   );
 
   $header = array(
@@ -1336,7 +1382,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     '#header' => $header,
     '#options' => $options,
     '#default_value' => $selected,
-    '#weight' => 10,
+    '#weight' => 20,
   );
 
   $form['teamspeak_settings']['user'] = array(
@@ -1353,6 +1399,15 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     '#weight' => 0,
     '#options' => $selectable_options,
     '#default_value' => variable_get('omni_eve_api_ts3_cron_user_time', 10),
+  );
+
+  $form['teamspeak_settings']['user']['user_ban_time'] = array(
+    '#type' => 'select',
+    '#title' => t('Ban Time'),
+    '#description' => t('How long to ban the user.'),
+    '#weight' => 10,
+    '#options' => ($selectable_options + $long_selectable_options),
+    '#default_value' => variable_get('omni_eve_api_ts3_cron_user_ban_time', 10),
   );
 
   $options = $selected = array();
@@ -1423,7 +1478,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     '#header' => $header,
     '#options' => $options,
     '#default_value' => $selected,
-    '#weight' => 10,
+    '#weight' => 20,
   );
 
   $form['submit_button'] = array(
@@ -1468,6 +1523,8 @@ function omni_eve_api_user_teamspeak_settings_form_submit($form, &$form_state) {
   variable_set('omni_eve_api_ts3_nickname', (string) $form_state['values']['nickname']);
   variable_set('omni_eve_api_ts3_cron_reg_time', (int) $form_state['values']['reg_time']);
   variable_set('omni_eve_api_ts3_cron_user_time', (int) $form_state['values']['user_time']);
+  variable_set('omni_eve_api_ts3_cron_reg_ban_time', (int) $form_state['values']['reg_ban_time']);
+  variable_set('omni_eve_api_ts3_cron_user_ban_time', (int) $form_state['values']['user_ban_time']);
 
   variable_set('omni_eve_api_ts3_cron_reg_message', omni_eve_api_clean_input((string) $form_state['input']['reg_message']));
   variable_set('omni_eve_api_ts3_cron_reg_poke', omni_eve_api_clean_input((string) $form_state['input']['reg_poke']));

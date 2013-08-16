@@ -357,10 +357,10 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
 
   db_update('users')->fields(array('characterid' => (int) $character_data['characterID'], 'name' => (string) $character_data['characterName']))->condition('uid', $uid, '=')->execute();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
+  $queue = DrupalQueue::get('omni_eve_api_cron_api_user_sync');
   $queue->createItem($uid);
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
+  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_sync');
   $queue->createItem(array(
     'uid' => $uid,
     'teamspeakdbid' => $account->teamspeakdbid,
@@ -601,10 +601,10 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
     drupal_set_message(t('Please select a new Main Character'));
   }
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_queue_users');
+  $queue = DrupalQueue::get('omni_eve_api_cron_api_user_sync');
   $queue->createItem($uid);
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user');
+  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_sync');
   $result = db_query('SELECT teamspeakdbid FROM {users} WHERE uid = :uid', array(
     'uid' => $uid,
   ));
@@ -957,7 +957,7 @@ function omni_eve_api_user_teamspeak_form_submit($form, &$form_state) {
         'teamspeakdbid' => $teamspeakdbid,
       ))->condition('uid', $uid, '=')->execute();
 
-    omni_eve_api_cron_teamspeak_user(array(
+    omni_eve_api_cron_teamspeak_user_sync(array(
       'uid' => $uid,
       'teamspeakdbid' => $teamspeakdbid,
       'runs' => 1,
