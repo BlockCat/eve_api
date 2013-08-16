@@ -1469,14 +1469,14 @@ function omni_eve_api_user_teamspeak_settings_form_submit($form, &$form_state) {
   variable_set('omni_eve_api_ts3_cron_reg_time', (int) $form_state['values']['reg_time']);
   variable_set('omni_eve_api_ts3_cron_user_time', (int) $form_state['values']['user_time']);
 
-  variable_set('omni_eve_api_ts3_cron_reg_message', (string) $form_state['input']['reg_message']);
-  variable_set('omni_eve_api_ts3_cron_reg_poke', (string) $form_state['input']['reg_poke']);
-  variable_set('omni_eve_api_ts3_cron_reg_kick', (string) $form_state['input']['reg_kick']);
-  variable_set('omni_eve_api_ts3_cron_reg_ban', (string) $form_state['input']['reg_ban']);
-  variable_set('omni_eve_api_ts3_cron_user_message', (string) $form_state['input']['user_message']);
-  variable_set('omni_eve_api_ts3_cron_user_poke', (string) $form_state['input']['user_poke']);
-  variable_set('omni_eve_api_ts3_cron_user_kick', (string) $form_state['input']['user_kick']);
-  variable_set('omni_eve_api_ts3_cron_user_ban', (string) $form_state['input']['user_ban']);
+  variable_set('omni_eve_api_ts3_cron_reg_message', omni_eve_api_clean_input((string) $form_state['input']['reg_message']));
+  variable_set('omni_eve_api_ts3_cron_reg_poke', omni_eve_api_clean_input((string) $form_state['input']['reg_poke']));
+  variable_set('omni_eve_api_ts3_cron_reg_kick', omni_eve_api_clean_input((string) $form_state['input']['reg_kick']));
+  variable_set('omni_eve_api_ts3_cron_reg_ban', omni_eve_api_clean_input((string) $form_state['input']['reg_ban']));
+  variable_set('omni_eve_api_ts3_cron_user_message', omni_eve_api_clean_input((string) $form_state['input']['user_message']));
+  variable_set('omni_eve_api_ts3_cron_user_poke', omni_eve_api_clean_input((string) $form_state['input']['user_poke']));
+  variable_set('omni_eve_api_ts3_cron_user_kick', omni_eve_api_clean_input((string) $form_state['input']['user_kick']));
+  variable_set('omni_eve_api_ts3_cron_user_ban', omni_eve_api_clean_input((string) $form_state['input']['user_ban']));
 
   $form_state['redirect'] = 'admin/settings/omni_eve_api/teamspeak';
 

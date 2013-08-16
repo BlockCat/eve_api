@@ -1011,6 +1011,19 @@ function omni_eve_api_teamspeak_get_version() {
 }
 
 /**
+ * Sanitize input variable.
+ *
+ * @param string $input
+ *   A dirty string.
+ *
+ * @return string
+ *   A clean string.
+ */
+function omni_eve_api_clean_input($input) {
+  return trim(preg_replace('/ +/', ' ', preg_replace('|[^[:alnum:][:punct:]\s]|', ' ', urldecode(html_entity_decode(strip_tags((string) $input))))));
+}
+
+/**
  * Implements hook_boot().
  */
 function omni_eve_api_boot() {

@@ -339,31 +339,7 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
   $charactername = (string) $form_state['values']['name'];
   $character_data = omni_eve_api_get_character_info($charactername);
 
-  $character_is_blue = FALSE;
-
-  $result = db_query('SELECT contactID FROM {oea_blue_standings} WHERE standing > 0 AND deleted = 0 AND contactID IN (:contactIDs)', array(
-    ':contactIDs' => array(
-      (int) $character_data['characterID'],
-      (int) $character_data['corporationID'],
-      (int) $character_data['allianceID'],
-    ),
-  ));
-
-  if ($result->rowCount()) {
-    $character_is_blue = TRUE;
-  }
-
-  if ($character_data['allianceID'] == variable_get('omni_eve_api_allianceID', 0) || (int) $character_data['corporationID'] == variable_get('omni_eve_api_corporationID', 0)) {
-    $character_is_blue = TRUE;
-  }
-
-  $result = db_query('SELECT corporationid FROM {oea_alliance_corporations} WHERE corporationid = :corporationid', array(
-    ':corporationid' => (int) $character_data['corporationID'],
-  ));
-
-  if ($result->rowCount()) {
-    $character_is_blue = TRUE;
-  }
+  $character_is_blue = omni_eve_api_verify_blue($character_data);
 
   if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
     user_multiple_role_edit(array($uid), 'add_role', $corporation_role->rid);
