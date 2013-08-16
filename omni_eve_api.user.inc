@@ -65,7 +65,6 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
  * @see omni_eve_api_user_add_api_form_submit()
  */
 function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
-  $account = $form_state['user'];
   $keyid = (int) $form_state['values']['keyid'];
   $vcode = (string) $form_state['values']['vcode'];
 
@@ -700,7 +699,6 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_k
  * @see omni_eve_api_user_update_api_form_submit()
  */
 function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
-  $account = $form_state['user'];
   $keyid = (int) $form_state['values']['keyid'];
   $vcode = (string) $form_state['values']['vcode'];
 
