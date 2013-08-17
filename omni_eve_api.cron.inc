@@ -10,7 +10,7 @@ module_load_include('inc', 'omni_eve_api', 'omni_eve_api.api');
  * Implements hook_cron().
  */
 function omni_eve_api_api_alliance_fetch_cron() {
-  if (variable_get('omni_eve_api_enable', FALSE) || (!variable_get('omni_eve_api_enable', FALSE) && variable_get('omni_eve_api_first_run', FALSE))) {
+  if (variable_get('omni_eve_api_enable', FALSE) || variable_get('omni_eve_api_first_run', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_fetch');
     $queue->createItem(1);
   }
@@ -20,7 +20,7 @@ function omni_eve_api_api_alliance_fetch_cron() {
  * Implements hook_cron().
  */
 function omni_eve_api_api_alliance_sync_cron() {
-  if (variable_get('omni_eve_api_enable', FALSE) || (!variable_get('omni_eve_api_enable', FALSE) && variable_get('omni_eve_api_first_run', FALSE))) {
+  if (variable_get('omni_eve_api_enable', FALSE) || variable_get('omni_eve_api_first_run', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_sync');
     $queue->createItem(1);
   }
@@ -30,7 +30,7 @@ function omni_eve_api_api_alliance_sync_cron() {
  * Implements hook_cron().
  */
 function omni_eve_api_api_mask_cron() {
-  if (variable_get('omni_eve_api_enable', FALSE) || (!variable_get('omni_eve_api_enable', FALSE) && variable_get('omni_eve_api_first_run', FALSE))) {
+  if (variable_get('omni_eve_api_enable', FALSE) || variable_get('omni_eve_api_first_run', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_api_mask_sync');
     $queue->createItem(1);
   }

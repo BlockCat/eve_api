@@ -268,7 +268,7 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
   if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['enter_api']['enable']['#default_value'] = TRUE;
-    $form['submit_button']['#disabled'] = TRUE;
+    //$form['submit_button']['#disabled'] = TRUE;
   }
 
   $form['#validate'] = array('omni_eve_api_admin_alliance_api_key_form_validate');
@@ -335,9 +335,9 @@ function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
   if ((bool) $form_state['values']['enable']) {
     variable_set('omni_eve_api_first_run', TRUE);
 
-    omni_eve_api_api_alliance_fetch_cron();
-    omni_eve_api_api_alliance_sync_cron();
-    omni_eve_api_api_mask_cron();
+    omni_eve_api_cron_api_alliance_fetch(1);
+    omni_eve_api_cron_api_alliance_sync(1);
+    omni_eve_api_cron_api_mask_sync(1);
 
     drupal_set_message(t('The Alliance API Info is set to be retrieved on the next cron job, it can take up to a minute for the cron task to be triggered.'));
   }

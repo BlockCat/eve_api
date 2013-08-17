@@ -86,7 +86,8 @@ function omni_eve_api_get_xml($type, $query = array()) {
     }
 
     if (!empty($html->error)) {
-      drupal_set_message(t('EVE API returned an error with the HTTP request: @error', array('@error' => $html->error)), 'error');
+      drupal_set_message(t('EVE API returned an error with the HTTP request.'), 'error');
+      watchdog('eve api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_EMERGENCY);
     }
 
     $error = $html->code;
@@ -97,17 +98,20 @@ function omni_eve_api_get_xml($type, $query = array()) {
       $xml = @new SimpleXMLElement($html->data);
     }
     catch (Exception $e) {
-      drupal_set_message(t('EVE API returned an error with the data retrieved: @error', array('@error' => check_plain($e->getMessage()))), 'error');
+      drupal_set_message(t('EVE API returned an error with the data retrieved.'), 'error');
+      watchdog('eve api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $e->getMessage(), NULL, WATCHDOG_EMERGENCY);
       $xml = NULL;
     }
 
     if (FALSE !== strpos($html->data, '<!DOCTYPE html')) {
       drupal_set_message(t('EVE API returned an error with the API data: Not valid XML'), 'error');
+      watchdog('eve api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_EMERGENCY);
       $xml = NULL;
     }
 
     if (isset($xml->errorCode)) {
-      drupal_set_message(t('EVE API returned an error with the API data: @error', array('@error' => $xml->error)), 'error');
+      drupal_set_message(t('EVE API returned an error with the API data.'), 'error');
+      watchdog('eve api', 'EVE API returned an error with the API data. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $xml->error, NULL, WATCHDOG_EMERGENCY);
       $error = $xml->errorCode . ' - ' . $xml->errorMessage;
       $xml = NULL;
     }
