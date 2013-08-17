@@ -161,7 +161,7 @@ function omni_eve_api_jabber_group_add($name, $description = '') {
  *
  * @param string $type
  *   What we are doing.
- * @param string $characterName
+ * @param string $character_name
  *   The login name of the user we are modifying..
  * @param array $query
  *   (optional) Additional options as needed for each $type.
@@ -169,7 +169,7 @@ function omni_eve_api_jabber_group_add($name, $description = '') {
  * @return mixed
  *   Returns a true on success, false on failure or message.
  */
-function omni_eve_api_jabber_url_query($type, $characterName = '', array $query = array()) {
+function omni_eve_api_jabber_url_query($type, $character_name = '', array $query = array()) {
   if (!variable_get('omni_eve_api_jabber_enable', FALSE) && $type != 'check') {
     throw new OeaException(t('Jabber Connection disabled.'));
   }
@@ -179,7 +179,7 @@ function omni_eve_api_jabber_url_query($type, $characterName = '', array $query 
       case 'enable':
       case 'disable':
       case 'delete':
-        if (empty($characterName)) {
+        if (empty($character_name)) {
           return FALSE;
         }
 
@@ -187,7 +187,7 @@ function omni_eve_api_jabber_url_query($type, $characterName = '', array $query 
         $default_query = array(
           'type' => $type,
           'secret' => variable_get('omni_eve_api_jabber_secret', 'Password'),
-          'username' => omni_eve_api_jabber_format_name($characterName),
+          'username' => omni_eve_api_jabber_format_name($character_name),
         );
         break;
 
@@ -196,14 +196,14 @@ function omni_eve_api_jabber_url_query($type, $characterName = '', array $query 
       case 'add_roster':
       case 'update_roster':
       case 'delete_roster':
-        if (empty($query) || empty($characterName)) {
+        if (empty($query) || empty($character_name)) {
           return FALSE;
         }
 
         $default_query = array(
           'type' => $type,
           'secret' => variable_get('omni_eve_api_jabber_secret', 'Password'),
-          'username' => omni_eve_api_jabber_format_name($characterName),
+          'username' => omni_eve_api_jabber_format_name($character_name),
         );
         break;
 

@@ -921,17 +921,17 @@ function omni_eve_api_get_account_user_picture($account) {
 /**
  * Generate a EVE Avatar URL.
  *
- * @param int $characterID
+ * @param int $character_id
  *   A string with an EVE character ID.
  * 
  * @return string
  *   An URL string with the EVE avatar image.
  */
-function omni_eve_api_get_eve_avatar($characterID) {
+function omni_eve_api_get_eve_avatar($character_id) {
   global $is_https;
 
   $eve_avatar = $is_https ? variable_get('omni_eve_api_avatar_https', 'https://image.eveonline.com/Character/') : variable_get('omni_eve_api_avatar_http', 'http://image.eveonline.com/Character/');
-  $eve_avatar .= $characterID . '_' . variable_get('omni_eve_api_user_picture_dimensions', '128') . '.jpg';
+  $eve_avatar .= (int) $character_id . '_' . variable_get('omni_eve_api_user_picture_dimensions', '128') . '.jpg';
 
   return url($eve_avatar);
 }

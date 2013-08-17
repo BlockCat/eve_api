@@ -125,15 +125,15 @@ function omni_eve_api_get_xml($type, $query = array()) {
 /**
  * Function to retrieve individual characters from the database.
  *
- * @param string $characterName
+ * @param string $character_name
  *   Unique character name used to retrieve information about the character
  *
  * @return array
  *   A complex array of a single character information.
  */
-function omni_eve_api_get_character_info($characterName) {
+function omni_eve_api_get_character_info($character_name) {
   $result = db_query('SELECT uid, characterName, characterID, corporationName, corporationID, corporationTicker, allianceID, allianceName, allianceTicker FROM {oea_characters} WHERE characterName = :characterName', array(
-    ':characterName' => (string) $characterName,
+    ':characterName' => (string) $character_name,
   ));
 
   if ($result->rowCount()) {
@@ -228,15 +228,15 @@ function omni_eve_api_get_character_sheet($query) {
 /**
  * Function to retrieve the alliance tags.
  *
- * @param int $allianceID
+ * @param int $alliance_id
  *   The Unique ID for an alliance.
  *
  * @return string
  *   The Alliance ticker for the $allianceID.
  */
-function omni_eve_api_get_alliance_ticker($allianceID) {
+function omni_eve_api_get_alliance_ticker($alliance_id) {
   $result = db_query('SELECT allianceTicker FROM {oea_alliance_info} WHERE allianceID = :id', array(
-    ':id' => (int) $allianceID,
+    ':id' => (int) $alliance_id,
   ));
   $row = $result->fetchAssoc();
 

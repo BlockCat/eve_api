@@ -65,18 +65,18 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
  * @see omni_eve_api_user_add_api_form_submit()
  */
 function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
-  $keyID = (int) $form_state['values']['keyID'];
-  $vCode = (string) $form_state['values']['vCode'];
+  $key_id = (int) $form_state['values']['keyID'];
+  $v_code = (string) $form_state['values']['vCode'];
 
-  if (empty($keyID) || empty($vCode) || preg_match('/[^a-z0-9]/i', $vCode) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($vCode) > 64 || strlen($vCode) < 20) {
+  if (empty($key_id) || empty($v_code) || preg_match('/[^a-z0-9]/i', $v_code) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($v_code) > 64 || strlen($v_code) < 20) {
     form_set_error('keyID', t('Invalid input, please try again.'));
     form_set_error('vCode');
     return;
   }
 
   $query = array(
-    'keyID' => $keyID,
-    'vCode' => $vCode,
+    'keyID' => $key_id,
+    'vCode' => $v_code,
   );
 
   $characters = omni_eve_api_get_character_api($query);
@@ -86,16 +86,16 @@ function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
     form_set_error('vCode');
   }
   else {
-    $whitelist_characters = array();
+    $whitelist = array();
 
     if (!empty($characters)) {
       foreach ($characters['characters'] as $character) {
-        $whitelist_characters[] = (int) $character['characterID'];
+        $whitelist[] = (int) $character['characterID'];
       }
     }
 
     $result = db_query('SELECT characterID FROM {oea_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
-      ':characterIDs' => $whitelist_characters,
+      ':characterIDs' => $whitelist,
     ));
 
     if ($result->rowCount()) {
@@ -126,12 +126,12 @@ function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
 function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
   $account = $form_state['user'];
   $uid = (int) $account->uid;
-  $keyID = (int) $form_state['values']['keyID'];
-  $vCode = (string) $form_state['values']['vCode'];
+  $key_id = (int) $form_state['values']['keyID'];
+  $v_code = (string) $form_state['values']['vCode'];
 
   $query = array(
-    'keyID' => $keyID,
-    'vCode' => $vCode,
+    'keyID' => $key_id,
+    'vCode' => $v_code,
   );
 
   $characters = omni_eve_api_get_character_api($query);
@@ -142,10 +142,10 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
   else {
     $created = date('Y-m-d H:i:s', time());
 
-    $apiID = db_insert('oea_api_keys')->fields(array(
+    $api_id = db_insert('oea_api_keys')->fields(array(
       'uid' => $uid,
-      'keyID' => $keyID,
-      'vCode' => $vCode,
+      'keyID' => $key_id,
+      'vCode' => $v_code,
       'updated' => (string) $created,
       'created' => (string) $created,
     ))->execute();
@@ -154,7 +154,7 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
       db_merge('oea_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
         'characterID' => (int) $character['characterID'],
         'uid' => $uid,
-        'apiID' => (int) $apiID,
+        'apiID' => (int) $api_id,
         'characterName' => (string) $character['characterName'],
         'corporationID' => (int) $character['corporationID'],
         'corporationName' => (string) $character['corporationName'],
@@ -282,8 +282,8 @@ function omni_eve_api_user_select_main_character_form_validate($form, &$form_sta
     form_set_error('name', t('You have not selected a new character or you are unable to change characters.'));
   }
 
-  $characterName = (string) $form_state['values']['name'];
-  $character_data = omni_eve_api_get_character_info($characterName);
+  $character_name = (string) $form_state['values']['name'];
+  $character_data = omni_eve_api_get_character_info($character_name);
 
   if ($character_data === FALSE || $character_data['uid'] != $uid) {
     form_set_error('name', t('Character does not exist or does not belong to you.'));
@@ -316,8 +316,8 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
     // Log Error ?
   }
 
-  $old_characterName = $account->name;
-  $old_character_data = omni_eve_api_get_character_info($old_characterName);
+  $old_character_name = $account->name;
+  $old_character_data = omni_eve_api_get_character_info($old_character_name);
 
   if ($corporation_role = user_role_load_by_name($old_character_data['corporationName'])) {
     user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
@@ -332,8 +332,8 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
   $default_role = user_role_load(variable_get('omni_eve_api_unverified_role', 2));
   user_multiple_role_edit(array($uid), 'remove_role', $default_role->rid);
 
-  $characterName = (string) $form_state['values']['name'];
-  $character_data = omni_eve_api_get_character_info($characterName);
+  $character_name = (string) $form_state['values']['name'];
+  $character_data = omni_eve_api_get_character_info($character_name);
 
   $character_is_blue = omni_eve_api_verify_blue($character_data);
 
@@ -542,13 +542,13 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
   $account = $form_state['user'];
   $uid = (int) $account->uid;
 
-  foreach ((array) $form_state['values']['api_keys'] as $apiID) {
-    if ($apiID == 0 && !is_int($apiID)) {
+  foreach ((array) $form_state['values']['api_keys'] as $api_id) {
+    if ($api_id == 0 && !is_int($api_id)) {
       continue;
     }
 
-    db_delete('oea_api_keys')->condition('apiID', (int) $apiID)->execute();
-    db_update('oea_characters')->fields(array('deleted' => 1))->condition('apiID', (int) $apiID)->execute();
+    db_delete('oea_api_keys')->condition('apiID', (int) $api_id)->execute();
+    db_update('oea_characters')->fields(array('deleted' => 1))->condition('apiID', (int) $api_id)->execute();
   }
 
   $result = db_query('SELECT c.characterName, c.characterID FROM {oea_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
@@ -629,7 +629,7 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
  *
  * @ingroup forms
  */
-function omni_eve_api_user_update_api_form($form, &$form_state, $account, $apiID) {
+function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_id) {
   if (!isset($form_state['user'])) {
     $form_state['user'] = $account;
   }
@@ -640,7 +640,7 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $apiID
   $uid = (int) $account->uid;
 
   $result = db_query('SELECT keyID, vCode FROM {oea_api_keys} WHERE apiID = :apiID', array(
-    ':apiID' => (int) $apiID,
+    ':apiID' => (int) $api_id,
   ));
 
   if (!$result->rowCount()) {
@@ -657,7 +657,7 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $apiID
   );
 
   $form['update_api']['apiID'] = array(
-    '#value' => $apiID,
+    '#value' => $api_id,
     '#type' => 'hidden',
   );
 
@@ -699,18 +699,18 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $apiID
  * @see omni_eve_api_user_update_api_form_submit()
  */
 function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
-  $keyID = (int) $form_state['values']['keyID'];
-  $vCode = (string) $form_state['values']['vCode'];
+  $key_id = (int) $form_state['values']['keyID'];
+  $v_code = (string) $form_state['values']['vCode'];
 
-  if (empty($keyID) || empty($vCode) || preg_match('/[^a-z0-9]/i', $vCode) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($vCode) > 64 || strlen($vCode) < 20) {
+  if (empty($key_id) || empty($v_code) || preg_match('/[^a-z0-9]/i', $v_code) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($v_code) > 64 || strlen($v_code) < 20) {
     form_set_error('keyID', t('Invalid input, please try again.'));
     form_set_error('vCode');
     return;
   }
 
   $query = array(
-    'keyID' => $keyID,
-    'vCode' => $vCode,
+    'keyID' => $key_id,
+    'vCode' => $v_code,
   );
 
   $characters = omni_eve_api_get_character_api($query);
@@ -722,16 +722,16 @@ function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
   else {
     $form_state['values']['characters'] = $characters;
 
-    $whitelist_characters = array();
+    $whitelist = array();
 
     if (!empty($characters)) {
       foreach ($characters['characters'] as $character) {
-        $whitelist_characters[] = (int) $character['characterID'];
+        $whitelist[] = (int) $character['characterID'];
       }
     }
 
     $result = db_query('SELECT characterID FROM {oea_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
-      ':characterIDs' => $whitelist_characters,
+      ':characterIDs' => $whitelist,
     ));
 
     if ($result->rowCount()) {
@@ -758,20 +758,20 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
   $account = $form_state['user'];
   $uid = (int) $account->uid;
 
-  $keyID = (int) $form_state['values']['keyID'];
-  $vCode = (string) $form_state['values']['vCode'];
-  $apiID = (int) $form_state['values']['apiID'];
+  $key_id = (int) $form_state['values']['keyID'];
+  $v_code = (string) $form_state['values']['vCode'];
+  $api_id = (int) $form_state['values']['apiID'];
   $characters = (array) $form_state['values']['characters'];
 
   $updated = date('Y-m-d H:i:s', time());
 
-  db_update('oea_characters')->fields(array('deleted' => 1))->condition('apiID', $apiID)->execute();
+  db_update('oea_characters')->fields(array('deleted' => 1))->condition('apiID', $api_id)->execute();
 
-  db_merge('oea_api_keys')->key(array('apiID' => $apiID))->fields(array(
-    'apiID' => $apiID,
+  db_merge('oea_api_keys')->key(array('apiID' => $api_id))->fields(array(
+    'apiID' => $api_id,
     'uid' => $uid,
-    'keyID' => $keyID,
-    'vCode' => $vCode,
+    'keyID' => $key_id,
+    'vCode' => $v_code,
     'updated' => (string) $updated,
     'errorID' => 0,
   ))->execute();
@@ -780,7 +780,7 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
     db_merge('oea_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
       'characterID' => (int) $character['characterID'],
       'uid' => $uid,
-      'apiID' => $apiID,
+      'apiID' => $api_id,
       'characterName' => (string) $character['characterName'],
       'corporationID' => (int) $character['corporationID'],
       'corporationName' => (string) $character['corporationName'],

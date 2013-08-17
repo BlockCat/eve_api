@@ -459,7 +459,7 @@ function omni_eve_api_cron_jabber_user_sync($item) {
     }
 
     $uid = (int) $item['uid'];
-    $characterName = (string) $item['name'];
+    $character_name = (string) $item['name'];
 
     $result = db_query('SELECT r.rid, r.name FROM {users_roles} ur INNER JOIN {role} r ON (r.rid = ur.rid) WHERE ur.uid = :uid', array(
       ':uid' => $uid,
@@ -468,7 +468,7 @@ function omni_eve_api_cron_jabber_user_sync($item) {
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
         if ($row->rid == variable_get('omni_eve_api_unverified_role', 2)) {
-          $result = omni_eve_api_jabber_url_query('delete', $characterName);
+          $result = omni_eve_api_jabber_url_query('delete', $character_name);
           return TRUE;
         }
 
@@ -487,10 +487,10 @@ function omni_eve_api_cron_jabber_user_sync($item) {
         'groups' => implode(",", $user_roles),
       );
 
-      $result = omni_eve_api_jabber_url_query('update', $characterName, $query);
+      $result = omni_eve_api_jabber_url_query('update', $character_name, $query);
     }
     else {
-      $result = omni_eve_api_jabber_url_query('delete', $characterName);
+      $result = omni_eve_api_jabber_url_query('delete', $character_name);
     }
   }
   catch (OeaException $e) {
@@ -612,16 +612,16 @@ function omni_eve_api_cron_api_user_sync($item) {
         continue;
       }
 
-      $whitelist_characters = array();
+      $whitelist = array();
 
       if (!empty($characters)) {
         foreach ($characters['characters'] as $character) {
-          $whitelist_characters[] = (int) $character['characterID'];
+          $whitelist[] = (int) $character['characterID'];
         }
       }
 
       $result = db_query('SELECT characterID FROM {oea_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
-        ':characterIDs' => $whitelist_characters,
+        ':characterIDs' => $whitelist,
       ));
 
       if ($result->rowCount()) {

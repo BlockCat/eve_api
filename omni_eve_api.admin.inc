@@ -283,18 +283,18 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
  * @see omni_eve_api_admin_alliance_api_key_form_submit()
  */
 function omni_eve_api_admin_alliance_api_key_form_validate($form, &$form_state) {
-  $keyID = (int) $form_state['values']['keyID'];
-  $vCode = (string) $form_state['values']['vCode'];
+  $key_id = (int) $form_state['values']['keyID'];
+  $v_code = (string) $form_state['values']['vCode'];
 
-  if (empty($keyID) || empty($vCode) || preg_match('/[^a-z0-9]/i', $vCode) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($vCode) > 64 || strlen($vCode) < 20) {
+  if (empty($key_id) || empty($v_code) || preg_match('/[^a-z0-9]/i', $v_code) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($v_code) > 64 || strlen($v_code) < 20) {
     form_set_error('keyID', t('Invalid input, please try again.'));
     form_set_error('vCode');
     return;
   }
 
   $query = array(
-    'keyID' => $keyID,
-    'vCode' => $vCode,
+    'keyID' => $key_id,
+    'vCode' => $v_code,
   );
 
   $characters = omni_eve_api_get_character_api($query);
@@ -952,18 +952,18 @@ function omni_eve_api_admin_add_whitelist_form($form, &$form_state) {
  * @see omni_eve_api_admin_add_whitelist_form_submit()
  */
 function omni_eve_api_admin_add_whitelist_form_validate($form, &$form_state) {
-  $keyID = (int) $form_state['values']['keyID'];
-  $vCode = (string) $form_state['values']['vCode'];
+  $key_id = (int) $form_state['values']['keyID'];
+  $v_code = (string) $form_state['values']['vCode'];
 
-  if (empty($keyID) || empty($vCode) || preg_match('/[^a-z0-9]/i', $vCode) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($vCode) > 64 || strlen($vCode) < 20) {
+  if (empty($key_id) || empty($v_code) || preg_match('/[^a-z0-9]/i', $v_code) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($v_code) > 64 || strlen($v_code) < 20) {
     form_set_error('keyID', t('Invalid input, please try again.'));
     form_set_error('vCode');
     return;
   }
 
   $query = array(
-    'keyID' => $keyID,
-    'vCode' => $vCode,
+    'keyID' => $key_id,
+    'vCode' => $v_code,
   );
 
   $characters = omni_eve_api_get_character_api($query);
