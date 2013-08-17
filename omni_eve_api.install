@@ -267,7 +267,7 @@ function omni_eve_api_schema() {
         'description' => 'The current standing of the corporation, alliance, or character.',
         'type' => 'float',
         'not null' => TRUE,
-        'precision' => 2,
+        'precision' => 3,
         'scale' => 1,
         'unsigned' => FALSE,
         'default' => 0.0,

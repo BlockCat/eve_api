@@ -35,34 +35,67 @@ class OeaException extends Exception {
 function omni_eve_api_cronapi($op, $job = NULL) {
   $items = array();
 
-  $items['omni_eve_api_general_cron'] = array(
+  $items['omni_eve_api_api_alliance_fetch_cron'] = array(
     'description' => 'General cron, called once a day.',
     'rule' => '4 0 * * *',
     'file' => 'omni_eve_api.cron.inc',
+    'weight' => 1,
   );
 
-  $items['omni_eve_api_users_cron'] = array(
+  $items['omni_eve_api_api_alliance_sync_cron'] = array(
+    'description' => 'General cron, called once a day.',
+    'rule' => '14 0 * * *',
+    'file' => 'omni_eve_api.cron.inc',
+    'weight' => 2,
+  );
+
+  $items['omni_eve_api_api_mask_cron'] = array(
+    'description' => 'General cron, called once a day.',
+    'rule' => '24 0 * * *',
+    'file' => 'omni_eve_api.cron.inc',
+    'weight' => 3,
+  );
+
+  $items['omni_eve_api_api_users_cron'] = array(
     'description' => 'Pull API for each user every hour.',
     'rule' => '0 * * * *',
     'file' => 'omni_eve_api.cron.inc',
+    'weight' => 4,
+  );
+
+  $items['omni_eve_api_teamspeak_role_cron'] = array(
+    'description' => 'Update permissions in Teamspeak every 5 minutes.',
+    'rule' => '*/5 * * * *',
+    'file' => 'omni_eve_api.cron.inc',
+    'weight' => 5,
   );
 
   $items['omni_eve_api_teamspeak_user_cron'] = array(
     'description' => 'Update user permissions in Teamspeak every 5 minutes.',
     'rule' => '*/5 * * * *',
     'file' => 'omni_eve_api.cron.inc',
+    'weight' => 6,
+  );
+
+  $items['omni_eve_api_jabber_role_cron'] = array(
+    'description' => 'Update permissions in Jabber every 5 minutes.',
+    'rule' => '*/5 * * * *',
+    'file' => 'omni_eve_api.cron.inc',
+    'weight' => 7,
   );
 
   $items['omni_eve_api_jabber_user_cron'] = array(
     'description' => 'Update user permissions in Jabber every 5 minutes.',
     'rule' => '*/5 * * * *',
     'file' => 'omni_eve_api.cron.inc',
+    'weight' => 8,
   );
 
   $items['omni_eve_api_teamspeak_name_cron'] = array(
     'description' => 'Check usernames in Teamspeak every minute.',
     'rule' => '* * * * *',
     'file' => 'omni_eve_api.cron.inc',
+    'weight' => 9,
   );
 
   return $items;

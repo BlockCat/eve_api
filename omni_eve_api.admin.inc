@@ -334,7 +334,11 @@ function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
 
   if ((bool) $form_state['values']['enable']) {
     variable_set('omni_eve_api_first_run', TRUE);
-    omni_eve_api_general_cron(TRUE);
+
+    omni_eve_api_api_alliance_fetch_cron(TRUE);
+    omni_eve_api_api_alliance_sync_cron(TRUE);
+    omni_eve_api_api_mask_cron(TRUE);
+
     drupal_set_message(t('The Alliance API Info is set to be retrieved on the next cron job, it can take up to a minute for the cron task to be triggered.'));
   }
   else {

@@ -9,14 +9,28 @@ module_load_include('inc', 'omni_eve_api', 'omni_eve_api.api');
 /**
  * Implements hook_cron().
  */
-function omni_eve_api_general_cron($force = FALSE) {
+function omni_eve_api_api_alliance_fetch_cron($force = FALSE) {
   if (variable_get('omni_eve_api_enable', FALSE) || $force) {
     $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_fetch');
     $queue->createItem(1);
+  }
+}
 
+/**
+ * Implements hook_cron().
+ */
+function omni_eve_api_api_alliance_sync_cron($force = FALSE) {
+  if (variable_get('omni_eve_api_enable', FALSE) || $force) {
     $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_sync');
     $queue->createItem(1);
+  }
+}
 
+/**
+ * Implements hook_cron().
+ */
+function omni_eve_api_api_mask_cron($force = FALSE) {
+  if (variable_get('omni_eve_api_enable', FALSE) || $force) {
     $queue = DrupalQueue::get('omni_eve_api_cron_api_mask_sync');
     $queue->createItem(1);
   }
@@ -25,7 +39,7 @@ function omni_eve_api_general_cron($force = FALSE) {
 /**
  * Implements hook_cron().
  */
-function omni_eve_api_users_cron() {
+function omni_eve_api_api_users_cron() {
   if (variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_api_user_sync');
 
@@ -42,11 +56,18 @@ function omni_eve_api_users_cron() {
 /**
  * Implements hook_cron().
  */
-function omni_eve_api_teamspeak_user_cron() {
+function omni_eve_api_teamspeak_role_cron() {
   if (variable_get('omni_eve_api_ts3_enable', FALSE) && variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role_sync');
     $queue->createItem(1);
+  }
+}
 
+/**
+ * Implements hook_cron().
+ */
+function omni_eve_api_teamspeak_user_cron() {
+  if (variable_get('omni_eve_api_ts3_enable', FALSE) && variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_sync');
     $result = db_query('SELECT uid, teamspeakDBID, status FROM {users} WHERE characterID != 0 AND teamspeakUID != 0');
 
@@ -66,11 +87,18 @@ function omni_eve_api_teamspeak_user_cron() {
 /**
  * Implements hook_cron().
  */
-function omni_eve_api_jabber_user_cron() {
+function omni_eve_api_jabber_role_cron() {
   if (variable_get('omni_eve_api_jabber_enable', FALSE) && variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role_sync');
     $queue->createItem(1);
+  }
+}
 
+/**
+ * Implements hook_cron().
+ */
+function omni_eve_api_jabber_user_cron() {
+  if (variable_get('omni_eve_api_jabber_enable', FALSE) && variable_get('omni_eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user_sync');
     $result = db_query('SELECT uid, name, status FROM {users} WHERE characterID != 0');
 
@@ -807,7 +835,7 @@ function omni_eve_api_cron_api_alliance_fetch($item = NULL) {
       db_merge('oea_blue_standings')->key(array('contactID' => (int) $row->contactID))->fields(array(
         'contactID' => (int) $row->contactID,
         'contactName' => (string) $row->contactName,
-        'standing' => (string) $row->standing,
+        'standing' => (float) $row->standing,
         'manual' => 0,
         'checked' => 0,
       ))->execute();
