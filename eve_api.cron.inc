@@ -10,30 +10,24 @@ module_load_include('inc', 'eve_api', 'eve_api.api');
  * Implements hook_cron().
  */
 function eve_api_api_alliance_fetch_cron() {
-  if (variable_get('eve_api_enable', FALSE) || variable_get('eve_api_first_run', FALSE)) {
-    $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
-    $queue->createItem(1);
-  }
+  $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
+  $queue->createItem(1);
 }
 
 /**
  * Implements hook_cron().
  */
 function eve_api_api_alliance_sync_cron() {
-  if (variable_get('eve_api_enable', FALSE) || variable_get('eve_api_first_run', FALSE)) {
-    $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
-    $queue->createItem(1);
-  }
+  $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
+  $queue->createItem(1);
 }
 
 /**
  * Implements hook_cron().
  */
 function eve_api_api_mask_cron() {
-  if (variable_get('eve_api_enable', FALSE) || variable_get('eve_api_first_run', FALSE)) {
-    $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
-    $queue->createItem(1);
-  }
+  $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
+  $queue->createItem(1);
 }
 
 /**
@@ -807,6 +801,10 @@ function eve_api_cron_api_user_sync($item) {
 function eve_api_cron_api_alliance_fetch($item = NULL) {
   if ($item == 11) {
     watchdog('eve api', 'Cron Standings task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    return FALSE;
+  }
+
+  if (empty(variable_get('eve_api_corp_keyid', '')) || empty(variable_get('eve_api_corp_vcode', ''))) {
     return FALSE;
   }
 

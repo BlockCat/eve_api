@@ -335,9 +335,14 @@ function eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
   if ((bool) $form_state['values']['enable']) {
     variable_set('eve_api_first_run', TRUE);
 
-    eve_api_cron_api_alliance_fetch(1);
-    eve_api_cron_api_alliance_sync(1);
-    eve_api_cron_api_mask_sync(1);
+    $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
+    $queue->createItem(1);
+
+    $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
+    $queue->createItem(1);
+
+    $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
+    $queue->createItem(1);
 
     drupal_set_message(t('The Alliance API Info is set to be retrieved on the next cron job, it can take up to a minute for the cron task to be triggered.'));
   }
