@@ -789,7 +789,7 @@ function omni_eve_api_cron_api_alliance_fetch($item = NULL) {
   $xml = omni_eve_api_get_xml('ContactList', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Failed getting Alliance Contact List API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', 'Failed getting Alliance Contact List API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
 
     $item = $item + 1;
     $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_fetch');
@@ -837,7 +837,7 @@ function omni_eve_api_cron_api_alliance_sync($item = NULL) {
   $xml = omni_eve_api_get_xml('AllianceList');
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Failed getting Alliance List API Data. Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', 'Failed getting Alliance List API Data. Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
 
     $item = $item + 1;
     $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_sync');
@@ -932,7 +932,7 @@ function omni_eve_api_cron_api_mask_sync($item = NULL) {
   $xml = omni_eve_api_get_xml('callList');
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Failed getting Access Mask API Data. Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', 'Failed getting Access Mask API Data. Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
 
     $item = $item + 1;
     $queue = DrupalQueue::get('omni_eve_api_cron_api_mask_sync');

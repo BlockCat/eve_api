@@ -60,7 +60,7 @@ function omni_eve_api_teamspeak_connection($check = FALSE) {
     $ts3->setPredefinedQueryName('OEABOT');
   }
   catch (TeamSpeak3_Exception $e) {
-    throw new OeaException(t('Teamspeak 3 Connection failed. Error: @error', array('@error' => $e->getMessage())));
+    throw new OeaException(t('Teamspeak 3 Connection failed. Error: @error', array('@error' => check_plain($e->getMessage()))));
   }
 
   return $ts3;
@@ -152,7 +152,7 @@ function omni_eve_api_teamspeak_user_list(&$ts3) {
     $teamspeak_user_list = $ts3->clientList();
   }
   catch (TeamSpeak3_Exception $e) {
-    throw new OeaException(t('Unable to get list of active users. Error: @error', array('@error' => $e->getMessage())));
+    throw new OeaException(t('Unable to get list of active users. Error: @error', array('@error' => check_plain($e->getMessage()))));
   }
 
   return $teamspeak_user_list;
@@ -174,7 +174,7 @@ function omni_eve_api_teamspeak_user_info(&$ts3, $teamspeakdbid) {
     $teamspeak_user_info = $ts3->clientInfoDb($teamspeakdbid);
   }
   catch (TeamSpeak3_Exception $e) {
-    throw new OeaException(t('Unable to get user info. Error: @error', array('@error' => $e->getMessage())));
+    throw new OeaException(t('Unable to get user info. Error: @error', array('@error' => check_plain($e->getMessage()))));
   }
 
   return $teamspeak_user_info;

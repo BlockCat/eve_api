@@ -97,7 +97,7 @@ function omni_eve_api_get_xml($type, $query = array()) {
       $xml = @new SimpleXMLElement($html->data);
     }
     catch (Exception $e) {
-      drupal_set_message(t('EVE API returned an error with the data retrieved: @error', array('@error' => $e->getMessage())), 'error');
+      drupal_set_message(t('EVE API returned an error with the data retrieved: @error', array('@error' => check_plain($e->getMessage()))), 'error');
       $xml = NULL;
     }
 
@@ -140,15 +140,15 @@ function omni_eve_api_get_character_info($charactername) {
     $row = $result->fetchAssoc();
 
     $api_data = array(
-      'uid' => $row['uid'],
-      'characterName' => $row['charactername'],
-      'characterID' => $row['characterid'],
-      'corporationName' => $row['corporationname'],
-      'corporationID' => $row['corporationid'],
-      'corporationTicker' => $row['corporationticker'],
-      'allianceID' => $row['allianceid'],
-      'allianceName' => $row['alliancename'],
-      'allianceTicker' => $row['allianceticker'],
+      'uid' => check_plain($row['uid']),
+      'characterName' => check_plain($row['charactername']),
+      'characterID' => check_plain($row['characterid']),
+      'corporationName' => check_plain($row['corporationname']),
+      'corporationID' => check_plain($row['corporationid']),
+      'corporationTicker' => check_plain($row['corporationticker']),
+      'allianceID' => check_plain($row['allianceid']),
+      'allianceName' => check_plain($row['alliancename']),
+      'allianceTicker' => check_plain($row['allianceticker']),
     );
   }
   else {
@@ -171,7 +171,7 @@ function omni_eve_api_get_character_api($query) {
   $xml = omni_eve_api_get_xml('APIKeyInfo', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Failed getting Character API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', 'Failed getting Character API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
     return array('error' => (int) $xml);
   }
 
@@ -216,7 +216,7 @@ function omni_eve_api_get_character_sheet($query) {
   $xml = omni_eve_api_get_xml('CharacterSheet', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Failed getting Character Sheet API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', 'Failed getting Character Sheet API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
     return array('error' => (int) $xml);
   }
 
@@ -256,7 +256,7 @@ function omni_eve_api_get_corporation_info($query) {
   $xml = omni_eve_api_get_xml('CorporationSheet', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Failed getting Corporation API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', 'Failed getting Corporation API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
     return array('error' => $xml);
   }
 
@@ -285,7 +285,7 @@ function omni_eve_api_get_character_name($query) {
   $xml = omni_eve_api_get_xml('CharacterName', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve api', '<pre>Failed getting Character Name API Data. (' . drupal_http_build_query($query) . ') Error: ' . $xml . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve api', 'Failed getting Character Name API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
     return array('error' => $xml);
   }
 
@@ -407,7 +407,7 @@ function omni_eve_api_characters_exist($characters) {
       ));
 
       if ($result->rowCount()) {
-        $chars[] = $character['characterName'];
+        $chars[] = check_plain($character['characterName']);
       }
     }
   }
@@ -481,14 +481,14 @@ function omni_eve_api_list_api_simple($uid) {
       if ($result_b->rowCount()) {
         foreach ($result_b->fetchAll() as $row_b) {
           $api_list['characters'][$row_b->characterid] = array(
-            'characterID' => $row_b->characterid,
-            'characterName' => $row_b->charactername,
-            'corporationID' => $row_b->corporationid,
-            'corporationName' => $row_b->corporationname,
-            'corporationTicker' => $row_b->corporationticker,
-            'allianceID' => $row_b->allianceid,
-            'allianceName' => $row_b->alliancename,
-            'allianceTicker' => $row_b->allianceticker,
+            'characterID' => check_plain($row_b->characterid),
+            'characterName' => check_plain($row_b->charactername),
+            'corporationID' => check_plain($row_b->corporationid),
+            'corporationName' => check_plain($row_b->corporationname),
+            'corporationTicker' => check_plain($row_b->corporationticker),
+            'allianceID' => check_plain($row_b->allianceid),
+            'allianceName' => check_plain($row_b->alliancename),
+            'allianceTicker' => check_plain($row_b->allianceticker),
           );
         }
       }

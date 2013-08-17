@@ -436,12 +436,12 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
   if ($result_a->rowCount()) {
     foreach ($result_a->fetchAll() as $row_a) {
       $api_list[$row_a->apiid] = array(
-        'apiid' => $row_a->apiid,
-        'keyid' => $row_a->keyid,
-        'vcode' => $row_a->vcode,
-        'errorid' => $row_a->errorid,
-        'updated' => $row_a->updated,
-        'created' => $row_a->created,
+        'apiid' => check_plain($row_a->apiid),
+        'keyid' => check_plain($row_a->keyid),
+        'vcode' => check_plain($row_a->vcode),
+        'errorid' => check_plain($row_a->errorid),
+        'updated' => check_plain($row_a->updated),
+        'created' => check_plain($row_a->created),
       );
 
       $result_b = db_query('SELECT characterid, charactername, corporationid, corporationname, corporationticker, allianceid, alliancename, allianceticker FROM {oea_characters} WHERE deleted = 0 AND uid = :uid AND apiid = :apiid', array(
@@ -452,14 +452,14 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
       if ($result_b->rowCount()) {
         foreach ($result_b->fetchAll() as $row_b) {
           $api_list[$row_a->apiid]['characters'][$row_b->characterid] = array(
-            'characterid' => $row_b->characterid,
-            'charactername' => $row_b->charactername,
-            'corporationid' => $row_b->corporationid,
-            'corporationname' => $row_b->corporationname,
-            'corporationticker' => $row_b->corporationticker,
-            'allianceid' => $row_b->allianceid,
-            'alliancename' => $row_b->alliancename,
-            'allianceticker' => $row_b->allianceticker,
+            'characterid' => check_plain($row_b->characterid),
+            'charactername' => check_plain($row_b->charactername),
+            'corporationid' => check_plain($row_b->corporationid),
+            'corporationname' => check_plain($row_b->corporationname),
+            'corporationticker' => check_plain($row_b->corporationticker),
+            'allianceid' => check_plain($row_b->allianceid),
+            'alliancename' => check_plain($row_b->alliancename),
+            'allianceticker' => check_plain($row_b->allianceticker),
           );
         }
       }
@@ -474,7 +474,7 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
     if (isset($api_single['characters'])) {
       foreach ($api_single['characters'] as $characters) {
         $corp_alliance = ($characters['allianceid'] == 0) ? $characters['corporationname'] : $characters['corporationname'] . '/' . $characters['alliancename'];
-        $list_characters .= '[' . $characters['corporationticker'] . '] ' . $characters['charactername'] . ' (' . $corp_alliance . ')';
+        $list_characters .= check_plain('[' . $characters['corporationticker'] . '] ' . $characters['charactername'] . ' (' . $corp_alliance . ')');
         $list_characters .= '<br />';
       }
     }
@@ -491,10 +491,10 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
       ),
       'keyid' => check_plain($api_single['keyid']),
       'vcode' => check_plain($string),
-      'characters' => check_plain($list_characters),
+      'characters' => $list_characters,
       'updated' => format_date(strtotime($api_single['updated']), 'short'),
       'created' => format_date(strtotime($api_single['created']), 'short'),
-      'errorid' => omni_eve_api_api_error_msg($api_single['errorid']),
+      'errorid' => check_plain(omni_eve_api_api_error_msg($api_single['errorid'])),
     );
   }
 
@@ -869,7 +869,7 @@ function omni_eve_api_user_teamspeak_form($form, &$form_state, $account) {
     '#type' => 'markup',
     '#prefix' => '<p>',
     '#markup' => t('In order to register with Teamspeak, you must first connect to our Teamspeak.<br />If you do not have Teamspeak already installed, please download and install Teamspeak 3 from <a href="@teamspeak_url" target="_blank">here</a>.<br />Please use the following settings to connect:<br /><br />Address - @teamspeak_address<br />@teamspeak_password', array(
-      '@teamspeak_url' => 'http://www.teamspeak.com/?page=downloads',
+      '@teamspeak_url' => check_url('http://www.teamspeak.com/?page=downloads'),
       '@teamspeak_address' => empty($teamspeak_port_check) ? variable_get('omni_eve_api_ts3_server_address', 'teamspeak.com') : variable_get('omni_eve_api_ts3_server_address', 'teamspeak.com') . ':' . variable_get('omni_eve_api_ts3_server_port', 9987),
       '@teamspeak_password' => empty($teamspeak_password_check) ? '' : t('Password') . ' - ' . variable_get('omni_eve_api_ts3_server_password', ''),
     )),
@@ -928,7 +928,7 @@ function omni_eve_api_user_teamspeak_form_validate($form, &$form_state) {
     unset($teamspeak_data);
   }
   catch (OeaException $e) {
-    form_set_error('teamspeak', $e->getMessage());
+    form_set_error('teamspeak', check_plain($e->getMessage()));
   }
 }
 
@@ -963,7 +963,7 @@ function omni_eve_api_user_teamspeak_form_submit($form, &$form_state) {
     drupal_set_message(t('Teamspeak access granted.'));
   }
   catch (OeaException $e) {
-    drupal_set_message($e->getMessage(), 'error');
+    drupal_set_message(check_plain($e->getMessage()), 'error');
   }
 }
 
@@ -998,7 +998,7 @@ function omni_eve_api_user_jabber_form($form, &$form_state, $account) {
     '#type' => 'markup',
     '#prefix' => '<p>',
     '#markup' => t('If you do not have a Jabber Client already installed, you can download and install Trillian from <a href="@jabber_url" target="_blank">here</a>.', array(
-      '@jabber_url' => 'https://www.trillian.im/download/',
+      '@jabber_url' => check_url('https://www.trillian.im/download/'),
     )),
     '#suffix' => '</p>',
     '#weight' => 0,

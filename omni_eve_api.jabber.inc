@@ -13,7 +13,7 @@ function omni_eve_api_jabber_test_connection() {
     unset($result);
   }
   catch (PDOException $e) {
-    throw new OeaException($e->getMessage());
+    throw new OeaException(check_plain($e->getMessage()));
   }
 }
 
@@ -41,7 +41,7 @@ function omni_eve_api_jabber_connect($check = FALSE) {
   }
   catch (PDOException $e) {
     db_set_active();
-    throw new OeaException($e->getMessage());
+    throw new OeaException(check_plain($e->getMessage()));
   }
 }
 
@@ -70,7 +70,7 @@ function omni_eve_api_jabber_format_name($name) {
     $name = substr($name, 0, 50);
   }
 
-  return $name;
+  return check_plain($name);
 }
 
 /**
@@ -150,7 +150,7 @@ function omni_eve_api_jabber_group_add($name, $description = '') {
   }
   catch (PDOException $e) {
     omni_eve_api_jabber_disconnect();
-    throw new OeaException($e->getMessage());
+    throw new OeaException(check_plain($e->getMessage()));
   }
 
   return TRUE;
@@ -233,7 +233,7 @@ function omni_eve_api_jabber_url_query($type, $charactername = '', array $query 
   }
   catch (PDOException $e) {
     db_set_active();
-    throw new OeaException($e->getMessage());
+    throw new OeaException(check_plain($e->getMessage()));
   }
 }
 
@@ -262,7 +262,7 @@ function omni_eve_api_jabber_url_send_query($url) {
   }
 
   if (!empty($html->error)) {
-    drupal_set_message(t('EVE API returned an error with the HTTP request: @error', array('@error' => $html->error)), 'error');
+    drupal_set_message(t('EVE API returned an error with the HTTP request: @error', array('@error' => check_plain($html->error))), 'error');
   }
 
   if ($html->code == 200) {
@@ -270,7 +270,7 @@ function omni_eve_api_jabber_url_send_query($url) {
       $xml = @new SimpleXMLElement($html->data);
     }
     catch (Exception $e) {
-      drupal_set_message(t('EVE API returned an error with the data retrieved: @error', array('@error' => $e->getMessage()), 'error'));
+      drupal_set_message(t('EVE API returned an error with the data retrieved: @error', array('@error' => check_plain($e->getMessage())), 'error'));
       $xml = NULL;
     }
   }

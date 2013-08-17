@@ -974,9 +974,8 @@ function omni_eve_api_admin_add_whitelist_form_validate($form, &$form_state) {
   }
   else {
     if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
-      form_set_error('keyid', t('Please ensure that only the following boxes are highlighted and selected for the API: (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet))
-<br />
-In addition the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
+      form_set_error('keyid', t('Please ensure that only the following boxes are highlighted and selected for the API: (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet))'));
+      form_set_error('keyid', t('In addition the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
       form_set_error('vcode');
     }
 
@@ -1142,7 +1141,7 @@ function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
         unset($ts3);
       }
       catch (OeaException $e) {
-        form_set_error('enable', $e->getMessage());
+        form_set_error('enable', check_plain($e->getMessage()));
         variable_set('omni_eve_api_ts3_enable', FALSE);
       }
     }
@@ -1222,7 +1221,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     $form['teamspeak_settings']['bypass_group'] = array(
       '#type' => 'markup',
       '#prefix' => '<p>',
-      '#markup' => t('Teamspeak 3 Connection failed, check settings and try again. Error: @error', array('@error' => $e->getMessage())),
+      '#markup' => t('Teamspeak 3 Connection failed, check settings and try again. Error: @error', array('@error' => check_plain($e->getMessage()))),
       '#suffix' => '</p>',
       '#weight' => 10,
     );
@@ -1677,7 +1676,7 @@ function omni_eve_api_admin_jabber_form_validate($form, &$form_state) {
     }
     catch (OeaException $e) {
       omni_eve_api_jabber_disconnect();
-      form_set_error('enable', t('Please check database settings and try again. Error: @error', array('@error' => $e->getMessage())));
+      form_set_error('enable', t('Please check database settings and try again. Error: @error', array('@error' => check_plain($e->getMessage()))));
       variable_set('omni_eve_api_jabber_enable', FALSE);
     }
 
