@@ -419,7 +419,8 @@ function omni_eve_api_install() {
     else {
       $user_role = new stdClass();
       $user_role->name = $role;
-      $role_data = user_role_save($user_role);
+      user_role_save($user_role);
+      $role_data = user_role_load_by_name($role);
       variable_set($variable, (int) $role_data->rid);
     }
   }
