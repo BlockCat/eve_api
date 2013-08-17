@@ -5,4 +5,4 @@ package = Omni EVE API
 dependencies[] = ctools
 dependencies[] = elysia_cron
 dependencies[] = libraries
-configure = admin/settings/omni_eve_api
+configure = admin/settings/eve_api

@@ -13,14 +13,14 @@
  * @return string
  *   The users Teamspeak display name.
  */
-function omni_eve_api_teamspeak_format_name($character_name) {
+function eve_api_teamspeak_format_name($character_name) {
   // Valid Options:
   // @name = Character Name.
   // @corp = Corp Ticker.
   // @alliance = Alliance Ticker.
-  $teamspeak_name = variable_get('omni_eve_api_ts3_nickname', '[@corp] @name');
+  $teamspeak_name = variable_get('eve_api_ts3_nickname', '[@corp] @name');
 
-  $character_data = omni_eve_api_get_character_info($character_name);
+  $character_data = eve_api_get_character_info($character_name);
 
   $teamspeak_name = str_replace('@alliance', $character_data['allianceTicker'], $teamspeak_name);
   $teamspeak_name = str_replace('@corp', $character_data['corporationTicker'], $teamspeak_name);
@@ -39,22 +39,22 @@ function omni_eve_api_teamspeak_format_name($character_name) {
  * @return object
  *   The Teamspeak connection object.
  */
-function omni_eve_api_teamspeak_connection($check = FALSE) {
-  if ((!variable_get('omni_eve_api_ts3_enable', FALSE) || !variable_get('omni_eve_api_ts3_framework_installed', FALSE)) && !$check) {
+function eve_api_teamspeak_connection($check = FALSE) {
+  if ((!variable_get('eve_api_ts3_enable', FALSE) || !variable_get('eve_api_ts3_framework_installed', FALSE)) && !$check) {
     throw new OeaException(t('Teamspeak 3 Connection disabled.'));
   }
 
   // Load the TeamSpeak 3 PHP Framework Library.
   if (($library = libraries_load('TeamSpeak3')) && !empty($library['loaded'])) {
-    variable_set('omni_eve_api_ts3_framework_installed', TRUE);
+    variable_set('eve_api_ts3_framework_installed', TRUE);
   }
   else {
-    variable_set('omni_eve_api_ts3_framework_installed', FALSE);
-    variable_set('omni_eve_api_ts3_enable', FALSE);
+    variable_set('eve_api_ts3_framework_installed', FALSE);
+    variable_set('eve_api_ts3_enable', FALSE);
   }
 
   try {
-    $query = 'serverquery://' . variable_get('omni_eve_api_ts3_query_username', 'Username') . ':' . variable_get('omni_eve_api_ts3_query_password', 'Password') . '@' . variable_get('omni_eve_api_ts3_host', '127.0.0.1') . ':' . variable_get('omni_eve_api_ts3_query_port', 10011) . '/?server_port=' . variable_get('omni_eve_api_ts3_server_port', 9987) . '&blocking=0';
+    $query = 'serverquery://' . variable_get('eve_api_ts3_query_username', 'Username') . ':' . variable_get('eve_api_ts3_query_password', 'Password') . '@' . variable_get('eve_api_ts3_host', '127.0.0.1') . ':' . variable_get('eve_api_ts3_query_port', 10011) . '/?server_port=' . variable_get('eve_api_ts3_server_port', 9987) . '&blocking=0';
     $ts3 = TeamSpeak3::factory($query);
     $ts3->whoamiSet('client_nickname', 'OEABOT');
     $ts3->setPredefinedQueryName('OEABOT');
@@ -77,14 +77,14 @@ function omni_eve_api_teamspeak_connection($check = FALSE) {
  * @return string
  *   The new Teamspeak Group ID.
  */
-function omni_eve_api_teamspeak_group_create(&$ts3, $role) {
+function eve_api_teamspeak_group_create(&$ts3, $role) {
   try {
-    if ($copy_id = omni_eve_api_teamspeak_group_get_id($ts3, 'Default Corporation')) {
+    if ($copy_id = eve_api_teamspeak_group_get_id($ts3, 'Default Corporation')) {
       $teamspeakgid = $ts3->serverGroupCopy($copy_id, $role);
       $ts3->serverGroupPermAssign($teamspeakgid, 'b_group_is_permanent', 1);
     }
     else {
-      $guest_id = omni_eve_api_teamspeak_group_get_id($ts3, 'Guest');
+      $guest_id = eve_api_teamspeak_group_get_id($ts3, 'Guest');
       $teamspeakgid = $ts3->serverGroupCopy($guest_id, $role);
       $ts3->serverGroupPermAssign($teamspeakgid, 'b_group_is_permanent', 1);
     }
@@ -107,7 +107,7 @@ function omni_eve_api_teamspeak_group_create(&$ts3, $role) {
  * @return string
  *   The Teamspeak Group ID.
  */
-function omni_eve_api_teamspeak_group_get_id(&$ts3, $role) {
+function eve_api_teamspeak_group_get_id(&$ts3, $role) {
   try {
     $teamspeakgid = $ts3->serverGroupGetByName($role);
   }
@@ -127,7 +127,7 @@ function omni_eve_api_teamspeak_group_get_id(&$ts3, $role) {
  * @return array
  *   Returns a list of server groups available.
  */
-function omni_eve_api_teamspeak_get_groups(&$ts3) {
+function eve_api_teamspeak_get_groups(&$ts3) {
   try {
     $teamspeak_data = $ts3->serverGroupList();
   }
@@ -147,7 +147,7 @@ function omni_eve_api_teamspeak_get_groups(&$ts3) {
  * @return array
  *   Returns an array filled with TeamSpeak3_Node_Client objects.
  */
-function omni_eve_api_teamspeak_user_list(&$ts3) {
+function eve_api_teamspeak_user_list(&$ts3) {
   try {
     $teamspeak_user_list = $ts3->clientList();
   }
@@ -169,7 +169,7 @@ function omni_eve_api_teamspeak_user_list(&$ts3) {
  * @return array
  *   Returns a list of properties from the database for the client specified.
  */
-function omni_eve_api_teamspeak_user_info(&$ts3, $teamspeak_dbid) {
+function eve_api_teamspeak_user_info(&$ts3, $teamspeak_dbid) {
   try {
     $teamspeak_user_info = $ts3->clientInfoDb($teamspeak_dbid);
   }
@@ -191,7 +191,7 @@ function omni_eve_api_teamspeak_user_info(&$ts3, $teamspeak_dbid) {
  * @return string
  *   The users unique teamspeak id.
  */
-function omni_eve_api_teamspeak_user_by_name(&$ts3, $teamspeak_name) {
+function eve_api_teamspeak_user_by_name(&$ts3, $teamspeak_name) {
   try {
     $teamspeak_data = $ts3->clientGetByName($teamspeak_name);
   }
@@ -213,7 +213,7 @@ function omni_eve_api_teamspeak_user_by_name(&$ts3, $teamspeak_name) {
  * @return bool
  *   Success or failure.
  */
-function omni_eve_api_teamspeak_user_delete(&$ts3, $teamspeak_dbid) {
+function eve_api_teamspeak_user_delete(&$ts3, $teamspeak_dbid) {
   try {
     $ts3->clientDeleteDb($teamspeak_dbid);
   }
@@ -236,7 +236,7 @@ function omni_eve_api_teamspeak_user_delete(&$ts3, $teamspeak_dbid) {
  *   Returns an array containing the names and IDs of all server groups
  *   the client specified with $teamspeak_dbid is is currently residing in.
  */
-function omni_eve_api_teamspeak_user_get_groups(&$ts3, $teamspeak_dbid) {
+function eve_api_teamspeak_user_get_groups(&$ts3, $teamspeak_dbid) {
   try {
     $teamspeak_data = $ts3->clientGetServerGroupsByDbid($teamspeak_dbid);
   }
@@ -260,7 +260,7 @@ function omni_eve_api_teamspeak_user_get_groups(&$ts3, $teamspeak_dbid) {
  * @return bool
  *   Success or failure.
  */
-function omni_eve_api_teamspeak_user_remove_group(&$ts3, $teamspeakgid, $teamspeak_dbid) {
+function eve_api_teamspeak_user_remove_group(&$ts3, $teamspeakgid, $teamspeak_dbid) {
   try {
     $ts3->serverGroupClientDel($teamspeakgid, $teamspeak_dbid);
   }
@@ -284,7 +284,7 @@ function omni_eve_api_teamspeak_user_remove_group(&$ts3, $teamspeakgid, $teamspe
  * @return bool
  *   Success or failure.
  */
-function omni_eve_api_teamspeak_user_add_group(&$ts3, $teamspeakgid, $teamspeak_dbid) {
+function eve_api_teamspeak_user_add_group(&$ts3, $teamspeakgid, $teamspeak_dbid) {
   try {
     $ts3->serverGroupClientAdd($teamspeakgid, $teamspeak_dbid);
   }

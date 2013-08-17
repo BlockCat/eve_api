@@ -4,32 +4,32 @@
  * Functions related to allow admin's to alter the settings and options.
  */
 
-module_load_include('inc', 'omni_eve_api', 'omni_eve_api.api');
-module_load_include('inc', 'omni_eve_api', 'omni_eve_api.cron');
+module_load_include('inc', 'eve_api', 'eve_api.api');
+module_load_include('inc', 'eve_api', 'eve_api.cron');
 
 /**
  * Form constructor for the admin edit roles form.
  *
- * @see omni_eve_api_admin_roles_form_validate()
- * @see omni_eve_api_admin_roles_form_submit()
+ * @see eve_api_admin_roles_form_validate()
+ * @see eve_api_admin_roles_form_submit()
  *
  * @ingroup forms
  */
-function omni_eve_api_admin_roles_form($form, &$form_state) {
+function eve_api_admin_roles_form($form, &$form_state) {
   $form['roles'] = array(
     '#type' => 'fieldset',
     '#title' => t('Roles'),
     '#weight' => 0,
   );
 
-  $role_list = omni_eve_api_role_list();
+  $role_list = eve_api_role_list();
 
   $form['roles']['blue_role'] = array(
     '#type' => 'select',
     '#title' => t('Select Role for Blues'),
     '#description' => t('Please select the default role for blues.'),
     '#options' => $role_list,
-    '#default_value' => variable_get('omni_eve_api_blue_role', 2),
+    '#default_value' => variable_get('eve_api_blue_role', 2),
     '#weight' => 0,
   );
 
@@ -38,7 +38,7 @@ function omni_eve_api_admin_roles_form($form, &$form_state) {
     '#title' => t('Select Role for Alliance Members'),
     '#description' => t('Please select an additional role assigned to all members of the Alliance.'),
     '#options' => $role_list,
-    '#default_value' => variable_get('omni_eve_api_alliance_role', 2),
+    '#default_value' => variable_get('eve_api_alliance_role', 2),
     '#weight' => 10,
   );
 
@@ -47,7 +47,7 @@ function omni_eve_api_admin_roles_form($form, &$form_state) {
     '#title' => t('Select Role for Unverified'),
     '#description' => t('Please select the default role for Unverified members.'),
     '#options' => $role_list,
-    '#default_value' => variable_get('omni_eve_api_unverified_role', 2),
+    '#default_value' => variable_get('eve_api_unverified_role', 2),
     '#weight' => 20,
   );
 
@@ -56,7 +56,7 @@ function omni_eve_api_admin_roles_form($form, &$form_state) {
     '#title' => t('Select Role for CEOs'),
     '#description' => t('Please select the default role for CEOs.'),
     '#options' => $role_list,
-    '#default_value' => variable_get('omni_eve_api_ceo_role', 2),
+    '#default_value' => variable_get('eve_api_ceo_role', 2),
     '#weight' => 30,
   );
 
@@ -65,7 +65,7 @@ function omni_eve_api_admin_roles_form($form, &$form_state) {
     '#title' => t('Select Role for Directors'),
     '#description' => t('Please select the default role for directors.'),
     '#options' => $role_list,
-    '#default_value' => variable_get('omni_eve_api_director_role', 2),
+    '#default_value' => variable_get('eve_api_director_role', 2),
     '#weight' => 40,
   );
 
@@ -74,23 +74,23 @@ function omni_eve_api_admin_roles_form($form, &$form_state) {
     '#value' => t('Submit'),
   );
 
-  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  $form['#validate'] = array('omni_eve_api_admin_roles_form_validate');
-  $form['#submit'] = array('omni_eve_api_admin_roles_form_submit');
+  $form['#validate'] = array('eve_api_admin_roles_form_validate');
+  $form['#submit'] = array('eve_api_admin_roles_form_submit');
 
   return $form;
 }
 
 /**
- * Form validation handler for omni_eve_api_admin_roles_form().
+ * Form validation handler for eve_api_admin_roles_form().
  *
- * @see omni_eve_api_admin_roles_form_submit()
+ * @see eve_api_admin_roles_form_submit()
  */
-function omni_eve_api_admin_roles_form_validate($form, &$form_state) {
+function eve_api_admin_roles_form_validate($form, &$form_state) {
   if (user_role_load((int) $form_state['values']['blue_role']) == FALSE) {
     form_set_error('blue_role', t('The role does not exist.'));
   }
@@ -113,15 +113,15 @@ function omni_eve_api_admin_roles_form_validate($form, &$form_state) {
 }
 
 /**
- * Form submission handler for omni_eve_api_admin_roles_form().
+ * Form submission handler for eve_api_admin_roles_form().
  *
- * @see omni_eve_api_admin_roles_form_validate()
+ * @see eve_api_admin_roles_form_validate()
  */
-function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
-  if ((int) variable_get('omni_eve_api_blue_role', 2) != 2) {
+function eve_api_admin_roles_form_submit($form, &$form_state) {
+  if ((int) variable_get('eve_api_blue_role', 2) != 2) {
     $uids = array();
     $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
-      ':rid' => (int) variable_get('omni_eve_api_blue_role', 2),
+      ':rid' => (int) variable_get('eve_api_blue_role', 2),
     ));
 
     if ($result->rowCount()) {
@@ -131,15 +131,15 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
     }
 
     if (!empty($uids)) {
-      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_blue_role', 2));
+      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('eve_api_blue_role', 2));
       user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['blue_role']);
     }
   }
 
-  if ((int) variable_get('omni_eve_api_alliance_role', 2) != 2) {
+  if ((int) variable_get('eve_api_alliance_role', 2) != 2) {
     $uids = array();
     $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
-      ':rid' => (int) variable_get('omni_eve_api_alliance_role', 2),
+      ':rid' => (int) variable_get('eve_api_alliance_role', 2),
     ));
 
     if ($result->rowCount()) {
@@ -149,15 +149,15 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
     }
 
     if (!empty($uids)) {
-      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_alliance_role', 2));
+      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('eve_api_alliance_role', 2));
       user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['alliance_role']);
     }
   }
 
-  if ((int) variable_get('omni_eve_api_unverified_role', 2) != 2) {
+  if ((int) variable_get('eve_api_unverified_role', 2) != 2) {
     $uids = array();
     $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
-      ':rid' => (int) variable_get('omni_eve_api_unverified_role', 2),
+      ':rid' => (int) variable_get('eve_api_unverified_role', 2),
     ));
 
     if ($result->rowCount()) {
@@ -167,15 +167,15 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
     }
 
     if (!empty($uids)) {
-      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_unverified_role', 2));
+      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('eve_api_unverified_role', 2));
       user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['unverified_role']);
     }
   }
 
-  if ((int) variable_get('omni_eve_api_ceo_role', 2) != 2) {
+  if ((int) variable_get('eve_api_ceo_role', 2) != 2) {
     $uids = array();
     $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
-      ':rid' => (int) variable_get('omni_eve_api_ceo_role', 2),
+      ':rid' => (int) variable_get('eve_api_ceo_role', 2),
     ));
 
     if ($result->rowCount()) {
@@ -185,15 +185,15 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
     }
 
     if (!empty($uids)) {
-      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_ceo_role', 2));
+      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('eve_api_ceo_role', 2));
       user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['ceo_role']);
     }
   }
 
-  if ((int) variable_get('omni_eve_api_director_role', 2) != 2) {
+  if ((int) variable_get('eve_api_director_role', 2) != 2) {
     $uids = array();
     $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
-      ':rid' => (int) variable_get('omni_eve_api_director_role', 2),
+      ':rid' => (int) variable_get('eve_api_director_role', 2),
     ));
 
     if ($result->rowCount()) {
@@ -203,16 +203,16 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
     }
 
     if (!empty($uids)) {
-      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_director_role', 2));
+      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('eve_api_director_role', 2));
       user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['director_role']);
     }
   }
 
-  variable_set('omni_eve_api_blue_role', (int) $form_state['values']['blue_role']);
-  variable_set('omni_eve_api_alliance_role', (int) $form_state['values']['alliance_role']);
-  variable_set('omni_eve_api_unverified_role', (int) $form_state['values']['unverified_role']);
-  variable_set('omni_eve_api_ceo_role', (int) $form_state['values']['ceo_role']);
-  variable_set('omni_eve_api_director_role', (int) $form_state['values']['director_role']);
+  variable_set('eve_api_blue_role', (int) $form_state['values']['blue_role']);
+  variable_set('eve_api_alliance_role', (int) $form_state['values']['alliance_role']);
+  variable_set('eve_api_unverified_role', (int) $form_state['values']['unverified_role']);
+  variable_set('eve_api_ceo_role', (int) $form_state['values']['ceo_role']);
+  variable_set('eve_api_director_role', (int) $form_state['values']['director_role']);
 
   drupal_set_message(t('The roles have been updated and will be updated with the next scheduled cron tasks.'));
 }
@@ -220,12 +220,12 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
 /**
  * Form constructor for editing the alliance API Key.
  *
- * @see omni_eve_api_admin_alliance_api_key_form_validate()
- * @see omni_eve_api_admin_alliance_api_key_form_submit()
+ * @see eve_api_admin_alliance_api_key_form_validate()
+ * @see eve_api_admin_alliance_api_key_form_submit()
  *
  * @ingroup forms
  */
-function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
+function eve_api_admin_alliance_api_key_form($form, &$form_state) {
   $form['enter_api'] = array(
     '#type' => 'fieldset',
     '#title' => t('Enter API Info'),
@@ -240,7 +240,7 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
     '#required' => TRUE,
     '#maxlength' => 15,
     '#weight' => 0,
-    '#default_value' => variable_get('omni_eve_api_corp_keyid', ''),
+    '#default_value' => variable_get('eve_api_corp_keyid', ''),
   );
 
   $form['enter_api']['vCode'] = array(
@@ -250,13 +250,13 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
     '#required' => TRUE,
     '#maxlength' => 64,
     '#weight' => 10,
-    '#default_value' => variable_get('omni_eve_api_corp_vcode', ''),
+    '#default_value' => variable_get('eve_api_corp_vcode', ''),
   );
 
   $form['enter_api']['enable'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Enable Omni EVE API'),
-    '#default_value' => variable_get('omni_eve_api_enable', FALSE),
+    '#title' => t('Enable EVE API'),
+    '#default_value' => variable_get('eve_api_enable', FALSE),
     '#weight' => 20,
   );
 
@@ -265,24 +265,24 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
     '#value' => t('Update'),
   );
 
-  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['enter_api']['enable']['#default_value'] = TRUE;
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  $form['#validate'] = array('omni_eve_api_admin_alliance_api_key_form_validate');
-  $form['#submit'] = array('omni_eve_api_admin_alliance_api_key_form_submit');
+  $form['#validate'] = array('eve_api_admin_alliance_api_key_form_validate');
+  $form['#submit'] = array('eve_api_admin_alliance_api_key_form_submit');
 
   return $form;
 }
 
 /**
- * Form validation handler for omni_eve_api_admin_alliance_api_key_form().
+ * Form validation handler for eve_api_admin_alliance_api_key_form().
  *
- * @see omni_eve_api_admin_alliance_api_key_form_submit()
+ * @see eve_api_admin_alliance_api_key_form_submit()
  */
-function omni_eve_api_admin_alliance_api_key_form_validate($form, &$form_state) {
+function eve_api_admin_alliance_api_key_form_validate($form, &$form_state) {
   $key_id = (int) $form_state['values']['keyID'];
   $v_code = (string) $form_state['values']['vCode'];
 
@@ -297,18 +297,18 @@ function omni_eve_api_admin_alliance_api_key_form_validate($form, &$form_state) 
     'vCode' => $v_code,
   );
 
-  $characters = omni_eve_api_get_character_api($query);
+  $characters = eve_api_get_character_api($query);
 
   if (isset($characters['error'])) {
     form_set_error('keyID', t('There was an error with the API.'));
     form_set_error('vCode');
-    variable_set('omni_eve_api_enable', FALSE);
+    variable_set('eve_api_enable', FALSE);
   }
   else {
     if ($characters['expires'] || $characters['type'] != 'Corporation' || $characters['accessMask'] != 67108863) {
       form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to your Alliance Executor or Corporation CEO, the "Type" drop down box is set to "Corporation", and that the "No Expiry" checkbox is ticked.'));
       form_set_error('vCode');
-      variable_set('omni_eve_api_enable', FALSE);
+      variable_set('eve_api_enable', FALSE);
     }
 
     $form_state['values']['characters'] = $characters;
@@ -316,35 +316,35 @@ function omni_eve_api_admin_alliance_api_key_form_validate($form, &$form_state) 
 }
 
 /**
- * Form submission handler for omni_eve_api_admin_alliance_api_key_form().
+ * Form submission handler for eve_api_admin_alliance_api_key_form().
  *
- * @see omni_eve_api_admin_alliance_api_key_form_validate()
+ * @see eve_api_admin_alliance_api_key_form_validate()
  */
-function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
+function eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
   $characters = (array) $form_state['values']['characters'];
 
-  variable_set('omni_eve_api_corp_keyid', (int) $form_state['values']['keyID']);
-  variable_set('omni_eve_api_corp_vcode', (string) $form_state['values']['vCode']);
+  variable_set('eve_api_corp_keyid', (int) $form_state['values']['keyID']);
+  variable_set('eve_api_corp_vcode', (string) $form_state['values']['vCode']);
 
   // It's not pretty but it works.
   foreach ($characters['characters'] as $character) {
-    variable_set('omni_eve_api_allianceID', (int) $character['allianceID']);
-    variable_set('omni_eve_api_corporationID', (int) $character['corporationID']);
+    variable_set('eve_api_allianceID', (int) $character['allianceID']);
+    variable_set('eve_api_corporationID', (int) $character['corporationID']);
   }
 
   if ((bool) $form_state['values']['enable']) {
-    variable_set('omni_eve_api_first_run', TRUE);
+    variable_set('eve_api_first_run', TRUE);
 
-    omni_eve_api_cron_api_alliance_fetch(1);
-    omni_eve_api_cron_api_alliance_sync(1);
-    omni_eve_api_cron_api_mask_sync(1);
+    eve_api_cron_api_alliance_fetch(1);
+    eve_api_cron_api_alliance_sync(1);
+    eve_api_cron_api_mask_sync(1);
 
     drupal_set_message(t('The Alliance API Info is set to be retrieved on the next cron job, it can take up to a minute for the cron task to be triggered.'));
   }
   else {
-    variable_set('omni_eve_api_first_run', FALSE);
-    variable_set('omni_eve_api_enable', FALSE);
-    drupal_set_message(t('Registrations have been disabled, Omni EVE API cron tasks have been disabled, and all user menus have been disabled.'));
+    variable_set('eve_api_first_run', FALSE);
+    variable_set('eve_api_enable', FALSE);
+    drupal_set_message(t('Registrations have been disabled, EVE API cron tasks have been disabled, and all user menus have been disabled.'));
   }
 
   menu_rebuild();
@@ -353,12 +353,12 @@ function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
 /**
  * Form constructor for the altering the access mask form.
  *
- * @see omni_eve_api_admin_registration_form_validate()
- * @see omni_eve_api_admin_registration_form_submit()
+ * @see eve_api_admin_registration_form_validate()
+ * @see eve_api_admin_registration_form_submit()
  *
  * @ingroup forms
  */
-function omni_eve_api_admin_registration_form($form, &$form_state) {
+function eve_api_admin_registration_form($form, &$form_state) {
   $header = array(
     'accessmask' => array(
       'data' => t('Mask'),
@@ -376,7 +376,7 @@ function omni_eve_api_admin_registration_form($form, &$form_state) {
 
   $options = $selected = array();
 
-  $access_mask = variable_get('omni_eve_api_access_mask', 268435455);
+  $access_mask = variable_get('eve_api_access_mask', 268435455);
 
   $result = db_select('oea_access_mask', 'a')
     ->fields('a', array(
@@ -427,7 +427,7 @@ function omni_eve_api_admin_registration_form($form, &$form_state) {
     '#maxlength' => 5,
     '#weight' => 0,
     '#required' => TRUE,
-    '#default_value' => round((float) variable_get('omni_eve_api_required_standing', 0.1), 1),
+    '#default_value' => round((float) variable_get('eve_api_required_standing', 0.1), 1),
   );
 
   $form['registration']['mask'] = array(
@@ -467,35 +467,35 @@ function omni_eve_api_admin_registration_form($form, &$form_state) {
     '#value' => t('Update Mask'),
   );
 
-  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  $form['#validate'] = array('omni_eve_api_admin_registration_form_validate');
-  $form['#submit'] = array('omni_eve_api_admin_registration_form_submit');
+  $form['#validate'] = array('eve_api_admin_registration_form_validate');
+  $form['#submit'] = array('eve_api_admin_registration_form_submit');
 
   return $form;
 }
 
 /**
- * Form validation handler for omni_eve_api_admin_registration_form().
+ * Form validation handler for eve_api_admin_registration_form().
  *
- * @see omni_eve_api_admin_registration_form_submit()
+ * @see eve_api_admin_registration_form_submit()
  */
-function omni_eve_api_admin_registration_form_validate($form, &$form_state) {
+function eve_api_admin_registration_form_validate($form, &$form_state) {
   if ((float) $form_state['values']['standing'] != round($form_state['values']['standing'], 1) || $form_state['values']['standing'] != (float) $form_state['values']['standing'] || (float) $form_state['values']['standing'] < -10.0 || (float) $form_state['values']['standing'] > 10.0) {
     form_set_error('standing', t('Standings are required to be between -10.0 and 10.0'));
   }
 }
 
 /**
- * Form submission handler for omni_eve_api_admin_registration_form().
+ * Form submission handler for eve_api_admin_registration_form().
  *
- * @see omni_eve_api_admin_registration_form_validate()
+ * @see eve_api_admin_registration_form_validate()
  */
-function omni_eve_api_admin_registration_form_submit($form, &$form_state) {
-  variable_set('omni_eve_api_required_standing', round((float) $form_state['values']['standing'], 1));
+function eve_api_admin_registration_form_submit($form, &$form_state) {
+  variable_set('eve_api_required_standing', round((float) $form_state['values']['standing'], 1));
 
   $new_access_mask = 8388616;
 
@@ -503,12 +503,12 @@ function omni_eve_api_admin_registration_form_submit($form, &$form_state) {
     $new_access_mask = $new_access_mask + (int) $access_bit;
   }
 
-  $access_mask = variable_get('omni_eve_api_access_mask', 268435455);
+  $access_mask = variable_get('eve_api_access_mask', 268435455);
 
-  variable_set('omni_eve_api_access_mask', $new_access_mask);
+  variable_set('eve_api_access_mask', $new_access_mask);
 
   if ($access_mask != $new_access_mask) {
-    $queue = DrupalQueue::get('omni_eve_api_cron_api_user_sync');
+    $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
 
     $result = db_query('SELECT DISTINCT uid FROM {oea_characters}');
 
@@ -525,12 +525,12 @@ function omni_eve_api_admin_registration_form_submit($form, &$form_state) {
 /**
  * Form constructor for the admin list blues form.
  *
- * @see omni_eve_api_admin_list_blues_form_validate()
- * @see omni_eve_api_admin_list_blues_form_submit()
+ * @see eve_api_admin_list_blues_form_validate()
+ * @see eve_api_admin_list_blues_form_submit()
  *
  * @ingroup forms
  */
-function omni_eve_api_admin_list_blues_form($form, &$form_state) {
+function eve_api_admin_list_blues_form($form, &$form_state) {
   $header = array(
     'deleted' => array(
       'data' => t('Deleted'),
@@ -612,31 +612,31 @@ function omni_eve_api_admin_list_blues_form($form, &$form_state) {
     '#value' => t('Update Blues'),
   );
 
-  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  $form['#validate'] = array('omni_eve_api_admin_list_blues_form_validate');
-  $form['#submit'] = array('omni_eve_api_admin_list_blues_form_submit');
+  $form['#validate'] = array('eve_api_admin_list_blues_form_validate');
+  $form['#submit'] = array('eve_api_admin_list_blues_form_submit');
 
   return $form;
 }
 
 /**
- * Form validation handler for omni_eve_api_admin_list_blues_form().
+ * Form validation handler for eve_api_admin_list_blues_form().
  *
- * @see omni_eve_api_admin_list_blues_form_submit()
+ * @see eve_api_admin_list_blues_form_submit()
  */
-function omni_eve_api_admin_list_blues_form_validate($form, &$form_state) {
+function eve_api_admin_list_blues_form_validate($form, &$form_state) {
 }
 
 /**
- * Form submission handler for omni_eve_api_admin_list_blues_form().
+ * Form submission handler for eve_api_admin_list_blues_form().
  *
- * @see omni_eve_api_admin_list_blues_form_validate()
+ * @see eve_api_admin_list_blues_form_validate()
  */
-function omni_eve_api_admin_list_blues_form_submit($form, &$form_state) {
+function eve_api_admin_list_blues_form_submit($form, &$form_state) {
   db_update('oea_blue_standings')->fields(array('deleted' => 0))->execute();
 
   $deleted_blues = array();
@@ -650,7 +650,7 @@ function omni_eve_api_admin_list_blues_form_submit($form, &$form_state) {
   db_update('oea_blue_standings')->fields(array('deleted' => 1))->condition('contactID', $deleted_blues, 'IN')->execute();
 
   if ($is_change) {
-    $queue = DrupalQueue::get('omni_eve_api_cron_api_user_sync');
+    $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
 
     $result = db_query('SELECT DISTINCT uid FROM {oea_characters}');
 
@@ -667,12 +667,12 @@ function omni_eve_api_admin_list_blues_form_submit($form, &$form_state) {
 /**
  * Form constructor for the admin add blues form.
  *
- * @see omni_eve_api_admin_add_blues_form_validate()
- * @see omni_eve_api_admin_add_blues_form_submit()
+ * @see eve_api_admin_add_blues_form_validate()
+ * @see eve_api_admin_add_blues_form_submit()
  *
  * @ingroup forms
  */
-function omni_eve_api_admin_add_blues_form($form, &$form_state) {
+function eve_api_admin_add_blues_form($form, &$form_state) {
   $form['add_blues'] = array(
     '#type' => 'fieldset',
     '#title' => t('Add Blue'),
@@ -694,24 +694,24 @@ function omni_eve_api_admin_add_blues_form($form, &$form_state) {
     '#value' => t('Add Blue'),
   );
 
-  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  $form_state['redirect'] = 'admin/settings/omni_eve_api/list_blues';
-  $form['#validate'] = array('omni_eve_api_admin_add_blues_form_validate');
-  $form['#submit'] = array('omni_eve_api_admin_add_blues_form_submit');
+  $form_state['redirect'] = 'admin/settings/eve_api/list_blues';
+  $form['#validate'] = array('eve_api_admin_add_blues_form_validate');
+  $form['#submit'] = array('eve_api_admin_add_blues_form_submit');
 
   return $form;
 }
 
 /**
- * Form validation handler for omni_eve_api_admin_add_blues_form().
+ * Form validation handler for eve_api_admin_add_blues_form().
  *
- * @see omni_eve_api_admin_add_blues_form_submit()
+ * @see eve_api_admin_add_blues_form_submit()
  */
-function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
+function eve_api_admin_add_blues_form_validate($form, &$form_state) {
   $result = db_query('SELECT contactID FROM {oea_blue_standings} WHERE contactID = :contactID', array(
     ':contactID' => (int) $form_state['values']['id'],
   ));
@@ -729,10 +729,10 @@ function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
   }
 
   $query = array('corporationID' => (int) $form_state['values']['id']);
-  $corp_info = omni_eve_api_get_corporation_info($query);
+  $corp_info = eve_api_get_corporation_info($query);
 
   $query = array('ids' => (int) $form_state['values']['id']);
-  $char_info = omni_eve_api_get_character_name($query);
+  $char_info = eve_api_get_character_name($query);
 
   if (isset($char_info['error'])) {
     form_set_error('id', t('There was an error with the API.'));
@@ -759,11 +759,11 @@ function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
 }
 
 /**
- * Form submission handler for omni_eve_api_admin_add_blues_form().
+ * Form submission handler for eve_api_admin_add_blues_form().
  *
- * @see omni_eve_api_admin_add_blues_form_validate()
+ * @see eve_api_admin_add_blues_form_validate()
  */
-function omni_eve_api_admin_add_blues_form_submit($form, &$form_state) {
+function eve_api_admin_add_blues_form_submit($form, &$form_state) {
   db_insert('oea_blue_standings')->fields(array(
     'contactID' => (int) $form_state['values']['id'],
     'contactName' => (string) $form_state['values']['name'],
@@ -771,7 +771,7 @@ function omni_eve_api_admin_add_blues_form_submit($form, &$form_state) {
     'manual' => 1,
   ))->execute();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_api_user_sync');
+  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
 
   $result = db_query('SELECT DISTINCT uid FROM {oea_characters}');
 
@@ -787,12 +787,12 @@ function omni_eve_api_admin_add_blues_form_submit($form, &$form_state) {
 /**
  * Form constructor for the admin list whitelist form.
  *
- * @see omni_eve_api_admin_list_whitelist_form_validate()
- * @see omni_eve_api_admin_list_whitelist_form_submit()
+ * @see eve_api_admin_list_whitelist_form_validate()
+ * @see eve_api_admin_list_whitelist_form_submit()
  *
  * @ingroup forms
  */
-function omni_eve_api_admin_list_whitelist_form($form, &$form_state) {
+function eve_api_admin_list_whitelist_form($form, &$form_state) {
   $header = array(
     'deleted' => array(
       'data' => t('Deleted'),
@@ -862,31 +862,31 @@ function omni_eve_api_admin_list_whitelist_form($form, &$form_state) {
     '#value' => t('Update Whitelist'),
   );
 
-  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  $form['#validate'] = array('omni_eve_api_admin_list_whitelist_form_validate');
-  $form['#submit'] = array('omni_eve_api_admin_list_whitelist_form_submit');
+  $form['#validate'] = array('eve_api_admin_list_whitelist_form_validate');
+  $form['#submit'] = array('eve_api_admin_list_whitelist_form_submit');
 
   return $form;
 }
 
 /**
- * Form validation handler for omni_eve_api_admin_list_whitelist_form().
+ * Form validation handler for eve_api_admin_list_whitelist_form().
  *
- * @see omni_eve_api_admin_list_whitelist_form_submit()
+ * @see eve_api_admin_list_whitelist_form_submit()
  */
-function omni_eve_api_admin_list_whitelist_form_validate($form, &$form_state) {
+function eve_api_admin_list_whitelist_form_validate($form, &$form_state) {
 }
 
 /**
- * Form submission handler for omni_eve_api_admin_list_whitelist_form().
+ * Form submission handler for eve_api_admin_list_whitelist_form().
  *
- * @see omni_eve_api_admin_list_whitelist_form_validate()
+ * @see eve_api_admin_list_whitelist_form_validate()
  */
-function omni_eve_api_admin_list_whitelist_form_submit($form, &$form_state) {
+function eve_api_admin_list_whitelist_form_submit($form, &$form_state) {
   db_update('oea_whitelist')->fields(array('deleted' => 0))->execute();
   $deleted_whitelist = array();
 
@@ -902,12 +902,12 @@ function omni_eve_api_admin_list_whitelist_form_submit($form, &$form_state) {
 /**
  * Form constructor for the admin add whitelist form.
  *
- * @see omni_eve_api_admin_add_whitelist_form_validate()
- * @see omni_eve_api_admin_add_whitelist_form_submit()
+ * @see eve_api_admin_add_whitelist_form_validate()
+ * @see eve_api_admin_add_whitelist_form_submit()
  *
  * @ingroup forms
  */
-function omni_eve_api_admin_add_whitelist_form($form, &$form_state) {
+function eve_api_admin_add_whitelist_form($form, &$form_state) {
   $form['add_whitelist'] = array(
     '#type' => 'fieldset',
     '#title' => t('Add Whitelist'),
@@ -938,24 +938,24 @@ function omni_eve_api_admin_add_whitelist_form($form, &$form_state) {
     '#value' => t('Add Whitelist'),
   );
 
-  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  $form_state['redirect'] = 'admin/settings/omni_eve_api/list_whitelist';
-  $form['#validate'] = array('omni_eve_api_admin_add_whitelist_form_validate');
-  $form['#submit'] = array('omni_eve_api_admin_add_whitelist_form_submit');
+  $form_state['redirect'] = 'admin/settings/eve_api/list_whitelist';
+  $form['#validate'] = array('eve_api_admin_add_whitelist_form_validate');
+  $form['#submit'] = array('eve_api_admin_add_whitelist_form_submit');
 
   return $form;
 }
 
 /**
- * Form validation handler for omni_eve_api_admin_add_whitelist_form().
+ * Form validation handler for eve_api_admin_add_whitelist_form().
  *
- * @see omni_eve_api_admin_add_whitelist_form_submit()
+ * @see eve_api_admin_add_whitelist_form_submit()
  */
-function omni_eve_api_admin_add_whitelist_form_validate($form, &$form_state) {
+function eve_api_admin_add_whitelist_form_validate($form, &$form_state) {
   $key_id = (int) $form_state['values']['keyID'];
   $v_code = (string) $form_state['values']['vCode'];
 
@@ -970,7 +970,7 @@ function omni_eve_api_admin_add_whitelist_form_validate($form, &$form_state) {
     'vCode' => $v_code,
   );
 
-  $characters = omni_eve_api_get_character_api($query);
+  $characters = eve_api_get_character_api($query);
 
   if (isset($characters['error'])) {
     form_set_error('keyID', t('There was an error with the API.'));
@@ -983,7 +983,7 @@ function omni_eve_api_admin_add_whitelist_form_validate($form, &$form_state) {
       form_set_error('vCode');
     }
 
-    if (!omni_eve_api_verify_blue($characters)) {
+    if (!eve_api_verify_blue($characters)) {
       form_set_error('keyID', t('No characters associated with the key are currently blue, please add the characters to the blue standings.'));
       form_set_error('vCode');
     }
@@ -993,11 +993,11 @@ function omni_eve_api_admin_add_whitelist_form_validate($form, &$form_state) {
 }
 
 /**
- * Form submission handler for omni_eve_api_admin_add_whitelist_form().
+ * Form submission handler for eve_api_admin_add_whitelist_form().
  *
- * @see omni_eve_api_admin_add_whitelist_form_validate()
+ * @see eve_api_admin_add_whitelist_form_validate()
  */
-function omni_eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
+function eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
   $characters = (array) $form_state['values']['characters'];
 
   foreach ($characters['characters'] as $character) {
@@ -1014,12 +1014,12 @@ function omni_eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
 /**
  * Form constructor for the teamspeak connection form.
  *
- * @see omni_eve_api_admin_teamspeak_form_validate()
- * @see omni_eve_api_admin_teamspeak_form_submit()
+ * @see eve_api_admin_teamspeak_form_validate()
+ * @see eve_api_admin_teamspeak_form_submit()
  *
  * @ingroup forms
  */
-function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
+function eve_api_admin_teamspeak_form($form, &$form_state) {
   $form['teamspeak'] = array(
     '#type' => 'fieldset',
     '#title' => t('Configure Teamspeak 3 Connection'),
@@ -1034,7 +1034,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#required' => TRUE,
     '#maxlength' => 15,
     '#weight' => 0,
-    '#default_value' => variable_get('omni_eve_api_ts3_host', '127.0.0.1'),
+    '#default_value' => variable_get('eve_api_ts3_host', '127.0.0.1'),
   );
 
   $form['teamspeak']['server_address'] = array(
@@ -1044,7 +1044,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#required' => TRUE,
     '#maxlength' => 100,
     '#weight' => 0,
-    '#default_value' => variable_get('omni_eve_api_ts3_server_address', 'teamspeak.com'),
+    '#default_value' => variable_get('eve_api_ts3_server_address', 'teamspeak.com'),
   );
 
   $form['teamspeak']['server_port'] = array(
@@ -1054,7 +1054,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#required' => TRUE,
     '#maxlength' => 6,
     '#weight' => 10,
-    '#default_value' => variable_get('omni_eve_api_ts3_server_port', 9987),
+    '#default_value' => variable_get('eve_api_ts3_server_port', 9987),
   );
 
   $form['teamspeak']['server_password'] = array(
@@ -1063,7 +1063,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#description' => t('If you require a password to connect to your Teamspeak, please input the password, otherwise leave this empty.'),
     '#maxlength' => 50,
     '#weight' => 20,
-    '#default_value' => variable_get('omni_eve_api_ts3_server_password', ''),
+    '#default_value' => variable_get('eve_api_ts3_server_password', ''),
   );
 
   $form['teamspeak']['query_port'] = array(
@@ -1073,7 +1073,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#required' => TRUE,
     '#maxlength' => 6,
     '#weight' => 30,
-    '#default_value' => variable_get('omni_eve_api_ts3_query_port', 10011),
+    '#default_value' => variable_get('eve_api_ts3_query_port', 10011),
   );
 
   $form['teamspeak']['query_username'] = array(
@@ -1083,7 +1083,7 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#required' => TRUE,
     '#maxlength' => 50,
     '#weight' => 40,
-    '#default_value' => variable_get('omni_eve_api_ts3_query_username', 'Username'),
+    '#default_value' => variable_get('eve_api_ts3_query_username', 'Username'),
   );
 
   $form['teamspeak']['query_password'] = array(
@@ -1093,13 +1093,13 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#required' => TRUE,
     '#maxlength' => 50,
     '#weight' => 50,
-    '#default_value' => variable_get('omni_eve_api_ts3_query_password', 'Password'),
+    '#default_value' => variable_get('eve_api_ts3_query_password', 'Password'),
   );
 
   $form['teamspeak']['enable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable Teamspeak 3 Connection'),
-    '#default_value' => variable_get('omni_eve_api_ts3_enable', FALSE),
+    '#default_value' => variable_get('eve_api_ts3_enable', FALSE),
     '#weight' => 70,
   );
 
@@ -1108,45 +1108,45 @@ function omni_eve_api_admin_teamspeak_form($form, &$form_state) {
     '#value' => t('Submit'),
   );
 
-  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  if (!variable_get('omni_eve_api_ts3_framework_installed', FALSE)) {
+  if (!variable_get('eve_api_ts3_framework_installed', FALSE)) {
     drupal_set_message(t('TeamSpeak 3 PHP Framework Library is not installed, please read the README.txt for instructions on how to install the library.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  $form['#validate'] = array('omni_eve_api_admin_teamspeak_form_validate');
-  $form['#submit'] = array('omni_eve_api_admin_teamspeak_form_submit');
+  $form['#validate'] = array('eve_api_admin_teamspeak_form_validate');
+  $form['#submit'] = array('eve_api_admin_teamspeak_form_submit');
 
   return $form;
 }
 
 /**
- * Form validation handler for omni_eve_api_admin_teamspeak_form().
+ * Form validation handler for eve_api_admin_teamspeak_form().
  *
- * @see omni_eve_api_admin_teamspeak_form_submit()
+ * @see eve_api_admin_teamspeak_form_submit()
  */
-function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
-  variable_set('omni_eve_api_ts3_host', (string) $form_state['values']['hostname']);
-  variable_set('omni_eve_api_ts3_server_address', (string) $form_state['values']['server_address']);
-  variable_set('omni_eve_api_ts3_server_port', (int) $form_state['values']['server_port']);
-  variable_set('omni_eve_api_ts3_server_password', (string) $form_state['values']['server_password']);
-  variable_set('omni_eve_api_ts3_query_port', (int) $form_state['values']['query_port']);
-  variable_set('omni_eve_api_ts3_query_username', (string) $form_state['values']['query_username']);
-  variable_set('omni_eve_api_ts3_query_password', (string) $form_state['values']['query_password']);
+function eve_api_admin_teamspeak_form_validate($form, &$form_state) {
+  variable_set('eve_api_ts3_host', (string) $form_state['values']['hostname']);
+  variable_set('eve_api_ts3_server_address', (string) $form_state['values']['server_address']);
+  variable_set('eve_api_ts3_server_port', (int) $form_state['values']['server_port']);
+  variable_set('eve_api_ts3_server_password', (string) $form_state['values']['server_password']);
+  variable_set('eve_api_ts3_query_port', (int) $form_state['values']['query_port']);
+  variable_set('eve_api_ts3_query_username', (string) $form_state['values']['query_username']);
+  variable_set('eve_api_ts3_query_password', (string) $form_state['values']['query_password']);
 
-  if (variable_get('omni_eve_api_ts3_framework_installed', FALSE)) {
+  if (variable_get('eve_api_ts3_framework_installed', FALSE)) {
     if ((bool) $form_state['values']['enable']) {
       try {
-        $ts3 = omni_eve_api_teamspeak_connection(TRUE);
+        $ts3 = eve_api_teamspeak_connection(TRUE);
         unset($ts3);
       }
       catch (OeaException $e) {
         form_set_error('enable', check_plain($e->getMessage()));
-        variable_set('omni_eve_api_ts3_enable', FALSE);
+        variable_set('eve_api_ts3_enable', FALSE);
       }
     }
   }
@@ -1156,17 +1156,17 @@ function omni_eve_api_admin_teamspeak_form_validate($form, &$form_state) {
 }
 
 /**
- * Form submission handler for omni_eve_api_admin_teamspeak_form().
+ * Form submission handler for eve_api_admin_teamspeak_form().
  *
- * @see omni_eve_api_admin_teamspeak_form_validate()
+ * @see eve_api_admin_teamspeak_form_validate()
  */
-function omni_eve_api_admin_teamspeak_form_submit($form, &$form_state) {
+function eve_api_admin_teamspeak_form_submit($form, &$form_state) {
   if ((bool) $form_state['values']['enable']) {
-    variable_set('omni_eve_api_ts3_enable', TRUE);
-    omni_eve_api_cron_teamspeak_role_sync(1);
+    variable_set('eve_api_ts3_enable', TRUE);
+    eve_api_cron_teamspeak_role_sync(1);
   }
   else {
-    variable_set('omni_eve_api_ts3_enable', FALSE);
+    variable_set('eve_api_ts3_enable', FALSE);
   }
 
   menu_rebuild();
@@ -1177,12 +1177,12 @@ function omni_eve_api_admin_teamspeak_form_submit($form, &$form_state) {
 /**
  * Form constructor for the teamspeak connection form.
  *
- * @see omni_eve_api_user_teamspeak_settings_form_validate()
- * @see omni_eve_api_user_teamspeak_settings_form_submit()
+ * @see eve_api_user_teamspeak_settings_form_validate()
+ * @see eve_api_user_teamspeak_settings_form_submit()
  *
  * @ingroup forms
  */
-function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
+function eve_api_user_teamspeak_settings_form($form, &$form_state) {
   $form['teamspeak_settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('Teamspeak 3 Settings'),
@@ -1197,13 +1197,13 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     '#required' => TRUE,
     '#maxlength' => 50,
     '#weight' => 0,
-    '#default_value' => variable_get('omni_eve_api_ts3_nickname', '[@corp] @name'),
+    '#default_value' => variable_get('eve_api_ts3_nickname', '[@corp] @name'),
   );
 
   try {
     $teamspeakgroups = array();
 
-    $ts3 = omni_eve_api_teamspeak_connection();
+    $ts3 = eve_api_teamspeak_connection();
     $teamspeak_groups = $ts3->serverGroupList();
 
     foreach ($teamspeak_groups as $teamspeak_group) {
@@ -1217,7 +1217,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
       '#title' => t('Select Teamspeak Bypass Group'),
       '#description' => t('Please select a Teamspeak Group for users to bypass the name and registration check.'),
       '#options' => $teamspeakgroups,
-      '#default_value' => variable_get('omni_eve_api_ts3_bypass_group', 0) == 0 ? '' : variable_get('omni_eve_api_ts3_bypass_group', 0),
+      '#default_value' => variable_get('eve_api_ts3_bypass_group', 0) == 0 ? '' : variable_get('eve_api_ts3_bypass_group', 0),
       '#weight' => 10,
     );
   }
@@ -1296,7 +1296,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     '#description' => t('How long until the registration options are enforced.'),
     '#weight' => 0,
     '#options' => $selectable_options,
-    '#default_value' => variable_get('omni_eve_api_ts3_cron_reg_time', 10),
+    '#default_value' => variable_get('eve_api_ts3_cron_reg_time', 10),
   );
 
   $form['teamspeak_settings']['reg']['reg_ban_time'] = array(
@@ -1305,7 +1305,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     '#description' => t('How long to ban the user.'),
     '#weight' => 10,
     '#options' => ($selectable_options + $long_selectable_options),
-    '#default_value' => variable_get('omni_eve_api_ts3_cron_reg_ban_time', 10),
+    '#default_value' => variable_get('eve_api_ts3_cron_reg_ban_time', 10),
   );
 
   $header = array(
@@ -1324,7 +1324,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     'message' => array(
       'data' => array(
         '#type' => 'textfield',
-        '#value' => variable_get('omni_eve_api_ts3_cron_reg_message', ''),
+        '#value' => variable_get('eve_api_ts3_cron_reg_message', ''),
         '#maxlength' => 50,
         '#attributes' => array(
           'name' => 'reg_message',
@@ -1338,7 +1338,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     'message' => array(
       'data' => array(
         '#type' => 'textfield',
-        '#value' => variable_get('omni_eve_api_ts3_cron_reg_poke', ''),
+        '#value' => variable_get('eve_api_ts3_cron_reg_poke', ''),
         '#maxlength' => 50,
         '#attributes' => array(
           'name' => 'reg_poke',
@@ -1352,7 +1352,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     'message' => array(
       'data' => array(
         '#type' => 'textfield',
-        '#value' => variable_get('omni_eve_api_ts3_cron_reg_kick', ''),
+        '#value' => variable_get('eve_api_ts3_cron_reg_kick', ''),
         '#maxlength' => 50,
         '#attributes' => array(
           'name' => 'reg_kick',
@@ -1366,7 +1366,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     'message' => array(
       'data' => array(
         '#type' => 'textfield',
-        '#value' => variable_get('omni_eve_api_ts3_cron_reg_ban', ''),
+        '#value' => variable_get('eve_api_ts3_cron_reg_ban', ''),
         '#maxlength' => 50,
         '#attributes' => array(
           'name' => 'reg_ban',
@@ -1375,10 +1375,10 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     ),
   );
 
-  $selected['reg_message_enable'] = variable_get('omni_eve_api_ts3_cron_reg_message_enable', FALSE);
-  $selected['reg_poke_enable'] = variable_get('omni_eve_api_ts3_cron_reg_poke_enable', FALSE);
-  $selected['reg_kick_enable'] = variable_get('omni_eve_api_ts3_cron_reg_kick_enable', FALSE);
-  $selected['reg_ban_enable'] = variable_get('omni_eve_api_ts3_cron_reg_ban_enable', FALSE);
+  $selected['reg_message_enable'] = variable_get('eve_api_ts3_cron_reg_message_enable', FALSE);
+  $selected['reg_poke_enable'] = variable_get('eve_api_ts3_cron_reg_poke_enable', FALSE);
+  $selected['reg_kick_enable'] = variable_get('eve_api_ts3_cron_reg_kick_enable', FALSE);
+  $selected['reg_ban_enable'] = variable_get('eve_api_ts3_cron_reg_ban_enable', FALSE);
 
   $form['teamspeak_settings']['reg']['reg_options'] = array(
     '#type' => 'tableselect',
@@ -1401,7 +1401,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     '#description' => t('How long until the incorrect nickname options are enforced.'),
     '#weight' => 0,
     '#options' => $selectable_options,
-    '#default_value' => variable_get('omni_eve_api_ts3_cron_user_time', 10),
+    '#default_value' => variable_get('eve_api_ts3_cron_user_time', 10),
   );
 
   $form['teamspeak_settings']['user']['user_ban_time'] = array(
@@ -1410,7 +1410,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     '#description' => t('How long to ban the user.'),
     '#weight' => 10,
     '#options' => ($selectable_options + $long_selectable_options),
-    '#default_value' => variable_get('omni_eve_api_ts3_cron_user_ban_time', 10),
+    '#default_value' => variable_get('eve_api_ts3_cron_user_ban_time', 10),
   );
 
   $options = $selected = array();
@@ -1420,7 +1420,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     'message' => array(
       'data' => array(
         '#type' => 'textfield',
-        '#value' => variable_get('omni_eve_api_ts3_cron_user_message', ''),
+        '#value' => variable_get('eve_api_ts3_cron_user_message', ''),
         '#maxlength' => 50,
         '#attributes' => array(
           'name' => 'user_message',
@@ -1434,7 +1434,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     'message' => array(
       'data' => array(
         '#type' => 'textfield',
-        '#value' => variable_get('omni_eve_api_ts3_cron_user_poke', ''),
+        '#value' => variable_get('eve_api_ts3_cron_user_poke', ''),
         '#maxlength' => 50,
         '#attributes' => array(
           'name' => 'user_poke',
@@ -1448,7 +1448,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     'message' => array(
       'data' => array(
         '#type' => 'textfield',
-        '#value' => variable_get('omni_eve_api_ts3_cron_user_kick', ''),
+        '#value' => variable_get('eve_api_ts3_cron_user_kick', ''),
         '#maxlength' => 50,
         '#attributes' => array(
           'name' => 'user_kick',
@@ -1462,7 +1462,7 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     'message' => array(
       'data' => array(
         '#type' => 'textfield',
-        '#value' => variable_get('omni_eve_api_ts3_cron_user_ban', ''),
+        '#value' => variable_get('eve_api_ts3_cron_user_ban', ''),
         '#maxlength' => 50,
         '#attributes' => array(
           'name' => 'user_ban',
@@ -1471,10 +1471,10 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     ),
   );
 
-  $selected['user_message_enable'] = variable_get('omni_eve_api_ts3_cron_user_message_enable', FALSE);
-  $selected['user_poke_enable'] = variable_get('omni_eve_api_ts3_cron_user_poke_enable', FALSE);
-  $selected['user_kick_enable'] = variable_get('omni_eve_api_ts3_cron_user_kick_enable', FALSE);
-  $selected['user_ban_enable'] = variable_get('omni_eve_api_ts3_cron_user_ban_enable', FALSE);
+  $selected['user_message_enable'] = variable_get('eve_api_ts3_cron_user_message_enable', FALSE);
+  $selected['user_poke_enable'] = variable_get('eve_api_ts3_cron_user_poke_enable', FALSE);
+  $selected['user_kick_enable'] = variable_get('eve_api_ts3_cron_user_kick_enable', FALSE);
+  $selected['user_ban_enable'] = variable_get('eve_api_ts3_cron_user_ban_enable', FALSE);
 
   $form['teamspeak_settings']['user']['user_options'] = array(
     '#type' => 'tableselect',
@@ -1489,64 +1489,64 @@ function omni_eve_api_user_teamspeak_settings_form($form, &$form_state) {
     '#value' => t('Submit'),
   );
 
-  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  if (!variable_get('omni_eve_api_ts3_framework_installed', FALSE)) {
+  if (!variable_get('eve_api_ts3_framework_installed', FALSE)) {
     drupal_set_message(t('TeamSpeak 3 PHP Framework Library is not installed, please read the README.txt for instructions on how to install the library.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  $form['#validate'] = array('omni_eve_api_user_teamspeak_settings_form_validate');
-  $form['#submit'] = array('omni_eve_api_user_teamspeak_settings_form_submit');
+  $form['#validate'] = array('eve_api_user_teamspeak_settings_form_validate');
+  $form['#submit'] = array('eve_api_user_teamspeak_settings_form_submit');
 
   return $form;
 }
 
 /**
- * Form validation handler for omni_eve_api_user_teamspeak_settings_form().
+ * Form validation handler for eve_api_user_teamspeak_settings_form().
  *
- * @see omni_eve_api_user_teamspeak_settings_form_submit()
+ * @see eve_api_user_teamspeak_settings_form_submit()
  */
-function omni_eve_api_user_teamspeak_settings_form_validate($form, &$form_state) {
-  if (!variable_get('omni_eve_api_ts3_framework_installed', FALSE)) {
+function eve_api_user_teamspeak_settings_form_validate($form, &$form_state) {
+  if (!variable_get('eve_api_ts3_framework_installed', FALSE)) {
     form_set_error('enable', t('Teamspeak 3 PHP Framework not found, unable to enable Teamspeak 3 connection.'));
   }
 }
 
 /**
- * Form submission handler for omni_eve_api_user_teamspeak_settings_form().
+ * Form submission handler for eve_api_user_teamspeak_settings_form().
  *
- * @see omni_eve_api_user_teamspeak_settings_form_validate()
+ * @see eve_api_user_teamspeak_settings_form_validate()
  */
-function omni_eve_api_user_teamspeak_settings_form_submit($form, &$form_state) {
-  variable_set('omni_eve_api_ts3_bypass_group', (int) $form_state['values']['bypass_group']);
-  variable_set('omni_eve_api_ts3_nickname', (string) $form_state['values']['nickname']);
-  variable_set('omni_eve_api_ts3_cron_reg_time', (int) $form_state['values']['reg_time']);
-  variable_set('omni_eve_api_ts3_cron_user_time', (int) $form_state['values']['user_time']);
-  variable_set('omni_eve_api_ts3_cron_reg_ban_time', (int) $form_state['values']['reg_ban_time']);
-  variable_set('omni_eve_api_ts3_cron_user_ban_time', (int) $form_state['values']['user_ban_time']);
+function eve_api_user_teamspeak_settings_form_submit($form, &$form_state) {
+  variable_set('eve_api_ts3_bypass_group', (int) $form_state['values']['bypass_group']);
+  variable_set('eve_api_ts3_nickname', (string) $form_state['values']['nickname']);
+  variable_set('eve_api_ts3_cron_reg_time', (int) $form_state['values']['reg_time']);
+  variable_set('eve_api_ts3_cron_user_time', (int) $form_state['values']['user_time']);
+  variable_set('eve_api_ts3_cron_reg_ban_time', (int) $form_state['values']['reg_ban_time']);
+  variable_set('eve_api_ts3_cron_user_ban_time', (int) $form_state['values']['user_ban_time']);
 
-  variable_set('omni_eve_api_ts3_cron_reg_message', (string) $form_state['input']['reg_message']);
-  variable_set('omni_eve_api_ts3_cron_reg_poke', (string) $form_state['input']['reg_poke']);
-  variable_set('omni_eve_api_ts3_cron_reg_kick', (string) $form_state['input']['reg_kick']);
-  variable_set('omni_eve_api_ts3_cron_reg_ban', (string) $form_state['input']['reg_ban']);
-  variable_set('omni_eve_api_ts3_cron_user_message', (string) $form_state['input']['user_message']);
-  variable_set('omni_eve_api_ts3_cron_user_poke', (string) $form_state['input']['user_poke']);
-  variable_set('omni_eve_api_ts3_cron_user_kick', (string) $form_state['input']['user_kick']);
-  variable_set('omni_eve_api_ts3_cron_user_ban', (string) $form_state['input']['user_ban']);
+  variable_set('eve_api_ts3_cron_reg_message', (string) $form_state['input']['reg_message']);
+  variable_set('eve_api_ts3_cron_reg_poke', (string) $form_state['input']['reg_poke']);
+  variable_set('eve_api_ts3_cron_reg_kick', (string) $form_state['input']['reg_kick']);
+  variable_set('eve_api_ts3_cron_reg_ban', (string) $form_state['input']['reg_ban']);
+  variable_set('eve_api_ts3_cron_user_message', (string) $form_state['input']['user_message']);
+  variable_set('eve_api_ts3_cron_user_poke', (string) $form_state['input']['user_poke']);
+  variable_set('eve_api_ts3_cron_user_kick', (string) $form_state['input']['user_kick']);
+  variable_set('eve_api_ts3_cron_user_ban', (string) $form_state['input']['user_ban']);
 
-  $form_state['redirect'] = 'admin/settings/omni_eve_api/teamspeak';
+  $form_state['redirect'] = 'admin/settings/eve_api/teamspeak';
 
   foreach ((array) $form_state['values']['reg_options'] as $field => $value) {
-    $field = 'omni_eve_api_ts3_cron_' . (string) $field;
+    $field = 'eve_api_ts3_cron_' . (string) $field;
     variable_set($field, (bool) $value);
   }
 
   foreach ((array) $form_state['values']['user_options'] as $field => $value) {
-    $field = 'omni_eve_api_ts3_cron_' . (string) $field;
+    $field = 'eve_api_ts3_cron_' . (string) $field;
     variable_set($field, (bool) $value);
   }
 
@@ -1556,12 +1556,12 @@ function omni_eve_api_user_teamspeak_settings_form_submit($form, &$form_state) {
 /**
  * Form constructor for the jabber connection form.
  *
- * @see omni_eve_api_admin_jabber_form_validate()
- * @see omni_eve_api_admin_jabber_form_submit()
+ * @see eve_api_admin_jabber_form_validate()
+ * @see eve_api_admin_jabber_form_submit()
  *
  * @ingroup forms
  */
-function omni_eve_api_admin_jabber_form($form, &$form_state) {
+function eve_api_admin_jabber_form($form, &$form_state) {
   $form['jabber'] = array(
     '#type' => 'fieldset',
     '#title' => t('Configure Jabber Connection'),
@@ -1576,7 +1576,7 @@ function omni_eve_api_admin_jabber_form($form, &$form_state) {
     '#required' => TRUE,
     '#maxlength' => 15,
     '#weight' => 0,
-    '#default_value' => variable_get('omni_eve_api_jabber_host', '127.0.0.1'),
+    '#default_value' => variable_get('eve_api_jabber_host', '127.0.0.1'),
   );
 
   $form['jabber']['database'] = array(
@@ -1586,7 +1586,7 @@ function omni_eve_api_admin_jabber_form($form, &$form_state) {
     '#required' => TRUE,
     '#maxlength' => 100,
     '#weight' => 10,
-    '#default_value' => variable_get('omni_eve_api_jabber_database', 'Jabber'),
+    '#default_value' => variable_get('eve_api_jabber_database', 'Jabber'),
   );
 
   $form['jabber']['username'] = array(
@@ -1596,7 +1596,7 @@ function omni_eve_api_admin_jabber_form($form, &$form_state) {
     '#required' => TRUE,
     '#maxlength' => 100,
     '#weight' => 20,
-    '#default_value' => variable_get('omni_eve_api_jabber_username', 'Username'),
+    '#default_value' => variable_get('eve_api_jabber_username', 'Username'),
   );
 
   $form['jabber']['password'] = array(
@@ -1605,7 +1605,7 @@ function omni_eve_api_admin_jabber_form($form, &$form_state) {
     '#description' => t('The password required to connect to the Jabber Database.'),
     '#maxlength' => 100,
     '#weight' => 30,
-    '#default_value' => variable_get('omni_eve_api_jabber_password', 'Password'),
+    '#default_value' => variable_get('eve_api_jabber_password', 'Password'),
   );
 
   $form['jabber']['url'] = array(
@@ -1614,7 +1614,7 @@ function omni_eve_api_admin_jabber_form($form, &$form_state) {
     '#description' => t('The web address to the Openfire admin page. Default http://localhost:9090'),
     '#maxlength' => 100,
     '#weight' => 40,
-    '#default_value' => variable_get('omni_eve_api_jabber_url', 'http://localhost:9090'),
+    '#default_value' => variable_get('eve_api_jabber_url', 'http://localhost:9090'),
   );
 
   $form['jabber']['secret'] = array(
@@ -1623,7 +1623,7 @@ function omni_eve_api_admin_jabber_form($form, &$form_state) {
     '#description' => t('The Openfire secret password to access the User Service.'),
     '#maxlength' => 100,
     '#weight' => 50,
-    '#default_value' => variable_get('omni_eve_api_jabber_secret', 'Password'),
+    '#default_value' => variable_get('eve_api_jabber_secret', 'Password'),
   );
 
   $form['jabber']['domain'] = array(
@@ -1632,17 +1632,17 @@ function omni_eve_api_admin_jabber_form($form, &$form_state) {
     '#description' => t('The domain appended to the Jabber login username. (ex. user@yourdomain.com)'),
     '#maxlength' => 100,
     '#weight' => 60,
-    '#default_value' => variable_get('omni_eve_api_jabber_domain', 'yourdomain.com'),
+    '#default_value' => variable_get('eve_api_jabber_domain', 'yourdomain.com'),
   );
 
   $form['jabber']['enable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable Jabber Connection'),
-    '#default_value' => variable_get('omni_eve_api_jabber_enable', FALSE),
+    '#default_value' => variable_get('eve_api_jabber_enable', FALSE),
     '#weight' => 70,
   );
 
-  if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
+  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
@@ -1652,60 +1652,60 @@ function omni_eve_api_admin_jabber_form($form, &$form_state) {
     '#value' => t('Submit'),
   );
 
-  $form['#validate'] = array('omni_eve_api_admin_jabber_form_validate');
-  $form['#submit'] = array('omni_eve_api_admin_jabber_form_submit');
+  $form['#validate'] = array('eve_api_admin_jabber_form_validate');
+  $form['#submit'] = array('eve_api_admin_jabber_form_submit');
 
   return $form;
 }
 
 /**
- * Form validation handler for omni_eve_api_admin_jabber_form().
+ * Form validation handler for eve_api_admin_jabber_form().
  *
- * @see omni_eve_api_admin_jabber_form_submit()
+ * @see eve_api_admin_jabber_form_submit()
  */
-function omni_eve_api_admin_jabber_form_validate($form, &$form_state) {
-  variable_set('omni_eve_api_jabber_host', (string) $form_state['values']['host']);
-  variable_set('omni_eve_api_jabber_database', (string) $form_state['values']['database']);
-  variable_set('omni_eve_api_jabber_username', (string) $form_state['values']['username']);
-  variable_set('omni_eve_api_jabber_password', (string) $form_state['values']['password']);
-  variable_set('omni_eve_api_jabber_url', (string) $form_state['values']['url']);
-  variable_set('omni_eve_api_jabber_secret', (string) $form_state['values']['secret']);
-  variable_set('omni_eve_api_jabber_domain', (string) $form_state['values']['domain']);
+function eve_api_admin_jabber_form_validate($form, &$form_state) {
+  variable_set('eve_api_jabber_host', (string) $form_state['values']['host']);
+  variable_set('eve_api_jabber_database', (string) $form_state['values']['database']);
+  variable_set('eve_api_jabber_username', (string) $form_state['values']['username']);
+  variable_set('eve_api_jabber_password', (string) $form_state['values']['password']);
+  variable_set('eve_api_jabber_url', (string) $form_state['values']['url']);
+  variable_set('eve_api_jabber_secret', (string) $form_state['values']['secret']);
+  variable_set('eve_api_jabber_domain', (string) $form_state['values']['domain']);
 
   if ((bool) $form_state['values']['enable']) {
     try {
-      omni_eve_api_jabber_connect(TRUE);
-      omni_eve_api_jabber_test_connection();
-      omni_eve_api_jabber_disconnect();
+      eve_api_jabber_connect(TRUE);
+      eve_api_jabber_test_connection();
+      eve_api_jabber_disconnect();
     }
     catch (OeaException $e) {
-      omni_eve_api_jabber_disconnect();
+      eve_api_jabber_disconnect();
       form_set_error('enable', t('Please check database settings and try again. Error: @error', array('@error' => check_plain($e->getMessage()))));
-      variable_set('omni_eve_api_jabber_enable', FALSE);
+      variable_set('eve_api_jabber_enable', FALSE);
     }
 
     try {
-      $result = omni_eve_api_jabber_url_query('check');
+      $result = eve_api_jabber_url_query('check');
 
       if ($result != 'IllegalArgumentException') {
         form_set_error('enable', t('Please check your Openfire URL settings and try again.'));
-        variable_set('omni_eve_api_jabber_enable', FALSE);
+        variable_set('eve_api_jabber_enable', FALSE);
       }
     }
     catch (OeaException $e) {
       form_set_error('enable', t('Please check your Openfire URL settings and try again.'));
-      variable_set('omni_eve_api_jabber_enable', FALSE);
+      variable_set('eve_api_jabber_enable', FALSE);
     }
   }
 }
 
 /**
- * Form submission handler for omni_eve_api_admin_jabber_form().
+ * Form submission handler for eve_api_admin_jabber_form().
  *
- * @see omni_eve_api_admin_jabber_form_validate()
+ * @see eve_api_admin_jabber_form_validate()
  */
-function omni_eve_api_admin_jabber_form_submit($form, &$form_state) {
-  variable_set('omni_eve_api_jabber_enable', (bool) $form_state['values']['enable']);
+function eve_api_admin_jabber_form_submit($form, &$form_state) {
+  variable_set('eve_api_jabber_enable', (bool) $form_state['values']['enable']);
 
   menu_rebuild();
 

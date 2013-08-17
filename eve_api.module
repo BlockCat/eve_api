@@ -19,7 +19,7 @@
  * |
  * `-------- Major Version Change.
  */
-function omni_eve_api_version() {
+function eve_api_version() {
   return '1.0.1.1';
 }
 
@@ -32,69 +32,69 @@ class OeaException extends Exception {
 /**
  * Implements hook_cronapi().
  */
-function omni_eve_api_cronapi($op, $job = NULL) {
+function eve_api_cronapi($op, $job = NULL) {
   $items = array();
 
-  $items['omni_eve_api_api_alliance_fetch_cron'] = array(
+  $items['eve_api_api_alliance_fetch_cron'] = array(
     'description' => 'General cron, called once a day.',
     'rule' => '4 0 * * *',
-    'file' => 'omni_eve_api.cron.inc',
+    'file' => 'eve_api.cron.inc',
     'weight' => 1,
   );
 
-  $items['omni_eve_api_api_alliance_sync_cron'] = array(
+  $items['eve_api_api_alliance_sync_cron'] = array(
     'description' => 'General cron, called once a day.',
     'rule' => '14 0 * * *',
-    'file' => 'omni_eve_api.cron.inc',
+    'file' => 'eve_api.cron.inc',
     'weight' => 2,
   );
 
-  $items['omni_eve_api_api_mask_cron'] = array(
+  $items['eve_api_api_mask_cron'] = array(
     'description' => 'General cron, called once a day.',
     'rule' => '24 0 * * *',
-    'file' => 'omni_eve_api.cron.inc',
+    'file' => 'eve_api.cron.inc',
     'weight' => 3,
   );
 
-  $items['omni_eve_api_api_users_cron'] = array(
+  $items['eve_api_api_users_cron'] = array(
     'description' => 'Pull API for each user every hour.',
     'rule' => '0 * * * *',
-    'file' => 'omni_eve_api.cron.inc',
+    'file' => 'eve_api.cron.inc',
     'weight' => 4,
   );
 
-  $items['omni_eve_api_teamspeak_role_cron'] = array(
+  $items['eve_api_teamspeak_role_cron'] = array(
     'description' => 'Update permissions in Teamspeak every 5 minutes.',
     'rule' => '*/5 * * * *',
-    'file' => 'omni_eve_api.cron.inc',
+    'file' => 'eve_api.cron.inc',
     'weight' => 5,
   );
 
-  $items['omni_eve_api_teamspeak_user_cron'] = array(
+  $items['eve_api_teamspeak_user_cron'] = array(
     'description' => 'Update user permissions in Teamspeak every 5 minutes.',
     'rule' => '*/5 * * * *',
-    'file' => 'omni_eve_api.cron.inc',
+    'file' => 'eve_api.cron.inc',
     'weight' => 6,
   );
 
-  $items['omni_eve_api_jabber_role_cron'] = array(
+  $items['eve_api_jabber_role_cron'] = array(
     'description' => 'Update permissions in Jabber every 5 minutes.',
     'rule' => '*/5 * * * *',
-    'file' => 'omni_eve_api.cron.inc',
+    'file' => 'eve_api.cron.inc',
     'weight' => 7,
   );
 
-  $items['omni_eve_api_jabber_user_cron'] = array(
+  $items['eve_api_jabber_user_cron'] = array(
     'description' => 'Update user permissions in Jabber every 5 minutes.',
     'rule' => '*/5 * * * *',
-    'file' => 'omni_eve_api.cron.inc',
+    'file' => 'eve_api.cron.inc',
     'weight' => 8,
   );
 
-  $items['omni_eve_api_teamspeak_name_cron'] = array(
+  $items['eve_api_teamspeak_name_cron'] = array(
     'description' => 'Check usernames in Teamspeak every minute.',
     'rule' => '* * * * *',
-    'file' => 'omni_eve_api.cron.inc',
+    'file' => 'eve_api.cron.inc',
     'weight' => 9,
   );
 
@@ -104,15 +104,15 @@ function omni_eve_api_cronapi($op, $job = NULL) {
 /**
  * Implements hook_menu_alter().
  */
-function omni_eve_api_menu_alter(&$items) {
+function eve_api_menu_alter(&$items) {
   // Ctools registration wizard for standard registration.
   // Overrides default router item defined by core user module.
-  $items['user/register']['page callback'] = array('omni_eve_api_register_wizard');
+  $items['user/register']['page callback'] = array('eve_api_register_wizard');
   // Pass the "first" step key to start the form on step 1 if no step has been
   // specified.
   $items['user/register']['page arguments'] = array('enter_api');
-  $items['user/register']['file'] = 'omni_eve_api.register.inc';
-  $items['user/register']['file path'] = drupal_get_path('module', 'omni_eve_api');
+  $items['user/register']['file'] = 'eve_api.register.inc';
+  $items['user/register']['file path'] = drupal_get_path('module', 'eve_api');
 
   return $items;
 }
@@ -120,166 +120,166 @@ function omni_eve_api_menu_alter(&$items) {
 /**
  * Implements hook_menu().
  */
-function omni_eve_api_menu() {
+function eve_api_menu() {
   $items = array();
 
   $items['user/register/%'] = array(
     'title' => 'Create New Account',
-    'page callback' => 'omni_eve_api_register_wizard',
+    'page callback' => 'eve_api_register_wizard',
     'page arguments' => array(2),
     'access callback' => 'user_register_access',
     'type' => MENU_CALLBACK,
-    'file' => 'omni_eve_api.register.inc',
+    'file' => 'eve_api.register.inc',
   );
 
   $admin_base = array(
     'page callback' => 'drupal_get_form',
-    'access arguments' => array('administer omni_eve_api settings'),
-    'file' => 'omni_eve_api.admin.inc',
+    'access arguments' => array('administer eve_api settings'),
+    'file' => 'eve_api.admin.inc',
   );
 
-  $items['admin/settings/omni_eve_api'] = array(
+  $items['admin/settings/eve_api'] = array(
     'title' => 'EVE API',
     'description' => 'Edit your Alliance API Key if you have not done so, enter it now.',
-    'page arguments' => array('omni_eve_api_admin_alliance_api_key_form'),
+    'page arguments' => array('eve_api_admin_alliance_api_key_form'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 0,
   ) + $admin_base;
 
-  $items['admin/settings/omni_eve_api/alliance_api_key'] = array(
+  $items['admin/settings/eve_api/alliance_api_key'] = array(
     'title' => 'API Key',
     'description' => 'Edit your Alliance API Key if you have not done so, enter it now.',
-    'page arguments' => array('omni_eve_api_admin_alliance_api_key_form'),
+    'page arguments' => array('eve_api_admin_alliance_api_key_form'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
   ) + $admin_base;
 
-  if (variable_get('omni_eve_api_enable', FALSE)) {
-    $items['admin/settings/omni_eve_api/settings'] = array(
+  if (variable_get('eve_api_enable', FALSE)) {
+    $items['admin/settings/eve_api/settings'] = array(
       'title' => 'Roles',
       'description' => 'From here you can change various settings.',
-      'page arguments' => array('omni_eve_api_admin_roles_form'),
+      'page arguments' => array('eve_api_admin_roles_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 10,
     ) + $admin_base;
 
-    $items['admin/settings/omni_eve_api/registration'] = array(
+    $items['admin/settings/eve_api/registration'] = array(
       'title' => 'Registration',
       'description' => 'Edit your Access Mask and required standing to register on the site.',
-      'page arguments' => array('omni_eve_api_admin_registration_form'),
+      'page arguments' => array('eve_api_admin_registration_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 20,
     ) + $admin_base;
 
-    $items['admin/settings/omni_eve_api/teamspeak'] = array(
+    $items['admin/settings/eve_api/teamspeak'] = array(
       'title' => 'Teamspeak',
       'description' => 'Configure and edit Teamspeak 3 connection settings.',
-      'page arguments' => array('omni_eve_api_admin_teamspeak_form'),
+      'page arguments' => array('eve_api_admin_teamspeak_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 30,
     ) + $admin_base;
 
-    if (variable_get('omni_eve_api_ts3_enable', FALSE)) {
-      $items['admin/settings/omni_eve_api/teamspeak/settings'] = array(
+    if (variable_get('eve_api_ts3_enable', FALSE)) {
+      $items['admin/settings/eve_api/teamspeak/settings'] = array(
         'title' => 'Settings',
-        'page arguments' => array('omni_eve_api_user_teamspeak_settings_form'),
+        'page arguments' => array('eve_api_user_teamspeak_settings_form'),
         'type' => MENU_LOCAL_ACTION,
         'weight' => 0,
       ) + $admin_base;
     }
 
-    $items['admin/settings/omni_eve_api/jabber'] = array(
+    $items['admin/settings/eve_api/jabber'] = array(
       'title' => 'Jabber',
       'description' => 'Configure and edit Jabber connection settings.',
-      'page arguments' => array('omni_eve_api_admin_jabber_form'),
+      'page arguments' => array('eve_api_admin_jabber_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 40,
     ) + $admin_base;
 
-    $items['admin/settings/omni_eve_api/list_blues'] = array(
+    $items['admin/settings/eve_api/list_blues'] = array(
       'title' => 'Blues',
       'description' => 'You can remove Blues and Add Blues from here.',
-      'page arguments' => array('omni_eve_api_admin_list_blues_form'),
+      'page arguments' => array('eve_api_admin_list_blues_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 50,
     ) + $admin_base;
 
-    $items['admin/settings/omni_eve_api/list_blues/add_blue'] = array(
+    $items['admin/settings/eve_api/list_blues/add_blue'] = array(
       'title' => 'Add Blue',
       'description' => 'You can manually add blues from here.',
-      'page arguments' => array('omni_eve_api_admin_add_blues_form'),
+      'page arguments' => array('eve_api_admin_add_blues_form'),
       'type' => MENU_LOCAL_ACTION,
       'weight' => 0,
     ) + $admin_base;
 
-    $items['admin/settings/omni_eve_api/list_whitelist'] = array(
+    $items['admin/settings/eve_api/list_whitelist'] = array(
       'title' => 'Whitelist',
       'description' => 'You can remove Whitelisted API Characters and Add Whitelisted API Characters from here.',
-      'page arguments' => array('omni_eve_api_admin_list_whitelist_form'),
+      'page arguments' => array('eve_api_admin_list_whitelist_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 60,
     ) + $admin_base;
 
-    $items['admin/settings/omni_eve_api/list_whitelist/add_whitelist'] = array(
+    $items['admin/settings/eve_api/list_whitelist/add_whitelist'] = array(
       'title' => 'Add Whitelist',
       'description' => 'You can manually add Whitelisted API Characters from here.',
-      'page arguments' => array('omni_eve_api_admin_add_whitelist_form'),
+      'page arguments' => array('eve_api_admin_add_whitelist_form'),
       'type' => MENU_LOCAL_ACTION,
       'weight' => 0,
     ) + $admin_base;
 
     $user_base = array(
       'page callback' => 'drupal_get_form',
-      'access callback' => 'omni_eve_api_edit',
+      'access callback' => 'eve_api_edit',
       'access arguments' => array(1),
-      'file' => 'omni_eve_api.user.inc',
+      'file' => 'eve_api.user.inc',
     );
 
-    $items['user/%user/omni_eve_api'] = array(
+    $items['user/%user/eve_api'] = array(
       'title' => 'EVE API',
       'page arguments' => array(
-        'omni_eve_api_user_list_api_form',
+        'eve_api_user_list_api_form',
         1,
       ),
       'type' => MENU_LOCAL_TASK,
       'weight' => 0,
     ) + $user_base;
 
-    $items['user/%user/omni_eve_api/list_api'] = array(
+    $items['user/%user/eve_api/list_api'] = array(
       'title' => 'API Keys',
       'page arguments' => array(
-        'omni_eve_api_user_list_api_form',
+        'eve_api_user_list_api_form',
         1,
       ),
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => 0,
     ) + $user_base;
 
-    $items['user/%user/omni_eve_api/select_main_character'] = array(
+    $items['user/%user/eve_api/select_main_character'] = array(
       'title' => 'Main Character',
       'page arguments' => array(
-        'omni_eve_api_user_select_main_character_form',
+        'eve_api_user_select_main_character_form',
         1,
       ),
       'type' => MENU_LOCAL_TASK,
       'weight' => 10,
     ) + $user_base;
 
-    $items['user/%user/omni_eve_api/add_api_key'] = array(
+    $items['user/%user/eve_api/add_api_key'] = array(
       'title' => 'Add API Key',
       'page arguments' => array(
-        'omni_eve_api_user_add_api_form',
+        'eve_api_user_add_api_form',
         1,
       ),
       'type' => MENU_LOCAL_TASK,
       'weight' => 20,
     ) + $user_base;
 
-    if (variable_get('omni_eve_api_ts3_enable', FALSE)) {
-      $items['user/%user/omni_eve_api/teamspeak'] = array(
+    if (variable_get('eve_api_ts3_enable', FALSE)) {
+      $items['user/%user/eve_api/teamspeak'] = array(
         'title' => 'Teamspeak',
         'page arguments' => array(
-          'omni_eve_api_user_teamspeak_form',
+          'eve_api_user_teamspeak_form',
           1,
         ),
         'type' => MENU_LOCAL_TASK,
@@ -287,11 +287,11 @@ function omni_eve_api_menu() {
       ) + $user_base;
     }
 
-    if (variable_get('omni_eve_api_jabber_enable', FALSE)) {
-      $items['user/%user/omni_eve_api/jabber'] = array(
+    if (variable_get('eve_api_jabber_enable', FALSE)) {
+      $items['user/%user/eve_api/jabber'] = array(
         'title' => 'Jabber',
         'page arguments' => array(
-          'omni_eve_api_user_jabber_form',
+          'eve_api_user_jabber_form',
           1,
         ),
         'type' => MENU_LOCAL_TASK,
@@ -299,10 +299,10 @@ function omni_eve_api_menu() {
       ) + $user_base;
     }
 
-    $items['user/%user/omni_eve_api/update_api_key/%'] = array(
+    $items['user/%user/eve_api/update_api_key/%'] = array(
       'title' => 'Update API Key',
       'page arguments' => array(
-        'omni_eve_api_user_update_api_form',
+        'eve_api_user_update_api_form',
         1,
         4,
       ),
@@ -318,14 +318,14 @@ function omni_eve_api_menu() {
 /**
  * Access callback for user omni eve api editing.
  */
-function omni_eve_api_edit($account) {
-  return (($GLOBALS['user']->uid == $account->uid) || user_access('moderate omni_eve_api users')) && $account->uid > 0;
+function eve_api_edit($account) {
+  return (($GLOBALS['user']->uid == $account->uid) || user_access('moderate eve_api users')) && $account->uid > 0;
 }
 
 /**
  * Implements hook_schema_alter().
  */
-function omni_eve_api_schema_alter(&$schema) {
+function eve_api_schema_alter(&$schema) {
   $schema['users']['fields']['characterID'] = array(
     'type' => 'int',
     'not null' => TRUE,
@@ -354,13 +354,13 @@ function omni_eve_api_schema_alter(&$schema) {
 /**
  * Implements hook_permission().
  */
-function omni_eve_api_permission() {
+function eve_api_permission() {
   $permissions = array();
-  $permissions['administer omni_eve_api settings'] = array(
-    'title' => t('Admin Omni EVE API'),
-    'description' => t('Allow user to view and edit Omni EVE API Settings.'),
+  $permissions['administer eve_api settings'] = array(
+    'title' => t('Admin EVE API'),
+    'description' => t('Allow user to view and edit EVE API Settings.'),
   );
-  $permissions['moderate omni_eve_api users'] = array(
+  $permissions['moderate eve_api users'] = array(
     'title' => t('Moderate Users'),
     'description' => t('Allow user to view and edit a users EVE API information.'),
   );
@@ -404,7 +404,7 @@ function omni_eve_api_permission() {
  *     easy access the array keys are returned in lower case.
  *   - data: A string containing the response body that was received.
  */
-function omni_eve_api_curl_http_request($url, array $query = array(), $method = 'POST') {
+function eve_api_curl_http_request($url, array $query = array(), $method = 'POST') {
   $result = new stdClass();
 
   // Parse the URL and make sure we can handle the schema.
@@ -445,7 +445,7 @@ function omni_eve_api_curl_http_request($url, array $query = array(), $method = 
 
   $curl = curl_version();
   $user_agent = 'Drupal (+http://drupal.org/)';
-  $user_agent .= ' Omni EVE API/' . omni_eve_api_version();
+  $user_agent .= ' Omni EVE API/' . eve_api_version();
   $user_agent .= ' (' . PHP_OS . ' ' . php_uname('m') . ')';
   $user_agent .= ' libcurl/' . $curl['version'];
   $user_agent = trim($user_agent);
@@ -470,8 +470,8 @@ function omni_eve_api_curl_http_request($url, array $query = array(), $method = 
     CURLOPT_USERAGENT => $user_agent,
     CURLOPT_SSL_VERIFYPEER => TRUE,
     CURLOPT_SSL_VERIFYHOST => 2,
-    CURLOPT_CAINFO => drupal_get_path('module', 'omni_eve_api') . '/eveonline.crt',
-    CURLOPT_COOKIEJAR => drupal_get_path('module', 'omni_eve_api') . '/cookies.txt',
+    CURLOPT_CAINFO => drupal_get_path('module', 'eve_api') . '/eveonline.crt',
+    CURLOPT_COOKIEJAR => drupal_get_path('module', 'eve_api') . '/cookies.txt',
   );
 
   $ssl_version = $curl['ssl_version'];
@@ -736,7 +736,7 @@ function omni_eve_api_curl_http_request($url, array $query = array(), $method = 
  * @return array
  *   A simple array of All the Roles.
  */
-function omni_eve_api_role_list() {
+function eve_api_role_list() {
   $roles = array();
 
   $result = db_query('SELECT rid, name FROM {role}');
@@ -755,54 +755,54 @@ function omni_eve_api_role_list() {
 /**
  * Implements hook_user_role_delete().
  */
-function omni_eve_api_user_role_delete($role) {
-  if ($role->rid == variable_get('omni_eve_api_blue_role', 2)) {
-    variable_set('omni_eve_api_blue_role', 2);
+function eve_api_user_role_delete($role) {
+  if ($role->rid == variable_get('eve_api_blue_role', 2)) {
+    variable_set('eve_api_blue_role', 2);
   }
 
-  if ($role->rid == variable_get('omni_eve_api_alliance_role', 2)) {
-    variable_set('omni_eve_api_alliance_role', 2);
+  if ($role->rid == variable_get('eve_api_alliance_role', 2)) {
+    variable_set('eve_api_alliance_role', 2);
   }
 
-  if ($role->rid == variable_get('omni_eve_api_unverified_role', 2)) {
-    variable_set('omni_eve_api_unverified_role', 2);
+  if ($role->rid == variable_get('eve_api_unverified_role', 2)) {
+    variable_set('eve_api_unverified_role', 2);
   }
 
-  if ($role->rid == variable_get('omni_eve_api_ceo_role', 2)) {
-    variable_set('omni_eve_api_ceo_role', 2);
+  if ($role->rid == variable_get('eve_api_ceo_role', 2)) {
+    variable_set('eve_api_ceo_role', 2);
   }
 
-  if ($role->rid == variable_get('omni_eve_api_director_role', 2)) {
-    variable_set('omni_eve_api_director_role', 2);
+  if ($role->rid == variable_get('eve_api_director_role', 2)) {
+    variable_set('eve_api_director_role', 2);
   }
 }
 
 /**
  * Implements hook_user_delete().
  */
-function omni_eve_api_user_delete($account) {
-  module_load_include('inc', 'omni_eve_api', 'omni_eve_api.api');
+function eve_api_user_delete($account) {
+  module_load_include('inc', 'eve_api', 'eve_api.api');
 
   try {
-    omni_eve_api_jabber_connect();
+    eve_api_jabber_connect();
 
     $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-      ':username' => (string) omni_eve_api_jabber_format_name($account->name),
+      ':username' => (string) eve_api_jabber_format_name($account->name),
     ));
 
     if ($result->rowCount()) {
-      omni_eve_api_jabber_url_query('delete', $account->name);
+      eve_api_jabber_url_query('delete', $account->name);
     }
 
-    omni_eve_api_jabber_disconnect();
+    eve_api_jabber_disconnect();
   }
   catch (OeaException $e) {
     // Log Error ?
   }
 
   try {
-    $ts3 = omni_eve_api_teamspeak_connection();
-    omni_eve_api_teamspeak_user_delete($ts3, $account->teamspeakDBID);
+    $ts3 = eve_api_teamspeak_connection();
+    eve_api_teamspeak_user_delete($ts3, $account->teamspeakDBID);
   }
   catch (OeaException $e) {
     // Log Error ?
@@ -823,17 +823,17 @@ function omni_eve_api_user_delete($account) {
  * http://image.eveonline.com/Character/1_128.jpg
  *
  * @see template_preprocess_user_picture()
- * @see omni_eve_api_load_account()
- * @see omni_eve_api_get_account_user_picture()
+ * @see eve_api_load_account()
+ * @see eve_api_get_account_user_picture()
  */
-function omni_eve_api_preprocess_user_picture(&$variables) {
+function eve_api_preprocess_user_picture(&$variables) {
   $variables['user_picture'] = '';
 
   if (variable_get('user_pictures', 0)) {
     // Load the full user object since it is not provided with nodes, comments,
     // or views displays.
-    $account = omni_eve_api_load_account($variables['account']);
-    $filepath = omni_eve_api_get_account_user_picture($account);
+    $account = eve_api_load_account($variables['account']);
+    $filepath = eve_api_get_account_user_picture($account);
 
     if (!empty($filepath)) {
       $alt = t("@user's picture", array('@user' => format_username($account)));
@@ -886,7 +886,7 @@ function omni_eve_api_preprocess_user_picture(&$variables) {
  * @return array
  *   A full user object.
  */
-function omni_eve_api_load_account($account) {
+function eve_api_load_account($account) {
   // If this is a node or comment object, load the user object.
   if (!empty($account->nid) || !empty($account->cid) || empty($account->roles)) {
     $original_values = $account;
@@ -936,7 +936,7 @@ function omni_eve_api_load_account($account) {
  * @return string
  *   A string with the path to the user's picture.
  */
-function omni_eve_api_get_account_user_picture($account) {
+function eve_api_get_account_user_picture($account) {
   $user = user_load($account->uid);
 
   if (!empty($account->picture->uri)) {
@@ -944,10 +944,10 @@ function omni_eve_api_get_account_user_picture($account) {
     return $account->picture->uri;
   }
   elseif (empty($user->characterID)) {
-    return omni_eve_api_get_eve_avatar(1);
+    return eve_api_get_eve_avatar(1);
   }
   else {
-    return omni_eve_api_get_eve_avatar($user->characterID);
+    return eve_api_get_eve_avatar($user->characterID);
   }
 }
 
@@ -960,11 +960,11 @@ function omni_eve_api_get_account_user_picture($account) {
  * @return string
  *   An URL string with the EVE avatar image.
  */
-function omni_eve_api_get_eve_avatar($character_id) {
+function eve_api_get_eve_avatar($character_id) {
   global $is_https;
 
-  $eve_avatar = $is_https ? variable_get('omni_eve_api_avatar_https', 'https://image.eveonline.com/Character/') : variable_get('omni_eve_api_avatar_http', 'http://image.eveonline.com/Character/');
-  $eve_avatar .= (int) $character_id . '_' . variable_get('omni_eve_api_user_picture_dimensions', '128') . '.jpg';
+  $eve_avatar = $is_https ? variable_get('eve_api_avatar_https', 'https://image.eveonline.com/Character/') : variable_get('eve_api_avatar_http', 'http://image.eveonline.com/Character/');
+  $eve_avatar .= (int) $character_id . '_' . variable_get('eve_api_user_picture_dimensions', '128') . '.jpg';
 
   return url($eve_avatar);
 }
@@ -972,21 +972,21 @@ function omni_eve_api_get_eve_avatar($character_id) {
 /**
  * Implements hook_form_FORM_ID_alter() for user_profile_form().
  */
-function omni_eve_api_form_user_profile_form_alter(&$form, &$form_state) {
-  module_load_include('inc', 'omni_eve_api', 'omni_eve_api.api');
+function eve_api_form_user_profile_form_alter(&$form, &$form_state) {
+  module_load_include('inc', 'eve_api', 'eve_api.api');
 
   $account = $form['#user'];
 
   $register = ($account->uid > 0 ? FALSE : TRUE);
   $admin = user_access('administer users');
 
-  $uid_api_list = omni_eve_api_list_api_simple($account->uid);
+  $uid_api_list = eve_api_list_api_simple($account->uid);
 
   $form['account']['name'] = array(
     '#type' => 'select',
     '#title' => t('Select your Main Character'),
     '#default_value' => (!$register ? $account->name : ''),
-    '#options' => omni_eve_api_list_valid_characters($uid_api_list, $account->name),
+    '#options' => eve_api_list_valid_characters($uid_api_list, $account->name),
     '#description' => t('Detected valid Main Characters.'),
     '#required' => TRUE,
     '#attributes' => array('class' => array('username')),
@@ -1003,12 +1003,12 @@ function omni_eve_api_form_user_profile_form_alter(&$form, &$form_state) {
  *   values are describing each library.
  * @see hook_library()
  */
-function omni_eve_api_libraries_info() {
+function eve_api_libraries_info() {
   $libraries['TeamSpeak3'] = array(
     'name' => 'Teamspeak 3 PHP Framework Library',
     'vendor url' => 'http://forum.teamspeak.com/showthread.php/54132',
     'download url' => 'http://addons.teamspeak.com/directory/tools/integration/TeamSpeak-3-PHP-Framework.html',
-    'version callback' => 'omni_eve_api_teamspeak_get_version',
+    'version callback' => 'eve_api_teamspeak_get_version',
     'files' => array(
       'php' => array(
         'TeamSpeak3.php',
@@ -1025,7 +1025,7 @@ function omni_eve_api_libraries_info() {
  * @return string
  *   The version of the TeamSpeak 3 PHP Framework.
  */
-function omni_eve_api_teamspeak_get_version() {
+function eve_api_teamspeak_get_version() {
   $libraries = libraries_get_libraries();
 
   if (isset($libraries['TeamSpeak3'])) {
@@ -1056,21 +1056,21 @@ function omni_eve_api_teamspeak_get_version() {
  * @return string
  *   A clean string.
  */
-function omni_eve_api_clean_input($input) {
+function eve_api_clean_input($input) {
   return trim(preg_replace('/ +/', ' ', preg_replace('|[^[:alnum:][:punct:]\s]|', ' ', urldecode(html_entity_decode(strip_tags((string) $input))))));
 }
 
 /**
  * Implements hook_boot().
  */
-function omni_eve_api_boot() {
+function eve_api_boot() {
   if ($GLOBALS['user']->uid == 0) {
     return;
   }
 
   if ($GLOBALS['user']->characterID == 0) {
-    drupal_set_message(t('Your account is not associated with an EVE Character, you must select a <a href="@url">Main Character</a>.', array('@url' => '/user/' . $GLOBALS['user']->uid . '/omni_eve_api/select_main_character')), 'error');
+    drupal_set_message(t('Your account is not associated with an EVE Character, you must select a <a href="@url">Main Character</a>.', array('@url' => '/user/' . $GLOBALS['user']->uid . '/eve_api/select_main_character')), 'error');
     // url('user/' . $GLOBALS['user']->uid .
-    // '/omni_eve_api/select_main_character')
+    // '/eve_api/select_main_character')
   }
 }

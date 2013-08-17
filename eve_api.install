@@ -7,7 +7,7 @@
 /**
  * Implements hook_schema().
  */
-function omni_eve_api_schema() {
+function eve_api_schema() {
   $schema['oea_api_keys'] = array(
     'description' => 'This table holds all the api\'s associated with all the accounts.',
     'fields' => array(
@@ -379,7 +379,7 @@ function omni_eve_api_schema() {
 /**
  * Implements hook_install().
  */
-function omni_eve_api_install() {
+function eve_api_install() {
   db_add_field('users', 'characterID', array(
     'type' => 'int',
     'not null' => TRUE,
@@ -405,11 +405,11 @@ function omni_eve_api_install() {
   ));
 
   $roles = array(
-    'omni_eve_api_blue_role' => 'Alliance Blue',
-    'omni_eve_api_alliance_role' => 'Alliance Member',
-    'omni_eve_api_unverified_role' => 'Unverified',
-    'omni_eve_api_ceo_role' => 'CEO',
-    'omni_eve_api_director_role' => 'Director',
+    'eve_api_blue_role' => 'Alliance Blue',
+    'eve_api_alliance_role' => 'Alliance Member',
+    'eve_api_unverified_role' => 'Unverified',
+    'eve_api_ceo_role' => 'CEO',
+    'eve_api_director_role' => 'Director',
   );
 
   foreach ($roles as $variable => $role) {
@@ -425,138 +425,138 @@ function omni_eve_api_install() {
     }
   }
 
-  variable_set('omni_eve_api_enable', FALSE);
-  variable_set('omni_eve_api_first_run', FALSE);
-  variable_set('omni_eve_api_ts3_framework_installed', FALSE);
-  variable_set('omni_eve_api_ts3_enable', FALSE);
-  variable_set('omni_eve_api_jabber_enable', FALSE);
+  variable_set('eve_api_enable', FALSE);
+  variable_set('eve_api_first_run', FALSE);
+  variable_set('eve_api_ts3_framework_installed', FALSE);
+  variable_set('eve_api_ts3_enable', FALSE);
+  variable_set('eve_api_jabber_enable', FALSE);
 
   // We set this because we use 128x128 for EVE avatar's.
   variable_set('user_picture_dimensions', '128x128');
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_fetch');
+  $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_sync');
+  $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_api_mask_sync');
+  $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_api_user_sync');
+  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role_sync');
+  $queue = DrupalQueue::get('eve_api_cron_teamspeak_role_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_sync');
+  $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role_sync');
+  $queue = DrupalQueue::get('eve_api_cron_jabber_role_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user_sync');
+  $queue = DrupalQueue::get('eve_api_cron_jabber_user_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_check');
+  $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_check');
   $queue->createQueue();
 }
 
 /**
  * Implements hook_uninstall().
  */
-function omni_eve_api_uninstall() {
+function eve_api_uninstall() {
   db_drop_field('users', 'characterID');
   db_drop_field('users', 'teamspeakUID');
   db_drop_field('users', 'teamspeakDBID');
 
-  variable_del('omni_eve_api_user_picture_dimensions');
-  variable_del('omni_eve_api_avatar_https');
-  variable_del('omni_eve_api_avatar_http');
-  variable_del('omni_eve_api_enable');
-  variable_del('omni_eve_api_first_run');
-  variable_del('omni_eve_api_ts3_framework_installed');
-  variable_del('omni_eve_api_ts3_enable');
-  variable_del('omni_eve_api_jabber_enable');
-  variable_del('omni_eve_api_alliance_role');
-  variable_del('omni_eve_api_unverified_role');
-  variable_del('omni_eve_api_ceo_role');
-  variable_del('omni_eve_api_director_role');
-  variable_del('omni_eve_api_corp_keyid');
-  variable_del('omni_eve_api_corp_vcode');
-  variable_del('omni_eve_api_access_mask');
-  variable_del('omni_eve_api_required_standing');
-  variable_del('omni_eve_api_ts3_host');
-  variable_del('omni_eve_api_ts3_server_address');
-  variable_del('omni_eve_api_ts3_server_port');
-  variable_del('omni_eve_api_ts3_server_password');
-  variable_del('omni_eve_api_ts3_query_port');
-  variable_del('omni_eve_api_ts3_query_username');
-  variable_del('omni_eve_api_ts3_query_password');
-  variable_del('omni_eve_api_ts3_nickname');
-  variable_del('omni_eve_api_ts3_bypass_group');
-  variable_del('omni_eve_api_ts3_cron_reg_message');
-  variable_del('omni_eve_api_ts3_cron_reg_poke');
-  variable_del('omni_eve_api_ts3_cron_reg_kick');
-  variable_del('omni_eve_api_ts3_cron_reg_ban');
-  variable_del('omni_eve_api_ts3_cron_reg_ban_time');
-  variable_del('omni_eve_api_ts3_cron_reg_message_enable');
-  variable_del('omni_eve_api_ts3_cron_reg_poke_enable');
-  variable_del('omni_eve_api_ts3_cron_reg_kick_enable');
-  variable_del('omni_eve_api_ts3_cron_reg_ban_enable');
-  variable_del('omni_eve_api_ts3_cron_reg_time');
-  variable_del('omni_eve_api_ts3_cron_user_message');
-  variable_del('omni_eve_api_ts3_cron_user_poke');
-  variable_del('omni_eve_api_ts3_cron_user_kick');
-  variable_del('omni_eve_api_ts3_cron_user_ban');
-  variable_del('omni_eve_api_ts3_cron_user_ban_time');
-  variable_del('omni_eve_api_ts3_cron_user_message_enable');
-  variable_del('omni_eve_api_ts3_cron_user_poke_enable');
-  variable_del('omni_eve_api_ts3_cron_user_kick_enable');
-  variable_del('omni_eve_api_ts3_cron_user_ban_enable');
-  variable_del('omni_eve_api_ts3_cron_user_time');
-  variable_del('omni_eve_api_jabber_host');
-  variable_del('omni_eve_api_jabber_database');
-  variable_del('omni_eve_api_jabber_username');
-  variable_del('omni_eve_api_jabber_password');
-  variable_del('omni_eve_api_jabber_url');
-  variable_del('omni_eve_api_jabber_secret');
-  variable_del('omni_eve_api_jabber_domain');
-  variable_del('omni_eve_api_allianceID');
-  variable_del('omni_eve_api_corporationID');
+  variable_del('eve_api_user_picture_dimensions');
+  variable_del('eve_api_avatar_https');
+  variable_del('eve_api_avatar_http');
+  variable_del('eve_api_enable');
+  variable_del('eve_api_first_run');
+  variable_del('eve_api_ts3_framework_installed');
+  variable_del('eve_api_ts3_enable');
+  variable_del('eve_api_jabber_enable');
+  variable_del('eve_api_alliance_role');
+  variable_del('eve_api_unverified_role');
+  variable_del('eve_api_ceo_role');
+  variable_del('eve_api_director_role');
+  variable_del('eve_api_corp_keyid');
+  variable_del('eve_api_corp_vcode');
+  variable_del('eve_api_access_mask');
+  variable_del('eve_api_required_standing');
+  variable_del('eve_api_ts3_host');
+  variable_del('eve_api_ts3_server_address');
+  variable_del('eve_api_ts3_server_port');
+  variable_del('eve_api_ts3_server_password');
+  variable_del('eve_api_ts3_query_port');
+  variable_del('eve_api_ts3_query_username');
+  variable_del('eve_api_ts3_query_password');
+  variable_del('eve_api_ts3_nickname');
+  variable_del('eve_api_ts3_bypass_group');
+  variable_del('eve_api_ts3_cron_reg_message');
+  variable_del('eve_api_ts3_cron_reg_poke');
+  variable_del('eve_api_ts3_cron_reg_kick');
+  variable_del('eve_api_ts3_cron_reg_ban');
+  variable_del('eve_api_ts3_cron_reg_ban_time');
+  variable_del('eve_api_ts3_cron_reg_message_enable');
+  variable_del('eve_api_ts3_cron_reg_poke_enable');
+  variable_del('eve_api_ts3_cron_reg_kick_enable');
+  variable_del('eve_api_ts3_cron_reg_ban_enable');
+  variable_del('eve_api_ts3_cron_reg_time');
+  variable_del('eve_api_ts3_cron_user_message');
+  variable_del('eve_api_ts3_cron_user_poke');
+  variable_del('eve_api_ts3_cron_user_kick');
+  variable_del('eve_api_ts3_cron_user_ban');
+  variable_del('eve_api_ts3_cron_user_ban_time');
+  variable_del('eve_api_ts3_cron_user_message_enable');
+  variable_del('eve_api_ts3_cron_user_poke_enable');
+  variable_del('eve_api_ts3_cron_user_kick_enable');
+  variable_del('eve_api_ts3_cron_user_ban_enable');
+  variable_del('eve_api_ts3_cron_user_time');
+  variable_del('eve_api_jabber_host');
+  variable_del('eve_api_jabber_database');
+  variable_del('eve_api_jabber_username');
+  variable_del('eve_api_jabber_password');
+  variable_del('eve_api_jabber_url');
+  variable_del('eve_api_jabber_secret');
+  variable_del('eve_api_jabber_domain');
+  variable_del('eve_api_allianceID');
+  variable_del('eve_api_corporationID');
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_fetch');
+  $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_api_alliance_sync');
+  $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_api_mask_sync');
+  $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_api_user_sync');
+  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_role_sync');
+  $queue = DrupalQueue::get('eve_api_cron_teamspeak_role_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_sync');
+  $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_jabber_role_sync');
+  $queue = DrupalQueue::get('eve_api_cron_jabber_role_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_jabber_user_sync');
+  $queue = DrupalQueue::get('eve_api_cron_jabber_user_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_check');
+  $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_check');
   $queue->deleteQueue();
 }
 
 /**
  * Implements hook_requirements().
  */
-function omni_eve_api_requirements($phase) {
+function eve_api_requirements($phase) {
   $requirements = array();
   // Ensure translations don't break during installation.
   $t = get_t();
@@ -572,7 +572,7 @@ function omni_eve_api_requirements($phase) {
 
     if (!$has_curl) {
       $requirements['curl']['severity'] = REQUIREMENT_WARNING;
-      $requirements['curl']['description'] = $t('Omni EVE API prefers cURL, please install the PHP <a href="@curl_url">cURL</a> library.', array('@curl_url' => 'http://php.net/manual/en/curl.setup.php'));
+      $requirements['curl']['description'] = $t('EVE API prefers cURL, please install the PHP <a href="@curl_url">cURL</a> library.', array('@curl_url' => 'http://php.net/manual/en/curl.setup.php'));
     }
 
     $requirements['php_open_basedir'] = array(
@@ -582,13 +582,13 @@ function omni_eve_api_requirements($phase) {
 
     if ($open_basedir) {
       $requirements['php_open_basedir']['severity'] = REQUIREMENT_WARNING;
-      $requirements['php_open_basedir']['description'] = $t('Omni EVE API prefers cURL, cURL requires the PHP <a href="@open_basedir-url">open_basedir</a> restriction to be disabled. Check your webserver configuration or contact your web host.', array('@open_basedir-url' => 'http://php.net/manual/en/ini.core.php#ini.open-basedir'));
+      $requirements['php_open_basedir']['description'] = $t('EVE API prefers cURL, cURL requires the PHP <a href="@open_basedir-url">open_basedir</a> restriction to be disabled. Check your webserver configuration or contact your web host.', array('@open_basedir-url' => 'http://php.net/manual/en/ini.core.php#ini.open-basedir'));
     }
 
     // Report Omni EVE API version.
-    $requirements['omni_eve_api'] = array(
+    $requirements['eve_api'] = array(
       'title' => $t('Omni EVE API'),
-      'value' => omni_eve_api_version(),
+      'value' => eve_api_version(),
       'severity' => REQUIREMENT_INFO,
     );
 
@@ -601,7 +601,7 @@ function omni_eve_api_requirements($phase) {
 
     if (isset($libraries['TeamSpeak3'])) {
       if (($library = libraries_load('TeamSpeak3')) && !empty($library['loaded'])) {
-        variable_set('omni_eve_api_ts3_framework_installed', TRUE);
+        variable_set('eve_api_ts3_framework_installed', TRUE);
 
         $requirements['teamspeak3']['value'] = 'Found (' . TeamSpeak3::LIB_VERSION . ')';
         $requirements['teamspeak3']['severity'] = REQUIREMENT_OK;
@@ -621,8 +621,8 @@ function omni_eve_api_requirements($phase) {
     }
   }
 
-  variable_set('omni_eve_api_ts3_framework_installed', FALSE);
-  variable_set('omni_eve_api_ts3_enable', FALSE);
+  variable_set('eve_api_ts3_framework_installed', FALSE);
+  variable_set('eve_api_ts3_enable', FALSE);
 
   return $requirements;
 }

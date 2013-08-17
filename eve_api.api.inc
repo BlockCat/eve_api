@@ -4,8 +4,8 @@
  * Functions related to retrieving and manipulating data from the EVE API.
  */
 
-module_load_include('inc', 'omni_eve_api', 'omni_eve_api.ts3');
-module_load_include('inc', 'omni_eve_api', 'omni_eve_api.jabber');
+module_load_include('inc', 'eve_api', 'eve_api.ts3');
+module_load_include('inc', 'eve_api', 'eve_api.jabber');
 
 /**
  * Function to retrieve the XML.
@@ -18,7 +18,7 @@ module_load_include('inc', 'omni_eve_api', 'omni_eve_api.jabber');
  * @return mixed
  *   Returns a valid XML object or ERROR information.
  */
-function omni_eve_api_get_xml($type, $query = array()) {
+function eve_api_get_xml($type, $query = array()) {
   $url = 'https://api.eveonline.com';
 
   switch ($type) {
@@ -82,7 +82,7 @@ function omni_eve_api_get_xml($type, $query = array()) {
       $html = drupal_http_request($url, $options);
     }
     else {
-      $html = omni_eve_api_curl_http_request($url, $query);
+      $html = eve_api_curl_http_request($url, $query);
     }
 
     if (!empty($html->error)) {
@@ -135,7 +135,7 @@ function omni_eve_api_get_xml($type, $query = array()) {
  * @return array
  *   A complex array of a single character information.
  */
-function omni_eve_api_get_character_info($character_name) {
+function eve_api_get_character_info($character_name) {
   $result = db_query('SELECT uid, characterName, characterID, corporationName, corporationID, corporationTicker, allianceID, allianceName, allianceTicker FROM {oea_characters} WHERE characterName = :characterName', array(
     ':characterName' => (string) $character_name,
   ));
@@ -171,8 +171,8 @@ function omni_eve_api_get_character_info($character_name) {
  * @return array
  *   A complex array of multiple character information.
  */
-function omni_eve_api_get_character_api($query) {
-  $xml = omni_eve_api_get_xml('APIKeyInfo', $query);
+function eve_api_get_character_api($query) {
+  $xml = eve_api_get_xml('APIKeyInfo', $query);
 
   if (!isset($xml->cachedUntil)) {
     watchdog('eve api', 'Failed getting Character API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
@@ -189,7 +189,7 @@ function omni_eve_api_get_character_api($query) {
     $row = $rows->attributes();
 
     $query = array('corporationID' => (int) $row->corporationID);
-    $corp_info = omni_eve_api_get_corporation_info($query);
+    $corp_info = eve_api_get_corporation_info($query);
 
     if (isset($corp_info['error'])) {
       return array('error' => $corp_info);
@@ -216,8 +216,8 @@ function omni_eve_api_get_character_api($query) {
  * @return array
  *   A complex array of character sheet information.
  */
-function omni_eve_api_get_character_sheet($query) {
-  $xml = omni_eve_api_get_xml('CharacterSheet', $query);
+function eve_api_get_character_sheet($query) {
+  $xml = eve_api_get_xml('CharacterSheet', $query);
 
   if (!isset($xml->cachedUntil)) {
     watchdog('eve api', 'Failed getting Character Sheet API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
@@ -238,7 +238,7 @@ function omni_eve_api_get_character_sheet($query) {
  * @return string
  *   The Alliance ticker for the $allianceID.
  */
-function omni_eve_api_get_alliance_ticker($alliance_id) {
+function eve_api_get_alliance_ticker($alliance_id) {
   $result = db_query('SELECT allianceTicker FROM {oea_alliance_info} WHERE allianceID = :id', array(
     ':id' => (int) $alliance_id,
   ));
@@ -256,8 +256,8 @@ function omni_eve_api_get_alliance_ticker($alliance_id) {
  * @return array
  *   A complex array of corporate information.
  */
-function omni_eve_api_get_corporation_info($query) {
-  $xml = omni_eve_api_get_xml('CorporationSheet', $query);
+function eve_api_get_corporation_info($query) {
+  $xml = eve_api_get_xml('CorporationSheet', $query);
 
   if (!isset($xml->cachedUntil)) {
     watchdog('eve api', 'Failed getting Corporation API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
@@ -270,7 +270,7 @@ function omni_eve_api_get_corporation_info($query) {
     'corporationTicker' => (string) $xml->result->ticker,
     'allianceID' => (int) $xml->result->allianceID,
     'allianceName' => (string) $xml->result->allianceName,
-    'allianceTicker' => (string) omni_eve_api_get_alliance_ticker((int) $xml->result->allianceID),
+    'allianceTicker' => (string) eve_api_get_alliance_ticker((int) $xml->result->allianceID),
     'ceoName' => (string) $xml->result->ceoName,
     'ceoID' => (string) $xml->result->ceoID,
   );
@@ -287,8 +287,8 @@ function omni_eve_api_get_corporation_info($query) {
  * @return array
  *   A complex array of corporate information.
  */
-function omni_eve_api_get_character_name($query) {
-  $xml = omni_eve_api_get_xml('CharacterName', $query);
+function eve_api_get_character_name($query) {
+  $xml = eve_api_get_xml('CharacterName', $query);
 
   if (!isset($xml->cachedUntil)) {
     watchdog('eve api', 'Failed getting Character Name API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
@@ -315,14 +315,14 @@ function omni_eve_api_get_character_name($query) {
  * @return bool
  *   Indicates a character is blue to the alliance.
  */
-function omni_eve_api_verify_blue($characters) {
+function eve_api_verify_blue($characters) {
   if (!isset($characters['characters'])) {
     return FALSE;
   }
 
   foreach ($characters['characters'] as $character) {
     $result = db_query('SELECT contactID FROM {oea_blue_standings} WHERE standing >= :standing AND deleted = 0 AND contactID IN (:contactIDs)', array(
-      ':standing' => (float) variable_get('omni_eve_api_required_standing', 0.1),
+      ':standing' => (float) variable_get('eve_api_required_standing', 0.1),
       ':contactIDs' => array(
         (int) $character['characterID'],
         (int) $character['corporationID'],
@@ -334,7 +334,7 @@ function omni_eve_api_verify_blue($characters) {
       return TRUE;
     }
 
-    if (($character['allianceID'] == variable_get('omni_eve_api_allianceID', 0) && variable_get('omni_eve_api_allianceID', 0) != 0) || $character['corporationID'] == variable_get('omni_eve_api_corporationID', 0)) {
+    if (($character['allianceID'] == variable_get('eve_api_allianceID', 0) && variable_get('eve_api_allianceID', 0) != 0) || $character['corporationID'] == variable_get('eve_api_corporationID', 0)) {
       return TRUE;
     }
 
@@ -359,7 +359,7 @@ function omni_eve_api_verify_blue($characters) {
  * @return array
  *   A simple array of characters blue to the alliance.
  */
-function omni_eve_api_list_valid_characters($characters, $empty) {
+function eve_api_list_valid_characters($characters, $empty) {
   $chars = array();
 
   if (!empty($characters)) {
@@ -403,7 +403,7 @@ function omni_eve_api_list_valid_characters($characters, $empty) {
  * @return mixed
  *   A simple array of characters found or a bool FALSE.
  */
-function omni_eve_api_characters_exist($characters) {
+function eve_api_characters_exist($characters) {
   $chars = array();
 
   if (!empty($characters)) {
@@ -434,7 +434,7 @@ function omni_eve_api_characters_exist($characters) {
  * @return string
  *   An error message.
  */
-function omni_eve_api_api_error_msg($error_id) {
+function eve_api_api_error_msg($error_id) {
   switch ($error_id) {
     case 0:
       $message = t('OK');
@@ -465,7 +465,7 @@ function omni_eve_api_api_error_msg($error_id) {
  * @return mixed
  *   A simple array of character and api key information.
  */
-function omni_eve_api_list_api_simple($uid) {
+function eve_api_list_api_simple($uid) {
   $uid = (int) $uid;
   $api_list = array();
 

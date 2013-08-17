@@ -17,21 +17,21 @@ INSTALLATION
 
  4. Retrieve the lastest version of Omni EVE API from the git repository.
 
-    http://drupalcode.org/sandbox/0mni/2043647.git
+    http://drupalcode.org/project/eve_api.git
 
- 5. Create the folder sites/all/modules/omni_eve_api if it does not exist.
+ 5. Create the folder sites/all/modules/eve_api if it does not exist.
 
  6. Upload all the files/folders from the git repository and upload it to your
-    Drupal installation under sites/all/modules/omni_eve_api.
+    Drupal installation under sites/all/modules/eve_api.
 
-    If done correctly you should see the file omni_eve_api.module and various
-    other files/folders when you navigate to sites/all/modules/omni_eve_api.
+    If done correctly you should see the file eve_api.module and various
+    other files/folders when you navigate to sites/all/modules/eve_api.
 
  7. Log in as an administrator on your Drupal site and go to the Modules page
     at admin/modules. Enable Omni EVE API listed under Omni EVE API.
 
  8. Still logged in as an administrator, go to EVE API page at
-    admin/settings/omni_eve_api. Registrations will be disabled until a valid
+    admin/settings/eve_api. Registrations will be disabled until a valid
     Alliance API Key is entered. Create or retrieve your Alliance API Key from
     http://goo.gl/LDks44 and enter the "Key ID" and "Verification Code" in the
     appropriate fields. Be sure to tick the check box "Enable Omni EVE API" and
@@ -43,7 +43,7 @@ CONFIGURE TEAMSPEAK 3
 ---------------------
 
  1. Log in as an administrator on your Drupal site and go to the EVE API
-    TeamSpeak 3 settings page at admin/settings/omni_eve_api/teamspeak.
+    TeamSpeak 3 settings page at admin/settings/eve_api/teamspeak.
 
  2. Enter all the information as requested in the fields. Be sure to tick the
     check box "Enable TeamSpeak 3 Connection" and click on "Submit".
@@ -59,7 +59,7 @@ CONFIGURE OPENFIRE (JABBER)
 ---------------------------
 
  1. Log in as an administrator on your Drupal site and go to the EVE API
-    Jabber settings page at admin/settings/omni_eve_api/jabber.
+    Jabber settings page at admin/settings/eve_api/jabber.
 
  2. Enter all the information as requested in the fields. Be sure to tick the
     check box "Enable Jabber Connection" and click on "Submit".
