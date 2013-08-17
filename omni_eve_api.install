@@ -422,7 +422,6 @@ function omni_eve_api_install() {
       $roles = user_role_save($user_role);
       variable_set($variable, (int) $roles->rid);
     }
-
   }
 
   variable_set('omni_eve_api_enable', FALSE);
