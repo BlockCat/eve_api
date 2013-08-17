@@ -301,7 +301,7 @@ function omni_eve_api_schema_alter(&$schema) {
     'description' => 'Main EVE Character ID',
   );
 
-  $schema['users']['fields']['teamspeakuid'] = array(
+  $schema['users']['fields']['teamspeakUID'] = array(
     'type' => 'varchar',
     'not null' => TRUE,
     'default' => 0,
@@ -309,7 +309,7 @@ function omni_eve_api_schema_alter(&$schema) {
     'description' => 'Unique Teamspeak 3 ID',
   );
 
-  $schema['users']['fields']['teamspeakdbid'] = array(
+  $schema['users']['fields']['teamspeakDBID'] = array(
     'type' => 'int',
     'not null' => TRUE,
     'default' => 0,
@@ -769,7 +769,7 @@ function omni_eve_api_user_delete($account) {
 
   try {
     $ts3 = omni_eve_api_teamspeak_connection();
-    omni_eve_api_teamspeak_user_delete($ts3, $account->teamspeakdbid);
+    omni_eve_api_teamspeak_user_delete($ts3, $account->teamspeakDBID);
   }
   catch (OeaException $e) {
     // Log Error ?

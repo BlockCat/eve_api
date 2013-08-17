@@ -190,15 +190,15 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
 
       try {
         $ts3 = omni_eve_api_teamspeak_connection();
-        omni_eve_api_teamspeak_user_delete($ts3, $account->teamspeakdbid);
+        omni_eve_api_teamspeak_user_delete($ts3, $account->teamspeakDBID);
       }
       catch (OeaException $e) {
         // Log Error ?
       }
 
       db_update('users')->fields(array(
-        'teamspeakuid' => 0,
-        'teamspeakdbid' => 0,
+        'teamspeakUID' => 0,
+        'teamspeakDBID' => 0,
         'characterID' => 0,
       ))->condition('uid', $uid, '=')->execute();
       $form_state['redirect'] = 'user/' . $uid . '/omni_eve_api/select_main_character';
@@ -359,7 +359,7 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
   $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_sync');
   $queue->createItem(array(
     'uid' => $uid,
-    'teamspeakdbid' => $account->teamspeakdbid,
+    'teamspeakDBID' => $account->teamspeakDBID,
     'runs' => 1,
   ));
 
@@ -603,13 +603,13 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
   $queue->createItem($uid);
 
   $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_sync');
-  $result = db_query('SELECT teamspeakdbid FROM {users} WHERE uid = :uid', array(
+  $result = db_query('SELECT teamspeakDBID FROM {users} WHERE uid = :uid', array(
     'uid' => $uid,
   ));
   $row = $result->fetchAssoc();
   $queue->createItem(array(
     'uid' => $uid,
-    'teamspeakdbid' => $row['teamspeakdbid'],
+    'teamspeakDBID' => $row['teamspeakDBID'],
     'runs' => 1,
   ));
 
@@ -817,15 +817,15 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
 
     try {
       $ts3 = omni_eve_api_teamspeak_connection();
-      omni_eve_api_teamspeak_user_delete($ts3, $account->teamspeakdbid);
+      omni_eve_api_teamspeak_user_delete($ts3, $account->teamspeakDBID);
     }
     catch (OeaException $e) {
       // Log Error ?
     }
 
     db_update('users')->fields(array(
-      'teamspeakuid' => 0,
-      'teamspeakdbid' => 0,
+      'teamspeakUID' => 0,
+      'teamspeakDBID' => 0,
       'characterID' => 0,
     ))->condition('uid', $uid, '=')->execute();
     $form_state['redirect'] = 'user/' . $uid . '/omni_eve_api/select_main_character';
@@ -888,7 +888,7 @@ function omni_eve_api_user_teamspeak_form($form, &$form_state, $account) {
   $form['teamspeak']['teamspeak_uid'] = array(
     '#type' => 'markup',
     '#prefix' => '<p>',
-    '#markup' => !empty($account->teamspeakuid) ? t('Teamspeak Unique ID: @teamspeak', array('@teamspeak' => $account->teamspeakuid)) : t('Teamspeak Unique ID: You are not registered.'),
+    '#markup' => !empty($account->teamspeakUID) ? t('Teamspeak Unique ID: @teamspeak', array('@teamspeak' => $account->teamspeakUID)) : t('Teamspeak Unique ID: You are not registered.'),
     '#suffix' => '</p>',
     '#weight' => 20,
   );
@@ -945,17 +945,17 @@ function omni_eve_api_user_teamspeak_form_submit($form, &$form_state) {
     $ts3 = omni_eve_api_teamspeak_connection();
     $teamspeak_name = omni_eve_api_teamspeak_format_name($account->name);
     $teamspeak_data = omni_eve_api_teamspeak_user_by_name($ts3, $teamspeak_name);
-    $teamspeakuid = (string) $teamspeak_data->client_unique_identifier;
-    $teamspeakdbid = (int) $teamspeak_data->client_database_id;
+    $teamspeak_uid = (string) $teamspeak_data->client_unique_identifier;
+    $teamspeak_dbid = (int) $teamspeak_data->client_database_id;
 
     db_update('users')->fields(array(
-        'teamspeakuid' => $teamspeakuid,
-        'teamspeakdbid' => $teamspeakdbid,
+        'teamspeakUID' => $teamspeak_uid,
+        'teamspeakDBID' => $teamspeak_dbid,
       ))->condition('uid', $uid, '=')->execute();
 
     omni_eve_api_cron_teamspeak_user_sync(array(
       'uid' => $uid,
-      'teamspeakdbid' => $teamspeakdbid,
+      'teamspeakDBID' => $teamspeak_dbid,
       'runs' => 1,
     ));
 

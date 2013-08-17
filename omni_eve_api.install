@@ -388,7 +388,7 @@ function omni_eve_api_install() {
     'description' => 'Main EVE Character ID',
   ));
 
-  db_add_field('users', 'teamspeakuid', array(
+  db_add_field('users', 'teamspeakUID', array(
     'type' => 'varchar',
     'not null' => TRUE,
     'default' => 0,
@@ -396,7 +396,7 @@ function omni_eve_api_install() {
     'description' => 'Unique Teamspeak 3 ID',
   ));
 
-  db_add_field('users', 'teamspeakdbid', array(
+  db_add_field('users', 'teamspeakDBID', array(
     'type' => 'int',
     'not null' => TRUE,
     'default' => 0,
@@ -413,14 +413,16 @@ function omni_eve_api_install() {
   );
 
   foreach ($roles as $variable => $role) {
-    if (!($role = user_role_load_by_name($role))) {
+    if ($role = user_role_load_by_name($role)) {
+      variable_set($variable, (int) $roles->rid);
+    }
+    else {
       $user_role = new stdClass();
       $user_role->name = $role;
-      user_role_save($user_role);
+      $roles = user_role_save($user_role);
+      variable_set($variable, (int) $roles->rid);
     }
 
-    $role_data = user_role_load_by_name($role);
-    variable_set($variable, (int) $role_data->rid);
   }
 
   variable_set('omni_eve_api_enable', FALSE);
@@ -465,8 +467,8 @@ function omni_eve_api_install() {
  */
 function omni_eve_api_uninstall() {
   db_drop_field('users', 'characterID');
-  db_drop_field('users', 'teamspeakuid');
-  db_drop_field('users', 'teamspeakdbid');
+  db_drop_field('users', 'teamspeakUID');
+  db_drop_field('users', 'teamspeakDBID');
 
   variable_del('omni_eve_api_user_picture_dimensions');
   variable_del('omni_eve_api_avatar_https');

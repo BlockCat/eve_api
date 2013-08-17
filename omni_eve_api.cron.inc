@@ -48,13 +48,13 @@ function omni_eve_api_teamspeak_user_cron() {
     $queue->createItem(1);
 
     $queue = DrupalQueue::get('omni_eve_api_cron_teamspeak_user_sync');
-    $result = db_query('SELECT uid, teamspeakdbid, status FROM {users} WHERE characterID != 0 AND teamspeakuid != 0');
+    $result = db_query('SELECT uid, teamspeakDBID, status FROM {users} WHERE characterID != 0 AND teamspeakUID != 0');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
         $queue->createItem(array(
           'uid' => $item->uid,
-          'teamspeakdbid' => $item->teamspeakdbid,
+          'teamspeakDBID' => $item->teamspeakDBID,
           'status' => $item->status,
           'runs' => 1,
         ));
@@ -182,7 +182,7 @@ function omni_eve_api_cron_teamspeak_user_sync($item) {
     }
 
     $uid = (int) $item['uid'];
-    $teamspeakdbid = (int) $item['teamspeakdbid'];
+    $teamspeak_dbid = (int) $item['teamspeakDBID'];
     $ts3 = omni_eve_api_teamspeak_connection();
 
     $result = db_query('SELECT r.rid, r.name FROM {users_roles} ur INNER JOIN {role} r ON (r.rid = ur.rid) WHERE ur.uid = :uid', array(
@@ -201,15 +201,15 @@ function omni_eve_api_cron_teamspeak_user_sync($item) {
 
         $user_roles[$rname] = $row->rid;
         $teamspeakgid = omni_eve_api_teamspeak_group_get_id($ts3, $rname);
-        omni_eve_api_teamspeak_user_add_group($ts3, $teamspeakgid, $teamspeakdbid);
+        omni_eve_api_teamspeak_user_add_group($ts3, $teamspeakgid, $teamspeak_dbid);
       }
     }
 
-    $roles = omni_eve_api_teamspeak_user_get_groups($ts3, $teamspeakdbid);
+    $roles = omni_eve_api_teamspeak_user_get_groups($ts3, $teamspeak_dbid);
 
     foreach ($roles as $rid => $rname) {
       if (!isset($user_roles[(string) $rname['name']]) && (string) $rname['name'] != 'Guest' && isset($valid_roles[(string) $rname['name']])) {
-        omni_eve_api_teamspeak_user_remove_group($ts3, $rid, $teamspeakdbid);
+        omni_eve_api_teamspeak_user_remove_group($ts3, $rid, $teamspeak_dbid);
       }
     }
   }
@@ -249,11 +249,11 @@ function omni_eve_api_cron_teamspeak_user_check($item) {
         continue;
       }
 
-      $teamspeakuid = (string) $teamspeak_user->client_unique_identifier;
+      $teamspeak_uid = (string) $teamspeak_user->client_unique_identifier;
       $teamspeaknickname = (string) $teamspeak_user->client_nickname;
 
-      $result = db_query('SELECT c.characterName FROM {oea_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.teamspeakuid = :teamspeakuid', array(
-        ':teamspeakuid' => $teamspeakuid,
+      $result = db_query('SELECT c.characterName FROM {oea_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.teamspeakUID = :teamspeakUID', array(
+        ':teamspeakUID' => $teamspeak_uid,
       ));
 
       if (!$result->rowCount()) {
@@ -565,7 +565,7 @@ function omni_eve_api_cron_api_user_sync($item) {
   $uid = (int) $item;
   $all_characters = array();
 
-  $result = db_query('SELECT name, teamspeakdbid FROM {users} WHERE uid = :uid', array(
+  $result = db_query('SELECT name, teamspeakDBID FROM {users} WHERE uid = :uid', array(
     ':uid' => $uid,
   ));
   $account = $result->fetchAssoc();
@@ -690,7 +690,7 @@ function omni_eve_api_cron_api_user_sync($item) {
 
     try {
       $ts3 = omni_eve_api_teamspeak_connection();
-      omni_eve_api_teamspeak_user_delete($ts3, $account['teamspeakdbid']);
+      omni_eve_api_teamspeak_user_delete($ts3, $account['teamspeakDBID']);
     }
     catch (OeaException $e) {
       // Log Error ?
@@ -714,8 +714,8 @@ function omni_eve_api_cron_api_user_sync($item) {
     }
 
     db_update('users')->fields(array(
-      'teamspeakuid' => 0,
-      'teamspeakdbid' => 0,
+      'teamspeakUID' => 0,
+      'teamspeakDBID' => 0,
       'characterID' => 0,
       ))->condition('uid', $uid, '=')->execute();
   }

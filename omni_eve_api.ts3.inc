@@ -163,15 +163,15 @@ function omni_eve_api_teamspeak_user_list(&$ts3) {
  *
  * @param object $ts3
  *   The Teamspeak connection object.
- * @param int $teamspeakdbid
+ * @param int $teamspeak_dbid
  *   The Teamspeak unique database id of a user.
  * 
  * @return array
  *   Returns a list of properties from the database for the client specified.
  */
-function omni_eve_api_teamspeak_user_info(&$ts3, $teamspeakdbid) {
+function omni_eve_api_teamspeak_user_info(&$ts3, $teamspeak_dbid) {
   try {
-    $teamspeak_user_info = $ts3->clientInfoDb($teamspeakdbid);
+    $teamspeak_user_info = $ts3->clientInfoDb($teamspeak_dbid);
   }
   catch (TeamSpeak3_Exception $e) {
     throw new OeaException(t('Unable to get user info. Error: @error', array('@error' => check_plain($e->getMessage()))));
@@ -207,15 +207,15 @@ function omni_eve_api_teamspeak_user_by_name(&$ts3, $teamspeak_name) {
  *
  * @param object $ts3
  *   The Teamspeak connection object.
- * @param int $teamspeakdbid
+ * @param int $teamspeak_dbid
  *   The database ID for the teamspeak user.
  * 
  * @return bool
  *   Success or failure.
  */
-function omni_eve_api_teamspeak_user_delete(&$ts3, $teamspeakdbid) {
+function omni_eve_api_teamspeak_user_delete(&$ts3, $teamspeak_dbid) {
   try {
-    $ts3->clientDeleteDb($teamspeakdbid);
+    $ts3->clientDeleteDb($teamspeak_dbid);
   }
   catch (TeamSpeak3_Exception $e) {
     return FALSE;
@@ -229,16 +229,16 @@ function omni_eve_api_teamspeak_user_delete(&$ts3, $teamspeakdbid) {
  *
  * @param object $ts3
  *   The Teamspeak connection object.
- * @param int $teamspeakdbid
+ * @param int $teamspeak_dbid
  *   The database ID for the teamspeak user.
  * 
  * @return array
  *   Returns an array containing the names and IDs of all server groups
- *   the client specified with $teamspeakdbid is is currently residing in.
+ *   the client specified with $teamspeak_dbid is is currently residing in.
  */
-function omni_eve_api_teamspeak_user_get_groups(&$ts3, $teamspeakdbid) {
+function omni_eve_api_teamspeak_user_get_groups(&$ts3, $teamspeak_dbid) {
   try {
-    $teamspeak_data = $ts3->clientGetServerGroupsByDbid($teamspeakdbid);
+    $teamspeak_data = $ts3->clientGetServerGroupsByDbid($teamspeak_dbid);
   }
   catch (TeamSpeak3_Exception $e) {
     return FALSE;
@@ -254,15 +254,15 @@ function omni_eve_api_teamspeak_user_get_groups(&$ts3, $teamspeakdbid) {
  *   The Teamspeak connection object.
  * @param int $teamspeakgid
  *   The group ID for the teamspeak group.
- * @param int $teamspeakdbid
+ * @param int $teamspeak_dbid
  *   The database ID for the teamspeak user.
  * 
  * @return bool
  *   Success or failure.
  */
-function omni_eve_api_teamspeak_user_remove_group(&$ts3, $teamspeakgid, $teamspeakdbid) {
+function omni_eve_api_teamspeak_user_remove_group(&$ts3, $teamspeakgid, $teamspeak_dbid) {
   try {
-    $ts3->serverGroupClientDel($teamspeakgid, $teamspeakdbid);
+    $ts3->serverGroupClientDel($teamspeakgid, $teamspeak_dbid);
   }
   catch (TeamSpeak3_Exception $e) {
     return FALSE;
@@ -278,15 +278,15 @@ function omni_eve_api_teamspeak_user_remove_group(&$ts3, $teamspeakgid, $teamspe
  *   The Teamspeak connection object.
  * @param int $teamspeakgid
  *   The group ID for the teamspeak group.
- * @param int $teamspeakdbid
+ * @param int $teamspeak_dbid
  *   The database ID for the teamspeak user.
  * 
  * @return bool
  *   Success or failure.
  */
-function omni_eve_api_teamspeak_user_add_group(&$ts3, $teamspeakgid, $teamspeakdbid) {
+function omni_eve_api_teamspeak_user_add_group(&$ts3, $teamspeakgid, $teamspeak_dbid) {
   try {
-    $ts3->serverGroupClientAdd($teamspeakgid, $teamspeakdbid);
+    $ts3->serverGroupClientAdd($teamspeakgid, $teamspeak_dbid);
   }
   catch (TeamSpeak3_Exception $e) {
     return FALSE;
