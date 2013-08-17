@@ -184,7 +184,7 @@ function eve_api_user_add_api_form_submit($form, &$form_state) {
 
         eve_api_jabber_disconnect();
       }
-      catch (OeaException $e) {
+      catch (EveApiException $e) {
         // Log Error ?
       }
 
@@ -192,7 +192,7 @@ function eve_api_user_add_api_form_submit($form, &$form_state) {
         $ts3 = eve_api_teamspeak_connection();
         eve_api_teamspeak_user_delete($ts3, $account->teamspeakDBID);
       }
-      catch (OeaException $e) {
+      catch (EveApiException $e) {
         // Log Error ?
       }
 
@@ -312,7 +312,7 @@ function eve_api_user_select_main_character_form_submit($form, &$form_state) {
 
     eve_api_jabber_disconnect();
   }
-  catch (OeaException $e) {
+  catch (EveApiException $e) {
     // Log Error ?
   }
 
@@ -588,7 +588,7 @@ function eve_api_user_list_api_form_submit($form, &$form_state) {
 
       eve_api_jabber_disconnect();
     }
-    catch (OeaException $e) {
+    catch (EveApiException $e) {
       // Log Error ?
     }
 
@@ -811,7 +811,7 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
 
       eve_api_jabber_disconnect();
     }
-    catch (OeaException $e) {
+    catch (EveApiException $e) {
       // Log Error ?
     }
 
@@ -819,7 +819,7 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
       $ts3 = eve_api_teamspeak_connection();
       eve_api_teamspeak_user_delete($ts3, $account->teamspeakDBID);
     }
-    catch (OeaException $e) {
+    catch (EveApiException $e) {
       // Log Error ?
     }
 
@@ -927,7 +927,7 @@ function eve_api_user_teamspeak_form_validate($form, &$form_state) {
     $teamspeak_data = eve_api_teamspeak_user_by_name($ts3, $teamspeak_name);
     unset($teamspeak_data);
   }
-  catch (OeaException $e) {
+  catch (EveApiException $e) {
     form_set_error('teamspeak', check_plain($e->getMessage()));
   }
 }
@@ -962,7 +962,7 @@ function eve_api_user_teamspeak_form_submit($form, &$form_state) {
     // Need to assign roles.
     drupal_set_message(t('Teamspeak access granted.'));
   }
-  catch (OeaException $e) {
+  catch (EveApiException $e) {
     drupal_set_message(check_plain($e->getMessage()), 'error');
   }
 }
@@ -1064,7 +1064,7 @@ function eve_api_user_jabber_form_validate($form, &$form_state) {
 
     eve_api_jabber_disconnect();
   }
-  catch (OeaException $e) {
+  catch (EveApiException $e) {
     form_set_error('jabber_password', t('There was an error connecting with the Jabber Server, please try again later.'));
   }
 }
@@ -1172,7 +1172,7 @@ function eve_api_user_jabber_form_submit($form, &$form_state) {
       drupal_set_message(t('There was an error updateing your Jabber account, please try again later.'));
     }
   }
-  catch (OeaException $e) {
+  catch (EveApiException $e) {
     drupal_set_message(t('There was an error updateing your Jabber account, please try again later.'));
   }
 }

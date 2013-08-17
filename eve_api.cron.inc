@@ -241,7 +241,7 @@ function eve_api_cron_teamspeak_user_sync($item) {
       }
     }
   }
-  catch (OeaException $e) {
+  catch (EveApiException $e) {
     $item['runs'] = $item['runs'] + 1;
     $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_sync');
     $queue->createItem($item);
@@ -398,7 +398,7 @@ function eve_api_cron_teamspeak_user_check($item) {
       }
     }
   }
-  catch (OeaException $e) {
+  catch (EveApiException $e) {
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_check');
     $queue->createItem($item);
@@ -452,7 +452,7 @@ function eve_api_cron_teamspeak_role_sync($item) {
       eve_api_teamspeak_group_create($ts3, $rname);
     }
   }
-  catch (OeaException $e) {
+  catch (EveApiException $e) {
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_cron_teamspeak_role_sync');
     $queue->createItem($item);
@@ -521,7 +521,7 @@ function eve_api_cron_jabber_user_sync($item) {
       $result = eve_api_jabber_url_query('delete', $character_name);
     }
   }
-  catch (OeaException $e) {
+  catch (EveApiException $e) {
     $item['runs'] = $item['runs'] + 1;
     $queue = DrupalQueue::get('eve_api_cron_jabber_user_sync');
     $queue->createItem($item);
@@ -572,7 +572,7 @@ function eve_api_cron_jabber_role_sync($item) {
       eve_api_jabber_group_add($rname, $description);
     }
   }
-  catch (OeaException $e) {
+  catch (EveApiException $e) {
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_cron_jabber_role_sync');
     $queue->createItem($item);
@@ -720,7 +720,7 @@ function eve_api_cron_api_user_sync($item) {
       $ts3 = eve_api_teamspeak_connection();
       eve_api_teamspeak_user_delete($ts3, $account['teamspeakDBID']);
     }
-    catch (OeaException $e) {
+    catch (EveApiException $e) {
       // Log Error ?
     }
 
@@ -737,7 +737,7 @@ function eve_api_cron_api_user_sync($item) {
 
       eve_api_jabber_disconnect();
     }
-    catch (OeaException $e) {
+    catch (EveApiException $e) {
       // Log Error ?
     }
 

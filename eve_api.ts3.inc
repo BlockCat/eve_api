@@ -41,7 +41,7 @@ function eve_api_teamspeak_format_name($character_name) {
  */
 function eve_api_teamspeak_connection($check = FALSE) {
   if ((!variable_get('eve_api_ts3_enable', FALSE) || !variable_get('eve_api_ts3_framework_installed', FALSE)) && !$check) {
-    throw new OeaException(t('Teamspeak 3 Connection disabled.'));
+    throw new EveApiException(t('Teamspeak 3 Connection disabled.'));
   }
 
   // Load the TeamSpeak 3 PHP Framework Library.
@@ -60,7 +60,7 @@ function eve_api_teamspeak_connection($check = FALSE) {
     $ts3->setPredefinedQueryName('OEABOT');
   }
   catch (TeamSpeak3_Exception $e) {
-    throw new OeaException(t('Teamspeak 3 Connection failed. Error: @error', array('@error' => check_plain($e->getMessage()))));
+    throw new EveApiException(t('Teamspeak 3 Connection failed. Error: @error', array('@error' => check_plain($e->getMessage()))));
   }
 
   return $ts3;
@@ -90,7 +90,7 @@ function eve_api_teamspeak_group_create(&$ts3, $role) {
     }
   }
   catch (TeamSpeak3_Exception $e) {
-    throw new OeaException(t('Unable to create new group.'));
+    throw new EveApiException(t('Unable to create new group.'));
   }
 
   return $teamspeakgid;
@@ -152,7 +152,7 @@ function eve_api_teamspeak_user_list(&$ts3) {
     $teamspeak_user_list = $ts3->clientList();
   }
   catch (TeamSpeak3_Exception $e) {
-    throw new OeaException(t('Unable to get list of active users. Error: @error', array('@error' => check_plain($e->getMessage()))));
+    throw new EveApiException(t('Unable to get list of active users. Error: @error', array('@error' => check_plain($e->getMessage()))));
   }
 
   return $teamspeak_user_list;
@@ -174,7 +174,7 @@ function eve_api_teamspeak_user_info(&$ts3, $teamspeak_dbid) {
     $teamspeak_user_info = $ts3->clientInfoDb($teamspeak_dbid);
   }
   catch (TeamSpeak3_Exception $e) {
-    throw new OeaException(t('Unable to get user info. Error: @error', array('@error' => check_plain($e->getMessage()))));
+    throw new EveApiException(t('Unable to get user info. Error: @error', array('@error' => check_plain($e->getMessage()))));
   }
 
   return $teamspeak_user_info;
@@ -196,7 +196,7 @@ function eve_api_teamspeak_user_by_name(&$ts3, $teamspeak_name) {
     $teamspeak_data = $ts3->clientGetByName($teamspeak_name);
   }
   catch (TeamSpeak3_Exception $e) {
-    throw new OeaException(t('Unable to find user.'));
+    throw new EveApiException(t('Unable to find user.'));
   }
 
   return $teamspeak_data;

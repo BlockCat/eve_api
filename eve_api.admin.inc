@@ -1144,7 +1144,7 @@ function eve_api_admin_teamspeak_form_validate($form, &$form_state) {
         $ts3 = eve_api_teamspeak_connection(TRUE);
         unset($ts3);
       }
-      catch (OeaException $e) {
+      catch (EveApiException $e) {
         form_set_error('enable', check_plain($e->getMessage()));
         variable_set('eve_api_ts3_enable', FALSE);
       }
@@ -1221,7 +1221,7 @@ function eve_api_user_teamspeak_settings_form($form, &$form_state) {
       '#weight' => 10,
     );
   }
-  catch (OeaException $e) {
+  catch (EveApiException $e) {
     $form['teamspeak_settings']['bypass_group'] = array(
       '#type' => 'markup',
       '#prefix' => '<p>',
@@ -1678,7 +1678,7 @@ function eve_api_admin_jabber_form_validate($form, &$form_state) {
       eve_api_jabber_test_connection();
       eve_api_jabber_disconnect();
     }
-    catch (OeaException $e) {
+    catch (EveApiException $e) {
       eve_api_jabber_disconnect();
       form_set_error('enable', t('Please check database settings and try again. Error: @error', array('@error' => check_plain($e->getMessage()))));
       variable_set('eve_api_jabber_enable', FALSE);
@@ -1692,7 +1692,7 @@ function eve_api_admin_jabber_form_validate($form, &$form_state) {
         variable_set('eve_api_jabber_enable', FALSE);
       }
     }
-    catch (OeaException $e) {
+    catch (EveApiException $e) {
       form_set_error('enable', t('Please check your Openfire URL settings and try again.'));
       variable_set('eve_api_jabber_enable', FALSE);
     }

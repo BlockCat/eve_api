@@ -13,7 +13,7 @@ function eve_api_jabber_test_connection() {
     unset($result);
   }
   catch (PDOException $e) {
-    throw new OeaException(check_plain($e->getMessage()));
+    throw new EveApiException(check_plain($e->getMessage()));
   }
 }
 
@@ -22,7 +22,7 @@ function eve_api_jabber_test_connection() {
  */
 function eve_api_jabber_connect($check = FALSE) {
   if (!variable_get('eve_api_jabber_enable', FALSE) && !$check) {
-    throw new OeaException(t('Jabber Connection disabled.'));
+    throw new EveApiException(t('Jabber Connection disabled.'));
   }
 
   // Set the Jabber Database for access on the fly.
@@ -41,7 +41,7 @@ function eve_api_jabber_connect($check = FALSE) {
   }
   catch (PDOException $e) {
     db_set_active();
-    throw new OeaException(check_plain($e->getMessage()));
+    throw new EveApiException(check_plain($e->getMessage()));
   }
 }
 
@@ -105,7 +105,7 @@ function eve_api_jabber_format_display_name($name) {
  */
 function eve_api_jabber_group_add($name, $description = '') {
   if (!variable_get('eve_api_jabber_enable', FALSE)) {
-    throw new OeaException(t('Jabber Connection disabled.'));
+    throw new EveApiException(t('Jabber Connection disabled.'));
   }
 
   try {
@@ -150,7 +150,7 @@ function eve_api_jabber_group_add($name, $description = '') {
   }
   catch (PDOException $e) {
     eve_api_jabber_disconnect();
-    throw new OeaException(check_plain($e->getMessage()));
+    throw new EveApiException(check_plain($e->getMessage()));
   }
 
   return TRUE;
@@ -171,7 +171,7 @@ function eve_api_jabber_group_add($name, $description = '') {
  */
 function eve_api_jabber_url_query($type, $character_name = '', array $query = array()) {
   if (!variable_get('eve_api_jabber_enable', FALSE) && $type != 'check') {
-    throw new OeaException(t('Jabber Connection disabled.'));
+    throw new EveApiException(t('Jabber Connection disabled.'));
   }
 
   try {
@@ -233,7 +233,7 @@ function eve_api_jabber_url_query($type, $character_name = '', array $query = ar
   }
   catch (PDOException $e) {
     db_set_active();
-    throw new OeaException(check_plain($e->getMessage()));
+    throw new EveApiException(check_plain($e->getMessage()));
   }
 }
 

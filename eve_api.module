@@ -26,7 +26,7 @@ function eve_api_version() {
 /**
  * We need our own Exception, to the Exception.
  */
-class OeaException extends Exception {
+class EveApiException extends Exception {
 }
 
 /**
@@ -796,7 +796,7 @@ function eve_api_user_delete($account) {
 
     eve_api_jabber_disconnect();
   }
-  catch (OeaException $e) {
+  catch (EveApiException $e) {
     // Log Error ?
   }
 
@@ -804,7 +804,7 @@ function eve_api_user_delete($account) {
     $ts3 = eve_api_teamspeak_connection();
     eve_api_teamspeak_user_delete($ts3, $account->teamspeakDBID);
   }
-  catch (OeaException $e) {
+  catch (EveApiException $e) {
     // Log Error ?
   }
 
