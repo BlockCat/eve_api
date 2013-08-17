@@ -479,7 +479,7 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
       }
     }
 
-    $string = (strlen($api_single['vCode']) > 13) ? substr($api_single['vCode'], 0, 10) . '...' : $api_single['vCode'];
+    $v_code = (strlen($api_single['vCode']) > 13) ? substr($api_single['vCode'], 0, 10) . '...' : $api_single['vCode'];
 
     $options[$api_single['apiID']] = array(
       'action' => array(
@@ -490,7 +490,7 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
         ),
       ),
       'keyID' => check_plain($api_single['keyID']),
-      'vCode' => check_plain($string),
+      'vCode' => check_plain($v_code),
       'characters' => $list_characters,
       'updated' => format_date(strtotime($api_single['updated']), 'short'),
       'created' => format_date(strtotime($api_single['created']), 'short'),
@@ -869,7 +869,7 @@ function omni_eve_api_user_teamspeak_form($form, &$form_state, $account) {
     '#type' => 'markup',
     '#prefix' => '<p>',
     '#markup' => t('In order to register with Teamspeak, you must first connect to our Teamspeak.<br />If you do not have Teamspeak already installed, please download and install Teamspeak 3 from <a href="@teamspeak_url" target="_blank">here</a>.<br />Please use the following settings to connect:<br /><br />Address - @teamspeak_address<br />@teamspeak_password', array(
-      '@teamspeak_url' => check_url('http://www.teamspeak.com/?page=downloads'),
+      '@teamspeak_url' => 'http://www.teamspeak.com/?page=downloads',
       '@teamspeak_address' => empty($teamspeak_port_check) ? variable_get('omni_eve_api_ts3_server_address', 'teamspeak.com') : variable_get('omni_eve_api_ts3_server_address', 'teamspeak.com') . ':' . variable_get('omni_eve_api_ts3_server_port', 9987),
       '@teamspeak_password' => empty($teamspeak_password_check) ? '' : t('Password') . ' - ' . variable_get('omni_eve_api_ts3_server_password', ''),
     )),
@@ -998,7 +998,7 @@ function omni_eve_api_user_jabber_form($form, &$form_state, $account) {
     '#type' => 'markup',
     '#prefix' => '<p>',
     '#markup' => t('If you do not have a Jabber Client already installed, you can download and install Trillian from <a href="@jabber_url" target="_blank">here</a>.', array(
-      '@jabber_url' => check_url('https://www.trillian.im/download/'),
+      '@jabber_url' => 'https://www.trillian.im/download/',
     )),
     '#suffix' => '</p>',
     '#weight' => 0,

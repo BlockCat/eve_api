@@ -1529,14 +1529,14 @@ function omni_eve_api_user_teamspeak_settings_form_submit($form, &$form_state) {
   variable_set('omni_eve_api_ts3_cron_reg_ban_time', (int) $form_state['values']['reg_ban_time']);
   variable_set('omni_eve_api_ts3_cron_user_ban_time', (int) $form_state['values']['user_ban_time']);
 
-  variable_set('omni_eve_api_ts3_cron_reg_message', omni_eve_api_clean_input((string) $form_state['input']['reg_message']));
-  variable_set('omni_eve_api_ts3_cron_reg_poke', omni_eve_api_clean_input((string) $form_state['input']['reg_poke']));
-  variable_set('omni_eve_api_ts3_cron_reg_kick', omni_eve_api_clean_input((string) $form_state['input']['reg_kick']));
-  variable_set('omni_eve_api_ts3_cron_reg_ban', omni_eve_api_clean_input((string) $form_state['input']['reg_ban']));
-  variable_set('omni_eve_api_ts3_cron_user_message', omni_eve_api_clean_input((string) $form_state['input']['user_message']));
-  variable_set('omni_eve_api_ts3_cron_user_poke', omni_eve_api_clean_input((string) $form_state['input']['user_poke']));
-  variable_set('omni_eve_api_ts3_cron_user_kick', omni_eve_api_clean_input((string) $form_state['input']['user_kick']));
-  variable_set('omni_eve_api_ts3_cron_user_ban', omni_eve_api_clean_input((string) $form_state['input']['user_ban']));
+  variable_set('omni_eve_api_ts3_cron_reg_message', (string) $form_state['input']['reg_message']);
+  variable_set('omni_eve_api_ts3_cron_reg_poke', (string) $form_state['input']['reg_poke']);
+  variable_set('omni_eve_api_ts3_cron_reg_kick', (string) $form_state['input']['reg_kick']);
+  variable_set('omni_eve_api_ts3_cron_reg_ban', (string) $form_state['input']['reg_ban']);
+  variable_set('omni_eve_api_ts3_cron_user_message', (string) $form_state['input']['user_message']);
+  variable_set('omni_eve_api_ts3_cron_user_poke', (string) $form_state['input']['user_poke']);
+  variable_set('omni_eve_api_ts3_cron_user_kick', (string) $form_state['input']['user_kick']);
+  variable_set('omni_eve_api_ts3_cron_user_ban', (string) $form_state['input']['user_ban']);
 
   $form_state['redirect'] = 'admin/settings/omni_eve_api/teamspeak';
 
@@ -1705,12 +1705,7 @@ function omni_eve_api_admin_jabber_form_validate($form, &$form_state) {
  * @see omni_eve_api_admin_jabber_form_validate()
  */
 function omni_eve_api_admin_jabber_form_submit($form, &$form_state) {
-  if ((bool) $form_state['values']['enable']) {
-    variable_set('omni_eve_api_jabber_enable', TRUE);
-  }
-  else {
-    variable_set('omni_eve_api_jabber_enable', FALSE);
-  }
+  variable_set('omni_eve_api_jabber_enable', (bool) $form_state['values']['enable']);
 
   menu_rebuild();
 

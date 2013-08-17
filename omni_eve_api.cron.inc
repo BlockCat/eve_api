@@ -356,7 +356,7 @@ function omni_eve_api_cron_teamspeak_user_check($item) {
 
           $teamspeak_user->message('[color=red]' . t('Nickname expected: @nickname', array('@nickname' => $expected_teamspeaknickname)) . '[/color]');
 
-          $message = variable_get('omni_eve_api_ts3_cron_user_message', '');
+          $message = omni_eve_api_clean_input(variable_get('omni_eve_api_ts3_cron_user_message', ''));
 
           if (!empty($message)) {
             $teamspeak_user->message('[color=red]' . $message . '[/color]');
@@ -375,7 +375,7 @@ function omni_eve_api_cron_teamspeak_user_check($item) {
           $teamspeak_user->poke($message);
           $teamspeak_user->poke(t('Nickname expected: @nickname', array('@nickname' => $expected_teamspeaknickname)));
 
-          $message = variable_get('omni_eve_api_ts3_cron_user_poke', '');
+          $message = omni_eve_api_clean_input(variable_get('omni_eve_api_ts3_cron_user_poke', ''));
 
           if (!empty($message)) {
             $teamspeak_user->poke($message);
