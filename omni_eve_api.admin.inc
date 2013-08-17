@@ -268,7 +268,7 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
   if (variable_get('omni_eve_api_first_run', FALSE) && !variable_get('omni_eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['enter_api']['enable']['#default_value'] = TRUE;
-    //$form['submit_button']['#disabled'] = TRUE;
+    $form['submit_button']['#disabled'] = TRUE;
   }
 
   $form['#validate'] = array('omni_eve_api_admin_alliance_api_key_form_validate');
