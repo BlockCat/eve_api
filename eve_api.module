@@ -4,6 +4,11 @@
  * The main file for Omni EVE API, where all the magic happens.
  */
 
+module_load_include('inc', 'eve_api', 'eve_api.api');
+module_load_include('inc', 'eve_api', 'eve_api.cron');
+module_load_include('inc', 'eve_api', 'eve_api.ts3');
+module_load_include('inc', 'eve_api', 'eve_api.jabber');
+
 /**
  * Return the version number.
  * 
@@ -27,78 +32,6 @@ function eve_api_version() {
  * We need our own Exception, to the Exception.
  */
 class EveApiException extends Exception {
-}
-
-/**
- * Implements hook_cronapi().
- */
-function eve_api_cronapi($op, $job = NULL) {
-  $items = array();
-
-  $items['eve_api_api_alliance_fetch_cron'] = array(
-    'description' => 'General cron, called once a day.',
-    'rule' => '4 0 * * *',
-    'file' => 'eve_api.cron.inc',
-    'weight' => 1,
-  );
-
-  $items['eve_api_api_alliance_sync_cron'] = array(
-    'description' => 'General cron, called once a day.',
-    'rule' => '14 0 * * *',
-    'file' => 'eve_api.cron.inc',
-    'weight' => 2,
-  );
-
-  $items['eve_api_api_mask_cron'] = array(
-    'description' => 'General cron, called once a day.',
-    'rule' => '24 0 * * *',
-    'file' => 'eve_api.cron.inc',
-    'weight' => 3,
-  );
-
-  $items['eve_api_api_users_cron'] = array(
-    'description' => 'Pull API for each user every hour.',
-    'rule' => '0 * * * *',
-    'file' => 'eve_api.cron.inc',
-    'weight' => 4,
-  );
-
-  $items['eve_api_teamspeak_role_cron'] = array(
-    'description' => 'Update permissions in Teamspeak every 5 minutes.',
-    'rule' => '*/5 * * * *',
-    'file' => 'eve_api.cron.inc',
-    'weight' => 5,
-  );
-
-  $items['eve_api_teamspeak_user_cron'] = array(
-    'description' => 'Update user permissions in Teamspeak every 5 minutes.',
-    'rule' => '*/5 * * * *',
-    'file' => 'eve_api.cron.inc',
-    'weight' => 6,
-  );
-
-  $items['eve_api_jabber_role_cron'] = array(
-    'description' => 'Update permissions in Jabber every 5 minutes.',
-    'rule' => '*/5 * * * *',
-    'file' => 'eve_api.cron.inc',
-    'weight' => 7,
-  );
-
-  $items['eve_api_jabber_user_cron'] = array(
-    'description' => 'Update user permissions in Jabber every 5 minutes.',
-    'rule' => '*/5 * * * *',
-    'file' => 'eve_api.cron.inc',
-    'weight' => 8,
-  );
-
-  $items['eve_api_teamspeak_name_cron'] = array(
-    'description' => 'Check usernames in Teamspeak every minute.',
-    'rule' => '* * * * *',
-    'file' => 'eve_api.cron.inc',
-    'weight' => 9,
-  );
-
-  return $items;
 }
 
 /**
@@ -781,8 +714,6 @@ function eve_api_user_role_delete($role) {
  * Implements hook_user_delete().
  */
 function eve_api_user_delete($account) {
-  module_load_include('inc', 'eve_api', 'eve_api.api');
-
   try {
     eve_api_jabber_connect();
 
@@ -973,8 +904,6 @@ function eve_api_get_eve_avatar($character_id) {
  * Implements hook_form_FORM_ID_alter() for user_profile_form().
  */
 function eve_api_form_user_profile_form_alter(&$form, &$form_state) {
-  module_load_include('inc', 'eve_api', 'eve_api.api');
-
   $account = $form['#user'];
 
   $register = ($account->uid > 0 ? FALSE : TRUE);

@@ -4,9 +4,6 @@
  * Functions related to allow admin's to alter the settings and options.
  */
 
-module_load_include('inc', 'eve_api', 'eve_api.api');
-module_load_include('inc', 'eve_api', 'eve_api.cron');
-
 /**
  * Form constructor for the admin edit roles form.
  *

@@ -29,9 +29,6 @@ DEPENDENCIES
  - Ctools (Only "Chaos tools" is required)
  https://drupal.org/project/ctools
 
- - Elysia Cron (Configure cron to run every minute via your hosts crontab)
- https://drupal.org/project/elysia_cron
-
  - Libraries
  https://drupal.org/project/libraries
 

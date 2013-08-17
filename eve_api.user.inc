@@ -4,9 +4,6 @@
  * Functions related to allowing users to alter the user settings and options.
  */
 
-module_load_include('inc', 'eve_api', 'eve_api.api');
-module_load_include('inc', 'eve_api', 'eve_api.cron');
-
 /**
  * Form constructor for the user add API form.
  *

@@ -4,9 +4,6 @@
  * Functions related to altering the registration method on the site.
  */
 
-module_load_include('inc', 'eve_api', 'eve_api.api');
-module_load_include('inc', 'eve_api', 'eve_api.cron');
-
 /**
  * Create callback for standard ctools registration wizard.
  *
