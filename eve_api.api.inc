@@ -136,7 +136,7 @@ function eve_api_get_xml($type, $query = array()) {
  *   A complex array of a single character information.
  */
 function eve_api_get_character_info($character_name) {
-  $result = db_query('SELECT uid, characterName, characterID, corporationName, corporationID, corporationTicker, allianceID, allianceName, allianceTicker FROM {oea_characters} WHERE characterName = :characterName', array(
+  $result = db_query('SELECT uid, characterName, characterID, corporationName, corporationID, corporationTicker, allianceID, allianceName, allianceTicker FROM {eve_api_characters} WHERE characterName = :characterName', array(
     ':characterName' => (string) $character_name,
   ));
 
@@ -239,7 +239,7 @@ function eve_api_get_character_sheet($query) {
  *   The Alliance ticker for the $allianceID.
  */
 function eve_api_get_alliance_ticker($alliance_id) {
-  $result = db_query('SELECT allianceTicker FROM {oea_alliance_info} WHERE allianceID = :id', array(
+  $result = db_query('SELECT allianceTicker FROM {eve_api_alliance_info} WHERE allianceID = :id', array(
     ':id' => (int) $alliance_id,
   ));
   $row = $result->fetchAssoc();
@@ -321,7 +321,7 @@ function eve_api_verify_blue($characters) {
   }
 
   foreach ($characters['characters'] as $character) {
-    $result = db_query('SELECT contactID FROM {oea_blue_standings} WHERE standing >= :standing AND deleted = 0 AND contactID IN (:contactIDs)', array(
+    $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE standing >= :standing AND deleted = 0 AND contactID IN (:contactIDs)', array(
       ':standing' => (float) variable_get('eve_api_required_standing', 0.1),
       ':contactIDs' => array(
         (int) $character['characterID'],
@@ -338,7 +338,7 @@ function eve_api_verify_blue($characters) {
       return TRUE;
     }
 
-    $result = db_query('SELECT corporationID FROM {oea_alliance_corporations} WHERE corporationID = :corporationID', array(
+    $result = db_query('SELECT corporationID FROM {eve_api_alliance_corporations} WHERE corporationID = :corporationID', array(
       ':corporationID' => (int) $character['corporationID'],
     ));
 
@@ -364,7 +364,7 @@ function eve_api_list_valid_characters($characters, $empty) {
 
   if (!empty($characters)) {
     foreach ($characters['characters'] as $character) {
-      $result = db_query('SELECT contactID FROM {oea_blue_standings} WHERE standing > 0 AND deleted = 0 AND contactID IN (:contactIDs)', array(
+      $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE standing > 0 AND deleted = 0 AND contactID IN (:contactIDs)', array(
         ':contactIDs' => array(
           (int) $character['characterID'],
           (int) $character['corporationID'],
@@ -377,7 +377,7 @@ function eve_api_list_valid_characters($characters, $empty) {
         continue;
       }
 
-      $result = db_query('SELECT corporationID FROM {oea_alliance_corporations} WHERE corporationID = :corporationID', array(
+      $result = db_query('SELECT corporationID FROM {eve_api_alliance_corporations} WHERE corporationID = :corporationID', array(
         ':corporationID' => (int) $character['corporationID'],
       ));
 
@@ -408,7 +408,7 @@ function eve_api_characters_exist($characters) {
 
   if (!empty($characters)) {
     foreach ($characters['characters'] as $character) {
-      $result = db_query('SELECT characterID FROM {oea_characters} WHERE deleted = 0 AND characterID = :characterID', array(
+      $result = db_query('SELECT characterID FROM {eve_api_characters} WHERE deleted = 0 AND characterID = :characterID', array(
         ':characterID' => (int) $character['characterID'],
       ));
 
@@ -469,7 +469,7 @@ function eve_api_list_api_simple($uid) {
   $uid = (int) $uid;
   $api_list = array();
 
-  $result_a = db_query('SELECT apiID, keyID, vCode, errorID, updated, created FROM {oea_api_keys} WHERE uid = :uid', array(
+  $result_a = db_query('SELECT apiID, keyID, vCode, errorID, updated, created FROM {eve_api_api_keys} WHERE uid = :uid', array(
     ':uid' => $uid,
   ));
 
@@ -479,7 +479,7 @@ function eve_api_list_api_simple($uid) {
         continue;
       }
 
-      $result_b = db_query('SELECT characterID, characterName, corporationID, corporationName, corporationTicker, allianceID, allianceName, allianceTicker FROM {oea_characters} WHERE deleted = 0 AND uid = :uid AND apiID = :apiID', array(
+      $result_b = db_query('SELECT characterID, characterName, corporationID, corporationName, corporationTicker, allianceID, allianceName, allianceTicker FROM {eve_api_characters} WHERE deleted = 0 AND uid = :uid AND apiID = :apiID', array(
         ':uid' => $uid,
         ':apiID' => (int) $row_a->apiID,
       ));

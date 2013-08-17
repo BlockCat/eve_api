@@ -188,7 +188,7 @@ function eve_api_form_user_register_form_alter(&$form, &$form_state) {
     }
   }
 
-  $result = db_query('SELECT characterID FROM {oea_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
+  $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
     ':characterIDs' => $whitelist,
   ));
 
@@ -262,7 +262,7 @@ function eve_api_user_register_form_validate(&$form, &$form_state) {
     }
   }
 
-  $result = db_query('SELECT characterID FROM {oea_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
+  $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
     ':characterIDs' => $whitelist,
   ));
 
@@ -320,7 +320,7 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
 
   $created = date('Y-m-d H:i:s', time());
 
-  $api_id = db_insert('oea_api_keys')->fields(array(
+  $api_id = db_insert('eve_api_api_keys')->fields(array(
     'uid' => $uid,
     'keyID' => $key_id,
     'vCode' => $v_code,
@@ -329,7 +329,7 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
   ))->execute();
 
   foreach ($characters['characters'] as $character) {
-    db_merge('oea_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
+    db_merge('eve_api_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
       'characterID' => (int) $character['characterID'],
       'uid' => $uid,
       'apiID' => (int) $api_id,
@@ -446,7 +446,7 @@ function eve_api_enter_api_form_validate($form, &$form_state) {
       }
     }
 
-    $result = db_query('SELECT characterID FROM {oea_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
+    $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
       ':characterIDs' => $whitelist,
     ));
 

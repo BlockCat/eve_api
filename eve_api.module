@@ -810,8 +810,8 @@ function eve_api_user_delete($account) {
 
   $uid = (int) $account->uid;
 
-  db_delete('oea_characters')->condition('uid', $uid)->execute();
-  db_delete('oea_api_keys')->condition('uid', $uid)->execute();
+  db_delete('eve_api_characters')->condition('uid', $uid)->execute();
+  db_delete('eve_api_api_keys')->condition('uid', $uid)->execute();
 }
 
 /**

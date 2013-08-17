@@ -94,7 +94,7 @@ function eve_api_user_add_api_form_validate($form, &$form_state) {
       }
     }
 
-    $result = db_query('SELECT characterID FROM {oea_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
+    $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
       ':characterIDs' => $whitelist,
     ));
 
@@ -142,7 +142,7 @@ function eve_api_user_add_api_form_submit($form, &$form_state) {
   else {
     $created = date('Y-m-d H:i:s', time());
 
-    $api_id = db_insert('oea_api_keys')->fields(array(
+    $api_id = db_insert('eve_api_api_keys')->fields(array(
       'uid' => $uid,
       'keyID' => $key_id,
       'vCode' => $v_code,
@@ -151,7 +151,7 @@ function eve_api_user_add_api_form_submit($form, &$form_state) {
     ))->execute();
 
     foreach ($characters['characters'] as $character) {
-      db_merge('oea_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
+      db_merge('eve_api_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
         'characterID' => (int) $character['characterID'],
         'uid' => $uid,
         'apiID' => (int) $api_id,
@@ -166,7 +166,7 @@ function eve_api_user_add_api_form_submit($form, &$form_state) {
       ))->execute();
     }
 
-    $result = db_query('SELECT c.characterName, c.characterID FROM {oea_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
+    $result = db_query('SELECT c.characterName, c.characterID FROM {eve_api_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
       ':uid' => $uid,
     ));
 
@@ -417,7 +417,7 @@ function eve_api_user_list_api_form($form, &$form_state, $account) {
     ),
   );
 
-  $result_a = db_select('oea_api_keys', 'a')
+  $result_a = db_select('eve_api_api_keys', 'a')
     ->fields('a', array(
       'apiID',
       'keyID',
@@ -444,7 +444,7 @@ function eve_api_user_list_api_form($form, &$form_state, $account) {
         'created' => check_plain($row_a->created),
       );
 
-      $result_b = db_query('SELECT characterID, characterName, corporationID, corporationName, corporationTicker, allianceID, allianceName, allianceTicker FROM {oea_characters} WHERE deleted = 0 AND uid = :uid AND apiID = :apiID', array(
+      $result_b = db_query('SELECT characterID, characterName, corporationID, corporationName, corporationTicker, allianceID, allianceName, allianceTicker FROM {eve_api_characters} WHERE deleted = 0 AND uid = :uid AND apiID = :apiID', array(
         ':uid' => $uid,
         ':apiID' => (int) $row_a->apiID,
       ));
@@ -547,16 +547,16 @@ function eve_api_user_list_api_form_submit($form, &$form_state) {
       continue;
     }
 
-    db_delete('oea_api_keys')->condition('apiID', (int) $api_id)->execute();
-    db_update('oea_characters')->fields(array('deleted' => 1))->condition('apiID', (int) $api_id)->execute();
+    db_delete('eve_api_api_keys')->condition('apiID', (int) $api_id)->execute();
+    db_update('eve_api_characters')->fields(array('deleted' => 1))->condition('apiID', (int) $api_id)->execute();
   }
 
-  $result = db_query('SELECT c.characterName, c.characterID FROM {oea_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
+  $result = db_query('SELECT c.characterName, c.characterID FROM {eve_api_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
     ':uid' => $uid,
   ));
 
   if (!$result->rowCount()) {
-    $result = db_query('SELECT corporationID, corporationName FROM {oea_alliance_corporations} WHERE deleted = 0');
+    $result = db_query('SELECT corporationID, corporationName FROM {eve_api_alliance_corporations} WHERE deleted = 0');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -639,7 +639,7 @@ function eve_api_user_update_api_form($form, &$form_state, $account, $api_id) {
 
   $uid = (int) $account->uid;
 
-  $result = db_query('SELECT keyID, vCode FROM {oea_api_keys} WHERE apiID = :apiID', array(
+  $result = db_query('SELECT keyID, vCode FROM {eve_api_api_keys} WHERE apiID = :apiID', array(
     ':apiID' => (int) $api_id,
   ));
 
@@ -730,7 +730,7 @@ function eve_api_user_update_api_form_validate($form, &$form_state) {
       }
     }
 
-    $result = db_query('SELECT characterID FROM {oea_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
+    $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
       ':characterIDs' => $whitelist,
     ));
 
@@ -765,9 +765,9 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
 
   $updated = date('Y-m-d H:i:s', time());
 
-  db_update('oea_characters')->fields(array('deleted' => 1))->condition('apiID', $api_id)->execute();
+  db_update('eve_api_characters')->fields(array('deleted' => 1))->condition('apiID', $api_id)->execute();
 
-  db_merge('oea_api_keys')->key(array('apiID' => $api_id))->fields(array(
+  db_merge('eve_api_api_keys')->key(array('apiID' => $api_id))->fields(array(
     'apiID' => $api_id,
     'uid' => $uid,
     'keyID' => $key_id,
@@ -777,7 +777,7 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
   ))->execute();
 
   foreach ($characters['characters'] as $character) {
-    db_merge('oea_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
+    db_merge('eve_api_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
       'characterID' => (int) $character['characterID'],
       'uid' => $uid,
       'apiID' => $api_id,
@@ -793,7 +793,7 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
     ))->execute();
   }
 
-  $result = db_query('SELECT c.characterName, c.characterID FROM {oea_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
+  $result = db_query('SELECT c.characterName, c.characterID FROM {eve_api_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
     ':uid' => $uid,
   ));
 
@@ -1080,7 +1080,7 @@ function eve_api_user_jabber_form_submit($form, &$form_state) {
   $roles = user_roles();
   $user_roles = $all_roles = array();
 
-  $result = db_query('SELECT corporationName, corporationTicker FROM {oea_alliance_corporations}');
+  $result = db_query('SELECT corporationName, corporationTicker FROM {eve_api_alliance_corporations}');
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {

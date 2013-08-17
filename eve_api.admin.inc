@@ -378,7 +378,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
 
   $access_mask = variable_get('eve_api_access_mask', 268435455);
 
-  $result = db_select('oea_access_mask', 'a')
+  $result = db_select('eve_api_access_mask', 'a')
     ->fields('a', array(
       'accessmask',
       'type',
@@ -510,7 +510,7 @@ function eve_api_admin_registration_form_submit($form, &$form_state) {
   if ($access_mask != $new_access_mask) {
     $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
 
-    $result = db_query('SELECT DISTINCT uid FROM {oea_characters}');
+    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
@@ -556,7 +556,7 @@ function eve_api_admin_list_blues_form($form, &$form_state) {
 
   $options = $selected = array();
 
-  $result = db_select('oea_blue_standings', 'b')
+  $result = db_select('eve_api_blue_standings', 'b')
     ->fields('b', array(
       'contactID',
       'contactName',
@@ -637,7 +637,7 @@ function eve_api_admin_list_blues_form_validate($form, &$form_state) {
  * @see eve_api_admin_list_blues_form_validate()
  */
 function eve_api_admin_list_blues_form_submit($form, &$form_state) {
-  db_update('oea_blue_standings')->fields(array('deleted' => 0))->execute();
+  db_update('eve_api_blue_standings')->fields(array('deleted' => 0))->execute();
 
   $deleted_blues = array();
   $is_change = FALSE;
@@ -647,12 +647,12 @@ function eve_api_admin_list_blues_form_submit($form, &$form_state) {
     $is_change = TRUE;
   }
 
-  db_update('oea_blue_standings')->fields(array('deleted' => 1))->condition('contactID', $deleted_blues, 'IN')->execute();
+  db_update('eve_api_blue_standings')->fields(array('deleted' => 1))->condition('contactID', $deleted_blues, 'IN')->execute();
 
   if ($is_change) {
     $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
 
-    $result = db_query('SELECT DISTINCT uid FROM {oea_characters}');
+    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
@@ -712,7 +712,7 @@ function eve_api_admin_add_blues_form($form, &$form_state) {
  * @see eve_api_admin_add_blues_form_submit()
  */
 function eve_api_admin_add_blues_form_validate($form, &$form_state) {
-  $result = db_query('SELECT contactID FROM {oea_blue_standings} WHERE contactID = :contactID', array(
+  $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE contactID = :contactID', array(
     ':contactID' => (int) $form_state['values']['id'],
   ));
 
@@ -720,7 +720,7 @@ function eve_api_admin_add_blues_form_validate($form, &$form_state) {
     form_set_error('id', t('Character/Corporation/Alliance already added to the standings.'));
   }
 
-  $result = db_query('SELECT corporationID FROM {oea_alliance_corporations} WHERE deleted = 0 AND corporationID = :corporationID', array(
+  $result = db_query('SELECT corporationID FROM {eve_api_alliance_corporations} WHERE deleted = 0 AND corporationID = :corporationID', array(
     ':corporationID' => (int) $form_state['values']['id'],
   ));
 
@@ -738,7 +738,7 @@ function eve_api_admin_add_blues_form_validate($form, &$form_state) {
     form_set_error('id', t('There was an error with the API.'));
   }
   else {
-    $result = db_query('SELECT allianceName FROM {oea_alliance_info} WHERE allianceID = :allianceID', array(
+    $result = db_query('SELECT allianceName FROM {eve_api_alliance_info} WHERE allianceID = :allianceID', array(
       ':allianceID' => (int) $form_state['values']['id'],
     ));
 
@@ -764,7 +764,7 @@ function eve_api_admin_add_blues_form_validate($form, &$form_state) {
  * @see eve_api_admin_add_blues_form_validate()
  */
 function eve_api_admin_add_blues_form_submit($form, &$form_state) {
-  db_insert('oea_blue_standings')->fields(array(
+  db_insert('eve_api_blue_standings')->fields(array(
     'contactID' => (int) $form_state['values']['id'],
     'contactName' => (string) $form_state['values']['name'],
     'standing' => 1,
@@ -773,7 +773,7 @@ function eve_api_admin_add_blues_form_submit($form, &$form_state) {
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
 
-  $result = db_query('SELECT DISTINCT uid FROM {oea_characters}');
+  $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters}');
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $item) {
@@ -810,7 +810,7 @@ function eve_api_admin_list_whitelist_form($form, &$form_state) {
 
   $options = $selected = array();
 
-  $result = db_select('oea_whitelist', 'w')
+  $result = db_select('eve_api_whitelist', 'w')
     ->fields('w', array(
       'characterID',
       'characterName',
@@ -887,14 +887,14 @@ function eve_api_admin_list_whitelist_form_validate($form, &$form_state) {
  * @see eve_api_admin_list_whitelist_form_validate()
  */
 function eve_api_admin_list_whitelist_form_submit($form, &$form_state) {
-  db_update('oea_whitelist')->fields(array('deleted' => 0))->execute();
+  db_update('eve_api_whitelist')->fields(array('deleted' => 0))->execute();
   $deleted_whitelist = array();
 
   foreach ((array) $form_state['values']['whitelist'] as $whitelist) {
     $deleted_whitelist[] = (int) $whitelist;
   }
 
-  db_update('oea_whitelist')->fields(array('deleted' => 1))->condition('characterID', $deleted_whitelist, 'IN')->execute();
+  db_update('eve_api_whitelist')->fields(array('deleted' => 1))->condition('characterID', $deleted_whitelist, 'IN')->execute();
 
   drupal_set_message(t('The Alliance White List have been updated.'));
 }
@@ -1001,7 +1001,7 @@ function eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
   $characters = (array) $form_state['values']['characters'];
 
   foreach ($characters['characters'] as $character) {
-    db_merge('oea_whitelist')->key(array('characterID' => (int) $character['characterID']))->fields(array(
+    db_merge('eve_api_whitelist')->key(array('characterID' => (int) $character['characterID']))->fields(array(
       'characterID' => (int) $character['characterID'],
       'characterName' => (string) $character['characterName'],
       'deleted' => 0,

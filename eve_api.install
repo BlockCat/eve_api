@@ -8,7 +8,7 @@
  * Implements hook_schema().
  */
 function eve_api_schema() {
-  $schema['oea_api_keys'] = array(
+  $schema['eve_api_api_keys'] = array(
     'description' => 'This table holds all the api\'s associated with all the accounts.',
     'fields' => array(
       'apiID' => array(
@@ -66,7 +66,7 @@ function eve_api_schema() {
     'primary key' => array('apiID'),
   );
 
-  $schema['oea_characters'] = array(
+  $schema['eve_api_characters'] = array(
     'description' => 'This table holds all the characters retrieved from the API\'s.',
     'fields' => array(
       'characterID' => array(
@@ -141,7 +141,7 @@ function eve_api_schema() {
     'primary key' => array('characterID'),
   );
 
-  $schema['oea_characters_roles'] = array(
+  $schema['eve_api_characters_roles'] = array(
     'description' => 'This table holds all the roles for all characters retrieved from the API.',
     'fields' => array(
       'characterid' => array(
@@ -193,7 +193,7 @@ function eve_api_schema() {
     'primary key' => array('characterid'),
   );
 
-  $schema['oea_whitelist'] = array(
+  $schema['eve_api_whitelist'] = array(
     'description' => 'This table holds all the whitelisted character ID\'s and name.',
     'fields' => array(
       'characterID' => array(
@@ -218,7 +218,7 @@ function eve_api_schema() {
     'primary key' => array('characterID'),
   );
 
-  $schema['oea_access_mask'] = array(
+  $schema['eve_api_access_mask'] = array(
     'description' => 'This table holds all the access mask retrieved from the API.',
     'fields' => array(
       'accessmask' => array(
@@ -249,7 +249,7 @@ function eve_api_schema() {
     'primary key' => array('accessmask'),
   );
 
-  $schema['oea_blue_standings'] = array(
+  $schema['eve_api_blue_standings'] = array(
     'description' => 'This table holds all the standings of the current alliance or corporation.',
     'fields' => array(
       'contactID' => array(
@@ -295,7 +295,7 @@ function eve_api_schema() {
     'primary key' => array('contactID'),
   );
 
-  $schema['oea_alliance_corporations'] = array(
+  $schema['eve_api_alliance_corporations'] = array(
     'description' => 'This table holds all the corporations in the alliance.',
     'fields' => array(
       'corporationID' => array(
@@ -348,7 +348,7 @@ function eve_api_schema() {
     'primary key' => array('corporationID'),
   );
 
-  $schema['oea_alliance_info'] = array(
+  $schema['eve_api_alliance_info'] = array(
     'description' => 'This table holds all the alliance tickers.',
     'fields' => array(
       'allianceID' => array(
