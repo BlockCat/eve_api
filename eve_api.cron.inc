@@ -804,14 +804,18 @@ function eve_api_cron_api_alliance_fetch($item = NULL) {
     return FALSE;
   }
 
-  if (empty(variable_get('eve_api_corp_keyid', '')) || empty(variable_get('eve_api_corp_vcode', ''))) {
+  $key_id = variable_get('eve_api_corp_keyid', '');
+  $v_code = variable_get('eve_api_corp_keyid', '');
+
+  if (empty($key_id) || empty($v_code)) {
     return FALSE;
   }
 
   $query = array(
-    'keyID' => variable_get('eve_api_corp_keyid', ''),
-    'vCode' => variable_get('eve_api_corp_vcode', ''),
+    'keyID' => $key_id,
+    'vCode' => $v_code,
   );
+
   $xml = eve_api_get_xml('ContactList', $query);
 
   if (!isset($xml->cachedUntil)) {
