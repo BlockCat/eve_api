@@ -7,7 +7,7 @@
 /**
  * Generates the Teamspeak name as specified in Teamspeak Settings.
  *
- * @param string $characterName
+ * @param string $character_name
  *   An eve Character Name.
  *
  * @return string

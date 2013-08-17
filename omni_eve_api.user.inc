@@ -621,7 +621,7 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
  *
  * @param string $account
  *   The account information for the user page being viewed.
- * @param string $apiID
+ * @param string $api_id
  *   The unique apiID that is being updated.
  *
  * @see omni_eve_api_user_update_api_form_validate()
