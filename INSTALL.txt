@@ -64,4 +64,3 @@ CONFIGURE OPENFIRE (JABBER)
     check box "Enable Jabber Connection" and click on "Submit".
 
  3. You will be notified if the connection to the Jabber server is successful.
- 
