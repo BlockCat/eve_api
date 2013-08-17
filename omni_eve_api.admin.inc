@@ -24,7 +24,7 @@ function omni_eve_api_admin_roles_form($form, &$form_state) {
 
   $role_list = omni_eve_api_role_list();
 
-  $form['roles']['omni_eve_api_blue_role'] = array(
+  $form['roles']['blue_role'] = array(
     '#type' => 'select',
     '#title' => t('Select Role for Blues'),
     '#description' => t('Please select the default role for blues.'),
@@ -33,7 +33,7 @@ function omni_eve_api_admin_roles_form($form, &$form_state) {
     '#weight' => 0,
   );
 
-  $form['roles']['omni_eve_api_alliance_role'] = array(
+  $form['roles']['alliance_role'] = array(
     '#type' => 'select',
     '#title' => t('Select Role for Alliance Members'),
     '#description' => t('Please select an additional role assigned to all members of the Alliance.'),
@@ -42,7 +42,7 @@ function omni_eve_api_admin_roles_form($form, &$form_state) {
     '#weight' => 10,
   );
 
-  $form['roles']['omni_eve_api_unverified_role'] = array(
+  $form['roles']['unverified_role'] = array(
     '#type' => 'select',
     '#title' => t('Select Role for Unverified'),
     '#description' => t('Please select the default role for Unverified members.'),
@@ -51,7 +51,7 @@ function omni_eve_api_admin_roles_form($form, &$form_state) {
     '#weight' => 20,
   );
 
-  $form['roles']['omni_eve_api_ceo_role'] = array(
+  $form['roles']['ceo_role'] = array(
     '#type' => 'select',
     '#title' => t('Select Role for CEOs'),
     '#description' => t('Please select the default role for CEOs.'),
@@ -60,7 +60,7 @@ function omni_eve_api_admin_roles_form($form, &$form_state) {
     '#weight' => 30,
   );
 
-  $form['roles']['omni_eve_api_director_role'] = array(
+  $form['roles']['director_role'] = array(
     '#type' => 'select',
     '#title' => t('Select Role for Directors'),
     '#description' => t('Please select the default role for directors.'),
@@ -91,24 +91,24 @@ function omni_eve_api_admin_roles_form($form, &$form_state) {
  * @see omni_eve_api_admin_roles_form_submit()
  */
 function omni_eve_api_admin_roles_form_validate($form, &$form_state) {
-  if (user_role_load((int) $form_state['values']['omni_eve_api_blue_role']) == FALSE) {
-    form_set_error('omni_eve_api_blue_role', t('The role does not exist.'));
+  if (user_role_load((int) $form_state['values']['blue_role']) == FALSE) {
+    form_set_error('blue_role', t('The role does not exist.'));
   }
 
-  if (user_role_load((int) $form_state['values']['omni_eve_api_alliance_role']) == FALSE) {
-    form_set_error('omni_eve_api_alliance_role', t('The role does not exist.'));
+  if (user_role_load((int) $form_state['values']['alliance_role']) == FALSE) {
+    form_set_error('alliance_role', t('The role does not exist.'));
   }
 
-  if (user_role_load((int) $form_state['values']['omni_eve_api_unverified_role']) == FALSE) {
-    form_set_error('omni_eve_api_unverified_role', t('The role does not exist.'));
+  if (user_role_load((int) $form_state['values']['unverified_role']) == FALSE) {
+    form_set_error('unverified_role', t('The role does not exist.'));
   }
 
-  if (user_role_load((int) $form_state['values']['omni_eve_api_ceo_role']) == FALSE) {
-    form_set_error('omni_eve_api_ceo_role', t('The role does not exist.'));
+  if (user_role_load((int) $form_state['values']['ceo_role']) == FALSE) {
+    form_set_error('ceo_role', t('The role does not exist.'));
   }
 
-  if (user_role_load((int) $form_state['values']['omni_eve_api_director_role']) == FALSE) {
-    form_set_error('omni_eve_api_director_role', t('The role does not exist.'));
+  if (user_role_load((int) $form_state['values']['director_role']) == FALSE) {
+    form_set_error('director_role', t('The role does not exist.'));
   }
 }
 
@@ -132,7 +132,7 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
 
     if (!empty($uids)) {
       user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_blue_role', 2));
-      user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['omni_eve_api_blue_role']);
+      user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['blue_role']);
     }
   }
 
@@ -150,7 +150,7 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
 
     if (!empty($uids)) {
       user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_alliance_role', 2));
-      user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['omni_eve_api_alliance_role']);
+      user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['alliance_role']);
     }
   }
 
@@ -168,7 +168,7 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
 
     if (!empty($uids)) {
       user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_unverified_role', 2));
-      user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['omni_eve_api_unverified_role']);
+      user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['unverified_role']);
     }
   }
 
@@ -186,7 +186,7 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
 
     if (!empty($uids)) {
       user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_ceo_role', 2));
-      user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['omni_eve_api_ceo_role']);
+      user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['ceo_role']);
     }
   }
 
@@ -204,15 +204,15 @@ function omni_eve_api_admin_roles_form_submit($form, &$form_state) {
 
     if (!empty($uids)) {
       user_multiple_role_edit($uids, 'remove_role', (int) variable_get('omni_eve_api_director_role', 2));
-      user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['omni_eve_api_director_role']);
+      user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['director_role']);
     }
   }
 
-  variable_set('omni_eve_api_blue_role', (int) $form_state['values']['omni_eve_api_blue_role']);
-  variable_set('omni_eve_api_alliance_role', (int) $form_state['values']['omni_eve_api_alliance_role']);
-  variable_set('omni_eve_api_unverified_role', (int) $form_state['values']['omni_eve_api_unverified_role']);
-  variable_set('omni_eve_api_ceo_role', (int) $form_state['values']['omni_eve_api_ceo_role']);
-  variable_set('omni_eve_api_director_role', (int) $form_state['values']['omni_eve_api_director_role']);
+  variable_set('omni_eve_api_blue_role', (int) $form_state['values']['blue_role']);
+  variable_set('omni_eve_api_alliance_role', (int) $form_state['values']['alliance_role']);
+  variable_set('omni_eve_api_unverified_role', (int) $form_state['values']['unverified_role']);
+  variable_set('omni_eve_api_ceo_role', (int) $form_state['values']['ceo_role']);
+  variable_set('omni_eve_api_director_role', (int) $form_state['values']['director_role']);
 
   drupal_set_message(t('The roles have been updated and will be updated with the next scheduled cron tasks.'));
 }
@@ -233,7 +233,7 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
     '#weight' => 0,
   );
 
-  $form['enter_api']['omni_eve_api_corp_keyid'] = array(
+  $form['enter_api']['keyID'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
     '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@url" target="_blank">here</a>.', array('@url' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=67108863')),
@@ -243,7 +243,7 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
     '#default_value' => variable_get('omni_eve_api_corp_keyid', ''),
   );
 
-  $form['enter_api']['omni_eve_api_corp_vcode'] = array(
+  $form['enter_api']['vCode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
     '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@url" target="_blank">here</a>.', array('@url' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=67108863')),
@@ -283,31 +283,31 @@ function omni_eve_api_admin_alliance_api_key_form($form, &$form_state) {
  * @see omni_eve_api_admin_alliance_api_key_form_submit()
  */
 function omni_eve_api_admin_alliance_api_key_form_validate($form, &$form_state) {
-  $keyid = (int) $form_state['values']['omni_eve_api_corp_keyid'];
-  $vcode = (string) $form_state['values']['omni_eve_api_corp_vcode'];
+  $keyID = (int) $form_state['values']['keyID'];
+  $vCode = (string) $form_state['values']['vCode'];
 
-  if (empty($keyid) || empty($vcode) || preg_match('/[^a-z0-9]/i', $vcode) || preg_match('/[^0-9]/', $form_state['values']['omni_eve_api_corp_keyid']) || strlen($vcode) > 64 || strlen($vcode) < 20) {
-    form_set_error('omni_eve_api_corp_keyid', t('Invalid input, please try again.'));
-    form_set_error('omni_eve_api_corp_vcode');
+  if (empty($keyID) || empty($vCode) || preg_match('/[^a-z0-9]/i', $vCode) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($vCode) > 64 || strlen($vCode) < 20) {
+    form_set_error('keyID', t('Invalid input, please try again.'));
+    form_set_error('vCode');
     return;
   }
 
   $query = array(
-    'keyid' => $keyid,
-    'vcode' => $vcode,
+    'keyID' => $keyID,
+    'vCode' => $vCode,
   );
 
   $characters = omni_eve_api_get_character_api($query);
 
   if (isset($characters['error'])) {
-    form_set_error('omni_eve_api_corp_keyid', t('There was an error with the API.'));
-    form_set_error('omni_eve_api_corp_vcode');
+    form_set_error('keyID', t('There was an error with the API.'));
+    form_set_error('vCode');
     variable_set('omni_eve_api_enable', FALSE);
   }
   else {
     if ($characters['expires'] || $characters['type'] != 'Corporation' || $characters['accessMask'] != 67108863) {
-      form_set_error('omni_eve_api_corp_keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to your Alliance Executor or Corporation CEO, the "Type" drop down box is set to "Corporation", and that the "No Expiry" checkbox is ticked.'));
-      form_set_error('omni_eve_api_corp_vcode');
+      form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to your Alliance Executor or Corporation CEO, the "Type" drop down box is set to "Corporation", and that the "No Expiry" checkbox is ticked.'));
+      form_set_error('vCode');
       variable_set('omni_eve_api_enable', FALSE);
     }
 
@@ -323,8 +323,8 @@ function omni_eve_api_admin_alliance_api_key_form_validate($form, &$form_state) 
 function omni_eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
   $characters = (array) $form_state['values']['characters'];
 
-  variable_set('omni_eve_api_corp_keyid', (int) $form_state['values']['omni_eve_api_corp_keyid']);
-  variable_set('omni_eve_api_corp_vcode', (string) $form_state['values']['omni_eve_api_corp_vcode']);
+  variable_set('omni_eve_api_corp_keyid', (int) $form_state['values']['keyID']);
+  variable_set('omni_eve_api_corp_vcode', (string) $form_state['values']['vCode']);
 
   // It's not pretty but it works.
   foreach ($characters['characters'] as $character) {
@@ -716,8 +716,8 @@ function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
     form_set_error('id', t('Character/Corporation/Alliance already added to the standings.'));
   }
 
-  $result = db_query('SELECT corporationid FROM {oea_alliance_corporations} WHERE deleted = 0 AND corporationid = :corporationid', array(
-    ':corporationid' => (int) $form_state['values']['id'],
+  $result = db_query('SELECT corporationID FROM {oea_alliance_corporations} WHERE deleted = 0 AND corporationID = :corporationID', array(
+    ':corporationID' => (int) $form_state['values']['id'],
   ));
 
   if ($result->rowCount()) {
@@ -734,8 +734,8 @@ function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
     form_set_error('id', t('There was an error with the API.'));
   }
   else {
-    $result = db_query('SELECT alliancename FROM {oea_alliance_info} WHERE allianceid = :allianceid', array(
-      ':allianceid' => (int) $form_state['values']['id'],
+    $result = db_query('SELECT allianceName FROM {oea_alliance_info} WHERE allianceID = :allianceID', array(
+      ':allianceID' => (int) $form_state['values']['id'],
     ));
 
     if (isset($corp_info['corporationName'])) {
@@ -746,7 +746,7 @@ function omni_eve_api_admin_add_blues_form_validate($form, &$form_state) {
     }
     elseif ($result->rowCount()) {
       $row = $result->fetchAssoc();
-      $form_state['values']['name'] = (string) $row['alliancename'];
+      $form_state['values']['name'] = (string) $row['allianceName'];
     }
     else {
       form_set_error('id', t('No match found.'));
@@ -794,13 +794,13 @@ function omni_eve_api_admin_list_whitelist_form($form, &$form_state) {
       'data' => t('Deleted'),
       'field' => 'w.deleted',
     ),
-    'characterid' => array(
+    'characterID' => array(
       'data' => t('Character ID'),
-      'field' => 'w.characterid',
+      'field' => 'w.characterID',
     ),
-    'charactername' => array(
+    'characterName' => array(
       'data' => t('Character Name'),
-      'field' => 'w.charactername',
+      'field' => 'w.characterName',
     ),
   );
 
@@ -808,8 +808,8 @@ function omni_eve_api_admin_list_whitelist_form($form, &$form_state) {
 
   $result = db_select('oea_whitelist', 'w')
     ->fields('w', array(
-      'characterid',
-      'charactername',
+      'characterID',
+      'characterName',
       'deleted',
     ))
     ->extend('PagerDefault')
@@ -820,14 +820,14 @@ function omni_eve_api_admin_list_whitelist_form($form, &$form_state) {
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
-      $options[$row->characterid] = array(
+      $options[$row->characterID] = array(
         'deleted' => ($row->deleted) ? t('Yes') : t('No'),
-        'characterid' => check_plain($row->characterid),
-        'charactername' => check_plain($row->charactername),
+        'characterID' => check_plain($row->characterID),
+        'characterName' => check_plain($row->characterName),
       );
 
       if ($row->deleted) {
-        $selected[$row->characterid] = TRUE;
+        $selected[$row->characterID] = TRUE;
       }
     }
   }
@@ -890,7 +890,7 @@ function omni_eve_api_admin_list_whitelist_form_submit($form, &$form_state) {
     $deleted_whitelist[] = (int) $whitelist;
   }
 
-  db_update('oea_whitelist')->fields(array('deleted' => 1))->condition('characterid', $deleted_whitelist, 'IN')->execute();
+  db_update('oea_whitelist')->fields(array('deleted' => 1))->condition('characterID', $deleted_whitelist, 'IN')->execute();
 
   drupal_set_message(t('The Alliance White List have been updated.'));
 }
@@ -911,7 +911,7 @@ function omni_eve_api_admin_add_whitelist_form($form, &$form_state) {
     '#weight' => 0,
   );
 
-  $form['add_whitelist']['keyid'] = array(
+  $form['add_whitelist']['keyID'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
     '#description' => t('Please enter the Key ID.'),
@@ -920,7 +920,7 @@ function omni_eve_api_admin_add_whitelist_form($form, &$form_state) {
     '#weight' => 0,
   );
 
-  $form['add_whitelist']['vcode'] = array(
+  $form['add_whitelist']['vCode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
     '#description' => t('Please enter the Verification Code.'),
@@ -952,36 +952,36 @@ function omni_eve_api_admin_add_whitelist_form($form, &$form_state) {
  * @see omni_eve_api_admin_add_whitelist_form_submit()
  */
 function omni_eve_api_admin_add_whitelist_form_validate($form, &$form_state) {
-  $keyid = (int) $form_state['values']['keyid'];
-  $vcode = (string) $form_state['values']['vcode'];
+  $keyID = (int) $form_state['values']['keyID'];
+  $vCode = (string) $form_state['values']['vCode'];
 
-  if (empty($keyid) || empty($vcode) || preg_match('/[^a-z0-9]/i', $vcode) || preg_match('/[^0-9]/', $form_state['values']['keyid']) || strlen($vcode) > 64 || strlen($vcode) < 20) {
-    form_set_error('keyid', t('Invalid input, please try again.'));
-    form_set_error('vcode');
+  if (empty($keyID) || empty($vCode) || preg_match('/[^a-z0-9]/i', $vCode) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($vCode) > 64 || strlen($vCode) < 20) {
+    form_set_error('keyID', t('Invalid input, please try again.'));
+    form_set_error('vCode');
     return;
   }
 
   $query = array(
-    'keyid' => $keyid,
-    'vcode' => $vcode,
+    'keyID' => $keyID,
+    'vCode' => $vCode,
   );
 
   $characters = omni_eve_api_get_character_api($query);
 
   if (isset($characters['error'])) {
-    form_set_error('keyid', t('There was an error with the API.'));
-    form_set_error('vcode');
+    form_set_error('keyID', t('There was an error with the API.'));
+    form_set_error('vCode');
   }
   else {
     if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
-      form_set_error('keyid', t('Please ensure that only the following boxes are highlighted and selected for the API: (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet))'));
-      form_set_error('keyid', t('In addition the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
-      form_set_error('vcode');
+      form_set_error('keyID', t('Please ensure that only the following boxes are highlighted and selected for the API: (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet))'));
+      form_set_error('keyID', t('In addition the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
+      form_set_error('vCode');
     }
 
     if (!omni_eve_api_verify_blue($characters)) {
-      form_set_error('keyid', t('No characters associated with the key are currently blue, please add the characters to the blue standings.'));
-      form_set_error('vcode');
+      form_set_error('keyID', t('No characters associated with the key are currently blue, please add the characters to the blue standings.'));
+      form_set_error('vCode');
     }
 
     $form_state['values']['characters'] = $characters;
@@ -997,9 +997,9 @@ function omni_eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
   $characters = (array) $form_state['values']['characters'];
 
   foreach ($characters['characters'] as $character) {
-    db_merge('oea_whitelist')->key(array('characterid' => (int) $character['characterID']))->fields(array(
-      'characterid' => (int) $character['characterID'],
-      'charactername' => (string) $character['characterName'],
+    db_merge('oea_whitelist')->key(array('characterID' => (int) $character['characterID']))->fields(array(
+      'characterID' => (int) $character['characterID'],
+      'characterName' => (string) $character['characterName'],
       'deleted' => 0,
     ))->execute();
   }

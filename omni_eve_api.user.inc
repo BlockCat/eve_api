@@ -30,7 +30,7 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
     '#weight' => 0,
   );
 
-  $form['enter_api']['keyid'] = array(
+  $form['enter_api']['keyID'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
     '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@mask" target="_blank">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask', 268435455))),
@@ -39,7 +39,7 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
     '#weight' => 0,
   );
 
-  $form['enter_api']['vcode'] = array(
+  $form['enter_api']['vCode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
     '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@mask" target="_blank">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask', 268435455))),
@@ -65,25 +65,25 @@ function omni_eve_api_user_add_api_form($form, &$form_state, $account) {
  * @see omni_eve_api_user_add_api_form_submit()
  */
 function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
-  $keyid = (int) $form_state['values']['keyid'];
-  $vcode = (string) $form_state['values']['vcode'];
+  $keyID = (int) $form_state['values']['keyID'];
+  $vCode = (string) $form_state['values']['vCode'];
 
-  if (empty($keyid) || empty($vcode) || preg_match('/[^a-z0-9]/i', $vcode) || preg_match('/[^0-9]/', $form_state['values']['keyid']) || strlen($vcode) > 64 || strlen($vcode) < 20) {
-    form_set_error('keyid', t('Invalid input, please try again.'));
-    form_set_error('vcode');
+  if (empty($keyID) || empty($vCode) || preg_match('/[^a-z0-9]/i', $vCode) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($vCode) > 64 || strlen($vCode) < 20) {
+    form_set_error('keyID', t('Invalid input, please try again.'));
+    form_set_error('vCode');
     return;
   }
 
   $query = array(
-    'keyid' => $keyid,
-    'vcode' => $vcode,
+    'keyID' => $keyID,
+    'vCode' => $vCode,
   );
 
   $characters = omni_eve_api_get_character_api($query);
 
   if (isset($characters['error'])) {
-    form_set_error('keyid', t('There was an error with the API.'));
-    form_set_error('vcode');
+    form_set_error('keyID', t('There was an error with the API.'));
+    form_set_error('vCode');
   }
   else {
     $whitelist_characters = array();
@@ -94,26 +94,26 @@ function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
       }
     }
 
-    $result = db_query('SELECT characterid FROM {oea_whitelist} WHERE deleted = 0 AND characterid IN (:characterids)', array(
-      ':characterids' => $whitelist_characters,
+    $result = db_query('SELECT characterID FROM {oea_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
+      ':characterIDs' => $whitelist_characters,
     ));
 
     if ($result->rowCount()) {
       if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
-        form_set_error('keyid', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
-        form_set_error('vcode');
+        form_set_error('keyID', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
+        form_set_error('vCode');
       }
     }
     else {
       if ($characters['expires'] || $characters['type'] != 'Account' || ($characters['accessMask'] & variable_get('omni_eve_api_access_mask', 268435455)) != variable_get('omni_eve_api_access_mask', 268435455)) {
-        form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
-        form_set_error('vcode');
+        form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
+        form_set_error('vCode');
       }
     }
 
     if ($chars = omni_eve_api_characters_exist($characters)) {
-      form_set_error('keyid', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
-      form_set_error('vcode');
+      form_set_error('keyID', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
+      form_set_error('vCode');
     }
   }
 }
@@ -126,12 +126,12 @@ function omni_eve_api_user_add_api_form_validate($form, &$form_state) {
 function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
   $account = $form_state['user'];
   $uid = (int) $account->uid;
-  $keyid = (int) $form_state['values']['keyid'];
-  $vcode = (string) $form_state['values']['vcode'];
+  $keyID = (int) $form_state['values']['keyID'];
+  $vCode = (string) $form_state['values']['vCode'];
 
   $query = array(
-    'keyid' => $keyid,
-    'vcode' => $vcode,
+    'keyID' => $keyID,
+    'vCode' => $vCode,
   );
 
   $characters = omni_eve_api_get_character_api($query);
@@ -142,31 +142,31 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
   else {
     $created = date('Y-m-d H:i:s', time());
 
-    $new_api_key_id = db_insert('oea_api_keys')->fields(array(
+    $apiID = db_insert('oea_api_keys')->fields(array(
       'uid' => $uid,
-      'keyid' => $keyid,
-      'vcode' => $vcode,
+      'keyID' => $keyID,
+      'vCode' => $vCode,
       'updated' => (string) $created,
       'created' => (string) $created,
     ))->execute();
 
     foreach ($characters['characters'] as $character) {
-      db_merge('oea_characters')->key(array('characterid' => (int) $character['characterID']))->fields(array(
-        'characterid' => (int) $character['characterID'],
+      db_merge('oea_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
+        'characterID' => (int) $character['characterID'],
         'uid' => $uid,
-        'apiid' => (int) $new_api_key_id,
-        'charactername' => (string) $character['characterName'],
-        'corporationid' => (int) $character['corporationID'],
-        'corporationname' => (string) $character['corporationName'],
-        'corporationticker' => (string) $character['corporationTicker'],
-        'allianceid' => (int) $character['allianceID'],
-        'alliancename' => (string) $character['allianceName'],
-        'allianceticker' => (string) $character['allianceTicker'],
+        'apiID' => (int) $apiID,
+        'characterName' => (string) $character['characterName'],
+        'corporationID' => (int) $character['corporationID'],
+        'corporationName' => (string) $character['corporationName'],
+        'corporationTicker' => (string) $character['corporationTicker'],
+        'allianceID' => (int) $character['allianceID'],
+        'allianceName' => (string) $character['allianceName'],
+        'allianceTicker' => (string) $character['allianceTicker'],
         'deleted' => 0,
       ))->execute();
     }
 
-    $result = db_query('SELECT c.charactername, c.characterid FROM {oea_characters} c INNER JOIN {users} u ON (c.charactername = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
+    $result = db_query('SELECT c.characterName, c.characterID FROM {oea_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
       ':uid' => $uid,
     ));
 
@@ -199,7 +199,7 @@ function omni_eve_api_user_add_api_form_submit($form, &$form_state) {
       db_update('users')->fields(array(
         'teamspeakuid' => 0,
         'teamspeakdbid' => 0,
-        'characterid' => 0,
+        'characterID' => 0,
       ))->condition('uid', $uid, '=')->execute();
       $form_state['redirect'] = 'user/' . $uid . '/omni_eve_api/select_main_character';
       drupal_set_message(t('Please select a new Main Character'));
@@ -247,7 +247,7 @@ function omni_eve_api_user_select_main_character_form($form, &$form_state, $acco
   $uid_api_list = omni_eve_api_list_api_simple($uid);
   $valid_characters_list = omni_eve_api_list_valid_characters($uid_api_list, $account->name);
 
-  $result = db_query('SELECT characterid FROM {users} WHERE characterid = 0 AND uid = :uid', array(
+  $result = db_query('SELECT characterID FROM {users} WHERE characterID = 0 AND uid = :uid', array(
     ':uid' => $uid,
   ));
 
@@ -278,12 +278,12 @@ function omni_eve_api_user_select_main_character_form_validate($form, &$form_sta
   $account = $form_state['user'];
   $uid = $account->uid;
 
-  if ($account->name == (string) $form_state['values']['name'] && $account->characterid != 0 && !empty($form_state['values']['name'])) {
+  if ($account->name == (string) $form_state['values']['name'] && $account->characterID != 0 && !empty($form_state['values']['name'])) {
     form_set_error('name', t('You have not selected a new character or you are unable to change characters.'));
   }
 
-  $charactername = (string) $form_state['values']['name'];
-  $character_data = omni_eve_api_get_character_info($charactername);
+  $characterName = (string) $form_state['values']['name'];
+  $character_data = omni_eve_api_get_character_info($characterName);
 
   if ($character_data === FALSE || $character_data['uid'] != $uid) {
     form_set_error('name', t('Character does not exist or does not belong to you.'));
@@ -316,8 +316,8 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
     // Log Error ?
   }
 
-  $old_charactername = $account->name;
-  $old_character_data = omni_eve_api_get_character_info($old_charactername);
+  $old_characterName = $account->name;
+  $old_character_data = omni_eve_api_get_character_info($old_characterName);
 
   if ($corporation_role = user_role_load_by_name($old_character_data['corporationName'])) {
     user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
@@ -332,8 +332,8 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
   $default_role = user_role_load(variable_get('omni_eve_api_unverified_role', 2));
   user_multiple_role_edit(array($uid), 'remove_role', $default_role->rid);
 
-  $charactername = (string) $form_state['values']['name'];
-  $character_data = omni_eve_api_get_character_info($charactername);
+  $characterName = (string) $form_state['values']['name'];
+  $character_data = omni_eve_api_get_character_info($characterName);
 
   $character_is_blue = omni_eve_api_verify_blue($character_data);
 
@@ -351,7 +351,7 @@ function omni_eve_api_user_select_main_character_form_submit($form, &$form_state
     user_multiple_role_edit(array($uid), 'add_role', $default_role->rid);
   }
 
-  db_update('users')->fields(array('characterid' => (int) $character_data['characterID'], 'name' => (string) $character_data['characterName']))->condition('uid', $uid, '=')->execute();
+  db_update('users')->fields(array('characterID' => (int) $character_data['characterID'], 'name' => (string) $character_data['characterName']))->condition('uid', $uid, '=')->execute();
 
   $queue = DrupalQueue::get('omni_eve_api_cron_api_user_sync');
   $queue->createItem($uid);
@@ -392,13 +392,13 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
     'action' => array(
       'data' => t('Action'),
     ),
-    'keyid' => array(
+    'keyID' => array(
       'data' => t('API Key ID'),
-      'field' => 'a.keyid',
+      'field' => 'a.keyID',
     ),
-    'vcode' => array(
+    'vCode' => array(
       'data' => t('API Verification Code'),
-      'field' => 'a.vcode',
+      'field' => 'a.vCode',
     ),
     'characters' => array(
       'data' => t('Characters'),
@@ -411,18 +411,18 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
       'data' => t('Created'),
       'field' => 'a.created',
     ),
-    'errorid' => array(
+    'errorID' => array(
       'data' => t('Status'),
-      'field' => 'a.errorid',
+      'field' => 'a.errorID',
     ),
   );
 
   $result_a = db_select('oea_api_keys', 'a')
     ->fields('a', array(
-      'apiid',
-      'keyid',
-      'vcode',
-      'errorid',
+      'apiID',
+      'keyID',
+      'vCode',
+      'errorID',
       'updated',
       'created',
     ))
@@ -435,31 +435,31 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
 
   if ($result_a->rowCount()) {
     foreach ($result_a->fetchAll() as $row_a) {
-      $api_list[$row_a->apiid] = array(
-        'apiid' => check_plain($row_a->apiid),
-        'keyid' => check_plain($row_a->keyid),
-        'vcode' => check_plain($row_a->vcode),
-        'errorid' => check_plain($row_a->errorid),
+      $api_list[$row_a->apiID] = array(
+        'apiID' => check_plain($row_a->apiID),
+        'keyID' => check_plain($row_a->keyID),
+        'vCode' => check_plain($row_a->vCode),
+        'errorID' => check_plain($row_a->errorID),
         'updated' => check_plain($row_a->updated),
         'created' => check_plain($row_a->created),
       );
 
-      $result_b = db_query('SELECT characterid, charactername, corporationid, corporationname, corporationticker, allianceid, alliancename, allianceticker FROM {oea_characters} WHERE deleted = 0 AND uid = :uid AND apiid = :apiid', array(
+      $result_b = db_query('SELECT characterID, characterName, corporationID, corporationName, corporationTicker, allianceID, allianceName, allianceTicker FROM {oea_characters} WHERE deleted = 0 AND uid = :uid AND apiID = :apiID', array(
         ':uid' => $uid,
-        ':apiid' => (int) $row_a->apiid,
+        ':apiID' => (int) $row_a->apiID,
       ));
 
       if ($result_b->rowCount()) {
         foreach ($result_b->fetchAll() as $row_b) {
-          $api_list[$row_a->apiid]['characters'][$row_b->characterid] = array(
-            'characterid' => check_plain($row_b->characterid),
-            'charactername' => check_plain($row_b->charactername),
-            'corporationid' => check_plain($row_b->corporationid),
-            'corporationname' => check_plain($row_b->corporationname),
-            'corporationticker' => check_plain($row_b->corporationticker),
-            'allianceid' => check_plain($row_b->allianceid),
-            'alliancename' => check_plain($row_b->alliancename),
-            'allianceticker' => check_plain($row_b->allianceticker),
+          $api_list[$row_a->apiID]['characters'][$row_b->characterID] = array(
+            'characterID' => check_plain($row_b->characterID),
+            'characterName' => check_plain($row_b->characterName),
+            'corporationID' => check_plain($row_b->corporationID),
+            'corporationName' => check_plain($row_b->corporationName),
+            'corporationTicker' => check_plain($row_b->corporationTicker),
+            'allianceID' => check_plain($row_b->allianceID),
+            'allianceName' => check_plain($row_b->allianceName),
+            'allianceTicker' => check_plain($row_b->allianceTicker),
           );
         }
       }
@@ -473,28 +473,28 @@ function omni_eve_api_user_list_api_form($form, &$form_state, $account) {
 
     if (isset($api_single['characters'])) {
       foreach ($api_single['characters'] as $characters) {
-        $corp_alliance = ($characters['allianceid'] == 0) ? $characters['corporationname'] : $characters['corporationname'] . '/' . $characters['alliancename'];
-        $list_characters .= check_plain('[' . $characters['corporationticker'] . '] ' . $characters['charactername'] . ' (' . $corp_alliance . ')');
+        $corp_alliance = ($characters['allianceID'] == 0) ? $characters['corporationName'] : $characters['corporationName'] . '/' . $characters['allianceName'];
+        $list_characters .= check_plain('[' . $characters['corporationTicker'] . '] ' . $characters['characterName'] . ' (' . $corp_alliance . ')');
         $list_characters .= '<br />';
       }
     }
 
-    $string = (strlen($api_single['vcode']) > 13) ? substr($api_single['vcode'], 0, 10) . '...' : $api_single['vcode'];
+    $string = (strlen($api_single['vCode']) > 13) ? substr($api_single['vCode'], 0, 10) . '...' : $api_single['vCode'];
 
-    $options[$api_single['apiid']] = array(
+    $options[$api_single['apiID']] = array(
       'action' => array(
         'data' => array(
           '#type' => 'link',
           '#title' => t('Edit'),
-          '#href' => 'user/' . $uid . '/omni_eve_api/update_api_key/' . $api_single['apiid'],
+          '#href' => 'user/' . $uid . '/omni_eve_api/update_api_key/' . $api_single['apiID'],
         ),
       ),
-      'keyid' => check_plain($api_single['keyid']),
-      'vcode' => check_plain($string),
+      'keyID' => check_plain($api_single['keyID']),
+      'vCode' => check_plain($string),
       'characters' => $list_characters,
       'updated' => format_date(strtotime($api_single['updated']), 'short'),
       'created' => format_date(strtotime($api_single['created']), 'short'),
-      'errorid' => check_plain(omni_eve_api_api_error_msg($api_single['errorid'])),
+      'errorID' => check_plain(omni_eve_api_api_error_msg($api_single['errorID'])),
     );
   }
 
@@ -542,25 +542,25 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
   $account = $form_state['user'];
   $uid = (int) $account->uid;
 
-  foreach ((array) $form_state['values']['api_keys'] as $api_key_id) {
-    if ($api_key_id == 0 && !is_int($api_key_id)) {
+  foreach ((array) $form_state['values']['api_keys'] as $apiID) {
+    if ($apiID == 0 && !is_int($apiID)) {
       continue;
     }
 
-    db_delete('oea_api_keys')->condition('apiid', (int) $api_key_id)->execute();
-    db_update('oea_characters')->fields(array('deleted' => 1))->condition('apiid', (int) $api_key_id)->execute();
+    db_delete('oea_api_keys')->condition('apiID', (int) $apiID)->execute();
+    db_update('oea_characters')->fields(array('deleted' => 1))->condition('apiID', (int) $apiID)->execute();
   }
 
-  $result = db_query('SELECT c.charactername, c.characterid FROM {oea_characters} c INNER JOIN {users} u ON (c.charactername = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
+  $result = db_query('SELECT c.characterName, c.characterID FROM {oea_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
     ':uid' => $uid,
   ));
 
   if (!$result->rowCount()) {
-    $result = db_query('SELECT corporationid, corporationname FROM {oea_alliance_corporations} WHERE deleted = 0');
+    $result = db_query('SELECT corporationID, corporationName FROM {oea_alliance_corporations} WHERE deleted = 0');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
-        if ($corporation_role = user_role_load_by_name($row->corporationname)) {
+        if ($corporation_role = user_role_load_by_name($row->corporationName)) {
           user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
         }
       }
@@ -593,7 +593,7 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
     }
 
     db_update('users')->fields(array(
-      'characterid' => 0,
+      'characterID' => 0,
     ))->condition('uid', $uid, '=')->execute();
     $form_state['redirect'] = 'user/' . $uid . '/omni_eve_api/select_main_character';
     drupal_set_message(t('Please select a new Main Character'));
@@ -621,15 +621,15 @@ function omni_eve_api_user_list_api_form_submit($form, &$form_state) {
  *
  * @param string $account
  *   The account information for the user page being viewed.
- * @param string $api_key_id
- *   The unique api_key_id that is being updated.
+ * @param string $apiID
+ *   The unique apiID that is being updated.
  *
  * @see omni_eve_api_user_update_api_form_validate()
  * @see omni_eve_api_user_update_api_form_submit()
  *
  * @ingroup forms
  */
-function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_key_id) {
+function omni_eve_api_user_update_api_form($form, &$form_state, $account, $apiID) {
   if (!isset($form_state['user'])) {
     $form_state['user'] = $account;
   }
@@ -639,8 +639,8 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_k
 
   $uid = (int) $account->uid;
 
-  $result = db_query('SELECT keyid, vcode FROM {oea_api_keys} WHERE apiid = :apiid', array(
-    ':apiid' => (int) $api_key_id,
+  $result = db_query('SELECT keyID, vCode FROM {oea_api_keys} WHERE apiID = :apiID', array(
+    ':apiID' => (int) $apiID,
   ));
 
   if (!$result->rowCount()) {
@@ -656,28 +656,28 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_k
     '#weight' => 0,
   );
 
-  $form['update_api']['api_key_id'] = array(
-    '#value' => $api_key_id,
+  $form['update_api']['apiID'] = array(
+    '#value' => $apiID,
     '#type' => 'hidden',
   );
 
-  $form['update_api']['keyid'] = array(
+  $form['update_api']['keyID'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
     '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@mask" target="_blank">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask', 268435455))),
     '#required' => TRUE,
     '#maxlength' => 15,
-    '#default_value' => isset($form_state['values']['keyid']) ? (int) $form_state['values']['keyid'] : $row['keyid'],
+    '#default_value' => isset($form_state['values']['keyID']) ? (int) $form_state['values']['keyID'] : $row['keyID'],
     '#weight' => 0,
   );
 
-  $form['update_api']['vcode'] = array(
+  $form['update_api']['vCode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
     '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@mask" target="_blank">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask', 268435455))),
     '#required' => TRUE,
     '#maxlength' => 64,
-    '#default_value' => isset($form_state['values']['vcode']) ? (string) $form_state['values']['vcode'] : $row['vcode'],
+    '#default_value' => isset($form_state['values']['vCode']) ? (string) $form_state['values']['vCode'] : $row['vCode'],
     '#weight' => 10,
   );
 
@@ -699,25 +699,25 @@ function omni_eve_api_user_update_api_form($form, &$form_state, $account, $api_k
  * @see omni_eve_api_user_update_api_form_submit()
  */
 function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
-  $keyid = (int) $form_state['values']['keyid'];
-  $vcode = (string) $form_state['values']['vcode'];
+  $keyID = (int) $form_state['values']['keyID'];
+  $vCode = (string) $form_state['values']['vCode'];
 
-  if (empty($keyid) || empty($vcode) || preg_match('/[^a-z0-9]/i', $vcode) || preg_match('/[^0-9]/', $form_state['values']['keyid']) || strlen($vcode) > 64 || strlen($vcode) < 20) {
-    form_set_error('keyid', t('Invalid input, please try again.'));
-    form_set_error('vcode');
+  if (empty($keyID) || empty($vCode) || preg_match('/[^a-z0-9]/i', $vCode) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($vCode) > 64 || strlen($vCode) < 20) {
+    form_set_error('keyID', t('Invalid input, please try again.'));
+    form_set_error('vCode');
     return;
   }
 
   $query = array(
-    'keyid' => $keyid,
-    'vcode' => $vcode,
+    'keyID' => $keyID,
+    'vCode' => $vCode,
   );
 
   $characters = omni_eve_api_get_character_api($query);
 
   if (isset($characters['error'])) {
-    form_set_error('keyid', t('There was an error with the API.'));
-    form_set_error('vcode');
+    form_set_error('keyID', t('There was an error with the API.'));
+    form_set_error('vCode');
   }
   else {
     $form_state['values']['characters'] = $characters;
@@ -730,20 +730,20 @@ function omni_eve_api_user_update_api_form_validate($form, &$form_state) {
       }
     }
 
-    $result = db_query('SELECT characterid FROM {oea_whitelist} WHERE deleted = 0 AND characterid IN (:characterids)', array(
-      ':characterids' => $whitelist_characters,
+    $result = db_query('SELECT characterID FROM {oea_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
+      ':characterIDs' => $whitelist_characters,
     ));
 
     if ($result->rowCount()) {
       if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
-        form_set_error('keyid', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
-        form_set_error('vcode');
+        form_set_error('keyID', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
+        form_set_error('vCode');
       }
     }
     else {
       if ($characters['expires'] || $characters['type'] != 'Account' || ($characters['accessMask'] & variable_get('omni_eve_api_access_mask', 268435455)) != variable_get('omni_eve_api_access_mask', 268435455)) {
-        form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
-        form_set_error('vcode');
+        form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
+        form_set_error('vCode');
       }
     }
   }
@@ -758,42 +758,42 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
   $account = $form_state['user'];
   $uid = (int) $account->uid;
 
-  $keyid = (int) $form_state['values']['keyid'];
-  $vcode = (string) $form_state['values']['vcode'];
-  $api_key_id = (int) $form_state['values']['api_key_id'];
+  $keyID = (int) $form_state['values']['keyID'];
+  $vCode = (string) $form_state['values']['vCode'];
+  $apiID = (int) $form_state['values']['apiID'];
   $characters = (array) $form_state['values']['characters'];
 
   $updated = date('Y-m-d H:i:s', time());
 
-  db_update('oea_characters')->fields(array('deleted' => 1))->condition('apiid', $api_key_id)->execute();
+  db_update('oea_characters')->fields(array('deleted' => 1))->condition('apiID', $apiID)->execute();
 
-  db_merge('oea_api_keys')->key(array('apiid' => $api_key_id))->fields(array(
-    'apiid' => $api_key_id,
+  db_merge('oea_api_keys')->key(array('apiID' => $apiID))->fields(array(
+    'apiID' => $apiID,
     'uid' => $uid,
-    'keyid' => $keyid,
-    'vcode' => $vcode,
+    'keyID' => $keyID,
+    'vCode' => $vCode,
     'updated' => (string) $updated,
-    'errorid' => 0,
+    'errorID' => 0,
   ))->execute();
 
   foreach ($characters['characters'] as $character) {
-    db_merge('oea_characters')->key(array('characterid' => (int) $character['characterID']))->fields(array(
-      'characterid' => (int) $character['characterID'],
+    db_merge('oea_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
+      'characterID' => (int) $character['characterID'],
       'uid' => $uid,
-      'apiid' => $api_key_id,
-      'charactername' => (string) $character['characterName'],
-      'corporationid' => (int) $character['corporationID'],
-      'corporationname' => (string) $character['corporationName'],
-      'corporationticker' => (string) $character['corporationTicker'],
-      'allianceid' => (int) $character['allianceID'],
-      'alliancename' => (string) $character['allianceName'],
-      'allianceticker' => (string) $character['allianceTicker'],
-      'errorid' => 0,
+      'apiID' => $apiID,
+      'characterName' => (string) $character['characterName'],
+      'corporationID' => (int) $character['corporationID'],
+      'corporationName' => (string) $character['corporationName'],
+      'corporationTicker' => (string) $character['corporationTicker'],
+      'allianceID' => (int) $character['allianceID'],
+      'allianceName' => (string) $character['allianceName'],
+      'allianceTicker' => (string) $character['allianceTicker'],
+      'errorID' => 0,
       'deleted' => 0,
     ))->execute();
   }
 
-  $result = db_query('SELECT c.charactername, c.characterid FROM {oea_characters} c INNER JOIN {users} u ON (c.charactername = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
+  $result = db_query('SELECT c.characterName, c.characterID FROM {oea_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
     ':uid' => $uid,
   ));
 
@@ -826,7 +826,7 @@ function omni_eve_api_user_update_api_form_submit($form, &$form_state) {
     db_update('users')->fields(array(
       'teamspeakuid' => 0,
       'teamspeakdbid' => 0,
-      'characterid' => 0,
+      'characterID' => 0,
     ))->condition('uid', $uid, '=')->execute();
     $form_state['redirect'] = 'user/' . $uid . '/omni_eve_api/select_main_character';
     drupal_set_message(t('Please select a new Main Character'));
@@ -880,7 +880,7 @@ function omni_eve_api_user_teamspeak_form($form, &$form_state, $account) {
   $form['teamspeak']['teamspeak_name'] = array(
     '#type' => 'markup',
     '#prefix' => '<p>',
-    '#markup' => ($account->characterid != 0) ? t('Teamspeak Name: @teamspeak', array('@teamspeak' => omni_eve_api_teamspeak_format_name($account->name))) : t('Teamspeak Name: <a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/omni_eve_api/select_main_character'))),
+    '#markup' => ($account->characterID != 0) ? t('Teamspeak Name: @teamspeak', array('@teamspeak' => omni_eve_api_teamspeak_format_name($account->name))) : t('Teamspeak Name: <a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/omni_eve_api/select_main_character'))),
     '#suffix' => '</p>',
     '#weight' => 10,
   );
@@ -898,7 +898,7 @@ function omni_eve_api_user_teamspeak_form($form, &$form_state, $account) {
     '#value' => t('Register'),
   );
 
-  if ($account->characterid == 0) {
+  if ($account->characterID == 0) {
     $form['submit_button']['#disabled'] = TRUE;
   }
 
@@ -917,7 +917,7 @@ function omni_eve_api_user_teamspeak_form_validate($form, &$form_state) {
   $account = $form_state['user'];
   $uid = $account->uid;
 
-  if ($account->characterid == 0) {
+  if ($account->characterID == 0) {
     drupal_goto('user/' . $uid . '/omni_eve_api/select_main_character');
   }
 
@@ -1007,12 +1007,12 @@ function omni_eve_api_user_jabber_form($form, &$form_state, $account) {
   $form['jabber']['jabber_username'] = array(
     '#type' => 'markup',
     '#prefix' => '<p>',
-    '#markup' => ($account->characterid != 0) ? t('Jabber Username: @jabber', array('@jabber' => omni_eve_api_jabber_format_name($account->name) . '@' . variable_get('omni_eve_api_jabber_domain', 'yourdomain.com'))) : t('Jabber Username: <a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/omni_eve_api/select_main_character'))),
+    '#markup' => ($account->characterID != 0) ? t('Jabber Username: @jabber', array('@jabber' => omni_eve_api_jabber_format_name($account->name) . '@' . variable_get('omni_eve_api_jabber_domain', 'yourdomain.com'))) : t('Jabber Username: <a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/omni_eve_api/select_main_character'))),
     '#suffix' => '</p>',
     '#weight' => 10,
   );
 
-  if ($account->characterid != 0) {
+  if ($account->characterID != 0) {
     $form['jabber']['jabber_password'] = array(
       '#type' => 'textfield',
       '#title' => t('Set Password'),
@@ -1028,7 +1028,7 @@ function omni_eve_api_user_jabber_form($form, &$form_state, $account) {
     '#value' => t('Register'),
   );
 
-  if ($account->characterid == 0) {
+  if ($account->characterID == 0) {
     $form['submit_button']['#disabled'] = TRUE;
   }
 
@@ -1047,7 +1047,7 @@ function omni_eve_api_user_jabber_form_validate($form, &$form_state) {
   $account = $form_state['user'];
   $uid = $account->uid;
 
-  if ($account->characterid == 0) {
+  if ($account->characterID == 0) {
     drupal_goto('user/' . $uid . '/omni_eve_api/select_main_character');
   }
 
@@ -1080,11 +1080,11 @@ function omni_eve_api_user_jabber_form_submit($form, &$form_state) {
   $roles = user_roles();
   $user_roles = $all_roles = array();
 
-  $result = db_query('SELECT corporationname, corporationticker FROM {oea_alliance_corporations}');
+  $result = db_query('SELECT corporationName, corporationTicker FROM {oea_alliance_corporations}');
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
-      $corp_info[$row->corporationname] = $row->corporationticker;
+      $corp_info[$row->corporationName] = $row->corporationTicker;
     }
   }
 

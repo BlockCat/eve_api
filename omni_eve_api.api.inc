@@ -125,15 +125,15 @@ function omni_eve_api_get_xml($type, $query = array()) {
 /**
  * Function to retrieve individual characters from the database.
  *
- * @param string $charactername
+ * @param string $characterName
  *   Unique character name used to retrieve information about the character
  *
  * @return array
  *   A complex array of a single character information.
  */
-function omni_eve_api_get_character_info($charactername) {
-  $result = db_query('SELECT uid, charactername, characterid, corporationname, corporationid, corporationticker, allianceid, alliancename, allianceticker FROM {oea_characters} WHERE charactername = :charactername', array(
-    ':charactername' => (string) $charactername,
+function omni_eve_api_get_character_info($characterName) {
+  $result = db_query('SELECT uid, characterName, characterID, corporationName, corporationID, corporationTicker, allianceID, allianceName, allianceTicker FROM {oea_characters} WHERE characterName = :characterName', array(
+    ':characterName' => (string) $characterName,
   ));
 
   if ($result->rowCount()) {
@@ -141,14 +141,14 @@ function omni_eve_api_get_character_info($charactername) {
 
     $api_data = array(
       'uid' => check_plain($row['uid']),
-      'characterName' => check_plain($row['charactername']),
-      'characterID' => check_plain($row['characterid']),
-      'corporationName' => check_plain($row['corporationname']),
-      'corporationID' => check_plain($row['corporationid']),
-      'corporationTicker' => check_plain($row['corporationticker']),
-      'allianceID' => check_plain($row['allianceid']),
-      'allianceName' => check_plain($row['alliancename']),
-      'allianceTicker' => check_plain($row['allianceticker']),
+      'characterName' => check_plain($row['characterName']),
+      'characterID' => check_plain($row['characterID']),
+      'corporationName' => check_plain($row['corporationName']),
+      'corporationID' => check_plain($row['corporationID']),
+      'corporationTicker' => check_plain($row['corporationTicker']),
+      'allianceID' => check_plain($row['allianceID']),
+      'allianceName' => check_plain($row['allianceName']),
+      'allianceTicker' => check_plain($row['allianceTicker']),
     );
   }
   else {
@@ -228,19 +228,19 @@ function omni_eve_api_get_character_sheet($query) {
 /**
  * Function to retrieve the alliance tags.
  *
- * @param int $allianceid
+ * @param int $allianceID
  *   The Unique ID for an alliance.
  *
  * @return string
- *   The Alliance ticker for the $allianceid.
+ *   The Alliance ticker for the $allianceID.
  */
-function omni_eve_api_get_alliance_ticker($allianceid) {
-  $result = db_query('SELECT allianceticker FROM {oea_alliance_info} WHERE allianceid = :id', array(
-    ':id' => (int) $allianceid,
+function omni_eve_api_get_alliance_ticker($allianceID) {
+  $result = db_query('SELECT allianceTicker FROM {oea_alliance_info} WHERE allianceID = :id', array(
+    ':id' => (int) $allianceID,
   ));
   $row = $result->fetchAssoc();
 
-  return $row['allianceticker'];
+  return $row['allianceTicker'];
 }
 
 /**
@@ -267,6 +267,8 @@ function omni_eve_api_get_corporation_info($query) {
     'allianceID' => (int) $xml->result->allianceID,
     'allianceName' => (string) $xml->result->allianceName,
     'allianceTicker' => (string) omni_eve_api_get_alliance_ticker((int) $xml->result->allianceID),
+    'ceoName' => (string) $xml->result->ceoName,
+    'ceoID' => (string) $xml->result->ceoID,
   );
 
   return $api_data;
@@ -332,8 +334,8 @@ function omni_eve_api_verify_blue($characters) {
       return TRUE;
     }
 
-    $result = db_query('SELECT corporationid FROM {oea_alliance_corporations} WHERE corporationid = :corporationid', array(
-      ':corporationid' => (int) $character['corporationID'],
+    $result = db_query('SELECT corporationID FROM {oea_alliance_corporations} WHERE corporationID = :corporationID', array(
+      ':corporationID' => (int) $character['corporationID'],
     ));
 
     if ($result->rowCount()) {
@@ -371,8 +373,8 @@ function omni_eve_api_list_valid_characters($characters, $empty) {
         continue;
       }
 
-      $result = db_query('SELECT corporationid FROM {oea_alliance_corporations} WHERE corporationid = :corporationid', array(
-        ':corporationid' => (int) $character['corporationID'],
+      $result = db_query('SELECT corporationID FROM {oea_alliance_corporations} WHERE corporationID = :corporationID', array(
+        ':corporationID' => (int) $character['corporationID'],
       ));
 
       if ($result->rowCount()) {
@@ -402,8 +404,8 @@ function omni_eve_api_characters_exist($characters) {
 
   if (!empty($characters)) {
     foreach ($characters['characters'] as $character) {
-      $result = db_query('SELECT characterid FROM {oea_characters} WHERE deleted = 0 AND characterid = :characterid', array(
-        ':characterid' => (int) $character['characterID'],
+      $result = db_query('SELECT characterID FROM {oea_characters} WHERE deleted = 0 AND characterID = :characterID', array(
+        ':characterID' => (int) $character['characterID'],
       ));
 
       if ($result->rowCount()) {
@@ -463,32 +465,32 @@ function omni_eve_api_list_api_simple($uid) {
   $uid = (int) $uid;
   $api_list = array();
 
-  $result_a = db_query('SELECT apiid, keyid, vcode, errorid, updated, created FROM {oea_api_keys} WHERE uid = :uid', array(
+  $result_a = db_query('SELECT apiID, keyID, vCode, errorID, updated, created FROM {oea_api_keys} WHERE uid = :uid', array(
     ':uid' => $uid,
   ));
 
   if ($result_a->rowCount()) {
     foreach ($result_a->fetchAll() as $row_a) {
-      if ($row_a->errorid == 403) {
+      if ($row_a->errorID == 403) {
         continue;
       }
 
-      $result_b = db_query('SELECT characterid, charactername, corporationid, corporationname, corporationticker, allianceid, alliancename, allianceticker FROM {oea_characters} WHERE deleted = 0 AND uid = :uid AND apiid = :apiid', array(
+      $result_b = db_query('SELECT characterID, characterName, corporationID, corporationName, corporationTicker, allianceID, allianceName, allianceTicker FROM {oea_characters} WHERE deleted = 0 AND uid = :uid AND apiID = :apiID', array(
         ':uid' => $uid,
-        ':apiid' => (int) $row_a->apiid,
+        ':apiID' => (int) $row_a->apiID,
       ));
 
       if ($result_b->rowCount()) {
         foreach ($result_b->fetchAll() as $row_b) {
-          $api_list['characters'][$row_b->characterid] = array(
-            'characterID' => check_plain($row_b->characterid),
-            'characterName' => check_plain($row_b->charactername),
-            'corporationID' => check_plain($row_b->corporationid),
-            'corporationName' => check_plain($row_b->corporationname),
-            'corporationTicker' => check_plain($row_b->corporationticker),
-            'allianceID' => check_plain($row_b->allianceid),
-            'allianceName' => check_plain($row_b->alliancename),
-            'allianceTicker' => check_plain($row_b->allianceticker),
+          $api_list['characters'][$row_b->characterID] = array(
+            'characterID' => check_plain($row_b->characterID),
+            'characterName' => check_plain($row_b->characterName),
+            'corporationID' => check_plain($row_b->corporationID),
+            'corporationName' => check_plain($row_b->corporationName),
+            'corporationTicker' => check_plain($row_b->corporationTicker),
+            'allianceID' => check_plain($row_b->allianceID),
+            'allianceName' => check_plain($row_b->allianceName),
+            'allianceTicker' => check_plain($row_b->allianceTicker),
           );
         }
       }

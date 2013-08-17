@@ -7,24 +7,24 @@
 /**
  * Generates the Teamspeak name as specified in Teamspeak Settings.
  *
- * @param string $charactername
+ * @param string $characterName
  *   An eve Character Name.
  *
  * @return string
  *   The users Teamspeak display name.
  */
-function omni_eve_api_teamspeak_format_name($charactername) {
+function omni_eve_api_teamspeak_format_name($characterName) {
   // Valid Options:
   // @name = Character Name.
   // @corp = Corp Ticker.
   // @alliance = Alliance Ticker.
   $teamspeak_name = variable_get('omni_eve_api_ts3_nickname', '[@corp] @name');
 
-  $character_data = omni_eve_api_get_character_info($charactername);
+  $character_data = omni_eve_api_get_character_info($characterName);
 
   $teamspeak_name = str_replace('@alliance', $character_data['allianceTicker'], $teamspeak_name);
   $teamspeak_name = str_replace('@corp', $character_data['corporationTicker'], $teamspeak_name);
-  $teamspeak_name = str_replace('@name', $charactername, $teamspeak_name);
+  $teamspeak_name = str_replace('@name', $characterName, $teamspeak_name);
 
   if (strlen($teamspeak_name) > 30) {
     $teamspeak_name = substr($teamspeak_name, 0, 30);

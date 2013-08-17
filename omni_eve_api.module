@@ -293,7 +293,7 @@ function omni_eve_api_edit($account) {
  * Implements hook_schema_alter().
  */
 function omni_eve_api_schema_alter(&$schema) {
-  $schema['users']['fields']['characterid'] = array(
+  $schema['users']['fields']['characterID'] = array(
     'type' => 'int',
     'not null' => TRUE,
     'default' => 0,
@@ -910,28 +910,28 @@ function omni_eve_api_get_account_user_picture($account) {
     // If the user has an uploaded picture, use it first.
     return $account->picture->uri;
   }
-  elseif (empty($user->characterid)) {
+  elseif (empty($user->characterID)) {
     return omni_eve_api_get_eve_avatar(1);
   }
   else {
-    return omni_eve_api_get_eve_avatar($user->characterid);
+    return omni_eve_api_get_eve_avatar($user->characterID);
   }
 }
 
 /**
  * Generate a EVE Avatar URL.
  *
- * @param int $characterid
+ * @param int $characterID
  *   A string with an EVE character ID.
  * 
  * @return string
  *   An URL string with the EVE avatar image.
  */
-function omni_eve_api_get_eve_avatar($characterid) {
+function omni_eve_api_get_eve_avatar($characterID) {
   global $is_https;
 
   $eve_avatar = $is_https ? variable_get('omni_eve_api_avatar_https', 'https://image.eveonline.com/Character/') : variable_get('omni_eve_api_avatar_http', 'http://image.eveonline.com/Character/');
-  $eve_avatar .= $characterid . '_' . variable_get('omni_eve_api_user_picture_dimensions', '128') . '.jpg';
+  $eve_avatar .= $characterID . '_' . variable_get('omni_eve_api_user_picture_dimensions', '128') . '.jpg';
 
   return url($eve_avatar);
 }
@@ -1035,7 +1035,7 @@ function omni_eve_api_boot() {
     return;
   }
 
-  if ($GLOBALS['user']->characterid == 0) {
+  if ($GLOBALS['user']->characterID == 0) {
     drupal_set_message(t('Your account is not associated with an EVE Character, you must select a <a href="@url">Main Character</a>.', array('@url' => '/user/' . $GLOBALS['user']->uid . '/omni_eve_api/select_main_character')), 'error');
     // url('user/' . $GLOBALS['user']->uid .
     // '/omni_eve_api/select_main_character')

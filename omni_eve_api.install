@@ -11,7 +11,7 @@ function omni_eve_api_schema() {
   $schema['oea_api_keys'] = array(
     'description' => 'This table holds all the api\'s associated with all the accounts.',
     'fields' => array(
-      'apiid' => array(
+      'apiID' => array(
         'description' => 'The link between api and the character.',
         'type' => 'serial',
         'unsigned' => TRUE,
@@ -22,18 +22,18 @@ function omni_eve_api_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'keyid' => array(
+      'keyID' => array(
         'description' => 'The Key ID of the EVE API.',
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'vcode' => array(
+      'vCode' => array(
         'description' => 'The Verification Code of the EVE API.',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
       ),
-      'errorid' => array(
+      'errorID' => array(
         'description' => 'Error code to identify any problems with a registered api key.',
         'type' => 'int',
         'not null' => FALSE,
@@ -62,12 +62,87 @@ function omni_eve_api_schema() {
         'views' => TRUE,
       ),
     ),
-    'unique keys' => array('apiid' => array('apiid')),
-    'primary key' => array('apiid'),
+    'unique keys' => array('apiID' => array('apiID')),
+    'primary key' => array('apiID'),
   );
 
   $schema['oea_characters'] = array(
     'description' => 'This table holds all the characters retrieved from the API\'s.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'The unique Character ID associated with the EVE Character.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'The link between api and drupal account.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'apiID' => array(
+        'description' => 'The link between api and the character.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'characterName' => array(
+        'description' => 'The EVE Character Name',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'corporationID' => array(
+        'description' => 'The Corporation ID the Character is currently associated with in EVE.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'corporationName' => array(
+        'description' => 'The Corporation Name the Character is currently associated with in EVE.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'corporationTicker' => array(
+        'description' => 'The Corporation Ticker the Character is currently associated with in EVE.',
+        'type' => 'varchar',
+        'length' => 20,
+        'not null' => TRUE,
+      ),
+      'allianceID' => array(
+        'description' => 'The Alliance ID the Character is currently associated with in EVE.',
+        'type' => 'int',
+        'not null' => FALSE,
+      ),
+      'allianceName' => array(
+        'description' => 'The Alliance Name the Character is currently associated with in EVE.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => FALSE,
+      ),
+      'allianceTicker' => array(
+        'description' => 'The Alliance Ticker the Character is currently associated with in EVE.',
+        'type' => 'varchar',
+        'length' => 20,
+        'not null' => FALSE,
+      ),
+      'errorID' => array(
+        'description' => 'Error code to identify any problems with a registered characters.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'deleted' => array(
+        'description' => 'Identifies if the character was removed from the key at some point.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'unique keys' => array('characterID' => array('characterID')),
+    'primary key' => array('characterID'),
+  );
+
+  $schema['oea_characters_roles'] = array(
+    'description' => 'This table holds all the roles for all characters retrieved from the API.',
     'fields' => array(
       'characterid' => array(
         'description' => 'The unique Character ID associated with the EVE Character.',
@@ -84,45 +159,22 @@ function omni_eve_api_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'charactername' => array(
-        'description' => 'The EVE Character Name',
+      'type' => array(
+        'description' => 'The character role type.',
         'type' => 'varchar',
         'length' => 50,
         'not null' => TRUE,
       ),
-      'corporationid' => array(
-        'description' => 'The Corporation ID the Character is currently associated with in EVE.',
+      'roleid' => array(
+        'description' => 'The character role ID.',
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'corporationname' => array(
+      'rolename' => array(
         'description' => 'The Corporation Name the Character is currently associated with in EVE.',
         'type' => 'varchar',
         'length' => 50,
         'not null' => TRUE,
-      ),
-      'corporationticker' => array(
-        'description' => 'The Corporation Ticker the Character is currently associated with in EVE.',
-        'type' => 'varchar',
-        'length' => 20,
-        'not null' => TRUE,
-      ),
-      'allianceid' => array(
-        'description' => 'The Alliance ID the Character is currently associated with in EVE.',
-        'type' => 'int',
-        'not null' => FALSE,
-      ),
-      'alliancename' => array(
-        'description' => 'The Alliance Name the Character is currently associated with in EVE.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => FALSE,
-      ),
-      'allianceticker' => array(
-        'description' => 'The Alliance Ticker the Character is currently associated with in EVE.',
-        'type' => 'varchar',
-        'length' => 20,
-        'not null' => FALSE,
       ),
       'errorid' => array(
         'description' => 'Error code to identify any problems with a registered characters.',
@@ -144,12 +196,12 @@ function omni_eve_api_schema() {
   $schema['oea_whitelist'] = array(
     'description' => 'This table holds all the whitelisted character ID\'s and name.',
     'fields' => array(
-      'characterid' => array(
+      'characterID' => array(
         'description' => 'The unique Character ID associated with the EVE Character.',
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'charactername' => array(
+      'characterName' => array(
         'description' => 'The EVE Character Name',
         'type' => 'varchar',
         'length' => 50,
@@ -162,8 +214,8 @@ function omni_eve_api_schema() {
         'default' => 0,
       ),
     ),
-    'unique keys' => array('characterid' => array('characterid')),
-    'primary key' => array('characterid'),
+    'unique keys' => array('characterID' => array('characterID')),
+    'primary key' => array('characterID'),
   );
 
   $schema['oea_access_mask'] = array(
@@ -246,8 +298,8 @@ function omni_eve_api_schema() {
   $schema['oea_alliance_corporations'] = array(
     'description' => 'This table holds all the corporations in the alliance.',
     'fields' => array(
-      'corporationid' => array(
-        'description' => 'The Corporation ID the Character is currently associated with in EVE.',
+      'corporationID' => array(
+        'description' => 'The Corporation ID.',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -256,20 +308,31 @@ function omni_eve_api_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'corporationname' => array(
-        'description' => 'The Corporation Name the Character is currently associated with in EVE.',
+      'corporationName' => array(
+        'description' => 'The Corporation Name.',
         'type' => 'varchar',
         'length' => 50,
         'not null' => TRUE,
       ),
-      'corporationticker' => array(
-        'description' => 'The Corporation Ticker the Character is currently associated with in EVE.',
+      'corporationTicker' => array(
+        'description' => 'The Corporation Ticker.',
         'type' => 'varchar',
         'length' => 20,
         'not null' => TRUE,
       ),
+      'ceoID' => array(
+        'description' => 'The CEO ID.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'ceoName' => array(
+        'description' => 'The CEO Name.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
       'deleted' => array(
-        'description' => 'Identifies if the corporation was removed from the alliance at some point..',
+        'description' => 'Identifies if the corporation was removed from the alliance at some point.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -281,33 +344,33 @@ function omni_eve_api_schema() {
         'default' => 0,
       ),
     ),
-    'unique keys' => array('corporationid' => array('corporationid')),
-    'primary key' => array('corporationid'),
+    'unique keys' => array('corporationID' => array('corporationID')),
+    'primary key' => array('corporationID'),
   );
 
   $schema['oea_alliance_info'] = array(
     'description' => 'This table holds all the alliance tickers.',
     'fields' => array(
-      'allianceid' => array(
+      'allianceID' => array(
         'description' => 'The Alliance ID.',
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'allianceticker' => array(
+      'allianceTicker' => array(
         'description' => 'The Alliance Ticker.',
         'type' => 'varchar',
         'length' => 20,
         'not null' => TRUE,
       ),
-      'alliancename' => array(
+      'allianceName' => array(
         'description' => 'The Alliance Name.',
         'type' => 'varchar',
         'length' => 50,
         'not null' => TRUE,
       ),
     ),
-    'unique keys' => array('allianceid' => array('allianceid')),
-    'primary key' => array('allianceid'),
+    'unique keys' => array('allianceID' => array('allianceID')),
+    'primary key' => array('allianceID'),
   );
 
   return $schema;
@@ -317,7 +380,7 @@ function omni_eve_api_schema() {
  * Implements hook_install().
  */
 function omni_eve_api_install() {
-  db_add_field('users', 'characterid', array(
+  db_add_field('users', 'characterID', array(
     'type' => 'int',
     'not null' => TRUE,
     'default' => 0,
@@ -401,7 +464,7 @@ function omni_eve_api_install() {
  * Implements hook_uninstall().
  */
 function omni_eve_api_uninstall() {
-  db_drop_field('users', 'characterid');
+  db_drop_field('users', 'characterID');
   db_drop_field('users', 'teamspeakuid');
   db_drop_field('users', 'teamspeakdbid');
 

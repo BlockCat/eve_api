@@ -159,24 +159,24 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
   );
 
   if (!is_array($form_state['signup_object'])) {
-    form_set_error('keyid', t('Unknown Error, please try again.'));
-    form_set_error('vcode');
+    form_set_error('keyID', t('Unknown Error, please try again.'));
+    form_set_error('vCode');
     drupal_goto('user/register');
   }
 
-  $keyid = (int) $form_state['signup_object']['keyid'];
-  $vcode = (string) $form_state['signup_object']['vcode'];
+  $keyID = (int) $form_state['signup_object']['keyID'];
+  $vCode = (string) $form_state['signup_object']['vCode'];
 
   $query = array(
-    'keyid' => $keyid,
-    'vcode' => $vcode,
+    'keyID' => $keyID,
+    'vCode' => $vCode,
   );
 
   $characters = omni_eve_api_get_character_api($query);
 
   if (isset($characters['error'])) {
-    form_set_error('keyid', t('Unknown Error, please try again.'));
-    form_set_error('vcode');
+    form_set_error('keyID', t('Unknown Error, please try again.'));
+    form_set_error('vCode');
     drupal_goto('user/register');
   }
 
@@ -188,34 +188,34 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
     }
   }
 
-  $result = db_query('SELECT characterid FROM {oea_whitelist} WHERE deleted = 0 AND characterid IN (:characterids)', array(
-    ':characterids' => $whitelist_characters,
+  $result = db_query('SELECT characterID FROM {oea_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
+    ':characterIDs' => $whitelist_characters,
   ));
 
   if ($result->rowCount()) {
     if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
-      form_set_error('keyid', t('Unknown Error, please try again.'));
-      form_set_error('vcode');
+      form_set_error('keyID', t('Unknown Error, please try again.'));
+      form_set_error('vCode');
       drupal_goto('user/register');
     }
   }
   else {
     if ($characters['expires'] || $characters['type'] != 'Account' || ($characters['accessMask'] & variable_get('omni_eve_api_access_mask', 268435455)) != variable_get('omni_eve_api_access_mask', 268435455)) {
-      form_set_error('keyid', t('Unknown Error, please try again.'));
-      form_set_error('vcode');
+      form_set_error('keyID', t('Unknown Error, please try again.'));
+      form_set_error('vCode');
       drupal_goto('user/register');
     }
   }
 
   if (!omni_eve_api_verify_blue($characters)) {
-    form_set_error('keyid', t('Unknown Error, please try again.'));
-    form_set_error('vcode');
+    form_set_error('keyID', t('Unknown Error, please try again.'));
+    form_set_error('vCode');
     drupal_goto('user/register');
   }
 
   if (omni_eve_api_characters_exist($characters)) {
-    form_set_error('keyid', t('Unknown Error, please try again.'));
-    form_set_error('vcode');
+    form_set_error('keyID', t('Unknown Error, please try again.'));
+    form_set_error('vCode');
     drupal_goto('user/register');
   }
 
@@ -238,19 +238,19 @@ function omni_eve_api_form_user_register_form_alter(&$form, &$form_state) {
  * @see omni_eve_api_user_register_form_submit()
  */
 function omni_eve_api_user_register_form_validate(&$form, &$form_state) {
-  $keyid = (int) $form_state['signup_object']['keyid'];
-  $vcode = (string) $form_state['signup_object']['vcode'];
+  $keyID = (int) $form_state['signup_object']['keyID'];
+  $vCode = (string) $form_state['signup_object']['vCode'];
 
   $query = array(
-    'keyid' => $keyid,
-    'vcode' => $vcode,
+    'keyID' => $keyID,
+    'vCode' => $vCode,
   );
 
   $characters = omni_eve_api_get_character_api($query);
 
   if (isset($characters['error'])) {
-    form_set_error('keyid', t('Unknown Error, please try again.'));
-    form_set_error('vcode');
+    form_set_error('keyID', t('Unknown Error, please try again.'));
+    form_set_error('vCode');
     drupal_goto('user/register');
   }
 
@@ -262,40 +262,40 @@ function omni_eve_api_user_register_form_validate(&$form, &$form_state) {
     }
   }
 
-  $result = db_query('SELECT characterid FROM {oea_whitelist} WHERE deleted = 0 AND characterid IN (:characterids)', array(
-    ':characterids' => $whitelist_characters,
+  $result = db_query('SELECT characterID FROM {oea_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
+    ':characterIDs' => $whitelist_characters,
   ));
 
   if ($result->rowCount()) {
     if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
-      form_set_error('keyid', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
-      form_set_error('vcode');
+      form_set_error('keyID', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
+      form_set_error('vCode');
     }
   }
   else {
     if ($characters['expires'] || $characters['type'] != 'Account' || ($characters['accessMask'] & variable_get('omni_eve_api_access_mask', 268435455)) != variable_get('omni_eve_api_access_mask', 268435455)) {
-      form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
-      form_set_error('vcode');
+      form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
+      form_set_error('vCode');
     }
   }
 
   if (!omni_eve_api_verify_blue($characters)) {
-    form_set_error('keyid', t('No characters associated with your key are currently blue.'));
-    form_set_error('vcode');
+    form_set_error('keyID', t('No characters associated with your key are currently blue.'));
+    form_set_error('vCode');
   }
 
   if ($chars = omni_eve_api_characters_exist($characters)) {
-    form_set_error('keyid', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
-    form_set_error('vcode');
+    form_set_error('keyID', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
+    form_set_error('vCode');
   }
 
-  $selected_charactername = array();
+  $selected_characterName = array();
 
   foreach ($characters['characters'] as $character) {
-    $selected_charactername[] = $character['characterName'];
+    $selected_characterName[] = $character['characterName'];
   }
 
-  if (!in_array((string) $form_state['values']['name'], $selected_charactername)) {
+  if (!in_array((string) $form_state['values']['name'], $selected_characterName)) {
     form_set_error('name', t('You must select a main character!'));
   }
 }
@@ -308,48 +308,48 @@ function omni_eve_api_user_register_form_validate(&$form, &$form_state) {
 function omni_eve_api_user_register_form_submit(&$form, &$form_state) {
   $account = $form_state['user'];
   $uid = (int) $account->uid;
-  $keyid = (int) $form_state['signup_object']['keyid'];
-  $vcode = (string) $form_state['signup_object']['vcode'];
+  $keyID = (int) $form_state['signup_object']['keyID'];
+  $vCode = (string) $form_state['signup_object']['vCode'];
 
   $query = array(
-    'keyid' => $keyid,
-    'vcode' => $vcode,
+    'keyID' => $keyID,
+    'vCode' => $vCode,
   );
 
   $characters = omni_eve_api_get_character_api($query);
 
   $created = date('Y-m-d H:i:s', time());
 
-  $new_api_key_id = db_insert('oea_api_keys')->fields(array(
+  $apiID = db_insert('oea_api_keys')->fields(array(
     'uid' => $uid,
-    'keyid' => $keyid,
-    'vcode' => $vcode,
+    'keyID' => $keyID,
+    'vCode' => $vCode,
     'updated' => (string) $created,
     'created' => (string) $created,
   ))->execute();
 
   foreach ($characters['characters'] as $character) {
-    db_merge('oea_characters')->key(array('characterid' => (int) $character['characterID']))->fields(array(
-      'characterid' => (int) $character['characterID'],
+    db_merge('oea_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
+      'characterID' => (int) $character['characterID'],
       'uid' => $uid,
-      'apiid' => (int) $new_api_key_id,
-      'charactername' => (string) $character['characterName'],
-      'corporationid' => (int) $character['corporationID'],
-      'corporationname' => (string) $character['corporationName'],
-      'corporationticker' => (string) $character['corporationTicker'],
-      'allianceid' => (int) $character['allianceID'],
-      'alliancename' => (string) $character['allianceName'],
-      'allianceticker' => (string) $character['allianceTicker'],
+      'apiID' => (int) $apiID,
+      'characterName' => (string) $character['characterName'],
+      'corporationID' => (int) $character['corporationID'],
+      'corporationName' => (string) $character['corporationName'],
+      'corporationTicker' => (string) $character['corporationTicker'],
+      'allianceID' => (int) $character['allianceID'],
+      'allianceName' => (string) $character['allianceName'],
+      'allianceTicker' => (string) $character['allianceTicker'],
     ))->execute();
 
     if ((string) $form_state['values']['name'] == (string) $character['characterName']) {
-      $charactername = (string) $character['characterName'];
-      $characterid = (int) $character['characterID'];
-      $corporationname = (string) $character['corporationName'];
+      $characterName = (string) $character['characterName'];
+      $characterID = (int) $character['characterID'];
+      $corporationName = (string) $character['corporationName'];
     }
   }
 
-  if ($corporation_role = user_role_load_by_name($corporationname)) {
+  if ($corporation_role = user_role_load_by_name($corporationName)) {
     user_multiple_role_edit(array($uid), 'add_role', (int) $corporation_role->rid);
 
     $alliance_role = user_role_load(variable_get('omni_eve_api_alliance_role', 2));
@@ -361,8 +361,8 @@ function omni_eve_api_user_register_form_submit(&$form, &$form_state) {
   }
 
   db_update('users')->fields(array(
-      'characterid' => $characterid,
-      'name' => $charactername,
+      'characterID' => $characterID,
+      'name' => $characterName,
       'signature' => '',
     ))->condition('uid', $uid, '=')->execute();
 }
@@ -383,7 +383,7 @@ function omni_eve_api_enter_api_form($form, &$form_state) {
     '#weight' => 0,
   );
 
-  $form['enter_api']['keyid'] = array(
+  $form['enter_api']['keyID'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
     '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@mask" target="_blank">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask', 268435455))),
@@ -392,7 +392,7 @@ function omni_eve_api_enter_api_form($form, &$form_state) {
     '#weight' => 0,
   );
 
-  $form['enter_api']['vcode'] = array(
+  $form['enter_api']['vCode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
     '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@mask" target="_blank">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('omni_eve_api_access_mask', 268435455))),
@@ -417,25 +417,25 @@ function omni_eve_api_enter_api_form($form, &$form_state) {
  * @see omni_eve_api_enter_api_form_submit()
  */
 function omni_eve_api_enter_api_form_validate($form, &$form_state) {
-  $keyid = (int) $form_state['values']['keyid'];
-  $vcode = (string) $form_state['values']['vcode'];
+  $keyID = (int) $form_state['values']['keyID'];
+  $vCode = (string) $form_state['values']['vCode'];
 
-  if (empty($keyid) || empty($vcode) || preg_match('/[^a-z0-9]/i', $vcode) || preg_match('/[^0-9]/', $form_state['values']['keyid']) || strlen($vcode) > 64 || strlen($vcode) < 20) {
-    form_set_error('keyid', t('Invalid input, please try again.'));
-    form_set_error('vcode');
+  if (empty($keyID) || empty($vCode) || preg_match('/[^a-z0-9]/i', $vCode) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($vCode) > 64 || strlen($vCode) < 20) {
+    form_set_error('keyID', t('Invalid input, please try again.'));
+    form_set_error('vCode');
     return;
   }
 
   $query = array(
-    'keyid' => $keyid,
-    'vcode' => $vcode,
+    'keyID' => $keyID,
+    'vCode' => $vCode,
   );
 
   $characters = omni_eve_api_get_character_api($query);
 
   if (isset($characters['error'])) {
-    form_set_error('keyid', t('There was an error with the API.'));
-    form_set_error('vcode');
+    form_set_error('keyID', t('There was an error with the API.'));
+    form_set_error('vCode');
   }
   else {
     $whitelist_characters = array();
@@ -446,31 +446,31 @@ function omni_eve_api_enter_api_form_validate($form, &$form_state) {
       }
     }
 
-    $result = db_query('SELECT characterid FROM {oea_whitelist} WHERE deleted = 0 AND characterid IN (:characterids)', array(
-      ':characterids' => $whitelist_characters,
+    $result = db_query('SELECT characterID FROM {oea_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
+      ':characterIDs' => $whitelist_characters,
     ));
 
     if ($result->rowCount()) {
       if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
-        form_set_error('keyid', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
-        form_set_error('vcode');
+        form_set_error('keyID', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
+        form_set_error('vCode');
       }
     }
     else {
       if ($characters['expires'] || $characters['type'] != 'Account' || ($characters['accessMask'] & variable_get('omni_eve_api_access_mask', 268435455)) != variable_get('omni_eve_api_access_mask', 268435455)) {
-        form_set_error('keyid', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
-        form_set_error('vcode');
+        form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
+        form_set_error('vCode');
       }
     }
 
     if (!omni_eve_api_verify_blue($characters)) {
-      form_set_error('keyid', t('No characters associated with your key are currently blue to this alliance.'));
-      form_set_error('vcode');
+      form_set_error('keyID', t('No characters associated with your key are currently blue to this alliance.'));
+      form_set_error('vCode');
     }
 
     if ($chars = omni_eve_api_characters_exist($characters)) {
-      form_set_error('keyid', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
-      form_set_error('vcode');
+      form_set_error('keyID', t('Characters on this key have already been registered. Characters registered: @chars', array('@chars' => implode(", ", $chars))));
+      form_set_error('vCode');
     }
   }
 }
