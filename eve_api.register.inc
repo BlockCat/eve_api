@@ -330,8 +330,6 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
 
     $character_sheet = eve_api_get_character_sheet($query);
 
-    $director = FALSE;
-
     foreach ($character_sheet['corporationRoles'] as $roles) {
       db_merge('eve_api_characters_roles')->key(array(
         'characterID' => (int) $character['characterID'],
@@ -347,10 +345,6 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
         'deleted' => 0,
         'errorID' => 0,
       ))->execute();
-
-      if ((int) $roles['roleID'] == 1) {
-        $director = TRUE;
-      }
     }
 
     foreach ($character_sheet['corporationRolesAtHQ'] as $roles) {
@@ -368,10 +362,6 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
         'deleted' => 0,
         'errorID' => 0,
       ))->execute();
-
-      if ((int) $roles['roleID'] == 1) {
-        $director = TRUE;
-      }
     }
 
     foreach ($character_sheet['corporationRolesAtBase'] as $roles) {
@@ -389,10 +379,6 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
         'deleted' => 0,
         'errorID' => 0,
       ))->execute();
-
-      if ((int) $roles['roleID'] == 1) {
-        $director = TRUE;
-      }
     }
 
     foreach ($character_sheet['corporationRolesAtOther'] as $roles) {
@@ -410,10 +396,6 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
         'deleted' => 0,
         'errorID' => 0,
       ))->execute();
-
-      if ((int) $roles['roleID'] == 1) {
-        $director = TRUE;
-      }
     }
 
     db_merge('eve_api_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
