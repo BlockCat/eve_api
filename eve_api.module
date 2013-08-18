@@ -4,10 +4,10 @@
  * The main file for Omni EVE API, where all the magic happens.
  */
 
-require_once('eve_api.api.inc');
-require_once('eve_api.cron.inc');
-require_once('eve_api.jabber.inc');
-require_once('eve_api.ts3.inc');
+require_once dirname(__FILE__) . '/eve_api.api.inc';
+require_once dirname(__FILE__) . '/eve_api.cron.inc';
+require_once dirname(__FILE__) . '/eve_api.jabber.inc';
+require_once dirname(__FILE__) . '/eve_api.ts3.inc';
 
 /**
  * Return the version number.
