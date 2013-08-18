@@ -7,7 +7,7 @@
 /**
  * Implements hook_cron().
  */
-function eve_api_api_alliance_fetch_cron() {
+function eve_api_cron() {
   $interval = variable_get('eve_api_api_alliance_fetch_cron_time', 1440 * 60);
 
   if (time() >= variable_get('eve_api_api_alliance_fetch_cron_next', 0) && date('G') == 2) {
@@ -16,12 +16,7 @@ function eve_api_api_alliance_fetch_cron() {
 
     variable_set('eve_api_api_alliance_fetch_cron_next', time() + $interval);
   }
-}
 
-/**
- * Implements hook_cron().
- */
-function eve_api_api_alliance_sync_cron() {
   $interval = variable_get('eve_api_api_alliance_sync_cron_time', 1440 * 60);
 
   if (time() >= variable_get('eve_api_api_alliance_sync_cron_next', 0) && date('G') == 3) {
@@ -30,12 +25,7 @@ function eve_api_api_alliance_sync_cron() {
 
     variable_set('eve_api_api_alliance_sync_cron_next', time() + $interval);
   }
-}
 
-/**
- * Implements hook_cron().
- */
-function eve_api_api_mask_cron() {
   $interval = variable_get('eve_api_api_mask_cron_time', 1440 * 60);
 
   if (time() >= variable_get('eve_api_api_mask_cron_next', 0) && date('G') == 1) {
@@ -44,18 +34,12 @@ function eve_api_api_mask_cron() {
 
     variable_set('eve_api_api_mask_cron_next', time() + $interval);
   }
-}
 
-/**
- * Implements hook_cron().
- */
-function eve_api_api_users_cron() {
   if (variable_get('eve_api_enable', FALSE)) {
     $interval = variable_get('eve_api_api_users_cron_time', 60 * 60);
 
     if (time() >= variable_get('eve_api_api_users_cron_next', 0)) {
       $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
-
       $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters}');
 
       if ($result->rowCount()) {
@@ -67,12 +51,7 @@ function eve_api_api_users_cron() {
       variable_set('eve_api_api_users_cron_next', time() + $interval);
     }
   }
-}
 
-/**
- * Implements hook_cron().
- */
-function eve_api_teamspeak_role_cron() {
   if (variable_get('eve_api_ts3_enable', FALSE) && variable_get('eve_api_enable', FALSE)) {
     $interval = variable_get('eve_api_teamspeak_role_cron_time', 5 * 60);
 
@@ -83,12 +62,7 @@ function eve_api_teamspeak_role_cron() {
       variable_set('eve_api_teamspeak_role_cron_next', time() + $interval);
     }
   }
-}
 
-/**
- * Implements hook_cron().
- */
-function eve_api_teamspeak_user_cron() {
   if (variable_get('eve_api_ts3_enable', FALSE) && variable_get('eve_api_enable', FALSE)) {
     $interval = variable_get('eve_api_teamspeak_user_cron_time', 5 * 60);
 
@@ -110,12 +84,7 @@ function eve_api_teamspeak_user_cron() {
       variable_set('eve_api_teamspeak_user_cron_next', time() + $interval);
     }
   }
-}
 
-/**
- * Implements hook_cron().
- */
-function eve_api_jabber_role_cron() {
   if (variable_get('eve_api_jabber_enable', FALSE) && variable_get('eve_api_enable', FALSE)) {
     $interval = variable_get('eve_api_jabber_role_cron_time', 5 * 60);
 
@@ -126,12 +95,7 @@ function eve_api_jabber_role_cron() {
       variable_set('eve_api_jabber_role_cron_next', time() + $interval);
     }
   }
-}
 
-/**
- * Implements hook_cron().
- */
-function eve_api_jabber_user_cron() {
   if (variable_get('eve_api_jabber_enable', FALSE) && variable_get('eve_api_enable', FALSE)) {
     $interval = variable_get('eve_api_jabber_user_cron_time', 5 * 60);
 
@@ -153,16 +117,57 @@ function eve_api_jabber_user_cron() {
       variable_set('eve_api_jabber_user_cron_next', time() + $interval);
     }
   }
-}
 
-/**
- * Implements hook_cron().
- */
-function eve_api_teamspeak_name_cron() {
   if (variable_get('eve_api_ts3_enable', FALSE) && variable_get('eve_api_enable', FALSE)) {
     $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_check');
     $queue->createItem(1);
   }
+}
+
+/**
+ * Implements hook_cron_queue_info().
+ *
+ * Set up ten queues that all send items to the same callback function.
+ */
+function eve_api_cron_queue_info() {
+  $queue = array();
+  $queue['eve_api_cron_teamspeak_user_sync'] = array(
+    'worker callback' => 'eve_api_cron_teamspeak_user_sync',
+    'time' => 15,
+  );
+  $queue['eve_api_cron_teamspeak_user_check'] = array(
+    'worker callback' => 'eve_api_cron_teamspeak_user_check',
+    'time' => 15,
+  );
+  $queue['eve_api_cron_teamspeak_role_sync'] = array(
+    'worker callback' => 'eve_api_cron_teamspeak_role_sync',
+    'time' => 15,
+  );
+  $queue['eve_api_cron_jabber_user_sync'] = array(
+    'worker callback' => 'eve_api_cron_jabber_user_sync',
+    'time' => 15,
+  );
+  $queue['eve_api_cron_jabber_role_sync'] = array(
+    'worker callback' => 'eve_api_cron_jabber_role_sync',
+    'time' => 15,
+  );
+  $queue['eve_api_cron_api_user_sync'] = array(
+    'worker callback' => 'eve_api_cron_api_user_sync',
+    'time' => 15,
+  );
+  $queue['eve_api_cron_api_alliance_fetch'] = array(
+    'worker callback' => 'eve_api_cron_api_alliance_fetch',
+    'time' => 15,
+  );
+  $queue['eve_api_cron_api_mask_sync'] = array(
+    'worker callback' => 'eve_api_cron_api_mask_sync',
+    'time' => 15,
+  );
+  $queue['eve_api_cron_api_alliance_sync'] = array(
+    'worker callback' => 'eve_api_cron_api_alliance_sync',
+    'time' => 60,
+  );
+  return $queue;
 }
 
 /**
@@ -173,7 +178,7 @@ function eve_api_teamspeak_name_cron() {
  */
 function eve_api_cron_teamspeak_user_sync($item) {
   if ($item['runs'] == 11) {
-    watchdog('eve_api', 'Cron Update Teamspeak User Permissions task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    watchdog('eve_api', 'Cron Update Teamspeak User Permissions task has failed 10 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 
@@ -236,6 +241,7 @@ function eve_api_cron_teamspeak_user_sync($item) {
     }
   }
   catch (EveApiException $e) {
+    watchdog('eve_api', 'Cron Update Teamspeak User Permissions task has failed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
     $item['runs'] = $item['runs'] + 1;
     $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_sync');
     $queue->createItem($item);
@@ -254,7 +260,7 @@ function eve_api_cron_teamspeak_user_sync($item) {
  */
 function eve_api_cron_teamspeak_user_check($item) {
   if ($item == 11) {
-    watchdog('eve_api', 'Cron Check Teamspeak Names task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    watchdog('eve_api', 'Cron Check Teamspeak Names task has failed 10 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 
@@ -393,6 +399,7 @@ function eve_api_cron_teamspeak_user_check($item) {
     }
   }
   catch (EveApiException $e) {
+    watchdog('eve_api', 'Cron Check Teamspeak Names task has failed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_check');
     $queue->createItem($item);
@@ -411,7 +418,7 @@ function eve_api_cron_teamspeak_user_check($item) {
  */
 function eve_api_cron_teamspeak_role_sync($item) {
   if ($item == 11) {
-    watchdog('eve_api', 'Cron Sync Teamspeak Roles task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    watchdog('eve_api', 'Cron Sync Teamspeak Roles task has failed 10 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 
@@ -447,6 +454,7 @@ function eve_api_cron_teamspeak_role_sync($item) {
     }
   }
   catch (EveApiException $e) {
+    watchdog('eve_api', 'Cron Sync Teamspeak Roles task has failed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_cron_teamspeak_role_sync');
     $queue->createItem($item);
@@ -465,7 +473,7 @@ function eve_api_cron_teamspeak_role_sync($item) {
  */
 function eve_api_cron_jabber_user_sync($item) {
   if ($item['runs'] == 11) {
-    watchdog('eve_api', 'Cron Update Jabber User Roles task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    watchdog('eve_api', 'Cron Update Jabber User Roles task has failed 10 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 
@@ -516,6 +524,7 @@ function eve_api_cron_jabber_user_sync($item) {
     }
   }
   catch (EveApiException $e) {
+    watchdog('eve_api', 'Cron Update Jabber User Roles task has failed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
     $item['runs'] = $item['runs'] + 1;
     $queue = DrupalQueue::get('eve_api_cron_jabber_user_sync');
     $queue->createItem($item);
@@ -534,7 +543,7 @@ function eve_api_cron_jabber_user_sync($item) {
  */
 function eve_api_cron_jabber_role_sync($item) {
   if ($item == 11) {
-    watchdog('eve_api', 'Cron Sync Jabber Roles task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    watchdog('eve_api', 'Cron Sync Jabber Roles task has failed 10 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 
@@ -567,6 +576,7 @@ function eve_api_cron_jabber_role_sync($item) {
     }
   }
   catch (EveApiException $e) {
+    watchdog('eve_api', 'Cron Sync Jabber Roles task has failed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_cron_jabber_role_sync');
     $queue->createItem($item);
@@ -800,7 +810,7 @@ function eve_api_cron_api_user_sync($item) {
  */
 function eve_api_cron_api_alliance_fetch($item = NULL) {
   if ($item == 11) {
-    watchdog('eve_api', 'Cron Standings task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    watchdog('eve_api', 'Cron Standings task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 
@@ -860,7 +870,7 @@ function eve_api_cron_api_alliance_fetch($item = NULL) {
  */
 function eve_api_cron_api_alliance_sync($item = NULL) {
   if ($item == 11) {
-    watchdog('eve_api', 'Cron Import Alliance API task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    watchdog('eve_api', 'Cron Import Alliance API task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 
@@ -965,7 +975,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
  */
 function eve_api_cron_api_mask_sync($item = NULL) {
   if ($item == 11) {
-    watchdog('eve_api', 'Cron Access Mask task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_EMERGENCY);
+    watchdog('eve_api', 'Cron Access Mask task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 

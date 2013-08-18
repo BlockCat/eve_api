@@ -498,8 +498,6 @@ function eve_api_uninstall() {
   variable_del('eve_api_ts3_bypass_group');
   variable_del('eve_api_ts3_cron_reg_message');
   variable_del('eve_api_ts3_cron_reg_poke');
-  variable_del('eve_api_ts3_cron_reg_kick');
-  variable_del('eve_api_ts3_cron_reg_ban');
   variable_del('eve_api_ts3_cron_reg_ban_time');
   variable_del('eve_api_ts3_cron_reg_message_enable');
   variable_del('eve_api_ts3_cron_reg_poke_enable');
@@ -508,8 +506,6 @@ function eve_api_uninstall() {
   variable_del('eve_api_ts3_cron_reg_time');
   variable_del('eve_api_ts3_cron_user_message');
   variable_del('eve_api_ts3_cron_user_poke');
-  variable_del('eve_api_ts3_cron_user_kick');
-  variable_del('eve_api_ts3_cron_user_ban');
   variable_del('eve_api_ts3_cron_user_ban_time');
   variable_del('eve_api_ts3_cron_user_message_enable');
   variable_del('eve_api_ts3_cron_user_poke_enable');

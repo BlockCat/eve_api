@@ -5,6 +5,47 @@
  */
 
 /**
+ * Sanitize input variable, used for Teamspeak messages.
+ *
+ * @param string $input
+ *   A dirty string.
+ *
+ * @return string
+ *   A clean string.
+ */
+function eve_api_clean_input($input) {
+  return trim(preg_replace('/ +/', ' ', preg_replace('|[^[:alnum:][:punct:]\s]|', ' ', urldecode(html_entity_decode(strip_tags((string) $input))))));
+}
+
+/**
+ * Check the TeamSpeak 3 PHP Framework version.
+ *
+ * @return string
+ *   The version of the TeamSpeak 3 PHP Framework.
+ */
+function eve_api_teamspeak_get_version() {
+  $libraries = libraries_get_libraries();
+
+  if (isset($libraries['TeamSpeak3'])) {
+    $path = libraries_get_path('TeamSpeak3');
+
+    if (file_exists($path . '/TeamSpeak3.php')) {
+      require_once $path . '/TeamSpeak3.php';
+
+      $teamspeak_version = TeamSpeak3::LIB_VERSION;
+
+      return $teamspeak_version;
+    }
+    else {
+      return '0.0.0';
+    }
+  }
+  else {
+    return '0.0.0';
+  }
+}
+
+/**
  * Generates the Teamspeak name as specified in Teamspeak Settings.
  *
  * @param string $character_name

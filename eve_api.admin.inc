@@ -1367,12 +1367,12 @@ function eve_api_user_teamspeak_settings_form($form, &$form_state) {
 
   $options['reg_kick_enable'] = array(
     'type' => t('Kick'),
-    'message' => t('Option to Kick the user after the limit has expired.'),
+    'message' => t('Custom message not available.'),
   );
 
   $options['reg_ban_enable'] = array(
     'type' => t('Ban'),
-    'message' => t('Option to Ban the user after the limit has expired.'),
+    'message' => t('Custom message not available.'),
   );
 
   $selected['reg_message_enable'] = variable_get('eve_api_ts3_cron_reg_message_enable', FALSE);
@@ -1380,12 +1380,19 @@ function eve_api_user_teamspeak_settings_form($form, &$form_state) {
   $selected['reg_kick_enable'] = variable_get('eve_api_ts3_cron_reg_kick_enable', FALSE);
   $selected['reg_ban_enable'] = variable_get('eve_api_ts3_cron_reg_ban_enable', FALSE);
 
-  $form['teamspeak_settings']['reg']['reg_options'] = array(
+  $form['teamspeak_settings']['reg']['notification'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Notification Options'),
+    '#description' => t('Options available after the Registration Time Limit has expired.'),
+    '#weight' => 20,
+  );
+
+  $form['teamspeak_settings']['reg']['notification']['reg_options'] = array(
     '#type' => 'tableselect',
     '#header' => $header,
     '#options' => $options,
     '#default_value' => $selected,
-    '#weight' => 20,
+    '#weight' => 0,
   );
 
   $form['teamspeak_settings']['user'] = array(
@@ -1447,12 +1454,12 @@ function eve_api_user_teamspeak_settings_form($form, &$form_state) {
 
   $options['user_kick_enable'] = array(
     'type' => t('Kick'),
-    'message' => t('Option to Kick the user after the limit has expired.'),
+    'message' => t('Custom message not available.'),
   );
 
   $options['user_ban_enable'] = array(
     'type' => t('Ban'),
-    'message' => t('Option to Ban the user after the limit has expired.'),
+    'message' => t('Custom message not available.'),
   );
 
   $selected['user_message_enable'] = variable_get('eve_api_ts3_cron_user_message_enable', FALSE);
@@ -1460,12 +1467,19 @@ function eve_api_user_teamspeak_settings_form($form, &$form_state) {
   $selected['user_kick_enable'] = variable_get('eve_api_ts3_cron_user_kick_enable', FALSE);
   $selected['user_ban_enable'] = variable_get('eve_api_ts3_cron_user_ban_enable', FALSE);
 
-  $form['teamspeak_settings']['user']['user_options'] = array(
+  $form['teamspeak_settings']['user']['notification'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Notification Options'),
+    '#description' => t('Options available after the Correct Name Time Limit has expired.'),
+    '#weight' => 20,
+  );
+
+  $form['teamspeak_settings']['user']['notification']['user_options'] = array(
     '#type' => 'tableselect',
     '#header' => $header,
     '#options' => $options,
     '#default_value' => $selected,
-    '#weight' => 20,
+    '#weight' => 0,
   );
 
   $form['submit_button'] = array(
@@ -1515,12 +1529,8 @@ function eve_api_user_teamspeak_settings_form_submit($form, &$form_state) {
 
   variable_set('eve_api_ts3_cron_reg_message', (string) $form_state['input']['reg_message']);
   variable_set('eve_api_ts3_cron_reg_poke', (string) $form_state['input']['reg_poke']);
-  variable_set('eve_api_ts3_cron_reg_kick', (string) $form_state['input']['reg_kick']);
-  variable_set('eve_api_ts3_cron_reg_ban', (string) $form_state['input']['reg_ban']);
   variable_set('eve_api_ts3_cron_user_message', (string) $form_state['input']['user_message']);
   variable_set('eve_api_ts3_cron_user_poke', (string) $form_state['input']['user_poke']);
-  variable_set('eve_api_ts3_cron_user_kick', (string) $form_state['input']['user_kick']);
-  variable_set('eve_api_ts3_cron_user_ban', (string) $form_state['input']['user_ban']);
 
   $form_state['redirect'] = 'admin/settings/eve_api/teamspeak';
 
