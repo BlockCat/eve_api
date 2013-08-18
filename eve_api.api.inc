@@ -586,6 +586,65 @@ function eve_api_get_character_sheet($query) {
 
   $api_data = array();
 
+  foreach ($xml->result->children() as $results) {
+    switch ((string) $results->getName()) {
+      case 'rowset':
+        $rowset = $results->attributes();
+
+        foreach ($results->children() as $rows) {
+          $row = $rows->attributes();
+
+          switch ((string) $rowset->name) {
+            case 'skills':
+              $api_data[(string) $rowset->name][] = array(
+                'typeID' => (int) $row->typeID,
+                'skillpoints' => (int) $row->skillpoints,
+                'level' => (int) $row->level,
+                'published' => (int) $row->published,
+              );
+              break;
+
+            case 'certificates':
+              $api_data[(string) $rowset->name][]['certificateID'] = (int) $row->certificateID;
+              break;
+
+            case 'corporationTitles':
+              $api_data[(string) $rowset->name][] = array(
+                'titleID' => (int) $row->titleID,
+                'titleName' => (string) $row->titleName,
+              );
+              break;
+
+            default:
+              $api_data[(string) $rowset->name][] = array(
+                'roleID' => (int) $row->roleID,
+                'roleName' => (string) $row->roleName,
+              );
+              break;
+          }
+        }
+        break;
+
+      case 'attributeEnhancers':
+        foreach ($results->children() as $rows) {
+          foreach ($rows->children() as $row) {
+            $api_data[(string) $results->getName()][(string) $rows->getName()][(string) $row->getName()] = (string) $row;
+          }
+        }
+        break;
+
+      case 'attributes':
+        foreach ($results->children() as $rows) {
+          $api_data[(string) $results->getName()][(string) $rows->getName()] = (int) $rows;
+        }
+        break;
+
+      default:
+        $api_data[(string) $results->getName()] = (string) $results;
+        break;
+    }
+  }
+
   return $api_data;
 }
 

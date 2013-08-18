@@ -1,7 +1,7 @@
 WHAT DOES IT DO?
 ----------------
 
-This purpose of Omni EVE API is to incorporate and make use of the EVE Online
+The purpose of Omni EVE API is to incorporate and make use of the EVE Online
 API for user registrations, role management, and site administration.
 
 The module will pull the EVE API from an alliance executors API Key to grab
