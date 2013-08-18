@@ -25,7 +25,7 @@ require_once dirname(__FILE__) . '/eve_api.ts3.inc';
  * `-------- Major Version Change.
  */
 function eve_api_version() {
-  return '1.0.1.1';
+  return '2.0.1.1';
 }
 
 /**
