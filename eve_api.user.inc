@@ -1058,6 +1058,14 @@ function eve_api_user_teamspeak_form_submit($form, &$form_state) {
       'runs' => 1,
     ));
 
+    $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_sync');
+    $queue->createItem(array(
+      'uid' => $uid,
+      'teamspeakDBID' => $teamspeak_dbid,
+      'status' => 1,
+      'runs' => 1,
+    ));
+
     // Need to assign roles.
     drupal_set_message(t('Teamspeak access granted.'));
   }
@@ -1271,6 +1279,15 @@ function eve_api_user_jabber_form_submit($form, &$form_state) {
     else {
       drupal_set_message(t('There was an error updateing your Jabber account, please try again later.'));
     }
+
+    $queue = DrupalQueue::get('eve_api_cron_jabber_user_sync');
+
+    $queue->createItem(array(
+      'uid' => $account->uid,
+      'name' => $account->name,
+      'status' => $account->status,
+      'runs' => 1,
+    ));
   }
   catch (EveApiException $e) {
     drupal_set_message(t('There was an error updateing your Jabber account, please try again later.'));

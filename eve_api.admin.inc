@@ -1914,7 +1914,6 @@ function eve_api_admin_add_role_whitelist_form($form, &$form_state) {
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  $form_state['redirect'] = 'admin/settings/eve_api/role_whitelist';
   $form['#validate'] = array('eve_api_admin_add_role_whitelist_form_validate');
   $form['#submit'] = array('eve_api_admin_add_role_whitelist_form_submit');
 
@@ -1949,6 +1948,8 @@ function eve_api_admin_add_role_whitelist_form_validate($form, &$form_state) {
  * @see eve_api_admin_add_role_whitelist_form_validate()
  */
 function eve_api_admin_add_role_whitelist_form_submit($form, &$form_state) {
+  $form_state['redirect'] = 'admin/settings/eve_api/role_whitelist';
+
   $character_name = (string) $form_state['values']['characterName'];
   $is_ceo = ($form_state['values']['isCEO'] == TRUE) ? 1 : 0;
   $is_director = ($form_state['values']['isDirector'] == TRUE) ? 1 : 0;
