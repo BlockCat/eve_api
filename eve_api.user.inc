@@ -634,8 +634,9 @@ function eve_api_user_list_api_form_submit($form, &$form_state) {
       continue;
     }
 
-    db_delete('eve_api_api_keys')->condition('apiID', (int) $api_id)->execute();
-    db_update('eve_api_characters')->fields(array('deleted' => 1))->condition('apiID', (int) $api_id)->execute();
+    db_delete('eve_api_api_keys')->condition('apiID', (int) $api_id, '=')->execute();
+    db_update('eve_api_characters')->fields(array('deleted' => 1))->condition('apiID', (int) $api_id, '=')->execute();
+    db_update('eve_api_characters_roles')->fields(array('deleted' => 1))->condition('apiID', (int) $api_id, '=')->execute();
   }
 
   $result = db_query('SELECT c.characterName, c.characterID FROM {eve_api_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
@@ -855,6 +856,7 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
   $updated = date('Y-m-d H:i:s', time());
 
   db_update('eve_api_characters')->fields(array('deleted' => 1))->condition('apiID', $api_id)->execute();
+  db_update('eve_api_characters_roles')->fields(array('deleted' => 1))->condition('apiID', (int) $api_id, '=')->execute();
 
   db_merge('eve_api_api_keys')->key(array('apiID' => $api_id))->fields(array(
     'apiID' => $api_id,

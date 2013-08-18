@@ -634,6 +634,9 @@ function eve_api_admin_list_blues_form($form, &$form_state) {
  * @see eve_api_admin_list_blues_form_submit()
  */
 function eve_api_admin_list_blues_form_validate($form, &$form_state) {
+  if (!is_array($form_state['values']['blues']) || !count(array_filter($form_state['values']['blues']))) {
+    form_set_error('', t('No items selected.'));
+  }
 }
 
 /**
@@ -885,6 +888,9 @@ function eve_api_admin_list_whitelist_form($form, &$form_state) {
  * @see eve_api_admin_list_whitelist_form_submit()
  */
 function eve_api_admin_list_whitelist_form_validate($form, &$form_state) {
+  if (!is_array($form_state['values']['whitelist']) || !count(array_filter($form_state['values']['whitelist']))) {
+    form_set_error('', t('No items selected.'));
+  }
 }
 
 /**
@@ -898,6 +904,15 @@ function eve_api_admin_list_whitelist_form_submit($form, &$form_state) {
 
   foreach ((array) $form_state['values']['whitelist'] as $whitelist) {
     $deleted_whitelist[] = (int) $whitelist;
+  }
+
+  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE characterID IN (:characterIDs)', array(':characterIDs' => $deleted_whitelist));
+
+  if ($result->rowCount()) {
+    foreach ($result->fetchAll() as $item) {
+      $queue->createItem($item->uid);
+    }
   }
 
   db_update('eve_api_whitelist')->fields(array('deleted' => 1))->condition('characterID', $deleted_whitelist, 'IN')->execute();
@@ -1711,4 +1726,243 @@ function eve_api_admin_jabber_form_submit($form, &$form_state) {
   menu_rebuild();
 
   drupal_set_message(t('Jabber Settings Updated.'));
+}
+
+/**
+ * Form constructor for the admin list roles whitelist form.
+ *
+ * @see eve_api_admin_role_whitelist_form_validate()
+ * @see eve_api_admin_role_whitelist_form_submit()
+ *
+ * @ingroup forms
+ */
+function eve_api_admin_role_whitelist_form($form, &$form_state) {
+  $header = array(
+    'characterID' => array(
+      'data' => t('Character ID'),
+      'field' => 'c.characterID',
+    ),
+    'characterName' => array(
+      'data' => t('Character Name'),
+      'field' => 'c.characterName',
+    ),
+    'corporationName' => array(
+      'data' => t('Corporation'),
+      'field' => 'c.corporationName',
+    ),
+    'isCEO' => array(
+      'data' => t('CEO'),
+      'field' => 'crw.isCEO',
+    ),
+    'isDirector' => array(
+      'data' => t('Director'),
+      'field' => 'crw.isDirector',
+    ),
+  );
+
+  $options = array();
+
+  $query = db_select('eve_api_characters_roles_whitelist', 'crw');
+  $query->join('eve_api_characters', 'c', 'crw.characterID = c.characterID');
+  $query->fields('crw', array(
+        'isCEO',
+        'isDirector',
+      ))
+    ->fields('c', array(
+        'characterID',
+        'characterName',
+        'corporationName',
+      ))
+    ->extend('PagerDefault')
+    ->limit(20)
+    ->extend('TableSort')
+    ->orderByHeader($header);
+  $result = $query->execute();
+
+  if ($result->rowCount()) {
+    foreach ($result->fetchAll() as $row) {
+      $options[$row->characterID] = array(
+        'characterID' => check_plain($row->characterID),
+        'characterName' => check_plain($row->characterName),
+        'corporationName' => check_plain($row->corporationName),
+        'isCEO' => ($row->isCEO) ? t('Yes') : t('No'),
+        'isDirector' => ($row->isDirector) ? t('Yes') : t('No'),
+      );
+    }
+  }
+
+  $form['role_whitelist'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Update Roles Whitelist'),
+    '#description' => t('Toggle the checkbox to remove the Whitelisted Roles for the Character.'),
+    '#weight' => 0,
+  );
+
+  $form['role_whitelist']['role_whitelist'] = array(
+    '#type' => 'tableselect',
+    '#header' => $header,
+    '#options' => $options,
+    '#empty' => t('No Character Roles Whitelisted.'),
+    '#weight' => 10,
+  );
+
+  $form['role_whitelist']['page'] = array(
+    '#theme' => 'pager',
+    '#weight' => 20,
+  );
+
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update Roles'),
+  );
+
+  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+    drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
+    $form['submit_button']['#disabled'] = TRUE;
+  }
+
+  $form['#validate'] = array('eve_api_admin_role_whitelist_form_validate');
+  $form['#submit'] = array('eve_api_admin_role_whitelist_form_submit');
+
+  return $form;
+}
+
+/**
+ * Form validation handler for eve_api_admin_role_whitelist_form().
+ *
+ * @see eve_api_admin_role_whitelist_form_submit()
+ */
+function eve_api_admin_role_whitelist_form_validate($form, &$form_state) {
+  if (!is_array($form_state['values']['role_whitelist']) || !count(array_filter($form_state['values']['role_whitelist']))) {
+    form_set_error('', t('No items selected.'));
+  }
+}
+
+/**
+ * Form submission handler for eve_api_admin_role_whitelist_form().
+ *
+ * @see eve_api_admin_role_whitelist_form_validate()
+ */
+function eve_api_admin_role_whitelist_form_submit($form, &$form_state) {
+  $deleted_whitelist = array();
+
+  foreach ((array) $form_state['values']['role_whitelist'] as $whitelist) {
+    $deleted_whitelist[] = (int) $whitelist;
+  }
+
+  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE characterID IN (:characterIDs)', array(':characterIDs' => $deleted_whitelist));
+
+  if ($result->rowCount()) {
+    foreach ($result->fetchAll() as $item) {
+      $queue->createItem($item->uid);
+    }
+  }
+
+  db_delete('eve_api_characters_roles_whitelist')->condition('characterID', $deleted_whitelist, 'IN')->execute();
+
+  drupal_set_message(t('The Character Roles Whitelist has been updated.'));
+}
+
+/**
+ * Form constructor for the admin add roles whitelist form.
+ *
+ * @see eve_api_admin_add_role_whitelist_form_validate()
+ * @see eve_api_admin_add_role_whitelist_form_submit()
+ *
+ * @ingroup forms
+ */
+function eve_api_admin_add_role_whitelist_form($form, &$form_state) {
+  $form['add_role_whitelist'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Add/Update Roles Whitelist'),
+    '#description' => t('Add characters to the roles whitelist, specify if they are a CEO or a Director.'),
+    '#weight' => 0,
+  );
+
+  $form['add_role_whitelist']['characterName'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Character Name'),
+    '#description' => t('Please enter the Character Name, this character must already exist in the database.'),
+    '#required' => TRUE,
+    '#size' => 60,
+    '#maxlength' => 50,
+    '#weight' => 0,
+  );
+
+  $form['add_role_whitelist']['isCEO'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('CEO'),
+    '#description' => t('Manually add the role CEO to this character.'),
+    '#weight' => 10,
+  );
+
+  $form['add_role_whitelist']['isDirector'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Director'),
+    '#description' => t('Manually add the role Director to this character.'),
+    '#weight' => 20,
+  );
+
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add Roles Whitelist'),
+  );
+
+  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+    drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
+    $form['submit_button']['#disabled'] = TRUE;
+  }
+
+  $form_state['redirect'] = 'admin/settings/eve_api/role_whitelist';
+  $form['#validate'] = array('eve_api_admin_add_role_whitelist_form_validate');
+  $form['#submit'] = array('eve_api_admin_add_role_whitelist_form_submit');
+
+  return $form;
+}
+
+/**
+ * Form validation handler for eve_api_admin_add_role_whitelist_form().
+ *
+ * @see eve_api_admin_add_role_whitelist_form_submit()
+ */
+function eve_api_admin_add_role_whitelist_form_validate($form, &$form_state) {
+  $character_name = (string) $form_state['values']['characterName'];
+  $is_ceo = ($form_state['values']['isCEO'] == TRUE) ? TRUE : FALSE;
+  $is_director = ($form_state['values']['isDirector'] == TRUE) ? TRUE : FALSE;
+
+  if (!$is_ceo && !$is_director) {
+    form_set_error('isCEO', t('At least one option must be selected.'));
+    form_set_error('isDirector');
+  }
+
+  $chars = eve_api_get_character_info($character_name);
+
+  if (!$chars) {
+    form_set_error('characterName', t('The Character does not exist, please try again.'));
+  }
+}
+
+/**
+ * Form submission handler for eve_api_admin_add_role_whitelist_form().
+ *
+ * @see eve_api_admin_add_role_whitelist_form_validate()
+ */
+function eve_api_admin_add_role_whitelist_form_submit($form, &$form_state) {
+  $character_name = (string) $form_state['values']['characterName'];
+  $is_ceo = ($form_state['values']['isCEO'] == TRUE) ? 1 : 0;
+  $is_director = ($form_state['values']['isDirector'] == TRUE) ? 1 : 0;
+
+  $character = eve_api_get_character_info($character_name);
+
+  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue->createItem($character['uid']);
+
+  db_merge('eve_api_characters_roles_whitelist')->key(array('characterID' => (int) $character['characterID']))->fields(array(
+    'characterID' => (int) $character['characterID'],
+    'isCEO' => $is_ceo,
+    'isDirector' => $is_director,
+  ))->execute();
+
+  drupal_set_message(t('Whitelisted Characters successfully added!'));
 }

@@ -192,6 +192,29 @@ function eve_api_schema() {
     'indexes' => array('characterid' => array('characterID')),
   );
 
+  $schema['eve_api_characters_roles_whitelist'] = array(
+    'description' => 'This table holds all the roles for all characters retrieved from the API.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'The unique Character ID associated with the EVE Character.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'isCEO' => array(
+        'description' => 'Character is a CEO.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'isDirector' => array(
+        'description' => 'Character is a Director.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'unique keys' => array('characterID' => array('characterID')),
+    'primary key' => array('characterID'),
+  );
+
   $schema['eve_api_whitelist'] = array(
     'description' => 'This table holds all the whitelisted character ID\'s and name.',
     'fields' => array(

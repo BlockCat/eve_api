@@ -862,6 +862,14 @@ function eve_api_characters_is_director($character_id) {
     return TRUE;
   }
 
+  $result = db_query('SELECT characterID FROM {eve_api_characters_roles_whitelist} WHERE isDirector = 1 AND characterID = :characterID', array(
+    ':characterID' => (int) $character_id,
+  ));
+
+  if ($result->rowCount()) {
+    return TRUE;
+  }
+
   return FALSE;
 }
 
@@ -877,6 +885,14 @@ function eve_api_characters_is_director($character_id) {
 function eve_api_characters_is_ceo($character_id) {
   $result = db_query('SELECT ceoName FROM {eve_api_alliance_corporations} WHERE deleted = 0 AND ceoID = :ceoID', array(
     ':ceoID' => (int) $character_id,
+  ));
+
+  if ($result->rowCount()) {
+    return TRUE;
+  }
+
+  $result = db_query('SELECT characterID FROM {eve_api_characters_roles_whitelist} WHERE isCEO = 1 AND characterID = :characterID', array(
+    ':characterID' => (int) $character_id,
   ));
 
   if ($result->rowCount()) {

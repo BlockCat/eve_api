@@ -147,7 +147,7 @@ function eve_api_menu() {
 
     $items['admin/settings/eve_api/list_whitelist'] = array(
       'title' => 'Whitelist',
-      'description' => 'You can remove Whitelisted API Characters and Add Whitelisted API Characters from here.',
+      'description' => 'You can remove and add Whitelisted API Characters from here.',
       'page arguments' => array('eve_api_admin_list_whitelist_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 60,
@@ -155,8 +155,24 @@ function eve_api_menu() {
 
     $items['admin/settings/eve_api/list_whitelist/add_whitelist'] = array(
       'title' => 'Add Whitelist',
-      'description' => 'You can manually add Whitelisted API Characters from here.',
+      'description' => 'Manually add Whitelisted API Characters from here.',
       'page arguments' => array('eve_api_admin_add_whitelist_form'),
+      'type' => MENU_LOCAL_ACTION,
+      'weight' => 0,
+    ) + $admin_base;
+
+    $items['admin/settings/eve_api/role_whitelist'] = array(
+      'title' => 'Role Whitelist',
+      'description' => 'You can remove and add Whitelisted Roles for Characters here, such as CEO and Directors.',
+      'page arguments' => array('eve_api_admin_role_whitelist_form'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 70,
+    ) + $admin_base;
+
+    $items['admin/settings/eve_api/role_whitelist/add_role_whitelist'] = array(
+      'title' => 'Add Role Whitelist',
+      'description' => 'Manually add/update Whitelisted Roles from here.',
+      'page arguments' => array('eve_api_admin_add_role_whitelist_form'),
       'type' => MENU_LOCAL_ACTION,
       'weight' => 0,
     ) + $admin_base;
