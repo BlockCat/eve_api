@@ -235,6 +235,7 @@ function eve_api_admin_alliance_api_key_form($form, &$form_state) {
     '#title' => t('Key ID'),
     '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@url" target="_blank">here</a>.', array('@url' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=67108863')),
     '#required' => TRUE,
+    '#size' => 20,
     '#maxlength' => 15,
     '#weight' => 0,
     '#default_value' => variable_get('eve_api_corp_keyid', ''),
@@ -245,6 +246,7 @@ function eve_api_admin_alliance_api_key_form($form, &$form_state) {
     '#title' => t('Verification Code'),
     '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@url" target="_blank">here</a>.', array('@url' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=67108863')),
     '#required' => TRUE,
+    '#size' => 80,
     '#maxlength' => 64,
     '#weight' => 10,
     '#default_value' => variable_get('eve_api_corp_vcode', ''),
@@ -427,6 +429,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
     '#title' => t('Standings'),
     '#description' => t('Set the required standing to register on the site. Standing required will be equal to or greater than the value supplied.  Accepted values are 10.0 to -10.0'),
     '#maxlength' => 5,
+    '#size' => 10,
     '#weight' => 0,
     '#required' => TRUE,
     '#default_value' => round((float) variable_get('eve_api_required_standing', 0.1), 1),
@@ -688,6 +691,7 @@ function eve_api_admin_add_blues_form($form, &$form_state) {
     '#description' => t('Please enter the ID of the Character/Corporation/Alliance, if found, details will be retrieved from the API.'),
     '#required' => TRUE,
     '#maxlength' => 20,
+    '#size' => 30,
     '#weight' => 0,
   );
 
@@ -922,6 +926,7 @@ function eve_api_admin_add_whitelist_form($form, &$form_state) {
     '#title' => t('Key ID'),
     '#description' => t('Please enter the Key ID.'),
     '#required' => TRUE,
+    '#size' => 20,
     '#maxlength' => 15,
     '#weight' => 0,
   );
@@ -931,6 +936,7 @@ function eve_api_admin_add_whitelist_form($form, &$form_state) {
     '#title' => t('Verification Code'),
     '#description' => t('Please enter the Verification Code.'),
     '#required' => TRUE,
+    '#size' => 80,
     '#maxlength' => 64,
     '#weight' => 10,
   );
@@ -1034,6 +1040,7 @@ function eve_api_admin_teamspeak_form($form, &$form_state) {
     '#title' => t('IP Address'),
     '#description' => t('The Teamspeak 3 IP address used to connect to the Teamspeak 3 Server. This can be 127.0.0.1 if the Teamspeak server is hosted on the same server as the webhost.'),
     '#required' => TRUE,
+    '#size' => 20,
     '#maxlength' => 15,
     '#weight' => 0,
     '#default_value' => variable_get('eve_api_ts3_host', '127.0.0.1'),
@@ -1044,7 +1051,8 @@ function eve_api_admin_teamspeak_form($form, &$form_state) {
     '#title' => t('Server Address'),
     '#description' => t('The Teamspeak 3 server address users will use to connect to your Teamspeak Server.'),
     '#required' => TRUE,
-    '#maxlength' => 100,
+    '#size' => 80,
+    '#maxlength' => 70,
     '#weight' => 0,
     '#default_value' => variable_get('eve_api_ts3_server_address', 'teamspeak.com'),
   );
@@ -1054,6 +1062,7 @@ function eve_api_admin_teamspeak_form($form, &$form_state) {
     '#title' => t('Server Port'),
     '#description' => t('The Teamspeak 3 server port users will use to connect to your Teamspeak Server. (Default: 9987)'),
     '#required' => TRUE,
+    '#size' => 10,
     '#maxlength' => 6,
     '#weight' => 10,
     '#default_value' => variable_get('eve_api_ts3_server_port', 9987),
@@ -1064,6 +1073,7 @@ function eve_api_admin_teamspeak_form($form, &$form_state) {
     '#title' => t('Server Password'),
     '#description' => t('If you require a password to connect to your Teamspeak, please input the password, otherwise leave this empty.'),
     '#maxlength' => 50,
+    '#size' => 60,
     '#weight' => 20,
     '#default_value' => variable_get('eve_api_ts3_server_password', ''),
   );
@@ -1073,6 +1083,7 @@ function eve_api_admin_teamspeak_form($form, &$form_state) {
     '#title' => t('Query Port'),
     '#description' => t('The Teamspeak 3 query port. (Default: 10011)'),
     '#required' => TRUE,
+    '#size' => 10,
     '#maxlength' => 6,
     '#weight' => 30,
     '#default_value' => variable_get('eve_api_ts3_query_port', 10011),
@@ -1083,6 +1094,7 @@ function eve_api_admin_teamspeak_form($form, &$form_state) {
     '#title' => t('Query Username'),
     '#description' => t('Query username choosen on your Teamspeak 3 server.'),
     '#required' => TRUE,
+    '#size' => 60,
     '#maxlength' => 50,
     '#weight' => 40,
     '#default_value' => variable_get('eve_api_ts3_query_username', 'Username'),
@@ -1093,6 +1105,7 @@ function eve_api_admin_teamspeak_form($form, &$form_state) {
     '#title' => t('Query Password'),
     '#description' => t('Query password generated on your Teamspeak 3 server.'),
     '#required' => TRUE,
+    '#size' => 60,
     '#maxlength' => 50,
     '#weight' => 50,
     '#default_value' => variable_get('eve_api_ts3_query_password', 'Password'),
@@ -1197,6 +1210,7 @@ function eve_api_user_teamspeak_settings_form($form, &$form_state) {
     '#title' => t('Username Format'),
     '#description' => t('The format that each user must have when connecting to Teamspeak 3. You can use the following variables:<br />@corp - Corporation Ticker<br />@alliance - Alliance Ticker<br />@name - EVE Character Name'),
     '#required' => TRUE,
+    '#size' => 60,
     '#maxlength' => 50,
     '#weight' => 0,
     '#default_value' => variable_get('eve_api_ts3_nickname', '[@corp] @name'),
@@ -1328,6 +1342,7 @@ function eve_api_user_teamspeak_settings_form($form, &$form_state) {
         '#type' => 'textfield',
         '#value' => variable_get('eve_api_ts3_cron_reg_message', ''),
         '#maxlength' => 50,
+        '#size' => 60,
         '#attributes' => array(
           'name' => 'reg_message',
         ),
@@ -1342,6 +1357,7 @@ function eve_api_user_teamspeak_settings_form($form, &$form_state) {
         '#type' => 'textfield',
         '#value' => variable_get('eve_api_ts3_cron_reg_poke', ''),
         '#maxlength' => 50,
+        '#size' => 60,
         '#attributes' => array(
           'name' => 'reg_poke',
         ),
@@ -1351,30 +1367,12 @@ function eve_api_user_teamspeak_settings_form($form, &$form_state) {
 
   $options['reg_kick_enable'] = array(
     'type' => t('Kick'),
-    'message' => array(
-      'data' => array(
-        '#type' => 'textfield',
-        '#value' => variable_get('eve_api_ts3_cron_reg_kick', ''),
-        '#maxlength' => 50,
-        '#attributes' => array(
-          'name' => 'reg_kick',
-        ),
-      ),
-    ),
+    'message' => t('Option to Kick the user after the limit has expired.'),
   );
 
   $options['reg_ban_enable'] = array(
     'type' => t('Ban'),
-    'message' => array(
-      'data' => array(
-        '#type' => 'textfield',
-        '#value' => variable_get('eve_api_ts3_cron_reg_ban', ''),
-        '#maxlength' => 50,
-        '#attributes' => array(
-          'name' => 'reg_ban',
-        ),
-      ),
-    ),
+    'message' => t('Option to Ban the user after the limit has expired.'),
   );
 
   $selected['reg_message_enable'] = variable_get('eve_api_ts3_cron_reg_message_enable', FALSE);
@@ -1424,6 +1422,7 @@ function eve_api_user_teamspeak_settings_form($form, &$form_state) {
         '#type' => 'textfield',
         '#value' => variable_get('eve_api_ts3_cron_user_message', ''),
         '#maxlength' => 50,
+        '#size' => 60,
         '#attributes' => array(
           'name' => 'user_message',
         ),
@@ -1438,6 +1437,7 @@ function eve_api_user_teamspeak_settings_form($form, &$form_state) {
         '#type' => 'textfield',
         '#value' => variable_get('eve_api_ts3_cron_user_poke', ''),
         '#maxlength' => 50,
+        '#size' => 60,
         '#attributes' => array(
           'name' => 'user_poke',
         ),
@@ -1447,30 +1447,12 @@ function eve_api_user_teamspeak_settings_form($form, &$form_state) {
 
   $options['user_kick_enable'] = array(
     'type' => t('Kick'),
-    'message' => array(
-      'data' => array(
-        '#type' => 'textfield',
-        '#value' => variable_get('eve_api_ts3_cron_user_kick', ''),
-        '#maxlength' => 50,
-        '#attributes' => array(
-          'name' => 'user_kick',
-        ),
-      ),
-    ),
+    'message' => t('Option to Kick the user after the limit has expired.'),
   );
 
   $options['user_ban_enable'] = array(
     'type' => t('Ban'),
-    'message' => array(
-      'data' => array(
-        '#type' => 'textfield',
-        '#value' => variable_get('eve_api_ts3_cron_user_ban', ''),
-        '#maxlength' => 50,
-        '#attributes' => array(
-          'name' => 'user_ban',
-        ),
-      ),
-    ),
+    'message' => t('Option to Ban the user after the limit has expired.'),
   );
 
   $selected['user_message_enable'] = variable_get('eve_api_ts3_cron_user_message_enable', FALSE);
@@ -1576,6 +1558,7 @@ function eve_api_admin_jabber_form($form, &$form_state) {
     '#title' => t('Hostname'),
     '#description' => t('The Jabber Database IP address or hostname. This can be 127.0.0.1 if the Database is hosted on the same server as the webhost.'),
     '#required' => TRUE,
+    '#size' => 20,
     '#maxlength' => 15,
     '#weight' => 0,
     '#default_value' => variable_get('eve_api_jabber_host', '127.0.0.1'),
@@ -1586,7 +1569,8 @@ function eve_api_admin_jabber_form($form, &$form_state) {
     '#title' => t('Database Name'),
     '#description' => t('The name of the Jabber database on the MySQL Server.'),
     '#required' => TRUE,
-    '#maxlength' => 100,
+    '#size' => 60,
+    '#maxlength' => 50,
     '#weight' => 10,
     '#default_value' => variable_get('eve_api_jabber_database', 'Jabber'),
   );
@@ -1596,7 +1580,8 @@ function eve_api_admin_jabber_form($form, &$form_state) {
     '#title' => t('Username'),
     '#description' => t('The username required to connect to the Jabber Database.'),
     '#required' => TRUE,
-    '#maxlength' => 100,
+    '#size' => 60,
+    '#maxlength' => 50,
     '#weight' => 20,
     '#default_value' => variable_get('eve_api_jabber_username', 'Username'),
   );
@@ -1605,7 +1590,8 @@ function eve_api_admin_jabber_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Password'),
     '#description' => t('The password required to connect to the Jabber Database.'),
-    '#maxlength' => 100,
+    '#size' => 60,
+    '#maxlength' => 50,
     '#weight' => 30,
     '#default_value' => variable_get('eve_api_jabber_password', 'Password'),
   );
@@ -1614,7 +1600,8 @@ function eve_api_admin_jabber_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Openfire Admin URL'),
     '#description' => t('The web address to the Openfire admin page. Default http://localhost:9090'),
-    '#maxlength' => 100,
+    '#size' => 60,
+    '#maxlength' => 50,
     '#weight' => 40,
     '#default_value' => variable_get('eve_api_jabber_url', 'http://localhost:9090'),
   );
@@ -1623,7 +1610,8 @@ function eve_api_admin_jabber_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Openfire Secret Password'),
     '#description' => t('The Openfire secret password to access the User Service.'),
-    '#maxlength' => 100,
+    '#size' => 60,
+    '#maxlength' => 50,
     '#weight' => 50,
     '#default_value' => variable_get('eve_api_jabber_secret', 'Password'),
   );
@@ -1632,7 +1620,8 @@ function eve_api_admin_jabber_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Jabber Domain'),
     '#description' => t('The domain appended to the Jabber login username. (ex. user@yourdomain.com)'),
-    '#maxlength' => 100,
+    '#size' => 60,
+    '#maxlength' => 50,
     '#weight' => 60,
     '#default_value' => variable_get('eve_api_jabber_domain', 'yourdomain.com'),
   );
