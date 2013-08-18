@@ -440,10 +440,18 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
       $director_role = user_role_load(variable_get('eve_api_director_role', 2));
       user_multiple_role_edit(array($uid), 'add_role', (int) $director_role->rid);
     }
+    else {
+      $director_role = user_role_load(variable_get('eve_api_director_role', 2));
+      user_multiple_role_edit(array($uid), 'remove_role', (int) $director_role->rid);
+    }
 
     if ($is_ceo) {
       $ceo_role = user_role_load(variable_get('eve_api_ceo_role', 2));
       user_multiple_role_edit(array($uid), 'add_role', (int) $ceo_role->rid);
+    }
+    else {
+      $ceo_role = user_role_load(variable_get('eve_api_ceo_role', 2));
+      user_multiple_role_edit(array($uid), 'remove_role', (int) $ceo_role->rid);
     }
   }
   else {
