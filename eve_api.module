@@ -4,10 +4,10 @@
  * The main file for Omni EVE API, where all the magic happens.
  */
 
-module_load_include('inc', 'eve_api', 'eve_api.api');
-module_load_include('inc', 'eve_api', 'eve_api.cron');
-module_load_include('inc', 'eve_api', 'eve_api.ts3');
-module_load_include('inc', 'eve_api', 'eve_api.jabber');
+require_once('eve_api.api.inc');
+require_once('eve_api.cron.inc');
+require_once('eve_api.jabber.inc');
+require_once('eve_api.ts3.inc');
 
 /**
  * Return the version number.
@@ -32,6 +32,52 @@ function eve_api_version() {
  * We need our own Exception, to the Exception.
  */
 class EveApiException extends Exception {
+}
+
+/**
+ * Implements hook_cron_queue_info().
+ *
+ * Set up ten queues that all send items to the same callback function.
+ */
+function eve_api_cron_queue_info() {
+  $queue = array();
+  $queue['eve_api_cron_teamspeak_user_sync'] = array(
+    'worker callback' => 'eve_api_cron_teamspeak_user_sync',
+    'time' => 15,
+  );
+  $queue['eve_api_cron_teamspeak_user_check'] = array(
+    'worker callback' => 'eve_api_cron_teamspeak_user_check',
+    'time' => 15,
+  );
+  $queue['eve_api_cron_teamspeak_role_sync'] = array(
+    'worker callback' => 'eve_api_cron_teamspeak_role_sync',
+    'time' => 15,
+  );
+  $queue['eve_api_cron_jabber_user_sync'] = array(
+    'worker callback' => 'eve_api_cron_jabber_user_sync',
+    'time' => 15,
+  );
+  $queue['eve_api_cron_jabber_role_sync'] = array(
+    'worker callback' => 'eve_api_cron_jabber_role_sync',
+    'time' => 15,
+  );
+  $queue['eve_api_cron_api_user_sync'] = array(
+    'worker callback' => 'eve_api_cron_api_user_sync',
+    'time' => 15,
+  );
+  $queue['eve_api_cron_api_alliance_fetch'] = array(
+    'worker callback' => 'eve_api_cron_api_alliance_fetch',
+    'time' => 15,
+  );
+  $queue['eve_api_cron_api_mask_sync'] = array(
+    'worker callback' => 'eve_api_cron_api_mask_sync',
+    'time' => 15,
+  );
+  $queue['eve_api_cron_api_alliance_sync'] = array(
+    'worker callback' => 'eve_api_cron_api_alliance_sync',
+    'time' => 60,
+  );
+  return $queue;
 }
 
 /**
