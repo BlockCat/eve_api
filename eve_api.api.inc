@@ -845,6 +845,48 @@ function eve_api_characters_exist($characters) {
 }
 
 /**
+ * Function to check if the Characters is a Director.
+ *
+ * @param int $character_id
+ *   A unique character id.
+ *
+ * @return bool
+ *   TRUE or FALSE.
+ */
+function eve_api_characters_is_director($character_id) {
+  $result = db_query('SELECT characterID FROM {eve_api_characters_roles} WHERE deleted = 0 AND roleID = 1 AND characterID = :characterID', array(
+    ':characterID' => (int) $character_id,
+  ));
+
+  if ($result->rowCount()) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+/**
+ * Function to check if the Characters is a CEO.
+ *
+ * @param int $character_id
+ *   A unique character id.
+ *
+ * @return bool
+ *   TRUE or FALSE.
+ */
+function eve_api_characters_is_ceo($character_id) {
+  $result = db_query('SELECT ceoName FROM {eve_api_alliance_corporations} WHERE deleted = 0 AND ceoID = :ceoID', array(
+    ':ceoID' => (int) $character_id,
+  ));
+
+  if ($result->rowCount()) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+/**
  * Function that converts an Error ID to a readable message.
  *
  * @param int $error_id

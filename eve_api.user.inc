@@ -150,6 +150,78 @@ function eve_api_user_add_api_form_submit($form, &$form_state) {
     ))->execute();
 
     foreach ($characters['characters'] as $character) {
+      $query = $query + array('characterID' => (int) $character['characterID']);
+
+      $character_sheet = eve_api_get_character_sheet($query);
+
+      foreach ($character_sheet['corporationRoles'] as $roles) {
+        db_merge('eve_api_characters_roles')->key(array(
+          'characterID' => (int) $character['characterID'],
+          'type' => 'corporationRolesAtBase',
+          'roleID' => (int) $roles['roleID'],
+        ))->fields(array(
+          'characterID' => (int) $character['characterID'],
+          'uid' => (int) $uid,
+          'apiID' => (int) $api_id,
+          'type' => 'corporationRoles',
+          'roleID' => (int) $roles['roleID'],
+          'roleName' => (string) $roles['roleName'],
+          'deleted' => 0,
+          'errorID' => 0,
+        ))->execute();
+      }
+
+      foreach ($character_sheet['corporationRolesAtHQ'] as $roles) {
+        db_merge('eve_api_characters_roles')->key(array(
+          'characterID' => (int) $character['characterID'],
+          'type' => 'corporationRolesAtBase',
+          'roleID' => (int) $roles['roleID'],
+        ))->fields(array(
+          'characterID' => (int) $character['characterID'],
+          'uid' => (int) $uid,
+          'apiID' => (int) $api_id,
+          'type' => 'corporationRolesAtHQ',
+          'roleID' => (int) $roles['roleID'],
+          'roleName' => (string) $roles['roleName'],
+          'deleted' => 0,
+          'errorID' => 0,
+        ))->execute();
+      }
+
+      foreach ($character_sheet['corporationRolesAtBase'] as $roles) {
+        db_merge('eve_api_characters_roles')->key(array(
+          'characterID' => (int) $character['characterID'],
+          'type' => 'corporationRolesAtBase',
+          'roleID' => (int) $roles['roleID'],
+        ))->fields(array(
+          'characterID' => (int) $character['characterID'],
+          'uid' => (int) $uid,
+          'apiID' => (int) $api_id,
+          'type' => 'corporationRolesAtBase',
+          'roleID' => (int) $roles['roleID'],
+          'roleName' => (string) $roles['roleName'],
+          'deleted' => 0,
+          'errorID' => 0,
+        ))->execute();
+      }
+
+      foreach ($character_sheet['corporationRolesAtOther'] as $roles) {
+        db_merge('eve_api_characters_roles')->key(array(
+          'characterID' => (int) $character['characterID'],
+          'type' => 'corporationRolesAtBase',
+          'roleID' => (int) $roles['roleID'],
+        ))->fields(array(
+          'characterID' => (int) $character['characterID'],
+          'uid' => (int) $uid,
+          'apiID' => (int) $api_id,
+          'type' => 'corporationRolesAtOther',
+          'roleID' => (int) $roles['roleID'],
+          'roleName' => (string) $roles['roleName'],
+          'deleted' => 0,
+          'errorID' => 0,
+        ))->execute();
+      }
+
       db_merge('eve_api_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
         'characterID' => (int) $character['characterID'],
         'uid' => $uid,
@@ -323,6 +395,12 @@ function eve_api_user_select_main_character_form_submit($form, &$form_state) {
 
     $alliance_role = user_role_load(variable_get('eve_api_alliance_role', 2));
     user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
+
+    $director_role = user_role_load(variable_get('eve_api_director_role', 2));
+    user_multiple_role_edit(array($uid), 'remove_role', $director_role->rid);
+
+    $ceo_role = user_role_load(variable_get('eve_api_ceo_role', 2));
+    user_multiple_role_edit(array($uid), 'remove_role', $ceo_role->rid);
   }
   elseif ($blue_role = user_role_load(variable_get('eve_api_blue_role', 2))) {
     user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
@@ -341,6 +419,16 @@ function eve_api_user_select_main_character_form_submit($form, &$form_state) {
 
     $alliance_role = user_role_load(variable_get('eve_api_alliance_role', 2));
     user_multiple_role_edit(array($uid), 'add_role', $alliance_role->rid);
+
+    if (eve_api_characters_is_director($character_data['characterID'])) {
+      $director_role = user_role_load(variable_get('eve_api_director_role', 2));
+      user_multiple_role_edit(array($uid), 'add_role', $director_role->rid);
+    }
+
+    if (eve_api_characters_is_ceo($character_data['characterID'])) {
+      $ceo_role = user_role_load(variable_get('eve_api_ceo_role', 2));
+      user_multiple_role_edit(array($uid), 'add_role', $ceo_role->rid);
+    }
   }
   elseif (($blue_role = user_role_load(variable_get('eve_api_blue_role', 2))) && $character_is_blue) {
     user_multiple_role_edit(array($uid), 'add_role', $blue_role->rid);
