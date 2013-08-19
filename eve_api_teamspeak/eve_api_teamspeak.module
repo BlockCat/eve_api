@@ -58,7 +58,7 @@ function eve_api_teamspeak_menu() {
 
     $user_base = array(
       'page callback' => 'drupal_get_form',
-      'access callback' => 'eve_api_teamspeak_edit',
+      'access callback' => 'eve_api_edit',
       'access arguments' => array(1),
       'file' => 'eve_api_teamspeak.user.inc',
     );
