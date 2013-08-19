@@ -1,0 +1,42 @@
+<?php
+/**
+ * @file
+ * The main file for Omni EVE API, where all the magic happens.
+ */
+
+/**
+ * Return the version number.
+ * 
+ * x.x.x.x
+ * | | | `-- Patch Version Number.
+ * | | |
+ * | | `---- 0 = Alpha.
+ * | |       1 = Beta.
+ * | |       2 = RC.
+ * | |       3 = Release.
+ * | |
+ * | `------ Minor Version Change.
+ * |
+ * `-------- Major Version Change.
+ */
+function eve_api_userlist_version() {
+  return '2.0.1.1';
+}
+
+/**
+ * Implements hook_menu().
+ */
+function eve_api_userlist_menu() {
+  $items = array();
+
+  if (variable_get('eve_api_enable', FALSE)) {
+    $user_base = array(
+      'page callback' => 'drupal_get_form',
+      'access callback' => 'eve_api_userlist_director',
+      'access arguments' => array(1),
+      'file' => 'eve_api_userlist.user.inc',
+    );
+  }
+
+  return $items;
+}

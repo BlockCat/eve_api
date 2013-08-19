@@ -32,7 +32,7 @@ function eve_api_teamspeak_version() {
 function eve_api_teamspeak_menu() {
   $items = array();
 
-  if (variable_get('eve_api_teamspeak_enable', FALSE)) {
+  if (variable_get('eve_api_enable', FALSE)) {
     $admin_base = array(
       'page callback' => 'drupal_get_form',
       'access arguments' => array('administer eve_api_teamspeak settings'),
