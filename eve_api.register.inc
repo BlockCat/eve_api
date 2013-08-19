@@ -425,8 +425,8 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
       $character_name = (string) $character['characterName'];
       $character_id = (int) $character['characterID'];
       $corporation_name = (string) $character['corporationName'];
-      $is_director = eve_api_characters_is_director((int) $character['characterID']);
-      $is_ceo = eve_api_characters_is_ceo((int) $character['characterID']);
+      $is_director = eve_api_character_is_director((int) $character['characterID']);
+      $is_ceo = eve_api_character_is_ceo((int) $character['characterID']);
     }
   }
 

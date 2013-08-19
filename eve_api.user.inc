@@ -434,12 +434,12 @@ function eve_api_user_select_main_character_form_submit($form, &$form_state) {
     $alliance_role = user_role_load(variable_get('eve_api_alliance_role', 2));
     user_multiple_role_edit(array($uid), 'add_role', $alliance_role->rid);
 
-    if (eve_api_characters_is_director($character_data['characterID'])) {
+    if (eve_api_character_is_director($character_data['characterID'])) {
       $director_role = user_role_load(variable_get('eve_api_director_role', 2));
       user_multiple_role_edit(array($uid), 'add_role', $director_role->rid);
     }
 
-    if (eve_api_characters_is_ceo($character_data['characterID'])) {
+    if (eve_api_character_is_ceo($character_data['characterID'])) {
       $ceo_role = user_role_load(variable_get('eve_api_ceo_role', 2));
       user_multiple_role_edit(array($uid), 'add_role', $ceo_role->rid);
     }

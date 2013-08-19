@@ -32,11 +32,39 @@ function eve_api_userlist_menu() {
   if (variable_get('eve_api_enable', FALSE)) {
     $user_base = array(
       'page callback' => 'drupal_get_form',
-      'access callback' => 'eve_api_userlist_director',
-      'access arguments' => array(1),
+      'access callback' => 'user_access',
+      'access arguments' => array('view eve_api userlist'),
       'file' => 'eve_api_userlist.user.inc',
+    );
+
+    $items['eve_api/userlist'] = $user_base + array(
+      'title' => 'User List',
+      'page arguments' => array('eve_api_userlist_form'),
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => 0,
     );
   }
 
   return $items;
+}
+
+/**
+ * Access callback for user omni eve api director check.
+ */
+function eve_api_userlist_director($corporation_id) {
+  return (eve_api_character_is_director($GLOBALS['user']->characterID, $corporation_id) || user_access('moderate eve_api users'));
+}
+
+/**
+ * Implements hook_permission().
+ */
+function eve_api_permission() {
+  $permissions = array();
+
+  $permissions['view eve_api userlist'] = array(
+    'title' => t('Access EVE API User List'),
+    'description' => t('Allow user to view the EVE API User List.'),
+  );
+
+  return $permissions;
 }

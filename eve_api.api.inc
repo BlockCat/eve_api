@@ -853,18 +853,39 @@ function eve_api_characters_exist($characters) {
  * @return bool
  *   TRUE or FALSE.
  */
-function eve_api_characters_is_director($character_id) {
-  $result = db_query('SELECT characterID FROM {eve_api_characters_roles} WHERE deleted = 0 AND roleID = 1 AND characterID = :characterID', array(
-    ':characterID' => (int) $character_id,
-  ));
+function eve_api_character_is_director($character_id, $corporation_id = NULL) {
+  $query = db_select('eve_api_characters_roles', 'cr');
+
+  if (isset($corporation_id)) {
+    $query->join('eve_api_characters', 'c', 'cr.characterID = c.characterID');
+    $query->condition('c.corporationID', $corporation_id, '=');
+  }
+
+  $result = $query->fields('cr', array(
+      'characterID',
+    ))
+    ->condition('cr.deleted', 0, '=')
+    ->condition('cr.roleID', 1, '=')
+    ->condition('cr.characterID', (int) $character_id, '=')
+    ->execute();
 
   if ($result->rowCount()) {
     return TRUE;
   }
 
-  $result = db_query('SELECT characterID FROM {eve_api_characters_roles_whitelist} WHERE isDirector = 1 AND characterID = :characterID', array(
-    ':characterID' => (int) $character_id,
-  ));
+  $query = db_select('eve_api_characters_roles_whitelist', 'crw');
+
+  if (isset($corporation_id)) {
+    $query->join('eve_api_characters', 'c', 'crw.characterID = c.characterID');
+    $query->condition('c.corporationID', $corporation_id, '=');
+  }
+
+  $result = $query->fields('crw', array(
+      'characterID',
+    ))
+    ->condition('crw.isDirector', 1, '=')
+    ->condition('crw.characterID', (int) $character_id, '=')
+    ->execute();
 
   if ($result->rowCount()) {
     return TRUE;
@@ -882,18 +903,37 @@ function eve_api_characters_is_director($character_id) {
  * @return bool
  *   TRUE or FALSE.
  */
-function eve_api_characters_is_ceo($character_id) {
-  $result = db_query('SELECT ceoName FROM {eve_api_alliance_corporations} WHERE deleted = 0 AND ceoID = :ceoID', array(
-    ':ceoID' => (int) $character_id,
-  ));
+function eve_api_character_is_ceo($character_id, $corporation_id = NULL) {
+  $query = db_select('eve_api_alliance_corporations', 'ac');
+
+  if (isset($corporation_id)) {
+    $query->condition('ac.corporationID', $corporation_id, '=');
+  }
+
+  $result = $query->fields('ac', array(
+      'characterID',
+    ))
+    ->condition('ac.deleted', 0, '=')
+    ->condition('ac.ceoID', (int) $character_id, '=')
+    ->execute();
 
   if ($result->rowCount()) {
     return TRUE;
   }
 
-  $result = db_query('SELECT characterID FROM {eve_api_characters_roles_whitelist} WHERE isCEO = 1 AND characterID = :characterID', array(
-    ':characterID' => (int) $character_id,
-  ));
+  $query = db_select('eve_api_characters_roles_whitelist', 'crw');
+
+  if (isset($corporation_id)) {
+    $query->join('eve_api_characters', 'c', 'crw.characterID = c.characterID');
+    $query->condition('c.corporationID', $corporation_id, '=');
+  }
+
+  $result = $query->fields('crw', array(
+      'characterID',
+    ))
+    ->condition('crw.isCEO', 1, '=')
+    ->condition('crw.characterID', (int) $character_id, '=')
+    ->execute();
 
   if ($result->rowCount()) {
     return TRUE;
