@@ -250,29 +250,33 @@ function eve_api_user_add_api_form_submit($form, &$form_state) {
     ));
 
     if (!$result->rowCount()) {
-      try {
-        eve_api_jabber_connect();
+      if (variable_get('eve_api_jabber_enable', FALSE)) {
+        try {
+          eve_api_jabber_connect();
 
-        $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-          ':username' => (string) eve_api_jabber_format_name($account->name),
-        ));
+          $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
+            ':username' => (string) eve_api_jabber_format_name($account->name),
+          ));
 
-        if ($result->rowCount()) {
-          eve_api_jabber_url_query('delete', $account->name);
+          if ($result->rowCount()) {
+            eve_api_jabber_url_query('delete', $account->name);
+          }
+
+          eve_api_jabber_disconnect();
         }
-
-        eve_api_jabber_disconnect();
-      }
-      catch (EveApiException $e) {
-        // Log Error ?
+        catch (EveApiException $e) {
+          // Log Error ?
+        }
       }
 
-      try {
-        $ts3 = eve_api_teamspeak_connection();
-        eve_api_teamspeak_user_delete($ts3, $account->teamspeakDBID);
-      }
-      catch (EveApiException $e) {
-        // Log Error ?
+      if (variable_get('eve_api_teamspeak_enable', FALSE)) {
+        try {
+          $ts3 = eve_api_teamspeak_connection();
+          eve_api_teamspeak_user_delete($ts3, $account->teamspeakDBID);
+        }
+        catch (EveApiException $e) {
+          // Log Error ?
+        }
       }
 
       db_update('users')->fields(array(
@@ -378,21 +382,23 @@ function eve_api_user_select_main_character_form_submit($form, &$form_state) {
   $account = $form_state['user'];
   $uid = (int) $account->uid;
 
-  try {
-    eve_api_jabber_connect();
+  if (variable_get('eve_api_jabber_enable', FALSE)) {
+    try {
+      eve_api_jabber_connect();
 
-    $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-      ':username' => (string) eve_api_jabber_format_name($account->name),
-    ));
+      $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
+        ':username' => (string) eve_api_jabber_format_name($account->name),
+      ));
 
-    if ($result->rowCount()) {
-      eve_api_jabber_url_query('delete', $account->name);
+      if ($result->rowCount()) {
+        eve_api_jabber_url_query('delete', $account->name);
+      }
+
+      eve_api_jabber_disconnect();
     }
-
-    eve_api_jabber_disconnect();
-  }
-  catch (EveApiException $e) {
-    // Log Error ?
+    catch (EveApiException $e) {
+      // Log Error ?
+    }
   }
 
   $old_character_name = $account->name;
@@ -671,21 +677,23 @@ function eve_api_user_list_api_form_submit($form, &$form_state) {
     $unverified_role = user_role_load(variable_get('eve_api_unverified_role', 2));
     user_multiple_role_edit(array($uid), 'add_role', $unverified_role->rid);
 
-    try {
-      eve_api_jabber_connect();
+    if (variable_get('eve_api_jabber_enable', FALSE)) {
+      try {
+        eve_api_jabber_connect();
 
-      $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-        ':username' => (string) eve_api_jabber_format_name($account->name),
-      ));
+        $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
+          ':username' => (string) eve_api_jabber_format_name($account->name),
+        ));
 
-      if ($result->rowCount()) {
-        eve_api_jabber_url_query('delete', $account->name);
+        if ($result->rowCount()) {
+          eve_api_jabber_url_query('delete', $account->name);
+        }
+
+        eve_api_jabber_disconnect();
       }
-
-      eve_api_jabber_disconnect();
-    }
-    catch (EveApiException $e) {
-      // Log Error ?
+      catch (EveApiException $e) {
+        // Log Error ?
+      }
     }
 
     db_update('users')->fields(array(
@@ -897,29 +905,34 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
   ));
 
   if (!$result->rowCount()) {
-    try {
-      eve_api_jabber_connect();
+    if (variable_get('eve_api_jabber_enable', FALSE)) {
+      try {
+        eve_api_jabber_connect();
 
-      $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-        ':username' => (string) eve_api_jabber_format_name($account->name),
-      ));
+        $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
+          ':username' => (string) eve_api_jabber_format_name($account->name),
+        ));
 
-      if ($result->rowCount()) {
-        eve_api_jabber_url_query('delete', $account->name);
+        if ($result->rowCount()) {
+          eve_api_jabber_url_query('delete', $account->name);
+          drupal_set_message(t('Jabber account was deleted.'));
+        }
+
+        eve_api_jabber_disconnect();
       }
-
-      eve_api_jabber_disconnect();
-    }
-    catch (EveApiException $e) {
-      // Log Error ?
+      catch (EveApiException $e) {
+        // Log Error ?
+      }
     }
 
-    try {
-      $ts3 = eve_api_teamspeak_connection();
-      eve_api_teamspeak_user_delete($ts3, $account->teamspeakDBID);
-    }
-    catch (EveApiException $e) {
-      // Log Error ?
+    if (variable_get('eve_api_teamspeak_enable', FALSE)) {
+      try {
+        $ts3 = eve_api_teamspeak_connection();
+        eve_api_teamspeak_user_delete($ts3, $account->teamspeakDBID);
+      }
+      catch (EveApiException $e) {
+        // Log Error ?
+      }
     }
 
     db_update('users')->fields(array(
@@ -932,364 +945,4 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
   }
 
   drupal_set_message(t('API Key successfully updated!'));
-}
-
-/**
- * Form constructor for the user teamspeak registration form.
- *
- * @param string $account
- *   The account information for the user page being viewed.
- *
- * @see eve_api_user_teamspeak_form_validate()
- * @see eve_api_user_teamspeak_form_submit()
- *
- * @ingroup forms
- */
-function eve_api_user_teamspeak_form($form, &$form_state, $account) {
-  if (!isset($form_state['user'])) {
-    $form_state['user'] = $account;
-  }
-  else {
-    $account = $form_state['user'];
-  }
-
-  $uid = $account->uid;
-
-  $form['teamspeak'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Register your Teamspeak Identity to your User Account'),
-    '#weight' => 0,
-  );
-
-  $teamspeak_port_check = variable_get('eve_api_ts3_server_port', 9987);
-  $teamspeak_password_check = variable_get('eve_api_ts3_server_password', '');
-
-  $form['teamspeak']['howto'] = array(
-    '#type' => 'markup',
-    '#prefix' => '<p>',
-    '#markup' => t('In order to register with Teamspeak, you must first connect to our Teamspeak.<br />If you do not have Teamspeak already installed, please download and install Teamspeak 3 from <a href="@teamspeak_url" target="_blank">here</a>.<br />Please use the following settings to connect:<br /><br />Address - @teamspeak_address<br />@teamspeak_password', array(
-      '@teamspeak_url' => 'http://www.teamspeak.com/?page=downloads',
-      '@teamspeak_address' => empty($teamspeak_port_check) ? variable_get('eve_api_ts3_server_address', 'teamspeak.com') : variable_get('eve_api_ts3_server_address', 'teamspeak.com') . ':' . variable_get('eve_api_ts3_server_port', 9987),
-      '@teamspeak_password' => empty($teamspeak_password_check) ? '' : t('Password') . ' - ' . variable_get('eve_api_ts3_server_password', ''),
-    )),
-    '#suffix' => '</p>',
-    '#weight' => 0,
-  );
-
-  $form['teamspeak']['teamspeak_name'] = array(
-    '#type' => 'markup',
-    '#prefix' => '<p>',
-    '#markup' => ($account->characterID != 0) ? t('Teamspeak Name: @teamspeak', array('@teamspeak' => eve_api_teamspeak_format_name($account->name))) : t('Teamspeak Name: <a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/eve_api/select_main_character'))),
-    '#suffix' => '</p>',
-    '#weight' => 10,
-  );
-
-  $form['teamspeak']['teamspeak_uid'] = array(
-    '#type' => 'markup',
-    '#prefix' => '<p>',
-    '#markup' => !empty($account->teamspeakUID) ? t('Teamspeak Unique ID: @teamspeak', array('@teamspeak' => $account->teamspeakUID)) : t('Teamspeak Unique ID: You are not registered.'),
-    '#suffix' => '</p>',
-    '#weight' => 20,
-  );
-
-  $form['submit_button'] = array(
-    '#type' => 'submit',
-    '#value' => t('Register'),
-  );
-
-  if ($account->characterID == 0) {
-    $form['submit_button']['#disabled'] = TRUE;
-  }
-
-  $form['#validate'] = array('eve_api_user_teamspeak_form_validate');
-  $form['#submit'] = array('eve_api_user_teamspeak_form_submit');
-
-  return $form;
-}
-
-/**
- * Form validation handler for eve_api_user_teamspeak_form().
- *
- * @see eve_api_user_teamspeak_form_submit()
- */
-function eve_api_user_teamspeak_form_validate($form, &$form_state) {
-  $account = $form_state['user'];
-  $uid = $account->uid;
-
-  if ($account->characterID == 0) {
-    drupal_goto('user/' . $uid . '/eve_api/select_main_character');
-  }
-
-  try {
-    $ts3 = eve_api_teamspeak_connection();
-    $teamspeak_name = eve_api_teamspeak_format_name($account->name);
-    $teamspeak_data = eve_api_teamspeak_user_by_name($ts3, $teamspeak_name);
-    unset($teamspeak_data);
-  }
-  catch (EveApiException $e) {
-    form_set_error('teamspeak', check_plain($e->getMessage()));
-  }
-}
-
-/**
- * Form submission handler for eve_api_user_teamspeak_form().
- *
- * @see eve_api_user_teamspeak_form_validate()
- */
-function eve_api_user_teamspeak_form_submit($form, &$form_state) {
-  $account = $form_state['user'];
-  $uid = (int) $account->uid;
-
-  try {
-    $ts3 = eve_api_teamspeak_connection();
-    $teamspeak_name = eve_api_teamspeak_format_name($account->name);
-    $teamspeak_data = eve_api_teamspeak_user_by_name($ts3, $teamspeak_name);
-    $teamspeak_uid = (string) $teamspeak_data->client_unique_identifier;
-    $teamspeak_dbid = (int) $teamspeak_data->client_database_id;
-
-    db_update('users')->fields(array(
-        'teamspeakUID' => $teamspeak_uid,
-        'teamspeakDBID' => $teamspeak_dbid,
-      ))->condition('uid', $uid, '=')->execute();
-
-    eve_api_cron_teamspeak_user_sync(array(
-      'uid' => $uid,
-      'teamspeakDBID' => $teamspeak_dbid,
-      'runs' => 1,
-    ));
-
-    $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_sync');
-    $queue->createItem(array(
-      'uid' => $uid,
-      'teamspeakDBID' => $teamspeak_dbid,
-      'status' => 1,
-      'runs' => 1,
-    ));
-
-    // Need to assign roles.
-    drupal_set_message(t('Teamspeak access granted.'));
-  }
-  catch (EveApiException $e) {
-    drupal_set_message(check_plain($e->getMessage()), 'error');
-  }
-}
-
-/**
- * Form constructor for the user jabber registration form.
- *
- * @param string $account
- *   The account information for the user page being viewed.
- *
- * @see eve_api_user_jabber_form_validate()
- * @see eve_api_user_jabber_form_submit()
- *
- * @ingroup forms
- */
-function eve_api_user_jabber_form($form, &$form_state, $account) {
-  if (!isset($form_state['user'])) {
-    $form_state['user'] = $account;
-  }
-  else {
-    $account = $form_state['user'];
-  }
-
-  $uid = $account->uid;
-
-  $form['jabber'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Register for a Jabber Account.'),
-    '#weight' => 0,
-  );
-
-  $form['jabber']['howto'] = array(
-    '#type' => 'markup',
-    '#prefix' => '<p>',
-    '#markup' => t('If you do not have a Jabber Client already installed, you can download and install Trillian from <a href="@jabber_url" target="_blank">here</a>.', array(
-      '@jabber_url' => 'https://www.trillian.im/download/',
-    )),
-    '#suffix' => '</p>',
-    '#weight' => 0,
-  );
-
-  $form['jabber']['jabber_username'] = array(
-    '#type' => 'markup',
-    '#prefix' => '<p>',
-    '#markup' => ($account->characterID != 0) ? t('Jabber Username: @jabber', array('@jabber' => eve_api_jabber_format_name($account->name) . '@' . variable_get('eve_api_jabber_domain', 'yourdomain.com'))) : t('Jabber Username: <a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/eve_api/select_main_character'))),
-    '#suffix' => '</p>',
-    '#weight' => 10,
-  );
-
-  if ($account->characterID != 0) {
-    $form['jabber']['jabber_password'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Set Password'),
-      '#description' => t('You can set or change your Jabber password.'),
-      '#size' => 60,
-      '#maxlength' => 50,
-      '#weight' => 20,
-      '#default_value' => '',
-    );
-  }
-
-  $form['submit_button'] = array(
-    '#type' => 'submit',
-    '#value' => t('Register'),
-  );
-
-  if ($account->characterID == 0) {
-    $form['submit_button']['#disabled'] = TRUE;
-  }
-
-  $form['#validate'] = array('eve_api_user_jabber_form_validate');
-  $form['#submit'] = array('eve_api_user_jabber_form_submit');
-
-  return $form;
-}
-
-/**
- * Form validation handler for eve_api_user_jabber_form().
- *
- * @see eve_api_user_jabber_form_submit()
- */
-function eve_api_user_jabber_form_validate($form, &$form_state) {
-  $account = $form_state['user'];
-  $uid = $account->uid;
-
-  if ($account->characterID == 0) {
-    drupal_goto('user/' . $uid . '/eve_api/select_main_character');
-  }
-
-  try {
-    eve_api_jabber_connect();
-
-    $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-      ':username' => (string) eve_api_jabber_format_name($account->name),
-    ));
-
-    if (!$result->rowCount() && empty($form_state['values']['jabber_password'])) {
-      form_set_error('jabber_password', t('You are registering for the first time, you must enter a password.'));
-    }
-
-    eve_api_jabber_disconnect();
-  }
-  catch (EveApiException $e) {
-    form_set_error('jabber_password', t('There was an error connecting with the Jabber Server, please try again later.'));
-  }
-}
-
-/**
- * Form submission handler for eve_api_user_jabber_form().
- *
- * @see eve_api_user_jabber_form_validate()
- */
-function eve_api_user_jabber_form_submit($form, &$form_state) {
-  $account = $form_state['user'];
-
-  $roles = user_roles();
-  $user_roles = $all_roles = array();
-
-  $result = db_query('SELECT corporationName, corporationTicker FROM {eve_api_alliance_corporations}');
-
-  if ($result->rowCount()) {
-    foreach ($result->fetchAll() as $row) {
-      $corp_info[$row->corporationName] = $row->corporationTicker;
-    }
-  }
-
-  foreach ($roles as $rid => $rname) {
-    if ($rid == 1 || $rid == 2) {
-      continue;
-    }
-
-    $description = $rname;
-
-    foreach ($corp_info as $key => $value) {
-      if ($key == $rname) {
-        $rname = $value;
-      }
-    }
-
-    $all_roles[$rname] = $description;
-
-    $user_roles[] = eve_api_jabber_format_name($rname);
-  }
-
-  try {
-    eve_api_jabber_connect();
-
-    $query = array(
-      'name' => eve_api_jabber_format_display_name($account->name),
-      'email' => $account->mail,
-      'groups' => implode(",", $user_roles),
-    );
-
-    $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-      ':username' => (string) eve_api_jabber_format_name($account->name),
-    ));
-
-    if ($result->rowCount()) {
-      $type = 'update';
-    }
-    else {
-      $type = 'add';
-    }
-
-    foreach ($all_roles as $name => $description) {
-      eve_api_jabber_group_add($name, $description);
-    }
-
-    eve_api_jabber_disconnect();
-
-    if (!empty($form_state['values']['jabber_password'])) {
-      $password = array(
-        'password' => (string) $form_state['values']['jabber_password'],
-      );
-
-      $query = array_merge($query, $password);
-    }
-
-    $result = eve_api_jabber_url_query($type, $account->name, $query);
-
-    if ($result === TRUE) {
-      if ($type = 'update') {
-        drupal_set_message(t('Your Jabber account was updated.'));
-      }
-      else {
-        drupal_set_message(t('Your Jabber account was created.'));
-      }
-
-      foreach ($all_roles as $name => $description) {
-        $query = array(
-          'name' => eve_api_jabber_format_name($name),
-          'item_jid' => eve_api_jabber_format_name($name) . '@broadcast.' . variable_get('eve_api_jabber_domain', 'yourdomain.com'),
-          'subscription' => 3,
-        );
-
-        eve_api_jabber_url_query('add_roster', $account->name, $query);
-
-        $query_add = array(
-          'groups' => eve_api_jabber_format_name($name),
-        );
-
-        $query = array_merge($query, $query_add);
-
-        eve_api_jabber_url_query('update_roster', $account->name, $query);
-      }
-    }
-    else {
-      drupal_set_message(t('There was an error updateing your Jabber account, please try again later.'));
-    }
-
-    $queue = DrupalQueue::get('eve_api_cron_jabber_user_sync');
-
-    $queue->createItem(array(
-      'uid' => $account->uid,
-      'name' => $account->name,
-      'status' => $account->status,
-      'runs' => 1,
-    ));
-  }
-  catch (EveApiException $e) {
-    drupal_set_message(t('There was an error updateing your Jabber account, please try again later.'));
-  }
 }

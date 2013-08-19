@@ -1,0 +1,95 @@
+<?php
+/**
+ * @file
+ * The main file for Omni EVE API Teamspeak, where all the magic happens.
+ */
+
+require_once dirname(__FILE__) . '/eve_api_jabber.jabber.inc';
+require_once dirname(__FILE__) . '/eve_api_jabber.cron.inc';
+
+/**
+ * Return the version number.
+ * 
+ * x.x.x.x
+ * | | | `-- Patch Version Number.
+ * | | |
+ * | | `---- 0 = Alpha.
+ * | |       1 = Beta.
+ * | |       2 = RC.
+ * | |       3 = Release.
+ * | |
+ * | `------ Minor Version Change.
+ * |
+ * `-------- Major Version Change.
+ */
+function eve_api_jabber_version() {
+  return '2.0.1.1';
+}
+
+/**
+ * Implements hook_menu().
+ */
+function eve_api_jabber_menu() {
+  $items = array();
+
+  if (variable_get('eve_api_enable', FALSE)) {
+    $admin_base = array(
+      'page callback' => 'drupal_get_form',
+      'access arguments' => array('administer eve_api settings'),
+      'file' => 'eve_api_jabber.admin.inc',
+    );
+
+    $items['admin/settings/eve_api/jabber'] = array(
+      'title' => 'Jabber',
+      'description' => 'Configure and edit Jabber connection settings.',
+      'page arguments' => array('eve_api_jabber_admin_form'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 40,
+    ) + $admin_base;
+
+    $user_base = array(
+      'page callback' => 'drupal_get_form',
+      'access callback' => 'eve_api_edit',
+      'access arguments' => array(1),
+      'file' => 'eve_api_jabber.user.inc',
+    );
+
+    if (variable_get('eve_api_jabber_enable', FALSE)) {
+      $items['user/%user/eve_api/jabber'] = array(
+        'title' => 'Jabber',
+        'page arguments' => array(
+          'eve_api_jabber_user_form',
+          1,
+        ),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 40,
+      ) + $user_base;
+    }
+  }
+
+  return $items;
+}
+
+/**
+ * Implements hook_user_delete().
+ */
+function eve_api_jabber_user_delete($account) {
+  if (variable_get('eve_api_jabber_enable', FALSE)) {
+    try {
+      eve_api_jabber_connect();
+
+      $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
+        ':username' => (string) eve_api_jabber_format_name($account->name),
+      ));
+
+      if ($result->rowCount()) {
+        eve_api_jabber_url_query('delete', $account->name);
+      }
+
+      eve_api_jabber_disconnect();
+    }
+    catch (EveApiException $e) {
+      // Log Error ?
+    }
+  }
+}

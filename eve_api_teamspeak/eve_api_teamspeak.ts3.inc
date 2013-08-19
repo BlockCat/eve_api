@@ -13,7 +13,7 @@
  * @return string
  *   A clean string.
  */
-function eve_api_clean_input($input) {
+function eve_api_teamspeak_clean_input($input) {
   return trim(preg_replace('/ +/', ' ', preg_replace('|[^[:alnum:][:punct:]\s]|', ' ', urldecode(html_entity_decode(strip_tags((string) $input))))));
 }
 
@@ -59,9 +59,9 @@ function eve_api_teamspeak_format_name($character_name) {
   // @name = Character Name.
   // @corp = Corp Ticker.
   // @alliance = Alliance Ticker.
-  $teamspeak_name = variable_get('eve_api_ts3_nickname', '[@corp] @name');
+  $teamspeak_name = variable_get('eve_api_teamspeak_nickname', '[@corp] @name');
 
-  $character_data = eve_api_get_character_info($character_name);
+  $character_data = eve_api_teamspeak_get_character_info($character_name);
 
   $teamspeak_name = str_replace('@alliance', $character_data['allianceTicker'], $teamspeak_name);
   $teamspeak_name = str_replace('@corp', $character_data['corporationTicker'], $teamspeak_name);
@@ -81,21 +81,21 @@ function eve_api_teamspeak_format_name($character_name) {
  *   The Teamspeak connection object.
  */
 function eve_api_teamspeak_connection($check = FALSE) {
-  if ((!variable_get('eve_api_ts3_enable', FALSE) || !variable_get('eve_api_ts3_framework_installed', FALSE)) && !$check) {
+  if ((!variable_get('eve_api_teamspeak_enable', FALSE) || !variable_get('eve_api_teamspeak_framework_installed', FALSE)) && !$check) {
     throw new EveApiException(t('Teamspeak 3 Connection disabled.'));
   }
 
   // Load the TeamSpeak 3 PHP Framework Library.
   if (($library = libraries_load('TeamSpeak3')) && !empty($library['loaded'])) {
-    variable_set('eve_api_ts3_framework_installed', TRUE);
+    variable_set('eve_api_teamspeak_framework_installed', TRUE);
   }
   else {
-    variable_set('eve_api_ts3_framework_installed', FALSE);
-    variable_set('eve_api_ts3_enable', FALSE);
+    variable_set('eve_api_teamspeak_framework_installed', FALSE);
+    variable_set('eve_api_teamspeak_enable', FALSE);
   }
 
   try {
-    $query = 'serverquery://' . variable_get('eve_api_ts3_query_username', 'Username') . ':' . variable_get('eve_api_ts3_query_password', 'Password') . '@' . variable_get('eve_api_ts3_host', '127.0.0.1') . ':' . variable_get('eve_api_ts3_query_port', 10011) . '/?server_port=' . variable_get('eve_api_ts3_server_port', 9987) . '&blocking=0';
+    $query = 'serverquery://' . variable_get('eve_api_teamspeak_query_username', 'Username') . ':' . variable_get('eve_api_teamspeak_query_password', 'Password') . '@' . variable_get('eve_api_teamspeak_hostname', '127.0.0.1') . ':' . variable_get('eve_api_teamspeak_query_port', 10011) . '/?server_port=' . variable_get('eve_api_teamspeak_server_port', 9987) . '&blocking=0';
     $ts3 = TeamSpeak3::factory($query);
     $ts3->whoamiSet('client_nickname', 'OEABOT');
     $ts3->setPredefinedQueryName('OEABOT');

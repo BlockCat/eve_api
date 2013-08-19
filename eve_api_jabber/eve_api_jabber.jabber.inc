@@ -27,7 +27,7 @@ function eve_api_jabber_connect($check = FALSE) {
 
   // Set the Jabber Database for access on the fly.
   $jabber_database = array(
-    'host' => variable_get('eve_api_jabber_host', '127.0.0.1'),
+    'host' => variable_get('eve_api_jabber_hostname', '127.0.0.1'),
     'database' => variable_get('eve_api_jabber_database', 'Jabber'),
     'username' => variable_get('eve_api_jabber_username', 'Username'),
     'password' => variable_get('eve_api_jabber_password', 'Password'),

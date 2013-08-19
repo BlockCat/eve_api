@@ -6,8 +6,6 @@
 
 require_once dirname(__FILE__) . '/eve_api.api.inc';
 require_once dirname(__FILE__) . '/eve_api.cron.inc';
-require_once dirname(__FILE__) . '/eve_api.jabber.inc';
-require_once dirname(__FILE__) . '/eve_api.ts3.inc';
 
 /**
  * Return the version number.
@@ -102,31 +100,6 @@ function eve_api_menu() {
       'page arguments' => array('eve_api_admin_registration_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 20,
-    ) + $admin_base;
-
-    $items['admin/settings/eve_api/teamspeak'] = array(
-      'title' => 'Teamspeak',
-      'description' => 'Configure and edit Teamspeak 3 connection settings.',
-      'page arguments' => array('eve_api_admin_teamspeak_form'),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 30,
-    ) + $admin_base;
-
-    if (variable_get('eve_api_ts3_enable', FALSE)) {
-      $items['admin/settings/eve_api/teamspeak/settings'] = array(
-        'title' => 'Settings',
-        'page arguments' => array('eve_api_user_teamspeak_settings_form'),
-        'type' => MENU_LOCAL_ACTION,
-        'weight' => 0,
-      ) + $admin_base;
-    }
-
-    $items['admin/settings/eve_api/jabber'] = array(
-      'title' => 'Jabber',
-      'description' => 'Configure and edit Jabber connection settings.',
-      'page arguments' => array('eve_api_admin_jabber_form'),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 40,
     ) + $admin_base;
 
     $items['admin/settings/eve_api/list_blues'] = array(
@@ -224,30 +197,6 @@ function eve_api_menu() {
       'weight' => 20,
     ) + $user_base;
 
-    if (variable_get('eve_api_ts3_enable', FALSE)) {
-      $items['user/%user/eve_api/teamspeak'] = array(
-        'title' => 'Teamspeak',
-        'page arguments' => array(
-          'eve_api_user_teamspeak_form',
-          1,
-        ),
-        'type' => MENU_LOCAL_TASK,
-        'weight' => 30,
-      ) + $user_base;
-    }
-
-    if (variable_get('eve_api_jabber_enable', FALSE)) {
-      $items['user/%user/eve_api/jabber'] = array(
-        'title' => 'Jabber',
-        'page arguments' => array(
-          'eve_api_user_jabber_form',
-          1,
-        ),
-        'type' => MENU_LOCAL_TASK,
-        'weight' => 40,
-      ) + $user_base;
-    }
-
     $items['user/%user/eve_api/update_api_key/%'] = array(
       'title' => 'Update API Key',
       'page arguments' => array(
@@ -305,14 +254,17 @@ function eve_api_schema_alter(&$schema) {
  */
 function eve_api_permission() {
   $permissions = array();
+
   $permissions['administer eve_api settings'] = array(
     'title' => t('Admin EVE API'),
     'description' => t('Allow user to view and edit EVE API Settings.'),
   );
+
   $permissions['moderate eve_api users'] = array(
     'title' => t('Moderate Users'),
     'description' => t('Allow user to view and edit a users EVE API information.'),
   );
+
   return $permissions;
 }
 
@@ -367,35 +319,11 @@ function eve_api_user_role_delete($role) {
  * Implements hook_user_delete().
  */
 function eve_api_user_delete($account) {
-  try {
-    eve_api_jabber_connect();
-
-    $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-      ':username' => (string) eve_api_jabber_format_name($account->name),
-    ));
-
-    if ($result->rowCount()) {
-      eve_api_jabber_url_query('delete', $account->name);
-    }
-
-    eve_api_jabber_disconnect();
-  }
-  catch (EveApiException $e) {
-    // Log Error ?
-  }
-
-  try {
-    $ts3 = eve_api_teamspeak_connection();
-    eve_api_teamspeak_user_delete($ts3, $account->teamspeakDBID);
-  }
-  catch (EveApiException $e) {
-    // Log Error ?
-  }
-
   $uid = (int) $account->uid;
 
-  db_delete('eve_api_characters')->condition('uid', $uid)->execute();
-  db_delete('eve_api_api_keys')->condition('uid', $uid)->execute();
+  db_update('eve_api_characters_roles')->fields(array('deleted' => 1))->condition('uid', (int) $account->uid)->execute();
+  db_update('eve_api_characters')->fields(array('deleted' => 1))->condition('uid', (int) $account->uid)->execute();
+  db_update('eve_api_api_keys')->fields(array('deleted' => 1))->condition('uid', (int) $account->uid)->execute();
 }
 
 /**
@@ -611,7 +539,5 @@ function eve_api_boot() {
 
   if ($GLOBALS['user']->characterID == 0) {
     drupal_set_message(t('Your account is not associated with an EVE Character, you must select a <a href="@url">Main Character</a>.', array('@url' => '/user/' . $GLOBALS['user']->uid . '/eve_api/select_main_character')), 'error');
-    // url('user/' . $GLOBALS['user']->uid .
-    // '/eve_api/select_main_character')
   }
 }

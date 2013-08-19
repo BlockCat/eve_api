@@ -1,0 +1,95 @@
+<?php
+/**
+ * @file
+ * The main file for Omni EVE API, where all the magic happens.
+ */
+
+require_once dirname(__FILE__) . '/eve_api_teamspeak.ts3.inc';
+require_once dirname(__FILE__) . '/eve_api_teamspeak.cron.inc';
+
+/**
+ * Return the version number.
+ * 
+ * x.x.x.x
+ * | | | `-- Patch Version Number.
+ * | | |
+ * | | `---- 0 = Alpha.
+ * | |       1 = Beta.
+ * | |       2 = RC.
+ * | |       3 = Release.
+ * | |
+ * | `------ Minor Version Change.
+ * |
+ * `-------- Major Version Change.
+ */
+function eve_api_teamspeak_version() {
+  return '2.0.1.1';
+}
+
+/**
+ * Implements hook_menu().
+ */
+function eve_api_teamspeak_menu() {
+  $items = array();
+
+  if (variable_get('eve_api_teamspeak_enable', FALSE)) {
+    $admin_base = array(
+      'page callback' => 'drupal_get_form',
+      'access arguments' => array('administer eve_api_teamspeak settings'),
+      'file' => 'eve_api_teamspeak.admin.inc',
+    );
+
+    $items['admin/settings/eve_api/teamspeak'] = array(
+      'title' => 'Teamspeak',
+      'description' => 'Configure and edit Teamspeak 3 connection settings.',
+      'page arguments' => array('eve_api_teamspeak_admin_form'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 30,
+    ) + $admin_base;
+
+    if (variable_get('eve_api_teamspeak_enable', FALSE)) {
+      $items['admin/settings/eve_api/teamspeak/settings'] = array(
+        'title' => 'Settings',
+        'page arguments' => array('eve_api_teamspeak_admin_settings_form'),
+        'type' => MENU_LOCAL_ACTION,
+        'weight' => 0,
+      ) + $admin_base;
+    }
+
+    $user_base = array(
+      'page callback' => 'drupal_get_form',
+      'access callback' => 'eve_api_teamspeak_edit',
+      'access arguments' => array(1),
+      'file' => 'eve_api_teamspeak.user.inc',
+    );
+
+    if (variable_get('eve_api_teamspeak_enable', FALSE)) {
+      $items['user/%user/eve_api/teamspeak'] = array(
+        'title' => 'Teamspeak',
+        'page arguments' => array(
+          'eve_api_teamspeak_user_form',
+          1,
+        ),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 30,
+      ) + $user_base;
+    }
+  }
+
+  return $items;
+}
+
+/**
+ * Implements hook_user_delete().
+ */
+function eve_api_teamspeak_user_delete($account) {
+  if (variable_get('eve_api_teamspeak_enable', FALSE)) {
+    try {
+      $ts3 = eve_api_teamspeak_connection();
+      eve_api_teamspeak_user_delete($ts3, $account->teamspeakDBID);
+    }
+    catch (EveApiException $e) {
+      // Log Error ?
+    }
+  }
+}

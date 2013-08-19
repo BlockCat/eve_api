@@ -449,8 +449,8 @@ function eve_api_install() {
 
   variable_set('eve_api_enable', FALSE);
   variable_set('eve_api_first_run', FALSE);
-  variable_set('eve_api_ts3_framework_installed', FALSE);
-  variable_set('eve_api_ts3_enable', FALSE);
+  variable_set('eve_api_teamspeak_framework_installed', FALSE);
+  variable_set('eve_api_teamspeak_enable', FALSE);
   variable_set('eve_api_jabber_enable', FALSE);
 
   // We set this because we use 128x128 for EVE avatar's.
@@ -467,21 +467,6 @@ function eve_api_install() {
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
   $queue->createQueue();
-
-  $queue = DrupalQueue::get('eve_api_cron_teamspeak_role_sync');
-  $queue->createQueue();
-
-  $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_sync');
-  $queue->createQueue();
-
-  $queue = DrupalQueue::get('eve_api_cron_jabber_role_sync');
-  $queue->createQueue();
-
-  $queue = DrupalQueue::get('eve_api_cron_jabber_user_sync');
-  $queue->createQueue();
-
-  $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_check');
-  $queue->createQueue();
 }
 
 /**
@@ -492,15 +477,17 @@ function eve_api_uninstall() {
   db_drop_field('users', 'teamspeakUID');
   db_drop_field('users', 'teamspeakDBID');
 
+  variable_del('eve_api_jabber_installed');
+  variable_del('eve_api_jabber_enable');
+  variable_del('eve_api_teamspeak_installed');
+  variable_del('eve_api_teamspeak_framework_installed');
+  variable_del('eve_api_teamspeak_enable');
   variable_del('eve_api_version');
   variable_del('eve_api_user_picture_dimensions');
   variable_del('eve_api_avatar_https');
   variable_del('eve_api_avatar_http');
   variable_del('eve_api_enable');
   variable_del('eve_api_first_run');
-  variable_del('eve_api_ts3_framework_installed');
-  variable_del('eve_api_ts3_enable');
-  variable_del('eve_api_jabber_enable');
   variable_del('eve_api_alliance_role');
   variable_del('eve_api_unverified_role');
   variable_del('eve_api_ceo_role');
@@ -509,38 +496,6 @@ function eve_api_uninstall() {
   variable_del('eve_api_corp_vcode');
   variable_del('eve_api_access_mask');
   variable_del('eve_api_required_standing');
-  variable_del('eve_api_ts3_host');
-  variable_del('eve_api_ts3_server_address');
-  variable_del('eve_api_ts3_server_port');
-  variable_del('eve_api_ts3_server_password');
-  variable_del('eve_api_ts3_query_port');
-  variable_del('eve_api_ts3_query_username');
-  variable_del('eve_api_ts3_query_password');
-  variable_del('eve_api_ts3_nickname');
-  variable_del('eve_api_ts3_bypass_group');
-  variable_del('eve_api_ts3_cron_reg_message');
-  variable_del('eve_api_ts3_cron_reg_poke');
-  variable_del('eve_api_ts3_cron_reg_ban_time');
-  variable_del('eve_api_ts3_cron_reg_message_enable');
-  variable_del('eve_api_ts3_cron_reg_poke_enable');
-  variable_del('eve_api_ts3_cron_reg_kick_enable');
-  variable_del('eve_api_ts3_cron_reg_ban_enable');
-  variable_del('eve_api_ts3_cron_reg_time');
-  variable_del('eve_api_ts3_cron_user_message');
-  variable_del('eve_api_ts3_cron_user_poke');
-  variable_del('eve_api_ts3_cron_user_ban_time');
-  variable_del('eve_api_ts3_cron_user_message_enable');
-  variable_del('eve_api_ts3_cron_user_poke_enable');
-  variable_del('eve_api_ts3_cron_user_kick_enable');
-  variable_del('eve_api_ts3_cron_user_ban_enable');
-  variable_del('eve_api_ts3_cron_user_time');
-  variable_del('eve_api_jabber_host');
-  variable_del('eve_api_jabber_database');
-  variable_del('eve_api_jabber_username');
-  variable_del('eve_api_jabber_password');
-  variable_del('eve_api_jabber_url');
-  variable_del('eve_api_jabber_secret');
-  variable_del('eve_api_jabber_domain');
   variable_del('eve_api_allianceID');
   variable_del('eve_api_corporationID');
   variable_del('eve_api_api_alliance_fetch_cron_time');
@@ -551,12 +506,6 @@ function eve_api_uninstall() {
   variable_del('eve_api_api_mask_cron_next');
   variable_del('eve_api_api_users_cron_time');
   variable_del('eve_api_api_users_cron_next');
-  variable_del('eve_api_teamspeak_role_cron_time');
-  variable_del('eve_api_teamspeak_role_cron_next');
-  variable_del('eve_api_jabber_role_cron_time');
-  variable_del('eve_api_jabber_role_cron_next');
-  variable_del('eve_api_jabber_user_cron_time');
-  variable_del('eve_api_jabber_user_cron_next');
 
   $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
   $queue->deleteQueue();
@@ -568,21 +517,6 @@ function eve_api_uninstall() {
   $queue->deleteQueue();
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
-  $queue->deleteQueue();
-
-  $queue = DrupalQueue::get('eve_api_cron_teamspeak_role_sync');
-  $queue->deleteQueue();
-
-  $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_sync');
-  $queue->deleteQueue();
-
-  $queue = DrupalQueue::get('eve_api_cron_jabber_role_sync');
-  $queue->deleteQueue();
-
-  $queue = DrupalQueue::get('eve_api_cron_jabber_user_sync');
-  $queue->deleteQueue();
-
-  $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_check');
   $queue->deleteQueue();
 }
 
@@ -624,38 +558,7 @@ function eve_api_requirements($phase) {
       'value' => eve_api_version(),
       'severity' => REQUIREMENT_INFO,
     );
-
-    // Load the TeamSpeak 3 Library if possible.
-    $requirements['teamspeak3'] = array(
-      'title' => $t('Teamspeak 3 PHP Framework Library'),
-    );
-
-    $libraries = libraries_get_libraries();
-
-    if (isset($libraries['TeamSpeak3'])) {
-      if (($library = libraries_load('TeamSpeak3')) && !empty($library['loaded'])) {
-        variable_set('eve_api_ts3_framework_installed', TRUE);
-
-        $requirements['teamspeak3']['value'] = 'Found (' . TeamSpeak3::LIB_VERSION . ')';
-        $requirements['teamspeak3']['severity'] = REQUIREMENT_OK;
-
-        return $requirements;
-      }
-      else {
-        $requirements['teamspeak3']['value'] = $t('Not Found');
-        $requirements['teamspeak3']['severity'] = REQUIREMENT_WARNING;
-        $requirements['teamspeak3']['description'] = $t('The TeamSpeak3.php was not found within the uploaded Teamspeak 3 PHP Framework library. Please verify all files were uploaded correctly.');
-      }
-    }
-    else {
-      $requirements['teamspeak3']['value'] = $t('Not Installed');
-      $requirements['teamspeak3']['severity'] = REQUIREMENT_WARNING;
-      $requirements['teamspeak3']['description'] = $t('Please install the Teamspeak 3 PHP Framework library %url.', array('%url' => 'http://addons.teamspeak.com/directory/tools/integration/TeamSpeak-3-PHP-Framework.html'));
-    }
   }
-
-  variable_set('eve_api_ts3_framework_installed', FALSE);
-  variable_set('eve_api_ts3_enable', FALSE);
 
   return $requirements;
 }

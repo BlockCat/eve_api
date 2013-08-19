@@ -1,0 +1,7 @@
+name = Teamspeak
+description = Interface for Omni EVE API and Teamspeak 3.
+core = 7.x
+package = Omni EVE API
+dependencies[] = eve_api
+dependencies[] = libraries
+configure = admin/settings/eve_api/teamspeak
