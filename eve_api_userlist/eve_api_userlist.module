@@ -29,19 +29,45 @@ function eve_api_userlist_version() {
 function eve_api_userlist_menu() {
   $items = array();
 
+  $user_base = array(
+    'page callback' => 'drupal_get_form',
+    'access arguments' => array('view eve_api userlist'),
+    'file' => 'eve_api_userlist.user.inc',
+  );
+
+  $admin_base = array(
+    'page callback' => 'drupal_get_form',
+    'access arguments' => array('administer eve_api settings'),
+    'file' => 'eve_api_userlist.admin.inc',
+  );
+
   if (variable_get('eve_api_enable', FALSE)) {
-    $user_base = array(
-      'page callback' => 'drupal_get_form',
-      'access callback' => 'user_access',
-      'access arguments' => array('view eve_api userlist'),
-      'file' => 'eve_api_userlist.user.inc',
+    $items['admin/settings/eve_api/characterlist'] = $admin_base + array(
+      'title' => 'Character List',
+      'page arguments' => array('eve_api_userlist_admin_characterlist_form'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 80,
     );
 
     $items['eve_api/userlist'] = $user_base + array(
       'title' => 'User List',
-      'page arguments' => array('eve_api_userlist_form'),
+      'page arguments' => array('eve_api_userlist_user_userlist_form'),
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => 0,
+    );
+
+    $items['eve_api/userlist/corp/%'] = $user_base + array(
+      'title' => 'Corporation User List',
+      'page arguments' => array('eve_api_userlist_user_userlist_corporation_form', 3),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 10,
+    );
+
+    $items['eve_api/userlist/alliance/%'] = $user_base + array(
+      'title' => 'Alliance User List',
+      'page arguments' => array('eve_api_userlist_user_userlist_alliance_form', 3),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 10,
     );
   }
 

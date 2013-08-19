@@ -32,39 +32,37 @@ function eve_api_teamspeak_version() {
 function eve_api_teamspeak_menu() {
   $items = array();
 
-  if (variable_get('eve_api_enable', FALSE)) {
-    $admin_base = array(
-      'page callback' => 'drupal_get_form',
-      'access arguments' => array('administer eve_api_teamspeak settings'),
-      'file' => 'eve_api_teamspeak.admin.inc',
-    );
+  $admin_base = array(
+    'page callback' => 'drupal_get_form',
+    'access arguments' => array('administer eve_api_teamspeak settings'),
+    'file' => 'eve_api_teamspeak.admin.inc',
+  );
 
-    $items['admin/settings/eve_api/teamspeak'] = array(
+  $user_base = array(
+    'page callback' => 'drupal_get_form',
+    'access callback' => 'eve_api_edit',
+    'access arguments' => array(1),
+    'file' => 'eve_api_teamspeak.user.inc',
+  );
+
+  if (variable_get('eve_api_enable', FALSE)) {
+    $items['admin/settings/eve_api/teamspeak'] = $admin_base + array(
       'title' => 'Teamspeak',
       'description' => 'Configure and edit Teamspeak 3 connection settings.',
       'page arguments' => array('eve_api_teamspeak_admin_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 30,
-    ) + $admin_base;
-
-    if (variable_get('eve_api_teamspeak_enable', FALSE)) {
-      $items['admin/settings/eve_api/teamspeak/settings'] = array(
-        'title' => 'Settings',
-        'page arguments' => array('eve_api_teamspeak_admin_settings_form'),
-        'type' => MENU_LOCAL_ACTION,
-        'weight' => 0,
-      ) + $admin_base;
-    }
-
-    $user_base = array(
-      'page callback' => 'drupal_get_form',
-      'access callback' => 'eve_api_edit',
-      'access arguments' => array(1),
-      'file' => 'eve_api_teamspeak.user.inc',
     );
 
     if (variable_get('eve_api_teamspeak_enable', FALSE)) {
-      $items['user/%user/eve_api/teamspeak'] = array(
+      $items['admin/settings/eve_api/teamspeak/settings'] = $admin_base + array(
+        'title' => 'Settings',
+        'page arguments' => array('eve_api_teamspeak_admin_settings_form'),
+        'type' => MENU_CALLBACK,
+        'weight' => 0,
+      );
+
+      $items['user/%user/eve_api/teamspeak'] = $user_base + array(
         'title' => 'Teamspeak',
         'page arguments' => array(
           'eve_api_teamspeak_user_form',
@@ -72,7 +70,7 @@ function eve_api_teamspeak_menu() {
         ),
         'type' => MENU_LOCAL_TASK,
         'weight' => 30,
-      ) + $user_base;
+      );
     }
   }
 
@@ -91,5 +89,19 @@ function eve_api_teamspeak_user_delete($account) {
     catch (EveApiException $e) {
       // Log Error ?
     }
+  }
+}
+
+/**
+ * Implements hook_eve_api_user_update().
+ */
+function eve_api_teamspeak_eve_api_user_update($account) {
+  if (variable_get('eve_api_teamspeak_enable', FALSE) && $account->teamspeakDBID != 0) {
+    $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_sync');
+    $queue->createItem(array(
+      'uid' => $account->uid,
+      'teamspeakDBID' => $account->teamspeakDBID,
+      'runs' => 1,
+    ));
   }
 }

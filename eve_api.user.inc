@@ -245,49 +245,6 @@ function eve_api_user_add_api_form_submit($form, &$form_state) {
       ))->execute();
     }
 
-    $result = db_query('SELECT c.characterName, c.characterID FROM {eve_api_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
-      ':uid' => $uid,
-    ));
-
-    if (!$result->rowCount()) {
-      if (variable_get('eve_api_jabber_enable', FALSE)) {
-        try {
-          eve_api_jabber_connect();
-
-          $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-            ':username' => (string) eve_api_jabber_format_name($account->name),
-          ));
-
-          if ($result->rowCount()) {
-            eve_api_jabber_url_query('delete', $account->name);
-          }
-
-          eve_api_jabber_disconnect();
-        }
-        catch (EveApiException $e) {
-          // Log Error ?
-        }
-      }
-
-      if (variable_get('eve_api_teamspeak_enable', FALSE)) {
-        try {
-          $ts3 = eve_api_teamspeak_connection();
-          eve_api_teamspeak_delete_user($ts3, $account->teamspeakDBID);
-        }
-        catch (EveApiException $e) {
-          // Log Error ?
-        }
-      }
-
-      db_update('users')->fields(array(
-        'teamspeakUID' => 0,
-        'teamspeakDBID' => 0,
-        'characterID' => 0,
-      ))->condition('uid', $uid, '=')->execute();
-      $form_state['redirect'] = 'user/' . $uid . '/eve_api/select_main_character';
-      drupal_set_message(t('Please select a new Main Character'));
-    }
-
     drupal_set_message(t('API Key successfully added!'));
   }
 }
@@ -382,24 +339,7 @@ function eve_api_user_select_main_character_form_submit($form, &$form_state) {
   $account = $form_state['user'];
   $uid = (int) $account->uid;
 
-  if (variable_get('eve_api_jabber_enable', FALSE)) {
-    try {
-      eve_api_jabber_connect();
-
-      $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-        ':username' => (string) eve_api_jabber_format_name($account->name),
-      ));
-
-      if ($result->rowCount()) {
-        eve_api_jabber_url_query('delete', $account->name);
-      }
-
-      eve_api_jabber_disconnect();
-    }
-    catch (EveApiException $e) {
-      // Log Error ?
-    }
-  }
+  module_invoke_all('eve_api_user_delete', $account);
 
   $old_character_name = $account->name;
   $old_character_data = eve_api_get_character_info($old_character_name);
@@ -457,12 +397,7 @@ function eve_api_user_select_main_character_form_submit($form, &$form_state) {
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
   $queue->createItem($uid);
 
-  $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_sync');
-  $queue->createItem(array(
-    'uid' => $uid,
-    'teamspeakDBID' => $account->teamspeakDBID,
-    'runs' => 1,
-  ));
+  module_invoke_all('eve_api_user_update', $account);
 
   drupal_set_message(t('New main character selected!'));
 }
@@ -677,45 +612,20 @@ function eve_api_user_list_api_form_submit($form, &$form_state) {
     $unverified_role = user_role_load(variable_get('eve_api_unverified_role', 2));
     user_multiple_role_edit(array($uid), 'add_role', $unverified_role->rid);
 
-    if (variable_get('eve_api_jabber_enable', FALSE)) {
-      try {
-        eve_api_jabber_connect();
-
-        $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-          ':username' => (string) eve_api_jabber_format_name($account->name),
-        ));
-
-        if ($result->rowCount()) {
-          eve_api_jabber_url_query('delete', $account->name);
-        }
-
-        eve_api_jabber_disconnect();
-      }
-      catch (EveApiException $e) {
-        // Log Error ?
-      }
-    }
-
     db_update('users')->fields(array(
       'characterID' => 0,
     ))->condition('uid', $uid, '=')->execute();
+
     $form_state['redirect'] = 'user/' . $uid . '/eve_api/select_main_character';
+
     drupal_set_message(t('Please select a new Main Character'));
   }
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
   $queue->createItem($uid);
 
-  $queue = DrupalQueue::get('eve_api_cron_teamspeak_user_sync');
-  $result = db_query('SELECT teamspeakDBID FROM {users} WHERE uid = :uid', array(
-    'uid' => $uid,
-  ));
-  $row = $result->fetchAssoc();
-  $queue->createItem(array(
-    'uid' => $uid,
-    'teamspeakDBID' => $row['teamspeakDBID'],
-    'runs' => 1,
-  ));
+  module_invoke_all('eve_api_user_delete', $account);
+  module_invoke_all('eve_api_user_update', $account);
 
   drupal_set_message(t('API keys successfully deleted!'));
 }
@@ -905,44 +815,21 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
   ));
 
   if (!$result->rowCount()) {
-    if (variable_get('eve_api_jabber_enable', FALSE)) {
-      try {
-        eve_api_jabber_connect();
-
-        $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-          ':username' => (string) eve_api_jabber_format_name($account->name),
-        ));
-
-        if ($result->rowCount()) {
-          eve_api_jabber_url_query('delete', $account->name);
-          drupal_set_message(t('Jabber account was deleted.'));
-        }
-
-        eve_api_jabber_disconnect();
-      }
-      catch (EveApiException $e) {
-        // Log Error ?
-      }
-    }
-
-    if (variable_get('eve_api_teamspeak_enable', FALSE)) {
-      try {
-        $ts3 = eve_api_teamspeak_connection();
-        eve_api_teamspeak_delete_user($ts3, $account->teamspeakDBID);
-      }
-      catch (EveApiException $e) {
-        // Log Error ?
-      }
-    }
+    module_invoke_all('eve_api_user_delete', $account);
 
     db_update('users')->fields(array(
-      'teamspeakUID' => 0,
-      'teamspeakDBID' => 0,
       'characterID' => 0,
     ))->condition('uid', $uid, '=')->execute();
+
     $form_state['redirect'] = 'user/' . $uid . '/eve_api/select_main_character';
+
     drupal_set_message(t('Please select a new Main Character'));
   }
+
+  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue->createItem($uid);
+
+  module_invoke_all('eve_api_user_update', $account);
 
   drupal_set_message(t('API Key successfully updated!'));
 }

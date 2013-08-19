@@ -32,30 +32,30 @@ function eve_api_jabber_version() {
 function eve_api_jabber_menu() {
   $items = array();
 
-  if (variable_get('eve_api_enable', FALSE)) {
-    $admin_base = array(
-      'page callback' => 'drupal_get_form',
-      'access arguments' => array('administer eve_api settings'),
-      'file' => 'eve_api_jabber.admin.inc',
-    );
+  $admin_base = array(
+    'page callback' => 'drupal_get_form',
+    'access arguments' => array('administer eve_api settings'),
+    'file' => 'eve_api_jabber.admin.inc',
+  );
 
-    $items['admin/settings/eve_api/jabber'] = array(
+  $user_base = array(
+    'page callback' => 'drupal_get_form',
+    'access callback' => 'eve_api_edit',
+    'access arguments' => array(1),
+    'file' => 'eve_api_jabber.user.inc',
+  );
+
+  if (variable_get('eve_api_enable', FALSE)) {
+    $items['admin/settings/eve_api/jabber'] = $admin_base + array(
       'title' => 'Jabber',
       'description' => 'Configure and edit Jabber connection settings.',
       'page arguments' => array('eve_api_jabber_admin_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 40,
-    ) + $admin_base;
-
-    $user_base = array(
-      'page callback' => 'drupal_get_form',
-      'access callback' => 'eve_api_edit',
-      'access arguments' => array(1),
-      'file' => 'eve_api_jabber.user.inc',
     );
 
     if (variable_get('eve_api_jabber_enable', FALSE)) {
-      $items['user/%user/eve_api/jabber'] = array(
+      $items['user/%user/eve_api/jabber'] = $user_base + array(
         'title' => 'Jabber',
         'page arguments' => array(
           'eve_api_jabber_user_form',
@@ -63,7 +63,7 @@ function eve_api_jabber_menu() {
         ),
         'type' => MENU_LOCAL_TASK,
         'weight' => 40,
-      ) + $user_base;
+      );
     }
   }
 
@@ -74,6 +74,45 @@ function eve_api_jabber_menu() {
  * Implements hook_user_delete().
  */
 function eve_api_jabber_user_delete($account) {
+  if (variable_get('eve_api_jabber_enable', FALSE)) {
+    try {
+      eve_api_jabber_connect();
+
+      $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
+        ':username' => (string) eve_api_jabber_format_name($account->name),
+      ));
+
+      if ($result->rowCount()) {
+        eve_api_jabber_url_query('delete', $account->name);
+      }
+
+      eve_api_jabber_disconnect();
+    }
+    catch (EveApiException $e) {
+      // Log Error ?
+    }
+  }
+}
+
+/**
+ * Implements hook_eve_api_user_update().
+ */
+function eve_api_jabber_eve_api_user_update($account) {
+  if (variable_get('eve_api_jabber_enable', FALSE)) {
+      $queue = DrupalQueue::get('eve_api_jabber_cron_user_sync');
+      $queue->createItem(array(
+        'uid' => $account->uid,
+        'name' => $account->name,
+        'status' => $account->status,
+        'runs' => 1,
+      ));
+  }
+}
+
+/**
+ * Implements hook_eve_api_user_delete().
+ */
+function eve_api_jabber_eve_api_user_delete($account) {
   if (variable_get('eve_api_jabber_enable', FALSE)) {
     try {
       eve_api_jabber_connect();
