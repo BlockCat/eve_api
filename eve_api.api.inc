@@ -911,7 +911,7 @@ function eve_api_character_is_ceo($character_id, $corporation_id = NULL) {
   }
 
   $result = $query->fields('ac', array(
-      'characterID',
+      'ceoID',
     ))
     ->condition('ac.deleted', 0, '=')
     ->condition('ac.ceoID', (int) $character_id, '=')

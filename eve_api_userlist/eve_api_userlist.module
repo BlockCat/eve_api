@@ -58,7 +58,7 @@ function eve_api_userlist_director($corporation_id) {
 /**
  * Implements hook_permission().
  */
-function eve_api_permission() {
+function eve_api_userlist_permission() {
   $permissions = array();
 
   $permissions['view eve_api userlist'] = array(
