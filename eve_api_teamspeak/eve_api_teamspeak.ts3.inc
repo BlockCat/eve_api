@@ -254,7 +254,7 @@ function eve_api_teamspeak_user_by_name(&$ts3, $teamspeak_name) {
  * @return bool
  *   Success or failure.
  */
-function eve_api_teamspeak_user_delete(&$ts3, $teamspeak_dbid) {
+function eve_api_teamspeak_delete_user(&$ts3, $teamspeak_dbid) {
   try {
     $ts3->clientDeleteDb($teamspeak_dbid);
   }

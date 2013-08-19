@@ -272,7 +272,7 @@ function eve_api_user_add_api_form_submit($form, &$form_state) {
       if (variable_get('eve_api_teamspeak_enable', FALSE)) {
         try {
           $ts3 = eve_api_teamspeak_connection();
-          eve_api_teamspeak_user_delete($ts3, $account->teamspeakDBID);
+          eve_api_teamspeak_delete_user($ts3, $account->teamspeakDBID);
         }
         catch (EveApiException $e) {
           // Log Error ?
@@ -928,7 +928,7 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
     if (variable_get('eve_api_teamspeak_enable', FALSE)) {
       try {
         $ts3 = eve_api_teamspeak_connection();
-        eve_api_teamspeak_user_delete($ts3, $account->teamspeakDBID);
+        eve_api_teamspeak_delete_user($ts3, $account->teamspeakDBID);
       }
       catch (EveApiException $e) {
         // Log Error ?

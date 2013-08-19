@@ -8,7 +8,7 @@
  * Implements hook_cron().
  */
 function eve_api_jabber_cron() {
-  if (variable_get('eve_api_jabber_enable', FALSE) && variable_get('eve_api_enable', FALSE)) {
+  if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_jabber_enable', FALSE)) {
     $interval = variable_get('eve_api_jabber_role_cron_time', 5 * 60);
 
     if (time() >= variable_get('eve_api_jabber_role_cron_next', 0)) {
@@ -19,7 +19,7 @@ function eve_api_jabber_cron() {
     }
   }
 
-  if (variable_get('eve_api_jabber_enable', FALSE) && variable_get('eve_api_enable', FALSE)) {
+  if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_jabber_enable', FALSE)) {
     $interval = variable_get('eve_api_jabber_user_cron_time', 5 * 60);
 
     if (time() >= variable_get('eve_api_jabber_user_cron_next', 0)) {

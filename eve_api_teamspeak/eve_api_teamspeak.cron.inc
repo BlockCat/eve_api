@@ -8,7 +8,7 @@
  * Implements hook_cron().
  */
 function eve_api_teamspeak_cron() {
-  if (variable_get('eve_api_teamspeak_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
+  if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
     $interval = variable_get('eve_api_teamspeak_role_cron_time', 5 * 60);
 
     if (time() >= variable_get('eve_api_teamspeak_role_cron_next', 0)) {
@@ -19,7 +19,7 @@ function eve_api_teamspeak_cron() {
     }
   }
 
-  if (variable_get('eve_api_teamspeak_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
+  if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
     $interval = variable_get('eve_api_teamspeak_user_cron_time', 5 * 60);
 
     if (time() >= variable_get('eve_api_teamspeak_user_cron_next', 0)) {
@@ -41,7 +41,7 @@ function eve_api_teamspeak_cron() {
     }
   }
 
-  if (variable_get('eve_api_teamspeak_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
+  if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
     $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_check');
     $queue->createItem(1);
   }
@@ -223,7 +223,7 @@ function eve_api_teamspeak_cron_user_check($item) {
         if (variable_get('eve_api_teamspeak_reg_kick_enable', FALSE)) {
           if (time() >= ($teamspeak_user->client_lastconnected + (60 * variable_get('eve_api_teamspeak_reg_time', 10)))) {
             $teamspeak_user->kick(TeamSpeak3::KICK_SERVER, t('To register, go to @homepage', array('@homepage' => url('user/register', array('absolute' => TRUE)))));
-            eve_api_teamspeak_user_delete($ts3, $teamspeak_user->client_database_id);
+            eve_api_teamspeak_delete_user($ts3, $teamspeak_user->client_database_id);
           }
         }
 
@@ -233,7 +233,7 @@ function eve_api_teamspeak_cron_user_check($item) {
               '@homepage' => url('user/register', array('absolute' => TRUE)),
               '@time' => (variable_get('eve_api_teamspeak_reg_ban_time', 10)),
             )));
-            eve_api_teamspeak_user_delete($ts3, $teamspeak_user->client_database_id);
+            eve_api_teamspeak_delete_user($ts3, $teamspeak_user->client_database_id);
           }
         }
 
