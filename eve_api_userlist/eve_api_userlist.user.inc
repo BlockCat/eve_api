@@ -96,7 +96,7 @@ function eve_api_userlist_user_userlist_form($form, &$form_state, $id = NULL) {
     '#type' => 'markup',
     '#markup' => theme('table', array(
       'header' => $header,
-      'rows' => $options
+      'rows' => $options,
     )),
     '#weight' => 0,
   );
@@ -196,7 +196,7 @@ function eve_api_userlist_user_userlist_director_form($form, &$form_state, $corp
     '#type' => 'markup',
     '#markup' => theme('table', array(
       'header' => $header,
-      'rows' => $options
+      'rows' => $options,
     )),
     '#weight' => 0,
   );
