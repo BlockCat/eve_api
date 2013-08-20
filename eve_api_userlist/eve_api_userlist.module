@@ -42,32 +42,27 @@ function eve_api_userlist_menu() {
   );
 
   if (variable_get('eve_api_enable', FALSE)) {
-    $items['admin/settings/eve_api/characterlist'] = $admin_base + array(
-      'title' => 'Character List',
-      'page arguments' => array('eve_api_userlist_admin_characterlist_form'),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 80,
-    );
-
     $items['eve_api/userlist'] = $user_base + array(
       'title' => 'User List',
       'page arguments' => array('eve_api_userlist_user_userlist_form'),
-      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'type' => MENU_LOCAL_TASK,
       'weight' => 0,
     );
 
-    $items['eve_api/userlist/corp/%'] = $user_base + array(
-      'title' => 'Corporation User List',
-      'page arguments' => array('eve_api_userlist_user_userlist_corporation_form', 3),
+    $items['eve_api/userlist/%'] = $user_base + array(
+      'title' => 'Alliance User List',
+      'page arguments' => array('eve_api_userlist_user_userlist_form', 2),
       'type' => MENU_LOCAL_TASK,
-      'weight' => 10,
+      'weight' => 0,
     );
 
-    $items['eve_api/userlist/alliance/%'] = $user_base + array(
-      'title' => 'Alliance User List',
-      'page arguments' => array('eve_api_userlist_user_userlist_alliance_form', 3),
+    $items['eve_api/userlist/%/director'] = $user_base + array(
+      'title' => 'Director Userlist',
+      'page arguments' => array('eve_api_userlist_user_userlist_director_form', 2),
       'type' => MENU_LOCAL_TASK,
-      'weight' => 10,
+      'weight' => 0,
+      'page callback' => 'eve_api_userlist_director_access',
+      'access arguments' => array(2),
     );
   }
 
@@ -77,7 +72,7 @@ function eve_api_userlist_menu() {
 /**
  * Access callback for user omni eve api director check.
  */
-function eve_api_userlist_director($corporation_id) {
+function eve_api_userlist_director_access($corporation_id) {
   return (eve_api_character_is_director($GLOBALS['user']->characterID, $corporation_id) || user_access('moderate eve_api users'));
 }
 

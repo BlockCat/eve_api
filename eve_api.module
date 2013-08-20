@@ -71,7 +71,7 @@ function eve_api_menu() {
 
   $user_base = array(
     'page callback' => 'drupal_get_form',
-    'access callback' => 'eve_api_edit',
+    'access callback' => 'eve_api_edit_access',
     'access arguments' => array(1),
     'file' => 'eve_api.user.inc',
   );
@@ -219,7 +219,7 @@ function eve_api_menu() {
 /**
  * Access callback for user omni eve api editing.
  */
-function eve_api_edit($account) {
+function eve_api_edit_access($account) {
   return (($GLOBALS['user']->uid == $account->uid) || user_access('moderate eve_api users')) && $account->uid > 0;
 }
 
