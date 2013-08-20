@@ -76,8 +76,8 @@ function eve_api_teamspeak_cron_queue_info() {
  *   whatever was added to the queue via queue->createItem()
  */
 function eve_api_teamspeak_cron_user_sync($item) {
-  if ($item['runs'] == 11) {
-    watchdog('eve_api_teamspeak', 'Cron Update Teamspeak User Permissions task has failed 10 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
+  if ($item['runs'] == 3) {
+    watchdog('eve_api_teamspeak', 'Cron Update Teamspeak User Permissions task has failed 2 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 
@@ -158,8 +158,8 @@ function eve_api_teamspeak_cron_user_sync($item) {
  *   whatever was added to the queue via queue->createItem()
  */
 function eve_api_teamspeak_cron_user_check($item) {
-  if ($item == 11) {
-    watchdog('eve_api_teamspeak', 'Cron Check Teamspeak Names task has failed 10 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
+  if ($item == 3) {
+    watchdog('eve_api_teamspeak', 'Cron Check Teamspeak Names task has failed 2 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 
@@ -314,8 +314,8 @@ function eve_api_teamspeak_cron_user_check($item) {
  *   whatever was added to the queue via queue->createItem()
  */
 function eve_api_teamspeak_cron_role_sync($item) {
-  if ($item == 11) {
-    watchdog('eve_api_teamspeak', 'Cron Sync Teamspeak Roles task has failed 10 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
+  if ($item == 3) {
+    watchdog('eve_api_teamspeak', 'Cron Sync Teamspeak Roles task has failed 2 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 

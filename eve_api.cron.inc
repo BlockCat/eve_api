@@ -89,8 +89,8 @@ function eve_api_cron_queue_info() {
  *   whatever was added to the queue via queue->createItem()
  */
 function eve_api_cron_api_user_sync($item) {
-  if ($item['runs'] == 11) {
-    watchdog('eve_api', 'Cron update User API task has failed 10 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
+  if ($item['runs'] == 3) {
+    watchdog('eve_api', 'Cron update User API task has failed 2 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 
@@ -415,8 +415,8 @@ function eve_api_cron_api_user_sync($item) {
  *   A complex array if an error is generated, or TRUE if no error.
  */
 function eve_api_cron_api_alliance_fetch($item = NULL) {
-  if ($item == 11) {
-    watchdog('eve_api', 'Cron Standings task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_WARNING);
+  if ($item == 3) {
+    watchdog('eve_api', 'Cron Standings task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 
@@ -475,8 +475,8 @@ function eve_api_cron_api_alliance_fetch($item = NULL) {
  *   A complex array if an error is generated, or TRUE if no error.
  */
 function eve_api_cron_api_alliance_sync($item = NULL) {
-  if ($item == 11) {
-    watchdog('eve_api', 'Cron Import Alliance API task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_WARNING);
+  if ($item == 3) {
+    watchdog('eve_api', 'Cron Import Alliance API task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 
@@ -580,8 +580,8 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
  *   A complex array if an error is generated, or TRUE if no error.
  */
 function eve_api_cron_api_mask_sync($item = NULL) {
-  if ($item == 11) {
-    watchdog('eve_api', 'Cron Access Mask task has failed 10 times in a row, task was removed.', NULL, WATCHDOG_WARNING);
+  if ($item == 3) {
+    watchdog('eve_api', 'Cron Access Mask task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 
