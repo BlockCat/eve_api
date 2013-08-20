@@ -89,10 +89,7 @@ function eve_api_cron_api_user_sync($item) {
   $uid = (int) $item;
   $all_characters = array();
 
-  $result = db_query('SELECT uid, name, teamspeakDBID FROM {users} WHERE uid = :uid', array(
-    ':uid' => $uid,
-  ));
-  $account = $result->fetchAssoc();
+  $account = user_load($uid);
 
   $result = db_query('SELECT apiID, keyID, vCode FROM {eve_api_api_keys} WHERE uid = :uid', array(
     ':uid' => $uid,

@@ -55,13 +55,6 @@ function eve_api_teamspeak_menu() {
     );
 
     if (variable_get('eve_api_teamspeak_enable', FALSE)) {
-      $items['admin/settings/eve_api/teamspeak/settings'] = $admin_base + array(
-        'title' => 'Settings',
-        'page arguments' => array('eve_api_teamspeak_admin_settings_form'),
-        'type' => MENU_CALLBACK,
-        'weight' => 0,
-      );
-
       $items['user/%user/eve_api/teamspeak'] = $user_base + array(
         'title' => 'Teamspeak',
         'page arguments' => array(
@@ -104,4 +97,25 @@ function eve_api_teamspeak_eve_api_user_update($account) {
       'runs' => 1,
     ));
   }
+}
+
+/**
+ * Implements hook_schema_alter().
+ */
+function eve_api_teamspeak_schema_alter(&$schema) {
+  $schema['users']['fields']['teamspeakUID'] = array(
+    'type' => 'varchar',
+    'not null' => TRUE,
+    'default' => 0,
+    'length' => 255,
+    'description' => 'Unique Teamspeak 3 ID',
+  );
+
+  $schema['users']['fields']['teamspeakDBID'] = array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+    'length' => 10,
+    'description' => 'Teamspeak 3 Database ID',
+  );
 }

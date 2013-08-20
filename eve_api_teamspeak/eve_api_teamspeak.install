@@ -8,6 +8,22 @@
  * Implements hook_install().
  */
 function eve_api_teamspeak_install() {
+  db_add_field('users', 'teamspeakUID', array(
+    'type' => 'varchar',
+    'not null' => TRUE,
+    'default' => 0,
+    'length' => 255,
+    'description' => 'Unique Teamspeak 3 ID',
+  ));
+
+  db_add_field('users', 'teamspeakDBID', array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+    'length' => 10,
+    'description' => 'Teamspeak 3 Database ID',
+  ));
+
   variable_set('eve_api_teamspeak_installed', TRUE);
   variable_set('eve_api_teamspeak_framework_installed', FALSE);
   variable_set('eve_api_teamspeak_enable', FALSE);
@@ -26,6 +42,9 @@ function eve_api_teamspeak_install() {
  * Implements hook_uninstall().
  */
 function eve_api_teamspeak_uninstall() {
+  db_drop_field('users', 'teamspeakUID');
+  db_drop_field('users', 'teamspeakDBID');
+
   variable_del('eve_api_teamspeak_installed');
   variable_del('eve_api_teamspeak_framework_installed');
   variable_del('eve_api_teamspeak_enable');

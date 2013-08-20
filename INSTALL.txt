@@ -14,7 +14,7 @@ INSTALLATION
     If done correctly you should see the file TeamSpeak3.php and various other
     files/folders when you navigate to sites/all/libraries/TeamSpeak3.
 
- 4. Retrieve the lastest version of Omni EVE API from the git repository.
+ 4. Retrieve the latest version of Omni EVE API from the git repository.
 
     http://drupalcode.org/project/eve_api.git
 
@@ -33,34 +33,49 @@ INSTALLATION
     admin/settings/eve_api. Registrations will be disabled until a valid
     Alliance API Key is entered. Create or retrieve your Alliance API Key from
     http://goo.gl/LDks44 and enter the "Key ID" and "Verification Code" in the
-    appropriate fields. Be sure to tick the check box "Enable Omni EVE API" and
+    appropriate fields. Be sure to tick the check-box "Enable Omni EVE API" and
     click on "Update". It may take up to a minute for the cron task to run and
     pull the data from the EVE API. Once data has been successfully retrieved
     the module will be enabled and user registrations will be turned back on.
 
-CONFIGURE TEAMSPEAK 3
+CONFIGURE TeamSpeak 3
 ---------------------
 
- 1. Log in as an administrator on your Drupal site and go to the EVE API
+ 1. Log in as an administrator on your Drupal site and go to the Modules page
+    at admin/modules. Enable TeamSpeak listed under Omni EVE API.
+
+ 2. Log in as an administrator on your Drupal site and go to the EVE API
     TeamSpeak 3 settings page at admin/settings/eve_api/teamspeak.
 
- 2. Enter all the information as requested in the fields. Be sure to tick the
-    check box "Enable TeamSpeak 3 Connection" and click on "Submit".
+ 3. Enter all the information as requested in the fields. Be sure to tick the
+    check-box "Enable TeamSpeak 3 Connection" and click on "Submit".
 
- 3. You will be notified if the connection to the TeamSpeak 3 server is
+ 4. You will be notified if the connection to the TeamSpeak 3 server is
     successful.
 
- 4. If the TeamSpeak 3 connection is successful, you will have the option to
+ 5. If the TeamSpeak 3 connection is successful, you will have the option to
     select a Bypass Group. Users in the Bypass Group will not be pestered or
     kicked if not registered or if the name is not correct on the server.
 
 CONFIGURE OPENFIRE (JABBER)
 ---------------------------
 
- 1. Log in as an administrator on your Drupal site and go to the EVE API
+ 1. Log in as an administrator on your Drupal site and go to the Modules page
+    at admin/modules. Enable Jabber listed under Omni EVE API.
+
+ 2. Log in as an administrator on your Drupal site and go to the EVE API
     Jabber settings page at admin/settings/eve_api/jabber.
 
- 2. Enter all the information as requested in the fields. Be sure to tick the
-    check box "Enable Jabber Connection" and click on "Submit".
+ 3. Enter all the information as requested in the fields. Be sure to tick the
+    check-box "Enable Jabber Connection" and click on "Submit".
 
- 3. You will be notified if the connection to the Jabber server is successful.
+ 4. You will be notified if the connection to the Jabber server is successful.
+
+CONFIGURE User List
+-------------------
+
+ 1. Log in as an administrator on your Drupal site and go to the Modules page
+    at admin/modules. Enable User List listed under Omni EVE API.
+
+ 2. No further configuration required.  Access to the userlist is available at
+    /eve_api/userlist

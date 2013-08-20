@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * The main file for Omni EVE API Teamspeak, where all the magic happens.
+ * The main file for Omni EVE API Jabber, where all the magic happens.
  */
 
 require_once dirname(__FILE__) . '/eve_api_jabber.jabber.inc';

@@ -31,6 +31,12 @@ function eve_api_userlist_user_userlist_form($form, &$form_state) {
       'data' => t('Alliance'),
       'field' => 'c.allianceTicker',
     ),
+    'joined' => array(
+      'data' => t('Joined'),
+    ),
+    'access' => array(
+      'data' => t('Last Login'),
+    ),
   );
 
   $options = array();
@@ -70,6 +76,8 @@ function eve_api_userlist_user_userlist_form($form, &$form_state) {
         'corporationTicker' => check_plain($row->corporationTicker),
         'allianceName' => empty($row->allianceName) ? l(t('None'), 'eve_api/userlist/alliance/0') : l($row->allianceName, 'eve_api/userlist/alliance/' . $row->allianceID),
         'allianceTicker' => check_plain($row->allianceTicker),
+        'joined' => ($row->characterID == $row->cID) ? check_plain(date('Y-m-d H:i:s', $row->created)) : '',
+        'access' => ($row->characterID == $row->cID) ? ($row->access == 0) ? '' : check_plain(date('Y-m-d H:i:s', $row->access)) : '',
       );
     }
   }
@@ -125,6 +133,12 @@ function eve_api_userlist_user_userlist_corporation_form($form, &$form_state, $c
       'data' => t('Alliance'),
       'field' => 'c.allianceTicker',
     ),
+    'joined' => array(
+      'data' => t('Joined'),
+    ),
+    'access' => array(
+      'data' => t('Last Login'),
+    ),
   );
 
   $options = array();
@@ -165,6 +179,8 @@ function eve_api_userlist_user_userlist_corporation_form($form, &$form_state, $c
         'corporationTicker' => check_plain($row->corporationTicker),
         'allianceName' => empty($row->allianceName) ? l(t('None'), 'eve_api/userlist/alliance/0') : l($row->allianceName, 'eve_api/userlist/alliance/' . $row->allianceID),
         'allianceTicker' => check_plain($row->allianceTicker),
+        'joined' => ($row->characterID == $row->cID) ? check_plain(date('Y-m-d H:i:s', $row->created)) : '',
+        'access' => ($row->characterID == $row->cID) ? ($row->access == 0) ? '' : check_plain(date('Y-m-d H:i:s', $row->access)) : '',
       );
     }
   }
@@ -220,6 +236,12 @@ function eve_api_userlist_user_userlist_alliance_form($form, &$form_state, $alli
       'data' => t('Alliance'),
       'field' => 'c.allianceTicker',
     ),
+    'joined' => array(
+      'data' => t('Joined'),
+    ),
+    'access' => array(
+      'data' => t('Last Login'),
+    ),
   );
 
   $options = array();
@@ -260,6 +282,8 @@ function eve_api_userlist_user_userlist_alliance_form($form, &$form_state, $alli
         'corporationTicker' => check_plain($row->corporationTicker),
         'allianceName' => empty($row->allianceName) ? l(t('None'), 'eve_api/userlist/alliance/0') : l($row->allianceName, 'eve_api/userlist/alliance/' . $row->allianceID),
         'allianceTicker' => check_plain($row->allianceTicker),
+        'joined' => ($row->characterID == $row->cID) ? check_plain(date('Y-m-d H:i:s', $row->created)) : '',
+        'access' => ($row->characterID == $row->cID) ? ($row->access == 0) ? '' : check_plain(date('Y-m-d H:i:s', $row->access)) : '',
       );
     }
   }

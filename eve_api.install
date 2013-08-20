@@ -410,22 +410,6 @@ function eve_api_install() {
     'description' => 'Main EVE Character ID',
   ));
 
-  db_add_field('users', 'teamspeakUID', array(
-    'type' => 'varchar',
-    'not null' => TRUE,
-    'default' => 0,
-    'length' => 255,
-    'description' => 'Unique Teamspeak 3 ID',
-  ));
-
-  db_add_field('users', 'teamspeakDBID', array(
-    'type' => 'int',
-    'not null' => TRUE,
-    'default' => 0,
-    'length' => 10,
-    'description' => 'Teamspeak 3 Database ID',
-  ));
-
   $roles = array(
     'eve_api_blue_role' => 'Alliance Blue',
     'eve_api_alliance_role' => 'Alliance Member',
@@ -449,9 +433,6 @@ function eve_api_install() {
 
   variable_set('eve_api_enable', FALSE);
   variable_set('eve_api_first_run', FALSE);
-  variable_set('eve_api_teamspeak_framework_installed', FALSE);
-  variable_set('eve_api_teamspeak_enable', FALSE);
-  variable_set('eve_api_jabber_enable', FALSE);
 
   // We set this because we use 128x128 for EVE avatar's.
   variable_set('user_picture_dimensions', '128x128');
@@ -474,14 +455,7 @@ function eve_api_install() {
  */
 function eve_api_uninstall() {
   db_drop_field('users', 'characterID');
-  db_drop_field('users', 'teamspeakUID');
-  db_drop_field('users', 'teamspeakDBID');
 
-  variable_del('eve_api_jabber_installed');
-  variable_del('eve_api_jabber_enable');
-  variable_del('eve_api_teamspeak_installed');
-  variable_del('eve_api_teamspeak_framework_installed');
-  variable_del('eve_api_teamspeak_enable');
   variable_del('eve_api_version');
   variable_del('eve_api_user_picture_dimensions');
   variable_del('eve_api_avatar_https');
