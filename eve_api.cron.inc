@@ -181,8 +181,27 @@ function eve_api_cron_api_user_sync($item) {
       db_update('eve_api_characters')->fields(array('errorID' => (int) $error, 'deleted' => 1))->condition('apiID', (int) $row->apiID, '=')->execute();
       db_update('eve_api_characters_roles')->fields(array('errorID' => (int) $error, 'deleted' => 1))->condition('apiID', (int) $row->apiID, '=')->execute();
 
+      if ($error == 1) {
+        continue;
+      }
+
       foreach ($characters['characters'] as $character) {
-        if ($account['name'] == (string) $character['characterName']) {
+        db_merge('eve_api_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
+          'characterID' => (int) $character['characterID'],
+          'uid' => (int) $uid,
+          'apiID' => (int) $row->apiID,
+          'characterName' => (string) $character['characterName'],
+          'corporationID' => (int) $character['corporationID'],
+          'corporationName' => (string) $character['corporationName'],
+          'corporationTicker' => (string) $character['corporationTicker'],
+          'allianceID' => (int) $character['allianceID'],
+          'allianceName' => (string) $character['allianceName'],
+          'allianceTicker' => (string) $character['allianceTicker'],
+          'deleted' => 0,
+          'errorID' => (int) $error,
+        ))->execute();
+
+        if ($account->name == (string) $character['characterName']) {
           $character_found = TRUE;
         }
 
@@ -265,23 +284,8 @@ function eve_api_cron_api_user_sync($item) {
             ))->execute();
           }
         }
-
-        db_merge('eve_api_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
-          'characterID' => (int) $character['characterID'],
-          'uid' => (int) $uid,
-          'apiID' => (int) $row->apiID,
-          'characterName' => (string) $character['characterName'],
-          'corporationID' => (int) $character['corporationID'],
-          'corporationName' => (string) $character['corporationName'],
-          'corporationTicker' => (string) $character['corporationTicker'],
-          'allianceID' => (int) $character['allianceID'],
-          'allianceName' => (string) $character['allianceName'],
-          'allianceTicker' => (string) $character['allianceTicker'],
-          'deleted' => 0,
-          'errorID' => (int) $error,
-        ))->execute();
       }
-
+        
       $all_characters = array_replace_recursive($characters, $all_characters);
     }
   }
@@ -328,7 +332,7 @@ function eve_api_cron_api_user_sync($item) {
       ->execute();
   }
   else {
-    $character_data = eve_api_get_character_info($account['name']);
+    $character_data = eve_api_get_character_info($account->name);
 
     $result = db_query('SELECT corporationID, corporationName FROM {eve_api_alliance_corporations} WHERE deleted = 0');
 

@@ -684,14 +684,14 @@ function eve_api_get_corporation_info($query) {
   }
 
   $api_data = array(
-    'corporationID' => (string) $xml->result->corporationID,
+    'corporationID' => (int) $xml->result->corporationID,
     'corporationName' => (string) $xml->result->corporationName,
     'corporationTicker' => (string) $xml->result->ticker,
     'allianceID' => (int) $xml->result->allianceID,
     'allianceName' => (string) $xml->result->allianceName,
     'allianceTicker' => (string) eve_api_get_alliance_ticker((int) $xml->result->allianceID),
     'ceoName' => (string) $xml->result->ceoName,
-    'ceoID' => (string) $xml->result->ceoID,
+    'ceoID' => (int) $xml->result->ceoID,
   );
 
   return $api_data;
