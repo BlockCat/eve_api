@@ -44,7 +44,10 @@ function eve_api_cron() {
 
       if ($result->rowCount()) {
         foreach ($result->fetchAll() as $item) {
-          $queue->createItem($item->uid);
+          $queue->createItem(array(
+            'uid' => $item->uid,
+            'runs' => 1,
+          ));
         }
       }
 
@@ -86,7 +89,12 @@ function eve_api_cron_queue_info() {
  *   whatever was added to the queue via queue->createItem()
  */
 function eve_api_cron_api_user_sync($item) {
-  $uid = (int) $item;
+  if ($item['runs'] == 11) {
+    watchdog('eve_api', 'Cron update User API task has failed 10 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
+    return FALSE;
+  }
+
+  $uid = (int) $item['uid'];
   $all_characters = array();
 
   $account = user_load($uid);
@@ -98,6 +106,7 @@ function eve_api_cron_api_user_sync($item) {
   $updated = date('Y-m-d H:i:s', time());
 
   $character_found = FALSE;
+  $error_found = FALSE;
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -110,29 +119,34 @@ function eve_api_cron_api_user_sync($item) {
 
       $characters = eve_api_get_character_api($query);
 
-      if (isset($characters['error']) && $characters['error'] != 403) {
-        db_merge('eve_api_api_keys')->key(array('apiID' => (int) $row->apiID))->fields(array(
-          'apiID' => (int) $row->apiID,
-          'errorID' => (int) $characters['error'],
-          'updated' => (string) $updated,
-        ))->execute();
+      if (isset($characters['error'])) {
+        switch ($characters['error']) {
+          case 403:
+            db_merge('eve_api_api_keys')->key(array('apiID' => (int) $row->apiID))->fields(array(
+              'apiID' => (int) $row->apiID,
+              'errorID' => (int) $characters['error'],
+              'updated' => (string) $updated,
+            ))->execute();
 
-        db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error']))->condition('apiID', (int) $row->apiID, '=')->execute();
-        db_update('eve_api_characters_roles')->fields(array('errorID' => (int) $characters['error']))->condition('apiID', (int) $row->apiID, '=')->execute();
+            db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error'], 'deleted' => 1))->condition('apiID', (int) $row->apiID, '=')->execute();
+            db_update('eve_api_characters_roles')->fields(array('errorID' => (int) $characters['error'], 'deleted' => 1))->condition('apiID', (int) $row->apiID, '=')->execute();
 
-        continue;
-      }
-      elseif (isset($characters['error']) && $characters['error'] == 403) {
-        db_merge('eve_api_api_keys')->key(array('apiID' => (int) $row->apiID))->fields(array(
-          'apiID' => (int) $row->apiID,
-          'errorID' => (int) $characters['error'],
-          'updated' => (string) $updated,
-        ))->execute();
+            continue;
+            break;
 
-        db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error'], 'deleted' => 1))->condition('apiID', (int) $row->apiID, '=')->execute();
-        db_update('eve_api_characters_roles')->fields(array('errorID' => (int) $characters['error'], 'deleted' => 1))->condition('apiID', (int) $row->apiID, '=')->execute();
+          default:
+            db_merge('eve_api_api_keys')->key(array('apiID' => (int) $row->apiID))->fields(array(
+              'apiID' => (int) $row->apiID,
+              'errorID' => (int) $characters['error'],
+              'updated' => (string) $updated,
+            ))->execute();
 
-        continue;
+            db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error']))->condition('apiID', (int) $row->apiID, '=')->execute();
+            db_update('eve_api_characters_roles')->fields(array('errorID' => (int) $characters['error']))->condition('apiID', (int) $row->apiID, '=')->execute();
+
+            $error_found = TRUE;
+            continue;
+        }
       }
 
       $whitelist = array();
@@ -272,6 +286,13 @@ function eve_api_cron_api_user_sync($item) {
     }
   }
 
+  if ($error_found) {
+    $item['runs'] = $item['runs'] + 1;
+    $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+    $queue->createItem($item);
+    return FALSE;
+  }
+
   if (!eve_api_verify_blue($all_characters) || !$character_found) {
     $result = db_query('SELECT corporationID, corporationName FROM {eve_api_alliance_corporations} WHERE deleted = 0');
 
@@ -301,8 +322,10 @@ function eve_api_cron_api_user_sync($item) {
     module_invoke_all('eve_api_user_delete', $account);
 
     db_update('users')->fields(array(
-      'characterID' => 0,
-      ))->condition('uid', $uid, '=')->execute();
+        'characterID' => 0,
+      ))
+      ->condition('uid', $uid, '=')
+      ->execute();
   }
   else {
     $character_data = eve_api_get_character_info($account['name']);

@@ -395,7 +395,10 @@ function eve_api_user_select_main_character_form_submit($form, &$form_state) {
   db_update('users')->fields(array('characterID' => (int) $character_data['characterID'], 'name' => (string) $character_data['characterName']))->condition('uid', $uid, '=')->execute();
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
-  $queue->createItem($uid);
+  $queue->createItem(array(
+    'uid' => $uid,
+    'runs' => 1,
+  ));
 
   module_invoke_all('eve_api_user_update', $account);
 
@@ -622,7 +625,10 @@ function eve_api_user_list_api_form_submit($form, &$form_state) {
   }
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
-  $queue->createItem($uid);
+  $queue->createItem(array(
+    'uid' => $uid,
+    'runs' => 1,
+  ));
 
   module_invoke_all('eve_api_user_delete', $account);
   module_invoke_all('eve_api_user_update', $account);
@@ -827,7 +833,10 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
   }
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
-  $queue->createItem($uid);
+  $queue->createItem(array(
+    'uid' => $uid,
+    'runs' => 1,
+  ));
 
   module_invoke_all('eve_api_user_update', $account);
 

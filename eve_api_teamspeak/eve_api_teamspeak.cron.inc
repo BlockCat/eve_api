@@ -296,7 +296,7 @@ function eve_api_teamspeak_cron_user_check($item) {
     }
   }
   catch (EveApiException $e) {
-    watchdog('eve_api_teamspeak', 'Cron Check Teamspeak Names task has failed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
+    watchdog('eve_api_teamspeak', 'Cron Check Teamspeak Names task has failed. Data: ' . $item, NULL, WATCHDOG_WARNING);
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_check');
     $queue->createItem($item);

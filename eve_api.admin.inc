@@ -519,7 +519,10 @@ function eve_api_admin_registration_form_submit($form, &$form_state) {
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
-        $queue->createItem($item->uid);
+        $queue->createItem(array(
+          'uid' => $item->uid,
+          'runs' => 1,
+        ));
       }
     }
   }
@@ -664,7 +667,10 @@ function eve_api_admin_list_blues_form_submit($form, &$form_state) {
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
-        $queue->createItem($item->uid);
+        $queue->createItem(array(
+          'uid' => $item->uid,
+          'runs' => 1,
+        ));
       }
     }
   }
@@ -786,7 +792,10 @@ function eve_api_admin_add_blues_form_submit($form, &$form_state) {
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $item) {
-      $queue->createItem($item->uid);
+      $queue->createItem(array(
+        'uid' => $item->uid,
+        'runs' => 1,
+      ));
     }
   }
 
@@ -911,7 +920,10 @@ function eve_api_admin_list_whitelist_form_submit($form, &$form_state) {
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $item) {
-      $queue->createItem($item->uid);
+      $queue->createItem(array(
+        'uid' => $item->uid,
+        'runs' => 1,
+      ));
     }
   }
 
@@ -1161,7 +1173,10 @@ function eve_api_admin_role_whitelist_form_submit($form, &$form_state) {
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $item) {
-      $queue->createItem($item->uid);
+      $queue->createItem(array(
+        'uid' => $item->uid,
+        'runs' => 1,
+      ));
     }
   }
 
@@ -1263,7 +1278,10 @@ function eve_api_admin_add_role_whitelist_form_submit($form, &$form_state) {
   $character = eve_api_get_character_info($character_name);
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
-  $queue->createItem($character['uid']);
+  $queue->createItem(array(
+    'uid' => $character['uid'],
+    'runs' => 1,
+  ));
 
   db_merge('eve_api_characters_roles_whitelist')->key(array('characterID' => (int) $character['characterID']))->fields(array(
     'characterID' => (int) $character['characterID'],
