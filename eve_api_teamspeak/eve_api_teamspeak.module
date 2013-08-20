@@ -23,7 +23,7 @@ require_once dirname(__FILE__) . '/eve_api_teamspeak.cron.inc';
  * `-------- Major Version Change.
  */
 function eve_api_teamspeak_version() {
-  return '2.0.1.1';
+  return '2.0.1.2';
 }
 
 /**
