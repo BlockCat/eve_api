@@ -10,6 +10,7 @@
  * @ingroup forms
  */
 function eve_api_userlist_user_userlist_form($form, &$form_state, $id = NULL) {
+  timer_start('userlist');
   $account = $GLOBALS['user'];
   $character_data = eve_api_get_character_info($account->name);
   $is_director = eve_api_character_is_director($account->characterID, $character_data['corporationID']);
@@ -106,6 +107,8 @@ function eve_api_userlist_user_userlist_form($form, &$form_state, $id = NULL) {
     '#weight' => 10,
   );
 
+  print_r(timer_stop('userlist'));
+
   return $form;
 }
 
@@ -115,6 +118,7 @@ function eve_api_userlist_user_userlist_form($form, &$form_state, $id = NULL) {
  * @ingroup forms
  */
 function eve_api_userlist_user_userlist_director_form($form, &$form_state, $corporation_id) {
+  timer_start('userlist_corp');
   $header = array(
     'characterName' => array(
       'data' => t('Name'),
@@ -205,6 +209,8 @@ function eve_api_userlist_user_userlist_director_form($form, &$form_state, $corp
     '#theme' => 'pager',
     '#weight' => 10,
   );
+
+  print_r(timer_stop('userlist_corp'));
 
   return $form;
 }
