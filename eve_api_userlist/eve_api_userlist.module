@@ -20,7 +20,7 @@
  * `-------- Major Version Change.
  */
 function eve_api_userlist_version() {
-  return '2.0.1.2';
+  return '2.0.1.3';
 }
 
 /**
