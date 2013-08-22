@@ -167,7 +167,15 @@ function eve_api_jabber_admin_form_validate($form, &$form_state) {
  * @see eve_api_jabber_admin_form_validate()
  */
 function eve_api_jabber_admin_form_submit($form, &$form_state) {
-  variable_set('eve_api_jabber_enable', (bool) $form_state['values']['enable']);
+  if ((bool) $form_state['values']['enable']) {
+    variable_set('eve_api_jabber_enable', TRUE);
+
+    $queue = DrupalQueue::get('eve_api_jabber_cron_role_sync');
+    $queue->createItem(1);
+  }
+  else {
+    variable_set('eve_api_jabber_enable', FALSE);
+  }
 
   menu_rebuild();
 

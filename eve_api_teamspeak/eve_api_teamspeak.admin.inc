@@ -486,7 +486,9 @@ function eve_api_teamspeak_admin_form_submit($form, &$form_state) {
     }
 
     variable_set('eve_api_teamspeak_enable', TRUE);
-    eve_api_teamspeak_cron_role_sync(1);
+
+    $queue = DrupalQueue::get('eve_api_teamspeak_cron_role_sync');
+    $queue->createItem(1);
   }
   else {
     variable_set('eve_api_teamspeak_enable', FALSE);
