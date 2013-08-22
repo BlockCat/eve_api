@@ -79,21 +79,21 @@ function eve_api_menu() {
   $items['admin/settings/eve_api'] = array(
     'title' => 'EVE API',
     'description' => 'Edit your Alliance API Key if you have not done so, enter it now.',
-    'page arguments' => array('eve_api_admin_alliance_api_key_form'),
+    'page arguments' => array('eve_api_admin_settings_form'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 0,
   ) + $admin_base;
 
-  $items['admin/settings/eve_api/alliance_api_key'] = array(
-    'title' => 'API Key',
+  $items['admin/settings/eve_api/settings'] = array(
+    'title' => 'Settings',
     'description' => 'Edit your Alliance API Key if you have not done so, enter it now.',
-    'page arguments' => array('eve_api_admin_alliance_api_key_form'),
+    'page arguments' => array('eve_api_admin_settings_form'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
   ) + $admin_base;
 
   if (variable_get('eve_api_enable', FALSE)) {
-    $items['admin/settings/eve_api/settings'] = array(
+    $items['admin/settings/eve_api/roles'] = array(
       'title' => 'Roles',
       'description' => 'From here you can change various settings.',
       'page arguments' => array('eve_api_admin_roles_form'),

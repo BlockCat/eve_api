@@ -8,6 +8,10 @@
  * Implements hook_cron().
  */
 function eve_api_teamspeak_cron() {
+  if (!variable_get('eve_api_enable_cron', TRUE)) {
+    return;
+  }
+
   if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
     $interval = variable_get('eve_api_teamspeak_role_cron_time', 5 * 60);
 

@@ -461,6 +461,7 @@ function eve_api_uninstall() {
   variable_del('eve_api_avatar_https');
   variable_del('eve_api_avatar_http');
   variable_del('eve_api_enable');
+  variable_del('eve_api_enable_cron');
   variable_del('eve_api_first_run');
   variable_del('eve_api_alliance_role');
   variable_del('eve_api_unverified_role');

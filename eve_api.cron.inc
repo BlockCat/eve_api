@@ -8,6 +8,10 @@
  * Implements hook_cron().
  */
 function eve_api_cron() {
+  if (!variable_get('eve_api_enable_cron', TRUE)) {
+    return;
+  }
+
   $interval = variable_get('eve_api_api_alliance_fetch_cron_time', 1440 * 60);
 
   if (time() >= variable_get('eve_api_api_alliance_fetch_cron_next', 0) && date('G') == 2) {

@@ -5,6 +5,188 @@
  */
 
 /**
+ * Form constructor for editing the settings.
+ *
+ * @see eve_api_admin_settings_form_validate()
+ * @see eve_api_admin_settings_form_submit()
+ *
+ * @ingroup forms
+ */
+function eve_api_admin_settings_form($form, &$form_state) {
+  $form['enter_api'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Enter API Key'),
+    '#description' => t('Enter the Alliance Executers or Corperations CEO API Key.'),
+    '#weight' => 0,
+    '#collapsed' => variable_get('eve_api_enable', FALSE),
+    '#collapsible' => TRUE,
+  );
+
+  $form['enter_api']['keyID'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Key ID'),
+    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@url" target="_blank">here</a>.', array('@url' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=67108863')),
+    '#required' => TRUE,
+    '#size' => 20,
+    '#maxlength' => 15,
+    '#weight' => 0,
+    '#default_value' => variable_get('eve_api_corp_keyid', ''),
+  );
+
+  $form['enter_api']['vCode'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Verification Code'),
+    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@url" target="_blank">here</a>.', array('@url' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=67108863')),
+    '#required' => TRUE,
+    '#size' => 80,
+    '#maxlength' => 64,
+    '#weight' => 10,
+    '#default_value' => variable_get('eve_api_corp_vcode', ''),
+  );
+
+  $form['enter_api']['enable'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable EVE API'),
+    '#default_value' => variable_get('eve_api_enable', FALSE),
+    '#weight' => 20,
+  );
+
+  if (variable_get('eve_api_first_run', FALSE) && variable_get('eve_api_enable', FALSE)) {
+    $form['enter_api']['force'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Force Update API Information via a cron task.'),
+      '#default_value' => FALSE,
+      '#weight' => 30,
+    );
+
+    $form['settings'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Settings'),
+      '#description' => t('General configurable settings.'),
+      '#weight' => 10,
+      '#collapsed' => !variable_get('eve_api_enable', FALSE),
+      '#collapsible' => TRUE,
+    );
+
+    $form['settings']['enable_cron'] = array(
+      '#type' => 'radios',
+      '#title' => t('Enable EVE API Cron'),
+      '#description' => t('If you are experience troubles, or updateing the module, you can disable the cron related to EVE API.'),
+      '#options' => array(0 => t('No'), 1 => t('Yes')),
+      '#weight' => 0,
+      '#default_value' => (int) variable_get('eve_api_enable_cron', TRUE),
+    );
+  }
+  else {
+    $form['enter_api']['force'] = array(
+      '#type' => 'hidden',
+      '#value' => FALSE,
+    );
+
+    $form['enter_api']['enable_cron'] = array(
+      '#type' => 'hidden',
+      '#value' => TRUE,
+    );
+  }
+
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update'),
+    '#weight' => 20,
+  );
+
+  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+    drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
+    $form['enter_api']['enable']['#default_value'] = TRUE;
+    $form['submit_button']['#disabled'] = TRUE;
+  }
+
+  $form['#validate'] = array('eve_api_admin_settings_form_validate');
+  $form['#submit'] = array('eve_api_admin_settings_form_submit');
+
+  return $form;
+}
+
+/**
+ * Form validation handler for eve_api_admin_settings_form().
+ *
+ * @see eve_api_admin_settings_form_submit()
+ */
+function eve_api_admin_settings_form_validate($form, &$form_state) {
+  $key_id = (int) $form_state['values']['keyID'];
+  $v_code = (string) $form_state['values']['vCode'];
+
+  if (empty($key_id) || empty($v_code) || preg_match('/[^a-z0-9]/i', $v_code) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($v_code) > 64 || strlen($v_code) < 20) {
+    form_set_error('keyID', t('Invalid input, please try again.'));
+    form_set_error('vCode');
+    return;
+  }
+
+  $query = array(
+    'keyID' => $key_id,
+    'vCode' => $v_code,
+  );
+
+  $characters = eve_api_get_character_api($query);
+
+  if (isset($characters['error'])) {
+    form_set_error('keyID', t('There was an error with the API.'));
+    form_set_error('vCode');
+    variable_set('eve_api_enable', FALSE);
+  }
+  else {
+    if ($characters['expires'] || $characters['type'] != 'Corporation' || $characters['accessMask'] != 67108863) {
+      form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to your Alliance Executor or Corporation CEO, the "Type" drop down box is set to "Corporation", and that the "No Expiry" checkbox is ticked.'));
+      form_set_error('vCode');
+      variable_set('eve_api_enable', FALSE);
+    }
+
+    $form_state['values']['characters'] = $characters;
+  }
+}
+
+/**
+ * Form submission handler for eve_api_admin_settings_form().
+ *
+ * @see eve_api_admin_settings_form_validate()
+ */
+function eve_api_admin_settings_form_submit($form, &$form_state) {
+  $characters = (array) $form_state['values']['characters'];
+
+  variable_set('eve_api_corp_keyid', (int) $form_state['values']['keyID']);
+  variable_set('eve_api_corp_vcode', (string) $form_state['values']['vCode']);
+  variable_set('eve_api_enable_cron', (bool) $form_state['values']['enable_cron']);
+
+  // It's not pretty but it works.
+  foreach ($characters['characters'] as $character) {
+    variable_set('eve_api_allianceID', (int) $character['allianceID']);
+    variable_set('eve_api_corporationID', (int) $character['corporationID']);
+  }
+
+  if (((bool) $form_state['values']['enable'] && (bool) $form_state['values']['force']) || ((bool) $form_state['values']['enable'] && !variable_get('eve_api_enable', FALSE))) {
+    variable_set('eve_api_first_run', TRUE);
+
+    $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
+    $queue->createItem(1);
+
+    $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
+    $queue->createItem(1);
+
+    $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
+    $queue->createItem(1);
+
+    drupal_set_message(t('The Alliance API Info is set to be retrieved on the next cron job, it can take up to a minute for the cron task to be triggered.'));
+  }
+  else {
+    variable_set('eve_api_first_run', FALSE);
+    variable_set('eve_api_enable', FALSE);
+    drupal_set_message(t('Registrations have been disabled, EVE API cron tasks have been disabled, and all user menus have been disabled.'));
+  }
+
+  menu_rebuild();
+}
+
+/**
  * Form constructor for the admin edit roles form.
  *
  * @see eve_api_admin_roles_form_validate()
@@ -212,146 +394,6 @@ function eve_api_admin_roles_form_submit($form, &$form_state) {
   variable_set('eve_api_director_role', (int) $form_state['values']['director_role']);
 
   drupal_set_message(t('The roles have been updated and will be updated with the next scheduled cron tasks.'));
-}
-
-/**
- * Form constructor for editing the alliance API Key.
- *
- * @see eve_api_admin_alliance_api_key_form_validate()
- * @see eve_api_admin_alliance_api_key_form_submit()
- *
- * @ingroup forms
- */
-function eve_api_admin_alliance_api_key_form($form, &$form_state) {
-  $form['enter_api'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Enter API Info'),
-    '#description' => t('Enter the Alliance Executers or Corperations CEO API.'),
-    '#weight' => 0,
-  );
-
-  $form['enter_api']['keyID'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Key ID'),
-    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@url" target="_blank">here</a>.', array('@url' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=67108863')),
-    '#required' => TRUE,
-    '#size' => 20,
-    '#maxlength' => 15,
-    '#weight' => 0,
-    '#default_value' => variable_get('eve_api_corp_keyid', ''),
-  );
-
-  $form['enter_api']['vCode'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Verification Code'),
-    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@url" target="_blank">here</a>.', array('@url' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=67108863')),
-    '#required' => TRUE,
-    '#size' => 80,
-    '#maxlength' => 64,
-    '#weight' => 10,
-    '#default_value' => variable_get('eve_api_corp_vcode', ''),
-  );
-
-  $form['enter_api']['enable'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Enable EVE API'),
-    '#default_value' => variable_get('eve_api_enable', FALSE),
-    '#weight' => 20,
-  );
-
-  $form['submit_button'] = array(
-    '#type' => 'submit',
-    '#value' => t('Update'),
-  );
-
-  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
-    drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
-    $form['enter_api']['enable']['#default_value'] = TRUE;
-    $form['submit_button']['#disabled'] = TRUE;
-  }
-
-  $form['#validate'] = array('eve_api_admin_alliance_api_key_form_validate');
-  $form['#submit'] = array('eve_api_admin_alliance_api_key_form_submit');
-
-  return $form;
-}
-
-/**
- * Form validation handler for eve_api_admin_alliance_api_key_form().
- *
- * @see eve_api_admin_alliance_api_key_form_submit()
- */
-function eve_api_admin_alliance_api_key_form_validate($form, &$form_state) {
-  $key_id = (int) $form_state['values']['keyID'];
-  $v_code = (string) $form_state['values']['vCode'];
-
-  if (empty($key_id) || empty($v_code) || preg_match('/[^a-z0-9]/i', $v_code) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($v_code) > 64 || strlen($v_code) < 20) {
-    form_set_error('keyID', t('Invalid input, please try again.'));
-    form_set_error('vCode');
-    return;
-  }
-
-  $query = array(
-    'keyID' => $key_id,
-    'vCode' => $v_code,
-  );
-
-  $characters = eve_api_get_character_api($query);
-
-  if (isset($characters['error'])) {
-    form_set_error('keyID', t('There was an error with the API.'));
-    form_set_error('vCode');
-    variable_set('eve_api_enable', FALSE);
-  }
-  else {
-    if ($characters['expires'] || $characters['type'] != 'Corporation' || $characters['accessMask'] != 67108863) {
-      form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to your Alliance Executor or Corporation CEO, the "Type" drop down box is set to "Corporation", and that the "No Expiry" checkbox is ticked.'));
-      form_set_error('vCode');
-      variable_set('eve_api_enable', FALSE);
-    }
-
-    $form_state['values']['characters'] = $characters;
-  }
-}
-
-/**
- * Form submission handler for eve_api_admin_alliance_api_key_form().
- *
- * @see eve_api_admin_alliance_api_key_form_validate()
- */
-function eve_api_admin_alliance_api_key_form_submit($form, &$form_state) {
-  $characters = (array) $form_state['values']['characters'];
-
-  variable_set('eve_api_corp_keyid', (int) $form_state['values']['keyID']);
-  variable_set('eve_api_corp_vcode', (string) $form_state['values']['vCode']);
-
-  // It's not pretty but it works.
-  foreach ($characters['characters'] as $character) {
-    variable_set('eve_api_allianceID', (int) $character['allianceID']);
-    variable_set('eve_api_corporationID', (int) $character['corporationID']);
-  }
-
-  if ((bool) $form_state['values']['enable']) {
-    variable_set('eve_api_first_run', TRUE);
-
-    $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
-    $queue->createItem(1);
-
-    $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
-    $queue->createItem(1);
-
-    $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
-    $queue->createItem(1);
-
-    drupal_set_message(t('The Alliance API Info is set to be retrieved on the next cron job, it can take up to a minute for the cron task to be triggered.'));
-  }
-  else {
-    variable_set('eve_api_first_run', FALSE);
-    variable_set('eve_api_enable', FALSE);
-    drupal_set_message(t('Registrations have been disabled, EVE API cron tasks have been disabled, and all user menus have been disabled.'));
-  }
-
-  menu_rebuild();
 }
 
 /**
