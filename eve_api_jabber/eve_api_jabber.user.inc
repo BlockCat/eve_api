@@ -116,7 +116,7 @@ function eve_api_jabber_user_form_submit($form, &$form_state) {
   $account = $form_state['user'];
 
   $roles = user_roles();
-  $user_roles = $all_roles = array();
+  $user_roles = $all_roles = $corp_info = array();
 
   $result = db_query('SELECT corporationName, corporationTicker FROM {eve_api_alliance_corporations}');
 

@@ -87,7 +87,7 @@ function eve_api_teamspeak_cron_user_sync($item) {
 
   try {
     $roles = user_roles();
-    $valid_roles = $user_roles = array();
+    $valid_roles = $user_roles = $corp_info = array();
 
     $result = db_query('SELECT corporationName, corporationTicker FROM {eve_api_alliance_corporations}');
 
