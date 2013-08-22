@@ -3,3 +3,4 @@ description = Display EVE Character information for each user.
 core = 7.x
 package = Omni EVE API
 dependencies[] = eve_api
+configure = admin/settings/eve_api/userlist

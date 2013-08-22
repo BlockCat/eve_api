@@ -46,16 +46,16 @@ function eve_api_teamspeak_menu() {
   );
 
   if (variable_get('eve_api_enable', FALSE)) {
-    $items['admin/settings/eve_api/teamspeak'] = $admin_base + array(
+    $items['admin/settings/eve_api/teamspeak'] = array(
       'title' => 'Teamspeak',
       'description' => 'Configure and edit Teamspeak 3 connection settings.',
       'page arguments' => array('eve_api_teamspeak_admin_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 30,
-    );
+    ) + $admin_base;
 
     if (variable_get('eve_api_teamspeak_enable', FALSE)) {
-      $items['user/%user/eve_api/teamspeak'] = $user_base + array(
+      $items['user/%user/eve_api/teamspeak'] = array(
         'title' => 'Teamspeak',
         'page arguments' => array(
           'eve_api_teamspeak_user_form',
@@ -63,7 +63,7 @@ function eve_api_teamspeak_menu() {
         ),
         'type' => MENU_LOCAL_TASK,
         'weight' => 30,
-      );
+      ) + $user_base;
     }
   }
 

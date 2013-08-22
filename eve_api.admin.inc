@@ -417,29 +417,42 @@ function eve_api_admin_registration_form($form, &$form_state) {
     '#weight' => 0,
   );
 
-  $form['registration']['settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Settings'),
-    '#description' => t('Various settings you can modify.'),
-    '#weight' => 0,
-  );
-
-  $form['registration']['settings']['standing'] = array(
+  $form['registration']['standing'] = array(
     '#type' => 'textfield',
     '#title' => t('Standings'),
     '#description' => t('Set the required standing to register on the site. Standing required will be equal to or greater than the value supplied.  Accepted values are 10.0 to -10.0'),
     '#maxlength' => 5,
     '#size' => 10,
-    '#weight' => 0,
+    '#weight' => 10,
     '#required' => TRUE,
     '#default_value' => round((float) variable_get('eve_api_required_standing', 0.1), 1),
   );
 
+  $form['registration']['expires'] = array(
+    '#type' => 'radios',
+    '#title' => t('Allow Expired Keys'),
+    '#description' => t('API keys can be set to expire at a certain date and time. You can allow users to register with API Keys that will expire, but this may cause issues if the user forgets that the API Key has/will expire.'),
+    '#options' => array(0 => t('No'), 1 => t('Yes')),
+    '#weight' => 20,
+    '#default_value' => (int) variable_get('eve_api_require_expires', FALSE),
+  );
+
+  $form['registration']['type'] = array(
+    '#type' => 'radios',
+    '#title' => t('Require All Characters'),
+    '#description' => t('The API Key can list all characters on the account, or only show a single character.'),
+    '#options' => array(0 => t('No'), 1 => t('Yes')),
+    '#weight' => 30,
+    '#default_value' => (int) variable_get('eve_api_require_type', TRUE),
+  );
+
   $form['registration']['mask'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Edit Access Mask'),
+    '#title' => t('Required Access Mask'),
     '#description' => t('Edit your Access Mask that is required to register on the site.'),
-    '#weight' => 0,
+    '#weight' => 40,
+    '#collapsed' => TRUE,
+    '#collapsible' => TRUE,
   );
 
   $form['registration']['mask']['current_mask'] = array(
@@ -462,7 +475,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
   $form['registration']['mask']['access_mask'][8]['#disabled'] = TRUE;
   $form['registration']['mask']['access_mask'][8388608]['#disabled'] = TRUE;
 
-  $form['registration']['pager'] = array(
+  $form['registration']['mask']['pager'] = array(
     '#theme' => 'pager',
     '#weight' => 20,
   );
@@ -470,6 +483,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
   $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Update Mask'),
+    '#weight' => 10,
   );
 
   if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
@@ -501,6 +515,8 @@ function eve_api_admin_registration_form_validate($form, &$form_state) {
  */
 function eve_api_admin_registration_form_submit($form, &$form_state) {
   variable_set('eve_api_required_standing', round((float) $form_state['values']['standing'], 1));
+  variable_set('eve_api_require_expires', (bool) $form_state['values']['expires']);
+  variable_set('eve_api_require_type', (bool) $form_state['values']['type']);
 
   $new_access_mask = 8388616;
 

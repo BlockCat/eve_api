@@ -5,11 +5,9 @@
  */
 
 /**
- * Form constructor for the user list form.
- *
- * @ingroup forms
+ * Create the user list page.
  */
-function eve_api_userlist_user_userlist_form($form, &$form_state, $id = NULL) {
+function eve_api_userlist_user_userlist_page($id = NULL) {
   $account = $GLOBALS['user'];
   $character_data = eve_api_get_character_info($account->name);
   $is_director = eve_api_character_is_director($account->characterID, $character_data['corporationID']);
@@ -36,7 +34,7 @@ function eve_api_userlist_user_userlist_form($form, &$form_state, $id = NULL) {
     ),
   );
 
-  $options = array();
+  $options = $output = array();
 
   $query = db_select('users', 'u');
   $query_join = $query->join('eve_api_characters', 'c', 'u.uid = c.uid');
@@ -85,14 +83,14 @@ function eve_api_userlist_user_userlist_form($form, &$form_state, $id = NULL) {
     }
   }
 
-  $form['corporation_userlist'] = array(
+  $output['corporation_userlist'] = array(
     '#type' => 'fieldset',
     '#title' => t('User List'),
     '#description' => t('List of Active Users and some basic information.'),
     '#weight' => 0,
   );
 
-  $form['corporation_userlist']['corporation_userlist'] = array(
+  $output['corporation_userlist']['corporation_userlist'] = array(
     '#type' => 'markup',
     '#markup' => theme('table', array(
       'header' => $header,
@@ -101,20 +99,18 @@ function eve_api_userlist_user_userlist_form($form, &$form_state, $id = NULL) {
     '#weight' => 0,
   );
 
-  $form['corporation_userlist']['page'] = array(
+  $output['corporation_userlist']['page'] = array(
     '#theme' => 'pager',
     '#weight' => 10,
   );
 
-  return $form;
+  return $output;
 }
 
 /**
- * Form constructor for the corporation user list form.
- *
- * @ingroup forms
+ * Create the director user list page.
  */
-function eve_api_userlist_user_userlist_director_form($form, &$form_state, $corporation_id) {
+function eve_api_userlist_user_userlist_director_page($corporation_id) {
   $header = array(
     'characterName' => array(
       'data' => t('Name'),
@@ -137,7 +133,7 @@ function eve_api_userlist_user_userlist_director_form($form, &$form_state, $corp
     ),
   );
 
-  $options = array();
+  $options = $output = array();
 
   $query = db_select('users', 'u');
   $query_join = $query->join('eve_api_characters', 'c', 'u.uid = c.uid');
@@ -185,14 +181,14 @@ function eve_api_userlist_user_userlist_director_form($form, &$form_state, $corp
     }
   }
 
-  $form['corporation_userlist'] = array(
+  $output['corporation_userlist'] = array(
     '#type' => 'fieldset',
     '#title' => t('Corporation User List'),
     '#description' => t('List of Active Corporation Users and some basic information.'),
     '#weight' => 0,
   );
 
-  $form['corporation_userlist']['corporation_userlist'] = array(
+  $output['corporation_userlist']['corporation_userlist'] = array(
     '#type' => 'markup',
     '#markup' => theme('table', array(
       'header' => $header,
@@ -201,10 +197,10 @@ function eve_api_userlist_user_userlist_director_form($form, &$form_state, $corp
     '#weight' => 0,
   );
 
-  $form['corporation_userlist']['page'] = array(
+  $output['corporation_userlist']['page'] = array(
     '#theme' => 'pager',
     '#weight' => 10,
   );
 
-  return $form;
+  return $output;
 }

@@ -76,91 +76,91 @@ function eve_api_menu() {
     'file' => 'eve_api.user.inc',
   );
 
-  $items['admin/settings/eve_api'] = $admin_base + array(
+  $items['admin/settings/eve_api'] = array(
     'title' => 'EVE API',
     'description' => 'Edit your Alliance API Key if you have not done so, enter it now.',
     'page arguments' => array('eve_api_admin_alliance_api_key_form'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 0,
-  );
+  ) + $admin_base;
 
-  $items['admin/settings/eve_api/alliance_api_key'] = $admin_base + array(
+  $items['admin/settings/eve_api/alliance_api_key'] = array(
     'title' => 'API Key',
     'description' => 'Edit your Alliance API Key if you have not done so, enter it now.',
     'page arguments' => array('eve_api_admin_alliance_api_key_form'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
-  );
+  ) + $admin_base;
 
   if (variable_get('eve_api_enable', FALSE)) {
-    $items['admin/settings/eve_api/settings'] = $admin_base + array(
+    $items['admin/settings/eve_api/settings'] = array(
       'title' => 'Roles',
       'description' => 'From here you can change various settings.',
       'page arguments' => array('eve_api_admin_roles_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 10,
-    );
+    ) + $admin_base;
 
-    $items['admin/settings/eve_api/registration'] = $admin_base + array(
+    $items['admin/settings/eve_api/registration'] = array(
       'title' => 'Registration',
       'description' => 'Edit your Access Mask and required standing to register on the site.',
       'page arguments' => array('eve_api_admin_registration_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 20,
-    );
+    ) + $admin_base;
 
-    $items['admin/settings/eve_api/list_blues'] = $admin_base + array(
+    $items['admin/settings/eve_api/list_blues'] = array(
       'title' => 'Blues',
       'description' => 'You can remove Blues and Add Blues from here.',
       'page arguments' => array('eve_api_admin_list_blues_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 50,
-    );
+    ) + $admin_base;
 
-    $items['admin/settings/eve_api/list_blues/add_blue'] = $admin_base + array(
+    $items['admin/settings/eve_api/list_blues/add_blue'] = array(
       'title' => 'Add Blue',
       'description' => 'You can manually add blues from here.',
       'page arguments' => array('eve_api_admin_add_blues_form'),
       'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
       'type' => MENU_LOCAL_ACTION,
       'weight' => 55,
-    );
+    ) + $admin_base;
 
-    $items['admin/settings/eve_api/list_whitelist'] = $admin_base + array(
+    $items['admin/settings/eve_api/list_whitelist'] = array(
       'title' => 'Whitelist',
       'description' => 'You can remove and add Whitelisted API Characters from here.',
       'page arguments' => array('eve_api_admin_list_whitelist_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 60,
-    );
+    ) + $admin_base;
 
-    $items['admin/settings/eve_api/list_whitelist/add_whitelist'] = $admin_base + array(
+    $items['admin/settings/eve_api/list_whitelist/add_whitelist'] = array(
       'title' => 'Add Whitelist',
       'description' => 'Manually add Whitelisted API Characters from here.',
       'page arguments' => array('eve_api_admin_add_whitelist_form'),
       'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
       'type' => MENU_LOCAL_ACTION,
       'weight' => 65,
-    );
+    ) + $admin_base;
 
-    $items['admin/settings/eve_api/role_whitelist'] = $admin_base + array(
+    $items['admin/settings/eve_api/role_whitelist'] = array(
       'title' => 'Role Whitelist',
       'description' => 'You can remove and add Whitelisted Roles for Characters here, such as CEO and Directors.',
       'page arguments' => array('eve_api_admin_role_whitelist_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 70,
-    );
+    ) + $admin_base;
 
-    $items['admin/settings/eve_api/role_whitelist/add_role_whitelist'] = $admin_base + array(
+    $items['admin/settings/eve_api/role_whitelist/add_role_whitelist'] = array(
       'title' => 'Add Role Whitelist',
       'description' => 'Manually add/update Whitelisted Roles from here.',
       'page arguments' => array('eve_api_admin_add_role_whitelist_form'),
       'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
       'type' => MENU_LOCAL_ACTION,
       'weight' => 75,
-    );
+    ) + $admin_base;
 
-    $items['user/%user/eve_api'] = $user_base + array(
+    $items['user/%user/eve_api'] = array(
       'title' => 'EVE API',
       'page arguments' => array(
         'eve_api_user_list_api_form',
@@ -168,9 +168,9 @@ function eve_api_menu() {
       ),
       'type' => MENU_LOCAL_TASK,
       'weight' => 0,
-    );
+    ) + $user_base;
 
-    $items['user/%user/eve_api/list_api'] = $user_base + array(
+    $items['user/%user/eve_api/list_api'] = array(
       'title' => 'API Keys',
       'page arguments' => array(
         'eve_api_user_list_api_form',
@@ -178,9 +178,9 @@ function eve_api_menu() {
       ),
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => 0,
-    );
+    ) + $user_base;
 
-    $items['user/%user/eve_api/select_main_character'] = $user_base + array(
+    $items['user/%user/eve_api/select_main_character'] = array(
       'title' => 'Main Character',
       'page arguments' => array(
         'eve_api_user_select_main_character_form',
@@ -188,9 +188,9 @@ function eve_api_menu() {
       ),
       'type' => MENU_LOCAL_TASK,
       'weight' => 10,
-    );
+    ) + $user_base;
 
-    $items['user/%user/eve_api/add_api_key'] = $user_base + array(
+    $items['user/%user/eve_api/add_api_key'] = array(
       'title' => 'Add API Key',
       'page arguments' => array(
         'eve_api_user_add_api_form',
@@ -198,9 +198,9 @@ function eve_api_menu() {
       ),
       'type' => MENU_LOCAL_TASK,
       'weight' => 20,
-    );
+    ) + $user_base;
 
-    $items['user/%user/eve_api/update_api_key/%'] = $user_base + array(
+    $items['user/%user/eve_api/update_api_key/%'] = array(
       'title' => 'Update API Key',
       'page arguments' => array(
         'eve_api_user_update_api_form',
@@ -210,7 +210,7 @@ function eve_api_menu() {
       'context' => MENU_CONTEXT_INLINE,
       'type' => MENU_LOCAL_ACTION,
       'weight' => 25,
-    );
+    ) + $user_base;
   }
 
   return $items;

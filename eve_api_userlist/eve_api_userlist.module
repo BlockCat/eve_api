@@ -42,38 +42,61 @@ function eve_api_userlist_menu() {
   );
 
   if (variable_get('eve_api_enable', FALSE)) {
-    $items['eve_api/userlist'] = $user_base + array(
+    $items['admin/settings/eve_api/userlist'] = array(
       'title' => 'User List',
-      'page arguments' => array('eve_api_userlist_user_userlist_form'),
+      'description' => 'Configure and edit User List settings.',
+      'page arguments' => array('eve_api_userlist_admin_form'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 80,
+    ) + $admin_base;
+
+    $items['eve_api/userlist'] = array(
+      'title' => 'User List',
+      'page callback' => 'eve_api_userlist_user_userlist_page',
       'type' => MENU_LOCAL_TASK,
       'weight' => 0,
-    );
+    ) + $user_base;
 
-    $items['eve_api/userlist/%'] = $user_base + array(
+    $items['eve_api/userlist/%'] = array(
       'title' => 'Alliance User List',
-      'page arguments' => array('eve_api_userlist_user_userlist_form', 2),
+      'page callback' => 'eve_api_userlist_user_userlist_page',
+      'page arguments' => array(2),
       'type' => MENU_LOCAL_TASK,
       'weight' => 0,
-    );
+    ) + $user_base;
 
-    $items['eve_api/userlist/%/director'] = $user_base + array(
+    $items['eve_api/userlist/%/director'] = array(
       'title' => 'Director Userlist',
-      'page arguments' => array('eve_api_userlist_user_userlist_director_form', 2),
+      'page callback' => 'eve_api_userlist_user_userlist_director_page',
+      'page arguments' => array(2),
       'type' => MENU_LOCAL_TASK,
       'weight' => 0,
-      'page callback' => 'eve_api_userlist_director_access',
+      'access callback' => 'eve_api_userlist_private_access',
       'access arguments' => array(2),
-    );
+    ) + $user_base;
   }
 
   return $items;
 }
 
 /**
- * Access callback for user omni eve api director check.
+ * Access callback for user omni eve api director/ceo check.
  */
-function eve_api_userlist_director_access($corporation_id) {
-  return (eve_api_character_is_director($GLOBALS['user']->characterID, $corporation_id) || user_access('moderate eve_api users'));
+function eve_api_userlist_private_access($corporation_id) {
+  switch (variable_get('eve_api_userlist_private_access', 0)) {
+    case 0:
+      return (eve_api_character_is_director($GLOBALS['user']->characterID, $corporation_id) || (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api private userlist')) || user_access('moderate eve_api users'));
+      break;
+
+    case 1:
+      return (eve_api_character_is_ceo($GLOBALS['user']->characterID, $corporation_id) || (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api private userlist')) || user_access('moderate eve_api users'));
+      break;
+
+    default:
+    case 2:
+      return (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api private userlist')) || user_access('moderate eve_api users');
+      break;
+  }
 }
 
 /**
@@ -85,6 +108,11 @@ function eve_api_userlist_permission() {
   $permissions['view eve_api userlist'] = array(
     'title' => t('Access EVE API User List'),
     'description' => t('Allow user to view the EVE API User List.'),
+  );
+
+  $permissions['view eve_api private userlist'] = array(
+    'title' => t('Access EVE API Private User List'),
+    'description' => t('Allow user to view the Private EVE API User List information within their own corporation.'),
   );
 
   return $permissions;

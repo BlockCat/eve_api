@@ -161,13 +161,16 @@ function eve_api_cron_api_user_sync($item) {
         ':characterIDs' => $whitelist,
       ));
 
+      $allow_expires = variable_get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
+      $allow_type = variable_get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
+
       if ($result->rowCount()) {
-        if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
+        if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
           $error = 1;
         }
       }
       else {
-        if ($characters['expires'] || $characters['type'] != 'Account' || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
+        if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
           $error = 1;
         }
       }

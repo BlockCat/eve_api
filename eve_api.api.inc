@@ -845,10 +845,46 @@ function eve_api_characters_exist($characters) {
 }
 
 /**
+ * Function to check if the Characters is in a corp.
+ *
+ * @param int $character_id
+ *   A unique character id.
+ * @param int $corporation_id
+ *   A unique corporation id.
+ *
+ * @return bool
+ *   TRUE or FALSE.
+ */
+function eve_api_character_is_in_corp($character_id, $corporation_id = NULL) {
+  $query = db_select('eve_api_characters_roles', 'cr');
+
+  if (isset($corporation_id)) {
+    $query->join('eve_api_characters', 'c', 'cr.characterID = c.characterID');
+    $query->condition('c.corporationID', $corporation_id, '=');
+  }
+
+  $result = $query->fields('cr', array(
+      'characterID',
+    ))
+    ->condition('cr.deleted', 0, '=')
+    ->condition('cr.roleID', 1, '=')
+    ->condition('cr.characterID', (int) $character_id, '=')
+    ->execute();
+
+  if ($result->rowCount()) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+/**
  * Function to check if the Characters is a Director.
  *
  * @param int $character_id
  *   A unique character id.
+ * @param int $corporation_id
+ *   A unique corporation id.
  *
  * @return bool
  *   TRUE or FALSE.
@@ -899,6 +935,8 @@ function eve_api_character_is_director($character_id, $corporation_id = NULL) {
  *
  * @param int $character_id
  *   A unique character id.
+ * @param int $corporation_id
+ *   A unique corporation id.
  *
  * @return bool
  *   TRUE or FALSE.

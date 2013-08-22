@@ -97,14 +97,17 @@ function eve_api_user_add_api_form_validate($form, &$form_state) {
       ':characterIDs' => $whitelist,
     ));
 
+    $allow_expires = variable_get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
+    $allow_type = variable_get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
+
     if ($result->rowCount()) {
-      if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
+      if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
         form_set_error('keyID', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
         form_set_error('vCode');
       }
     }
     else {
-      if ($characters['expires'] || $characters['type'] != 'Account' || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
+      if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
         form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
         form_set_error('vCode');
       }
@@ -756,14 +759,17 @@ function eve_api_user_update_api_form_validate($form, &$form_state) {
       ':characterIDs' => $whitelist,
     ));
 
+    $allow_expires = variable_get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
+    $allow_type = variable_get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
+
     if ($result->rowCount()) {
-      if ($characters['expires'] || ($characters['accessMask'] & 8388680) != 8388680) {
+      if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
         form_set_error('keyID', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
         form_set_error('vCode');
       }
     }
     else {
-      if ($characters['expires'] || $characters['type'] != 'Account' || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
+      if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
         form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
         form_set_error('vCode');
       }

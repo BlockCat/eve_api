@@ -46,16 +46,16 @@ function eve_api_jabber_menu() {
   );
 
   if (variable_get('eve_api_enable', FALSE)) {
-    $items['admin/settings/eve_api/jabber'] = $admin_base + array(
+    $items['admin/settings/eve_api/jabber'] = array(
       'title' => 'Jabber',
       'description' => 'Configure and edit Jabber connection settings.',
       'page arguments' => array('eve_api_jabber_admin_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 40,
-    );
+    ) + $admin_base;
 
     if (variable_get('eve_api_jabber_enable', FALSE)) {
-      $items['user/%user/eve_api/jabber'] = $user_base + array(
+      $items['user/%user/eve_api/jabber'] = array(
         'title' => 'Jabber',
         'page arguments' => array(
           'eve_api_jabber_user_form',
@@ -63,7 +63,7 @@ function eve_api_jabber_menu() {
         ),
         'type' => MENU_LOCAL_TASK,
         'weight' => 40,
-      );
+      ) + $user_base;
     }
   }
 
