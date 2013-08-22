@@ -82,7 +82,7 @@ function eve_api_admin_settings_form($form, &$form_state) {
       '#title' => t('Nag User to Select Character'),
       '#description' => t('Display a message on every page telling the user to select a main character if they have not selected a main character.'),
       '#options' => array(0 => t('No'), 1 => t('Yes')),
-      '#weight' => 0,
+      '#weight' => 10,
       '#default_value' => (int) variable_get('eve_api_nag_user', TRUE),
     );
   }
