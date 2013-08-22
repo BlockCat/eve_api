@@ -142,7 +142,7 @@ function eve_api_jabber_cron_user_sync($item) {
  */
 function eve_api_jabber_cron_role_sync($item) {
   if ($item == 3) {
-    watchdog('eve_api_jabber', 'Cron Sync Jabber Roles task has failed 2 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
+    watchdog('eve_api_jabber', 'Cron Sync Jabber Roles task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_WARNING);
     return FALSE;
   }
 
@@ -175,7 +175,7 @@ function eve_api_jabber_cron_role_sync($item) {
     }
   }
   catch (EveApiException $e) {
-    watchdog('eve_api_jabber', 'Cron Sync Jabber Roles task has failed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
+    watchdog('eve_api_jabber', 'Cron Sync Jabber Roles task has failed.', NULL, WATCHDOG_WARNING);
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_jabber_cron_role_sync');
     $queue->createItem($item);
