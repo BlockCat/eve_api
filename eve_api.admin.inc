@@ -177,6 +177,9 @@ function eve_api_admin_settings_form_submit($form, &$form_state) {
 
     drupal_set_message(t('The Alliance API Info is set to be retrieved on the next cron job, it can take up to a minute for the cron task to be triggered.'));
   }
+  elseif ((bool) $form_state['values']['enable']) {
+    drupal_set_message(t('Settings Updated.'));
+  }
   else {
     variable_set('eve_api_first_run', FALSE);
     variable_set('eve_api_enable', FALSE);
