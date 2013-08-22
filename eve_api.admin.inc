@@ -460,6 +460,8 @@ function eve_api_admin_registration_form($form, &$form_state) {
     '#title' => t('Modify Registration Settings'),
     '#description' => t('Edit your required user and active registration settings.'),
     '#weight' => 0,
+    '#collapsed' => FALSE,
+    '#collapsible' => TRUE,
   );
 
   $form['registration']['standing'] = array(
@@ -491,16 +493,16 @@ function eve_api_admin_registration_form($form, &$form_state) {
     '#default_value' => (int) variable_get('eve_api_require_type', TRUE),
   );
 
-  $form['registration']['mask'] = array(
+  $form['mask'] = array(
     '#type' => 'fieldset',
     '#title' => t('Required Access Mask'),
     '#description' => t('Edit your Access Mask that is required to register on the site.'),
-    '#weight' => 40,
-    '#collapsed' => TRUE,
+    '#weight' => 10,
+    '#collapsed' => FALSE,
     '#collapsible' => TRUE,
   );
 
-  $form['registration']['mask']['current_mask'] = array(
+  $form['mask']['current_mask'] = array(
     '#type' => 'markup',
     '#prefix' => '<p>',
     '#markup' => t('Current Mask: @access_mask', array('@access_mask' => $access_mask)),
@@ -508,7 +510,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
     '#weight' => 0,
   );
 
-  $form['registration']['mask']['access_mask'] = array(
+  $form['mask']['access_mask'] = array(
     '#type' => 'tableselect',
     '#header' => $header,
     '#options' => $options,
@@ -517,10 +519,10 @@ function eve_api_admin_registration_form($form, &$form_state) {
     '#weight' => 10,
   );
 
-  $form['registration']['mask']['access_mask'][8]['#disabled'] = TRUE;
-  $form['registration']['mask']['access_mask'][8388608]['#disabled'] = TRUE;
+  $form['mask']['access_mask'][8]['#disabled'] = TRUE;
+  $form['mask']['access_mask'][8388608]['#disabled'] = TRUE;
 
-  $form['registration']['mask']['pager'] = array(
+  $form['mask']['pager'] = array(
     '#theme' => 'pager',
     '#weight' => 20,
   );
@@ -528,7 +530,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
   $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Update Mask'),
-    '#weight' => 10,
+    '#weight' => 20,
   );
 
   if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {

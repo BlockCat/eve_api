@@ -209,16 +209,16 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
       525600 => '1 Year',
     );
 
-    $form['teamspeak_settings']['reg'] = array(
+    $form['registration_notification'] = array(
       '#type' => 'fieldset',
       '#title' => t('Registration Notification'),
       '#description' => t('Options releated to non-registered Teamspeak users.'),
       '#weight' => 20,
-      '#collapsed' => TRUE,
+      '#collapsed' => FALSE,
       '#collapsible' => TRUE,
     );
 
-    $form['teamspeak_settings']['reg']['reg_time'] = array(
+    $form['registration_notification']['reg_time'] = array(
       '#type' => 'select',
       '#title' => t('User Register Time Limit'),
       '#description' => t('How long until the registration options are enforced.'),
@@ -227,7 +227,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
       '#default_value' => variable_get('eve_api_teamspeak_reg_time', 10),
     );
 
-    $form['teamspeak_settings']['reg']['reg_ban_time'] = array(
+    $form['registration_notification']['reg_ban_time'] = array(
       '#type' => 'select',
       '#title' => t('Ban Time'),
       '#description' => t('How long to ban the user.'),
@@ -292,31 +292,31 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     $selected['reg_kick_enable'] = variable_get('eve_api_teamspeak_reg_kick_enable', FALSE);
     $selected['reg_ban_enable'] = variable_get('eve_api_teamspeak_reg_ban_enable', FALSE);
 
-    $form['teamspeak_settings']['reg']['notification'] = array(
-      '#type' => 'fieldset',
+    $form['registration_notification']['reg_options_description'] = array(
       '#title' => t('Notification Options'),
       '#description' => t('Options available after the Registration Time Limit has expired.'),
+      '#type' => 'item',
       '#weight' => 20,
     );
 
-    $form['teamspeak_settings']['reg']['notification']['reg_options'] = array(
+    $form['registration_notification']['reg_options'] = array(
       '#type' => 'tableselect',
       '#header' => $header,
       '#options' => $options,
       '#default_value' => $selected,
-      '#weight' => 0,
+      '#weight' => 30,
     );
 
-    $form['teamspeak_settings']['user'] = array(
+    $form['user_notification'] = array(
       '#type' => 'fieldset',
       '#title' => t('Nickname Notification'),
       '#description' => t('Options releated to registered Teamspeak users with incorrect nicknames.'),
       '#weight' => 30,
-      '#collapsed' => TRUE,
+      '#collapsed' => FALSE,
       '#collapsible' => TRUE,
     );
 
-    $form['teamspeak_settings']['user']['user_time'] = array(
+    $form['user_notification']['user_time'] = array(
       '#type' => 'select',
       '#title' => t('Correct Name Time Limit'),
       '#description' => t('How long until the incorrect nickname options are enforced.'),
@@ -325,7 +325,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
       '#default_value' => variable_get('eve_api_teamspeak_user_time', 10),
     );
 
-    $form['teamspeak_settings']['user']['user_ban_time'] = array(
+    $form['user_notification']['user_ban_time'] = array(
       '#type' => 'select',
       '#title' => t('Ban Time'),
       '#description' => t('How long to ban the user.'),
@@ -381,26 +381,28 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     $selected['user_kick_enable'] = variable_get('eve_api_teamspeak_user_kick_enable', FALSE);
     $selected['user_ban_enable'] = variable_get('eve_api_teamspeak_user_ban_enable', FALSE);
 
-    $form['teamspeak_settings']['user']['notification'] = array(
-      '#type' => 'fieldset',
+    $form['user_notification']['user_options_description'] = array(
       '#title' => t('Notification Options'),
       '#description' => t('Options available after the Correct Name Time Limit has expired.'),
+      '#type' => 'item',
       '#weight' => 20,
     );
 
-    $form['teamspeak_settings']['user']['notification']['user_options'] = array(
+    $form['user_notification']['user_options'] = array(
+      '#title' => t('Notification Options'),
+      '#description' => t('Options available after the Correct Name Time Limit has expired.'),
       '#type' => 'tableselect',
       '#header' => $header,
       '#options' => $options,
       '#default_value' => $selected,
-      '#weight' => 0,
+      '#weight' => 30,
     );
   }
 
   $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
-    '#weight' => 20,
+    '#weight' => 50,
   );
 
   if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
