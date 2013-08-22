@@ -40,7 +40,7 @@ function eve_api_jabber_menu() {
 
   $user_base = array(
     'page callback' => 'drupal_get_form',
-    'access callback' => 'eve_api_edit',
+    'access callback' => 'eve_api_edit_access',
     'access arguments' => array(1),
     'file' => 'eve_api_jabber.user.inc',
   );
