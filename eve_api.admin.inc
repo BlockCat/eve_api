@@ -76,6 +76,15 @@ function eve_api_admin_settings_form($form, &$form_state) {
       '#weight' => 0,
       '#default_value' => (int) variable_get('eve_api_enable_cron', TRUE),
     );
+
+    $form['settings']['nag_user'] = array(
+      '#type' => 'radios',
+      '#title' => t('Nag User to Select Character'),
+      '#description' => t('Display a message on every page telling the user to select a main character if they have not selected a main character.'),
+      '#options' => array(0 => t('No'), 1 => t('Yes')),
+      '#weight' => 0,
+      '#default_value' => (int) variable_get('eve_api_nag_user', TRUE),
+    );
   }
   else {
     $form['enter_api']['force'] = array(
@@ -84,6 +93,11 @@ function eve_api_admin_settings_form($form, &$form_state) {
     );
 
     $form['enter_api']['enable_cron'] = array(
+      '#type' => 'hidden',
+      '#value' => TRUE,
+    );
+
+    $form['enter_api']['nag_user'] = array(
       '#type' => 'hidden',
       '#value' => TRUE,
     );
@@ -156,6 +170,7 @@ function eve_api_admin_settings_form_submit($form, &$form_state) {
   variable_set('eve_api_corp_keyid', (int) $form_state['values']['keyID']);
   variable_set('eve_api_corp_vcode', (string) $form_state['values']['vCode']);
   variable_set('eve_api_enable_cron', (bool) $form_state['values']['enable_cron']);
+  variable_set('eve_api_nag_user', (bool) $form_state['values']['nag_user']);
 
   // It's not pretty but it works.
   foreach ($characters['characters'] as $character) {
