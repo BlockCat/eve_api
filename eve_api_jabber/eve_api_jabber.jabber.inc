@@ -262,7 +262,7 @@ function eve_api_jabber_url_send_query($url) {
   }
 
   if (!empty($html->error)) {
-    drupal_set_message(t('EVE API returned an error with the HTTP request: @error', array('@error' => check_plain($html->error))), 'error');
+    drupal_set_message(t('EVE API returned an error with the HTTP request: @error', array('@error' => check_plain($html->error))), 'error', FALSE);
   }
 
   if ($html->code == 200) {
@@ -270,7 +270,7 @@ function eve_api_jabber_url_send_query($url) {
       $xml = @new SimpleXMLElement($html->data);
     }
     catch (Exception $e) {
-      drupal_set_message(t('EVE API returned an error with the data retrieved: @error', array('@error' => check_plain($e->getMessage())), 'error'));
+      drupal_set_message(t('EVE API returned an error with the data retrieved: @error', array('@error' => check_plain($e->getMessage()))), 'error', FALSE);
       $xml = NULL;
     }
   }

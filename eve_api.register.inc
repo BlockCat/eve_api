@@ -507,7 +507,7 @@ function eve_api_enter_api_form($form, &$form_state) {
   );
 
   if (!variable_get('eve_api_enable', FALSE)) {
-    drupal_set_message(t('Registrations temporarily disabled.'), 'error');
+    drupal_set_message(t('Registrations temporarily disabled.'), 'error', FALSE);
     $form['buttons']['next']['#disabled'] = TRUE;
   }
 

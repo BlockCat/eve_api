@@ -523,6 +523,6 @@ function eve_api_boot() {
   }
 
   if ($GLOBALS['user']->characterID == 0) {
-    drupal_set_message(t('Your account is not associated with an EVE Character, you must select a <a href="@url">Main Character</a>.', array('@url' => '/user/' . $GLOBALS['user']->uid . '/eve_api/select_main_character')), 'error');
+    drupal_set_message(t('Your account is not associated with an EVE Character, you must select a <a href="@url">Main Character</a>.', array('@url' => '/user/' . $GLOBALS['user']->uid . '/eve_api/select_main_character')), 'error', FALSE);
   }
 }
