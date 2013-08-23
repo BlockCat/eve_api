@@ -79,16 +79,16 @@ function eve_api_menu() {
   $items['admin/eve_api'] = array(
     'title' => 'EVE API',
     'description' => 'Configure and setup EVE API.',
-    'page arguments' => array('eve_api_admin_settings_form'),
-    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'system_admin_menu_block_page',
     'weight' => 0,
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
   ) + $admin_base;
 
   $items['admin/eve_api/settings'] = array(
     'title' => 'Settings',
     'description' => 'Configure and setup EVE API.',
     'page arguments' => array('eve_api_admin_settings_form'),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
   ) + $admin_base;
 
@@ -97,7 +97,6 @@ function eve_api_menu() {
       'title' => 'Roles',
       'description' => 'Configure default roles for various roles required for EVE API to function.',
       'page arguments' => array('eve_api_admin_roles_form'),
-      'type' => MENU_LOCAL_TASK,
       'weight' => 10,
     ) + $admin_base;
 
@@ -105,7 +104,6 @@ function eve_api_menu() {
       'title' => 'Registration',
       'description' => 'Modify the requirements to register.',
       'page arguments' => array('eve_api_admin_registration_form'),
-      'type' => MENU_LOCAL_TASK,
       'weight' => 20,
     ) + $admin_base;
 
@@ -113,7 +111,6 @@ function eve_api_menu() {
       'title' => 'Blues',
       'description' => 'Edit Blue standings.',
       'page arguments' => array('eve_api_admin_list_blues_form'),
-      'type' => MENU_LOCAL_TASK,
       'weight' => 50,
     ) + $admin_base;
 
@@ -121,7 +118,6 @@ function eve_api_menu() {
       'title' => 'Add Blue',
       'description' => 'Add a new Blue standing.',
       'page arguments' => array('eve_api_admin_add_blues_form'),
-      'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
       'type' => MENU_LOCAL_ACTION,
       'weight' => 55,
     ) + $admin_base;
@@ -130,7 +126,6 @@ function eve_api_menu() {
       'title' => 'Whitelist',
       'description' => 'Edit Character Whitelist.',
       'page arguments' => array('eve_api_admin_list_whitelist_form'),
-      'type' => MENU_LOCAL_TASK,
       'weight' => 60,
     ) + $admin_base;
 
@@ -138,7 +133,6 @@ function eve_api_menu() {
       'title' => 'Add Whitelist',
       'description' => 'Add a new Whitelisted character.',
       'page arguments' => array('eve_api_admin_add_whitelist_form'),
-      'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
       'type' => MENU_LOCAL_ACTION,
       'weight' => 65,
     ) + $admin_base;
@@ -147,7 +141,6 @@ function eve_api_menu() {
       'title' => 'Role Whitelist',
       'description' => 'Edit CEO and Director Whitelist.',
       'page arguments' => array('eve_api_admin_role_whitelist_form'),
-      'type' => MENU_LOCAL_TASK,
       'weight' => 70,
     ) + $admin_base;
 
@@ -155,7 +148,6 @@ function eve_api_menu() {
       'title' => 'Add Role Whitelist',
       'description' => 'Add a new CEO or Director Whitelist.',
       'page arguments' => array('eve_api_admin_add_role_whitelist_form'),
-      'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
       'type' => MENU_LOCAL_ACTION,
       'weight' => 75,
     ) + $admin_base;

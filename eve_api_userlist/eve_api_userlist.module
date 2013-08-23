@@ -46,7 +46,6 @@ function eve_api_userlist_menu() {
       'title' => 'User List',
       'description' => 'Configure and edit User List settings.',
       'page arguments' => array('eve_api_userlist_admin_form'),
-      'type' => MENU_LOCAL_TASK,
       'weight' => 80,
     ) + $admin_base;
 
