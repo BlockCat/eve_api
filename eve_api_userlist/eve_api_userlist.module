@@ -88,16 +88,13 @@ function eve_api_userlist_private_access($corporation_id) {
   switch (variable_get('eve_api_userlist_private_access', 0)) {
     case 0:
       return (eve_api_character_is_director($GLOBALS['user']->characterID, $corporation_id) || (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api private userlist')) || user_access('moderate eve_api users'));
-      break;
 
     case 1:
       return (eve_api_character_is_ceo($GLOBALS['user']->characterID, $corporation_id) || (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api private userlist')) || user_access('moderate eve_api users'));
-      break;
 
     default:
     case 2:
       return (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api private userlist')) || user_access('moderate eve_api users');
-      break;
   }
 }
 

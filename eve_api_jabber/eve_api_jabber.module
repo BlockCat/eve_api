@@ -104,7 +104,7 @@ function eve_api_jabber_eve_api_user_update($account, $old_name = NULL) {
         eve_api_jabber_connect();
 
         $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-          ':username' => (string) eve_api_jabber_format_name($old_namee),
+          ':username' => (string) eve_api_jabber_format_name($old_name),
         ));
 
         if ($result->rowCount()) {

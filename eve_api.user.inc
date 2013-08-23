@@ -353,8 +353,6 @@ function eve_api_user_list_api_form($form, &$form_state, $account) {
       }
     }
 
-    $v_code = (strlen($api_single['vCode']) > 13) ? substr($api_single['vCode'], 0, 10) . '...' : $api_single['vCode'];
-
     $options[$api_single['apiID']] = array(
       'action' => array(
         'data' => array(

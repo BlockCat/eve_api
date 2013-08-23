@@ -131,6 +131,8 @@ function eve_api_subtask_finish(&$form_state) {
  * Implements hook_form_FORM_ID_alter() for user_register_form().
  */
 function eve_api_form_user_register_form_alter(&$form, &$form_state) {
+  global $user;
+
   unset($form['actions']);
 
   $account = $form['#user'];

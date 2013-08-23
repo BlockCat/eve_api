@@ -21,8 +21,8 @@ function eve_api_userlist_admin_form($form, &$form_state) {
 
   $form['userlist']['private_access'] = array(
     '#type' => 'radios',
-    '#title' => t('Access Private API Key Information. By Permission is assignable to a role by "Access EVE API Private User List".'),
-    '#description' => t(''),
+    '#title' => t('Private API Key Information'),
+    '#description' => t('Which role can access the Private API Key Information. By Permission is assignable to a role by "Access EVE API Private User List".'),
     '#options' => array(
       0 => t('Director, CEO, or By Permission'),
       1 => t('CEO or By Permission'),

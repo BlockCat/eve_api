@@ -136,8 +136,6 @@ function eve_api_cron_api_user_sync($item) {
             db_update('eve_api_characters_roles')->fields(array('errorID' => (int) $characters['error'], 'deleted' => 1))->condition('apiID', (int) $row->apiID, '=')->execute();
 
             continue;
-            break;
-
           default:
             db_merge('eve_api_api_keys')->key(array('apiID' => (int) $row->apiID))->fields(array(
               'apiID' => (int) $row->apiID,
@@ -292,7 +290,7 @@ function eve_api_cron_api_user_sync($item) {
           }
         }
       }
-        
+
       $all_characters = array_replace_recursive($characters, $all_characters);
     }
   }

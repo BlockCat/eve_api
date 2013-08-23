@@ -451,7 +451,6 @@ function eve_api_form_user_profile_form_alter(&$form, &$form_state) {
   global $user;
 
   $account = $form_state['user'];
-  $category = $form['#user_category'];
 
   $uid = $account->uid;
   $register = ($account->uid > 0 ? FALSE : TRUE);
@@ -477,7 +476,7 @@ function eve_api_form_user_profile_form_alter(&$form, &$form_state) {
   ));
 
   if ($result->rowCount() && empty($valid_characters_list)) {
-    $form['account']['name']['#options'] = array($account->name => t('No Character\'s Found'));
+    $form['account']['name']['#options'] = array($account->name => t("No Character's Found"));
   }
   elseif ($result->rowCount()) {
     $form['account']['name']['#empty_option'] = t('- Select a New Character -');
