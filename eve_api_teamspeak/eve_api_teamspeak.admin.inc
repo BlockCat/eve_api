@@ -38,8 +38,8 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     '#title' => t('Server Address'),
     '#description' => t('The server address users will use to connect to your TeamSpeak Server.'),
     '#required' => TRUE,
-    '#size' => 80,
-    '#maxlength' => 70,
+    '#size' => 60,
+    '#maxlength' => 50,
     '#weight' => 0,
     '#default_value' => variable_get('eve_api_teamspeak_server_address', 'teamspeak.com'),
   );
