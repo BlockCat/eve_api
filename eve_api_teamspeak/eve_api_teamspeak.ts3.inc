@@ -5,7 +5,7 @@
  */
 
 /**
- * Sanitize input variable, used for Teamspeak messages.
+ * Sanitize input variable, used for TeamSpeak messages.
  *
  * @param string $input
  *   A dirty string.
@@ -46,13 +46,13 @@ function eve_api_teamspeak_get_version() {
 }
 
 /**
- * Generates the Teamspeak name as specified in Teamspeak Settings.
+ * Generates the TeamSpeak name as specified in TeamSpeak Settings.
  *
  * @param string $character_name
  *   An eve Character Name.
  *
  * @return string
- *   The users Teamspeak display name.
+ *   The users TeamSpeak display name.
  */
 function eve_api_teamspeak_format_name($character_name) {
   // Valid Options:
@@ -75,14 +75,14 @@ function eve_api_teamspeak_format_name($character_name) {
 }
 
 /**
- * Test the connection to the Teamspeak 3 Server.
+ * Test the connection to the TeamSpeak 3 Server.
  *
  * @return object
- *   The Teamspeak connection object.
+ *   The TeamSpeak connection object.
  */
 function eve_api_teamspeak_connection($check = FALSE) {
   if ((!variable_get('eve_api_teamspeak_enable', FALSE) || !variable_get('eve_api_teamspeak_framework_installed', FALSE)) && !$check) {
-    throw new EveApiException(t('Teamspeak 3 Connection disabled.'));
+    throw new EveApiException(t('TeamSpeak 3 Connection disabled.'));
   }
 
   // Load the TeamSpeak 3 PHP Framework Library.
@@ -101,22 +101,22 @@ function eve_api_teamspeak_connection($check = FALSE) {
     $ts3->setPredefinedQueryName('OEABOT');
   }
   catch (TeamSpeak3_Exception $e) {
-    throw new EveApiException(t('Teamspeak 3 Connection failed. Error: @error', array('@error' => check_plain($e->getMessage()))));
+    throw new EveApiException(t('TeamSpeak 3 Connection failed. Error: @error', array('@error' => check_plain($e->getMessage()))));
   }
 
   return $ts3;
 }
 
 /**
- * Create a Teamspeak 3 Server group on the Teamspeak 3 server.
+ * Create a TeamSpeak 3 Server group on the TeamSpeak 3 server.
  *
  * @param object $ts3
- *   The Teamspeak connection object.
+ *   The TeamSpeak connection object.
  * @param string $role
  *   The name of the role.
  * 
  * @return string
- *   The new Teamspeak Group ID.
+ *   The new TeamSpeak Group ID.
  */
 function eve_api_teamspeak_group_create(&$ts3, $role) {
   try {
@@ -138,15 +138,15 @@ function eve_api_teamspeak_group_create(&$ts3, $role) {
 }
 
 /**
- * Get the Teamspeak 3 unique group ID.
+ * Get the TeamSpeak 3 unique group ID.
  *
  * @param object $ts3
- *   The Teamspeak connection object.
+ *   The TeamSpeak connection object.
  * @param string $role
  *   The name of the role.
  * 
  * @return string
- *   The Teamspeak Group ID.
+ *   The TeamSpeak Group ID.
  */
 function eve_api_teamspeak_group_get_id(&$ts3, $role) {
   try {
@@ -163,7 +163,7 @@ function eve_api_teamspeak_group_get_id(&$ts3, $role) {
  * Get a list of current Teampspeak Server groups.
  *
  * @param object $ts3
- *   The Teamspeak connection object.
+ *   The TeamSpeak connection object.
  * 
  * @return array
  *   Returns a list of server groups available.
@@ -183,7 +183,7 @@ function eve_api_teamspeak_get_groups(&$ts3) {
  * Retrieve list of users currently connected to Teamspeak.
  *
  * @param object $ts3
- *   The Teamspeak connection object.
+ *   The TeamSpeak connection object.
  * 
  * @return array
  *   Returns an array filled with TeamSpeak3_Node_Client objects.
@@ -203,9 +203,9 @@ function eve_api_teamspeak_user_list(&$ts3) {
  * Retrieve info on user currently connected to Teamspeak.
  *
  * @param object $ts3
- *   The Teamspeak connection object.
+ *   The TeamSpeak connection object.
  * @param int $teamspeak_dbid
- *   The Teamspeak unique database id of a user.
+ *   The TeamSpeak unique database id of a user.
  * 
  * @return array
  *   Returns a list of properties from the database for the client specified.
@@ -222,12 +222,12 @@ function eve_api_teamspeak_user_info(&$ts3, $teamspeak_dbid) {
 }
 
 /**
- * Get the Teamspeak 3 users Unique ID.
+ * Get the TeamSpeak 3 users Unique ID.
  *
  * @param object $ts3
- *   The Teamspeak connection object.
+ *   The TeamSpeak connection object.
  * @param string $teamspeak_name
- *   The expected Teamspeak 3 user name.
+ *   The expected TeamSpeak 3 user name.
  * 
  * @return string
  *   The users unique teamspeak id.
@@ -244,10 +244,10 @@ function eve_api_teamspeak_user_by_name(&$ts3, $teamspeak_name) {
 }
 
 /**
- * Delete's the user from the Teamspeak Database.
+ * Delete's the user from the TeamSpeak Database.
  *
  * @param object $ts3
- *   The Teamspeak connection object.
+ *   The TeamSpeak connection object.
  * @param int $teamspeak_dbid
  *   The database ID for the teamspeak user.
  * 
@@ -269,7 +269,7 @@ function eve_api_teamspeak_delete_user(&$ts3, $teamspeak_dbid) {
  * Get a list of groups the user is in.
  *
  * @param object $ts3
- *   The Teamspeak connection object.
+ *   The TeamSpeak connection object.
  * @param int $teamspeak_dbid
  *   The database ID for the teamspeak user.
  * 
@@ -289,10 +289,10 @@ function eve_api_teamspeak_user_get_groups(&$ts3, $teamspeak_dbid) {
 }
 
 /**
- * Delete's the user from the Teamspeak group.
+ * Delete's the user from the TeamSpeak group.
  *
  * @param object $ts3
- *   The Teamspeak connection object.
+ *   The TeamSpeak connection object.
  * @param int $teamspeakgid
  *   The group ID for the teamspeak group.
  * @param int $teamspeak_dbid
@@ -313,10 +313,10 @@ function eve_api_teamspeak_user_remove_group(&$ts3, $teamspeakgid, $teamspeak_db
 }
 
 /**
- * Add's the user to the Teamspeak group.
+ * Add's the user to the TeamSpeak group.
  *
  * @param object $ts3
- *   The Teamspeak connection object.
+ *   The TeamSpeak connection object.
  * @param int $teamspeakgid
  *   The group ID for the teamspeak group.
  * @param int $teamspeak_dbid

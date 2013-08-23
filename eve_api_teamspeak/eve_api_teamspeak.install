@@ -13,7 +13,7 @@ function eve_api_teamspeak_install() {
     'not null' => TRUE,
     'default' => 0,
     'length' => 255,
-    'description' => 'Unique Teamspeak 3 ID',
+    'description' => 'Unique TeamSpeak 3 ID',
   ));
 
   db_add_field('users', 'teamspeakDBID', array(
@@ -21,7 +21,7 @@ function eve_api_teamspeak_install() {
     'not null' => TRUE,
     'default' => 0,
     'length' => 10,
-    'description' => 'Teamspeak 3 Database ID',
+    'description' => 'TeamSpeak 3 Database ID',
   ));
 
   variable_set('eve_api_teamspeak_installed', TRUE);
@@ -73,8 +73,10 @@ function eve_api_teamspeak_uninstall() {
   variable_del('eve_api_teamspeak_user_kick_enable');
   variable_del('eve_api_teamspeak_user_ban_enable');
   variable_del('eve_api_teamspeak_user_time');
-  variable_del('eve_api_teamspeak_role_cron_time');
-  variable_del('eve_api_teamspeak_role_cron_next');
+  variable_del('eve_api_teamspeak_cron_role_time');
+  variable_del('eve_api_teamspeak_cron_user_time');
+  variable_del('eve_api_teamspeak_cron_role_next');
+  variable_del('eve_api_teamspeak_cron_user_next');
 
   $queue = DrupalQueue::get('eve_api_teamspeak_cron_role_sync');
   $queue->deleteQueue();
@@ -104,7 +106,7 @@ function eve_api_teamspeak_requirements($phase) {
 
     // Load the TeamSpeak 3 Library if possible.
     $requirements['teamspeak3'] = array(
-      'title' => $t('Teamspeak 3 PHP Framework Library'),
+      'title' => $t('TeamSpeak 3 PHP Framework Library'),
     );
 
     $libraries = libraries_get_libraries();
@@ -121,13 +123,13 @@ function eve_api_teamspeak_requirements($phase) {
       else {
         $requirements['teamspeak3']['value'] = $t('Not Found');
         $requirements['teamspeak3']['severity'] = REQUIREMENT_WARNING;
-        $requirements['teamspeak3']['description'] = $t('The TeamSpeak3.php was not found within the uploaded Teamspeak 3 PHP Framework library. Please verify all files were uploaded correctly.');
+        $requirements['teamspeak3']['description'] = $t('The TeamSpeak3.php was not found within the uploaded TeamSpeak 3 PHP Framework library. Please verify all files were uploaded correctly.');
       }
     }
     else {
       $requirements['teamspeak3']['value'] = $t('Not Installed');
       $requirements['teamspeak3']['severity'] = REQUIREMENT_WARNING;
-      $requirements['teamspeak3']['description'] = $t('Please install the Teamspeak 3 PHP Framework library %url.', array('%url' => 'http://addons.teamspeak.com/directory/tools/integration/TeamSpeak-3-PHP-Framework.html'));
+      $requirements['teamspeak3']['description'] = $t('Please install the TeamSpeak 3 PHP Framework library %url.', array('%url' => 'http://addons.teamspeak.com/directory/tools/integration/TeamSpeak-3-PHP-Framework.html'));
     }
   }
 

@@ -12,37 +12,37 @@ function eve_api_cron() {
     return;
   }
 
-  $interval = variable_get('eve_api_api_alliance_fetch_cron_time', 1440 * 60);
+  $interval = variable_get('eve_api_cron_api_alliance_fetch_time', 1440 * 60);
 
-  if (time() >= variable_get('eve_api_api_alliance_fetch_cron_next', 0) && date('G') == 2) {
+  if (time() >= variable_get('eve_api_cron_api_alliance_fetch_next', 0) && date('G') == 2) {
     $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
     $queue->createItem(1);
 
-    variable_set('eve_api_api_alliance_fetch_cron_next', time() + $interval);
+    variable_set('eve_api_cron_api_alliance_fetch_next', time() + $interval);
   }
 
-  $interval = variable_get('eve_api_api_alliance_sync_cron_time', 1440 * 60);
+  $interval = variable_get('eve_api_cron_api_alliance_sync_time', 1440 * 60);
 
-  if (time() >= variable_get('eve_api_api_alliance_sync_cron_next', 0) && date('G') == 3) {
+  if (time() >= variable_get('eve_api_cron_api_alliance_sync_next', 0) && date('G') == 3) {
     $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
     $queue->createItem(1);
 
-    variable_set('eve_api_api_alliance_sync_cron_next', time() + $interval);
+    variable_set('eve_api_cron_api_alliance_sync_next', time() + $interval);
   }
 
-  $interval = variable_get('eve_api_api_mask_cron_time', 1440 * 60);
+  $interval = variable_get('eve_api_cron_api_mask_time', 1440 * 60);
 
-  if (time() >= variable_get('eve_api_api_mask_cron_next', 0) && date('G') == 1) {
+  if (time() >= variable_get('eve_api_cron_api_mask_next', 0) && date('G') == 1) {
     $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
     $queue->createItem(1);
 
-    variable_set('eve_api_api_mask_cron_next', time() + $interval);
+    variable_set('eve_api_cron_api_mask_next', time() + $interval);
   }
 
   if (variable_get('eve_api_enable', FALSE)) {
-    $interval = variable_get('eve_api_api_users_cron_time', 60 * 60);
+    $interval = variable_get('eve_api_cron_api_users_time', 60 * 60);
 
-    if (time() >= variable_get('eve_api_api_users_cron_next', 0)) {
+    if (time() >= variable_get('eve_api_cron_api_users_next', 0)) {
       $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
       $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters}');
 
@@ -55,7 +55,7 @@ function eve_api_cron() {
         }
       }
 
-      variable_set('eve_api_api_users_cron_next', time() + $interval);
+      variable_set('eve_api_cron_api_users_next', time() + $interval);
     }
   }
 }

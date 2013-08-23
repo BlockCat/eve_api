@@ -30,7 +30,7 @@ INSTALLATION
     at admin/modules. Enable Omni EVE API listed under Omni EVE API.
 
  8. Still logged in as an administrator, go to EVE API page at
-    admin/settings/eve_api. Registrations will be disabled until a valid
+    admin/eve_api. Registrations will be disabled until a valid
     Alliance API Key is entered. Create or retrieve your Alliance API Key from
     http://goo.gl/LDks44 and enter the "Key ID" and "Verification Code" in the
     appropriate fields. Be sure to tick the check-box "Enable Omni EVE API" and
@@ -45,7 +45,7 @@ CONFIGURE TeamSpeak 3
     at admin/modules. Enable TeamSpeak listed under Omni EVE API.
 
  2. Log in as an administrator on your Drupal site and go to the EVE API
-    TeamSpeak 3 settings page at admin/settings/eve_api/teamspeak.
+    TeamSpeak 3 settings page at admin/eve_api/teamspeak.
 
  3. Enter all the information as requested in the fields. Be sure to tick the
     check-box "Enable TeamSpeak 3 Connection" and click on "Submit".
@@ -64,7 +64,7 @@ CONFIGURE OPENFIRE (JABBER)
     at admin/modules. Enable Jabber listed under Omni EVE API.
 
  2. Log in as an administrator on your Drupal site and go to the EVE API
-    Jabber settings page at admin/settings/eve_api/jabber.
+    Jabber settings page at admin/eve_api/jabber.
 
  3. Enter all the information as requested in the fields. Be sure to tick the
     check-box "Enable Jabber Connection" and click on "Submit".

@@ -46,7 +46,7 @@ function eve_api_jabber_menu() {
   );
 
   if (variable_get('eve_api_enable', FALSE)) {
-    $items['admin/settings/eve_api/jabber'] = array(
+    $items['admin/eve_api/jabber'] = array(
       'title' => 'Jabber',
       'description' => 'Configure and edit Jabber connection settings.',
       'page arguments' => array('eve_api_jabber_admin_form'),
@@ -57,6 +57,7 @@ function eve_api_jabber_menu() {
     if (variable_get('eve_api_jabber_enable', FALSE)) {
       $items['user/%user/eve_api/jabber'] = array(
         'title' => 'Jabber',
+        'description' => 'Register on the Jabber server.',
         'page arguments' => array(
           'eve_api_jabber_user_form',
           1,

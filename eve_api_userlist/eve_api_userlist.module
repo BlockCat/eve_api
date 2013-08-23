@@ -42,7 +42,7 @@ function eve_api_userlist_menu() {
   );
 
   if (variable_get('eve_api_enable', FALSE)) {
-    $items['admin/settings/eve_api/userlist'] = array(
+    $items['admin/eve_api/userlist'] = array(
       'title' => 'User List',
       'description' => 'Configure and edit User List settings.',
       'page arguments' => array('eve_api_userlist_admin_form'),
@@ -52,6 +52,7 @@ function eve_api_userlist_menu() {
 
     $items['eve_api/userlist'] = array(
       'title' => 'User List',
+      'description' => 'List of all Characters registered on the site.',
       'page callback' => 'eve_api_userlist_user_userlist_page',
       'type' => MENU_LOCAL_TASK,
       'weight' => 0,
@@ -59,6 +60,7 @@ function eve_api_userlist_menu() {
 
     $items['eve_api/userlist/%'] = array(
       'title' => 'Alliance User List',
+      'description' => 'List of all Characters within a specified Corporation or Alliance.',
       'page callback' => 'eve_api_userlist_user_userlist_page',
       'page arguments' => array(2),
       'type' => MENU_LOCAL_TASK,
@@ -67,6 +69,7 @@ function eve_api_userlist_menu() {
 
     $items['eve_api/userlist/%/director'] = array(
       'title' => 'Director Userlist',
+      'description' => 'Private Character Information available to Directors within thier own Corporation.',
       'page callback' => 'eve_api_userlist_user_userlist_director_page',
       'page arguments' => array(2),
       'type' => MENU_LOCAL_TASK,

@@ -15,8 +15,8 @@
 function eve_api_teamspeak_admin_form($form, &$form_state) {
   $form['teamspeak'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Configure Teamspeak 3 Connection'),
-    '#description' => t('Configure Teamspeak 3 connection settings.'),
+    '#title' => t('Configure TeamSpeak 3 Connection'),
+    '#description' => t('Configure TeamSpeak 3 connection settings.'),
     '#collapsed' => variable_get('eve_api_teamspeak_enable', FALSE),
     '#collapsible' => TRUE,
     '#weight' => 0,
@@ -25,7 +25,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
   $form['teamspeak']['hostname'] = array(
     '#type' => 'textfield',
     '#title' => t('IP Address'),
-    '#description' => t('The Teamspeak 3 IP address used to connect to the Teamspeak 3 Server. This can be 127.0.0.1 if the Teamspeak server is hosted on the same server as the webhost.'),
+    '#description' => t('The IP address used to connect to the TeamSpeak 3 Server. This can be 127.0.0.1 if the TeamSpeak server is hosted on the same server as the webhost.'),
     '#required' => TRUE,
     '#size' => 20,
     '#maxlength' => 15,
@@ -36,7 +36,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
   $form['teamspeak']['server_address'] = array(
     '#type' => 'textfield',
     '#title' => t('Server Address'),
-    '#description' => t('The Teamspeak 3 server address users will use to connect to your Teamspeak Server.'),
+    '#description' => t('The server address users will use to connect to your TeamSpeak Server.'),
     '#required' => TRUE,
     '#size' => 80,
     '#maxlength' => 70,
@@ -47,7 +47,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
   $form['teamspeak']['server_port'] = array(
     '#type' => 'textfield',
     '#title' => t('Server Port'),
-    '#description' => t('The Teamspeak 3 server port users will use to connect to your Teamspeak Server. (Default: 9987)'),
+    '#description' => t('The server port users will use to connect to your TeamSpeak 3 Server. (Default: 9987)'),
     '#required' => TRUE,
     '#size' => 10,
     '#maxlength' => 6,
@@ -68,7 +68,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
   $form['teamspeak']['query_port'] = array(
     '#type' => 'textfield',
     '#title' => t('Query Port'),
-    '#description' => t('The Teamspeak 3 query port. (Default: 10011)'),
+    '#description' => t('The query port for the TeamSpeak 3 Server. (Default: 10011)'),
     '#required' => TRUE,
     '#size' => 10,
     '#maxlength' => 6,
@@ -79,7 +79,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
   $form['teamspeak']['query_username'] = array(
     '#type' => 'textfield',
     '#title' => t('Query Username'),
-    '#description' => t('Query username choosen on your Teamspeak 3 server.'),
+    '#description' => t('The query username for the TeamSpeak 3 Server. (For security and in case anything goes wrong do not use serveradmin.)'),
     '#required' => TRUE,
     '#size' => 60,
     '#maxlength' => 50,
@@ -90,7 +90,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
   $form['teamspeak']['query_password'] = array(
     '#type' => 'textfield',
     '#title' => t('Query Password'),
-    '#description' => t('Query password generated on your Teamspeak 3 server.'),
+    '#description' => t('The query password for the TeamSpeak 3 server.'),
     '#required' => TRUE,
     '#size' => 60,
     '#maxlength' => 50,
@@ -100,7 +100,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
 
   $form['teamspeak']['enable'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Enable Teamspeak 3 Connection'),
+    '#title' => t('Enable TeamSpeak 3 Connection'),
     '#default_value' => variable_get('eve_api_teamspeak_enable', FALSE),
     '#weight' => 70,
   );
@@ -108,8 +108,8 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
   if (variable_get('eve_api_teamspeak_enable', FALSE)) {
     $form['teamspeak_settings'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Teamspeak 3 Settings'),
-      '#description' => t('Teamspeak 3 settings and options.'),
+      '#title' => t('TeamSpeak 3 Settings'),
+      '#description' => t('TeamSpeak 3 settings and options.'),
       '#collapsed' => !variable_get('eve_api_teamspeak_enable', FALSE),
       '#collapsible' => TRUE,
       '#weight' => 10,
@@ -118,7 +118,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     $form['teamspeak_settings']['nickname'] = array(
       '#type' => 'textfield',
       '#title' => t('Username Format'),
-      '#description' => t('The format that each user must have when connecting to Teamspeak 3. You can use the following variables:<br />@corp - Corporation Ticker<br />@alliance - Alliance Ticker<br />@name - EVE Character Name'),
+      '#description' => t('The username format that each user must have when connecting to TeamSpeak 3. You can use the following variables:<br />@corp - Corporation Ticker<br />@alliance - Alliance Ticker<br />@name - EVE Character Name'),
       '#required' => TRUE,
       '#size' => 60,
       '#maxlength' => 50,
@@ -140,8 +140,8 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
 
       $form['teamspeak_settings']['bypass_group'] = array(
         '#type' => 'select',
-        '#title' => t('Select Teamspeak Bypass Group'),
-        '#description' => t('Please select a Teamspeak Group for users to bypass the name and registration check.'),
+        '#title' => t('Select TeamSpeak Bypass Group'),
+        '#description' => t('Please select a TeamSpeak Group for users to bypass the username and registration checks.'),
         '#options' => $teamspeakgroups,
         '#default_value' => variable_get('eve_api_teamspeak_bypass_group', 0) == 0 ? '' : variable_get('eve_api_teamspeak_bypass_group', 0),
         '#weight' => 10,
@@ -151,7 +151,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
       $form['teamspeak_settings']['bypass_group'] = array(
         '#type' => 'markup',
         '#prefix' => '<p>',
-        '#markup' => t('Teamspeak 3 Connection failed, check settings and try again. Error: @error', array('@error' => check_plain($e->getMessage()))),
+        '#markup' => t('TeamSpeak 3 Connection failed, check settings and try again. Error: @error', array('@error' => check_plain($e->getMessage()))),
         '#suffix' => '</p>',
         '#weight' => 10,
       );
@@ -212,7 +212,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     $form['registration_notification'] = array(
       '#type' => 'fieldset',
       '#title' => t('Registration Notification'),
-      '#description' => t('Options releated to non-registered Teamspeak users.'),
+      '#description' => t('Options releated to non-registered TeamSpeak 3 users.'),
       '#weight' => 20,
       '#collapsed' => FALSE,
       '#collapsible' => TRUE,
@@ -230,7 +230,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     $form['registration_notification']['reg_ban_time'] = array(
       '#type' => 'select',
       '#title' => t('Ban Time'),
-      '#description' => t('How long to ban the user.'),
+      '#description' => t('How long to ban the user once the Time Limit as expired.'),
       '#weight' => 10,
       '#options' => ($selectable_options + $long_selectable_options),
       '#default_value' => variable_get('eve_api_teamspeak_reg_ban_time', 10),
@@ -294,7 +294,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
 
     $form['registration_notification']['reg_options_description'] = array(
       '#title' => t('Notification Options'),
-      '#description' => t('Options available after the Registration Time Limit has expired.'),
+      '#description' => t('Notification Options to notify the offending TeamSpeak 3 user.'),
       '#type' => 'item',
       '#weight' => 20,
     );
@@ -310,7 +310,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     $form['user_notification'] = array(
       '#type' => 'fieldset',
       '#title' => t('Nickname Notification'),
-      '#description' => t('Options releated to registered Teamspeak users with incorrect nicknames.'),
+      '#description' => t('Options releated to registered TeamSpeak 3 users with incorrect nicknames.'),
       '#weight' => 30,
       '#collapsed' => FALSE,
       '#collapsible' => TRUE,
@@ -328,7 +328,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     $form['user_notification']['user_ban_time'] = array(
       '#type' => 'select',
       '#title' => t('Ban Time'),
-      '#description' => t('How long to ban the user.'),
+      '#description' => t('How long to Ban the user once the Time Limit has expired.'),
       '#weight' => 10,
       '#options' => ($selectable_options + $long_selectable_options),
       '#default_value' => variable_get('eve_api_teamspeak_user_ban_time', 10),
@@ -383,14 +383,12 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
 
     $form['user_notification']['user_options_description'] = array(
       '#title' => t('Notification Options'),
-      '#description' => t('Options available after the Correct Name Time Limit has expired.'),
+      '#description' => t('Notificaiton Options available after the Time Limit has expired.'),
       '#type' => 'item',
       '#weight' => 20,
     );
 
     $form['user_notification']['user_options'] = array(
-      '#title' => t('Notification Options'),
-      '#description' => t('Options available after the Correct Name Time Limit has expired.'),
       '#type' => 'tableselect',
       '#header' => $header,
       '#options' => $options,
@@ -448,7 +446,7 @@ function eve_api_teamspeak_admin_form_validate($form, &$form_state) {
     }
   }
   else {
-    form_set_error('enable', t('Teamspeak 3 PHP Framework not found, unable to enable Teamspeak 3 connection.'));
+    form_set_error('enable', t('TeamSpeak 3 PHP Framework not found, unable to enable TeamSpeak 3 connection.'));
   }
 }
 
@@ -472,7 +470,7 @@ function eve_api_teamspeak_admin_form_submit($form, &$form_state) {
       variable_set('eve_api_teamspeak_user_message', (string) $form_state['input']['user_message']);
       variable_set('eve_api_teamspeak_user_poke', (string) $form_state['input']['user_poke']);
 
-      $form_state['redirect'] = 'admin/settings/eve_api/teamspeak';
+      $form_state['redirect'] = 'admin/eve_api/teamspeak';
 
       foreach ((array) $form_state['values']['reg_options'] as $field => $value) {
         $field = 'eve_api_teamspeak_' . (string) $field;
@@ -496,5 +494,5 @@ function eve_api_teamspeak_admin_form_submit($form, &$form_state) {
 
   menu_rebuild();
 
-  drupal_set_message(t('Teamspeak Settings Updated.'));
+  drupal_set_message(t('TeamSpeak Settings Updated.'));
 }

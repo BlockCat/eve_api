@@ -467,6 +467,7 @@ function eve_api_uninstall() {
   variable_del('eve_api_nag_user');
   variable_del('eve_api_alliance_role');
   variable_del('eve_api_unverified_role');
+  variable_del('eve_api_blue_role');
   variable_del('eve_api_ceo_role');
   variable_del('eve_api_director_role');
   variable_del('eve_api_corp_keyid');
@@ -477,14 +478,14 @@ function eve_api_uninstall() {
   variable_del('eve_api_required_standing');
   variable_del('eve_api_allianceID');
   variable_del('eve_api_corporationID');
-  variable_del('eve_api_api_alliance_fetch_cron_time');
-  variable_del('eve_api_api_alliance_fetch_cron_next');
-  variable_del('eve_api_api_alliance_sync_cron_time');
-  variable_del('eve_api_api_alliance_sync_cron_next');
-  variable_del('eve_api_api_mask_cron_time');
-  variable_del('eve_api_api_mask_cron_next');
-  variable_del('eve_api_api_users_cron_time');
-  variable_del('eve_api_api_users_cron_next');
+  variable_del('eve_api_cron_api_alliance_fetch_time');
+  variable_del('eve_api_cron_api_alliance_fetch_next');
+  variable_del('eve_api_cron_api_alliance_sync_time');
+  variable_del('eve_api_cron_api_alliance_sync_next');
+  variable_del('eve_api_cron_api_mask_time');
+  variable_del('eve_api_cron_api_mask_next');
+  variable_del('eve_api_cron_api_users_time');
+  variable_del('eve_api_cron_api_users_next');
 
   $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
   $queue->deleteQueue();

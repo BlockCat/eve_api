@@ -27,7 +27,7 @@ function eve_api_teamspeak_user_form($form, &$form_state, $account) {
 
   $form['teamspeak'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Register your Teamspeak Identity to your User Account'),
+    '#title' => t('Register your TeamSpeak Identity to your User Account'),
     '#weight' => 0,
   );
 
@@ -37,7 +37,7 @@ function eve_api_teamspeak_user_form($form, &$form_state, $account) {
   $form['teamspeak']['howto'] = array(
     '#type' => 'markup',
     '#prefix' => '<p>',
-    '#markup' => t('In order to register with Teamspeak, you must first connect to our Teamspeak.<br />If you do not have Teamspeak already installed, please download and install Teamspeak 3 from <a href="@teamspeak_url" target="_blank">here</a>.<br />Please use the following settings to connect:<br /><br />Address - @teamspeak_address<br />@teamspeak_password', array(
+    '#markup' => t('In order to register with Teamspeak, you must first connect to our Teamspeak.<br />If you do not have TeamSpeak already installed, please download and install TeamSpeak 3 from <a href="@teamspeak_url" target="_blank">here</a>.<br />Please use the following settings to connect:<br /><br />Address - @teamspeak_address<br />@teamspeak_password', array(
       '@teamspeak_url' => 'http://www.teamspeak.com/?page=downloads',
       '@teamspeak_address' => empty($teamspeak_port_check) ? variable_get('eve_api_teamspeak_server_address', 'teamspeak.com') : variable_get('eve_api_teamspeak_server_address', 'teamspeak.com') . ':' . variable_get('eve_api_teamspeak_server_port', 9987),
       '@teamspeak_password' => empty($teamspeak_password_check) ? '' : t('Password') . ' - ' . variable_get('eve_api_teamspeak_server_password', ''),
@@ -49,7 +49,7 @@ function eve_api_teamspeak_user_form($form, &$form_state, $account) {
   $form['teamspeak']['teamspeak_name'] = array(
     '#type' => 'markup',
     '#prefix' => '<p>',
-    '#markup' => ($account->characterID != 0) ? t('Teamspeak Name: @teamspeak', array('@teamspeak' => eve_api_teamspeak_format_name($account->name))) : t('Teamspeak Name: <a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/eve_api/select_main_character'))),
+    '#markup' => ($account->characterID != 0) ? t('TeamSpeak Name: @teamspeak', array('@teamspeak' => eve_api_teamspeak_format_name($account->name))) : t('TeamSpeak Name: <a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/eve_api/select_main_character'))),
     '#suffix' => '</p>',
     '#weight' => 10,
   );
@@ -57,7 +57,7 @@ function eve_api_teamspeak_user_form($form, &$form_state, $account) {
   $form['teamspeak']['teamspeak_uid'] = array(
     '#type' => 'markup',
     '#prefix' => '<p>',
-    '#markup' => !empty($account->teamspeakUID) ? t('Teamspeak Unique ID: @teamspeak', array('@teamspeak' => $account->teamspeakUID)) : t('Teamspeak Unique ID: You are not registered.'),
+    '#markup' => !empty($account->teamspeakUID) ? t('TeamSpeak Unique ID: @teamspeak', array('@teamspeak' => $account->teamspeakUID)) : t('TeamSpeak Unique ID: You are not registered.'),
     '#suffix' => '</p>',
     '#weight' => 20,
   );
@@ -131,7 +131,7 @@ function eve_api_teamspeak_user_form_submit($form, &$form_state) {
     ));
 
     // Need to assign roles.
-    drupal_set_message(t('Teamspeak access granted.'));
+    drupal_set_message(t('TeamSpeak access granted.'));
   }
   catch (EveApiException $e) {
     drupal_set_message(check_plain($e->getMessage()), 'error');

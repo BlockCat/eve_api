@@ -76,84 +76,84 @@ function eve_api_menu() {
     'file' => 'eve_api.user.inc',
   );
 
-  $items['admin/settings/eve_api'] = array(
+  $items['admin/eve_api'] = array(
     'title' => 'EVE API',
-    'description' => 'Edit your Alliance API Key if you have not done so, enter it now.',
+    'description' => 'Configure and setup EVE API.',
     'page arguments' => array('eve_api_admin_settings_form'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 0,
   ) + $admin_base;
 
-  $items['admin/settings/eve_api/settings'] = array(
+  $items['admin/eve_api/settings'] = array(
     'title' => 'Settings',
-    'description' => 'Edit your Alliance API Key if you have not done so, enter it now.',
+    'description' => 'Configure and setup EVE API.',
     'page arguments' => array('eve_api_admin_settings_form'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
   ) + $admin_base;
 
   if (variable_get('eve_api_enable', FALSE)) {
-    $items['admin/settings/eve_api/roles'] = array(
+    $items['admin/eve_api/roles'] = array(
       'title' => 'Roles',
-      'description' => 'From here you can change various settings.',
+      'description' => 'Configure default roles for various roles required for EVE API to function.',
       'page arguments' => array('eve_api_admin_roles_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 10,
     ) + $admin_base;
 
-    $items['admin/settings/eve_api/registration'] = array(
+    $items['admin/eve_api/registration'] = array(
       'title' => 'Registration',
-      'description' => 'Edit your Access Mask and required standing to register on the site.',
+      'description' => 'Modify the requirements to register.',
       'page arguments' => array('eve_api_admin_registration_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 20,
     ) + $admin_base;
 
-    $items['admin/settings/eve_api/list_blues'] = array(
+    $items['admin/eve_api/list_blues'] = array(
       'title' => 'Blues',
-      'description' => 'You can remove Blues and Add Blues from here.',
+      'description' => 'Edit Blue standings.',
       'page arguments' => array('eve_api_admin_list_blues_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 50,
     ) + $admin_base;
 
-    $items['admin/settings/eve_api/list_blues/add_blue'] = array(
+    $items['admin/eve_api/list_blues/add_blue'] = array(
       'title' => 'Add Blue',
-      'description' => 'You can manually add blues from here.',
+      'description' => 'Add a new Blue standing.',
       'page arguments' => array('eve_api_admin_add_blues_form'),
       'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
       'type' => MENU_LOCAL_ACTION,
       'weight' => 55,
     ) + $admin_base;
 
-    $items['admin/settings/eve_api/list_whitelist'] = array(
+    $items['admin/eve_api/list_whitelist'] = array(
       'title' => 'Whitelist',
-      'description' => 'You can remove and add Whitelisted API Characters from here.',
+      'description' => 'Edit Character Whitelist.',
       'page arguments' => array('eve_api_admin_list_whitelist_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 60,
     ) + $admin_base;
 
-    $items['admin/settings/eve_api/list_whitelist/add_whitelist'] = array(
+    $items['admin/eve_api/list_whitelist/add_whitelist'] = array(
       'title' => 'Add Whitelist',
-      'description' => 'Manually add Whitelisted API Characters from here.',
+      'description' => 'Add a new Whitelisted character.',
       'page arguments' => array('eve_api_admin_add_whitelist_form'),
       'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
       'type' => MENU_LOCAL_ACTION,
       'weight' => 65,
     ) + $admin_base;
 
-    $items['admin/settings/eve_api/role_whitelist'] = array(
+    $items['admin/eve_api/role_whitelist'] = array(
       'title' => 'Role Whitelist',
-      'description' => 'You can remove and add Whitelisted Roles for Characters here, such as CEO and Directors.',
+      'description' => 'Edit CEO and Director Whitelist.',
       'page arguments' => array('eve_api_admin_role_whitelist_form'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 70,
     ) + $admin_base;
 
-    $items['admin/settings/eve_api/role_whitelist/add_role_whitelist'] = array(
+    $items['admin/eve_api/role_whitelist/add_role_whitelist'] = array(
       'title' => 'Add Role Whitelist',
-      'description' => 'Manually add/update Whitelisted Roles from here.',
+      'description' => 'Add a new CEO or Director Whitelist.',
       'page arguments' => array('eve_api_admin_add_role_whitelist_form'),
       'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
       'type' => MENU_LOCAL_ACTION,
@@ -182,6 +182,7 @@ function eve_api_menu() {
 
     $items['user/%user/eve_api/select_main_character'] = array(
       'title' => 'Main Character',
+      'description' => 'Select a Main Character to associate with your account.',
       'page arguments' => array(
         'eve_api_user_select_main_character_form',
         1,
@@ -192,6 +193,7 @@ function eve_api_menu() {
 
     $items['user/%user/eve_api/add_api_key'] = array(
       'title' => 'Add API Key',
+      'description' => 'Add a new API Key.',
       'page arguments' => array(
         'eve_api_user_add_api_form',
         1,
@@ -202,6 +204,7 @@ function eve_api_menu() {
 
     $items['user/%user/eve_api/update_api_key/%'] = array(
       'title' => 'Update API Key',
+      'description' => 'Update an existing API Key.',
       'page arguments' => array(
         'eve_api_user_update_api_form',
         1,
@@ -500,7 +503,7 @@ function eve_api_form_user_profile_form_alter(&$form, &$form_state) {
  */
 function eve_api_libraries_info() {
   $libraries['TeamSpeak3'] = array(
-    'name' => 'Teamspeak 3 PHP Framework Library',
+    'name' => 'TeamSpeak 3 PHP Framework Library',
     'vendor url' => 'http://forum.teamspeak.com/showthread.php/54132',
     'download url' => 'http://addons.teamspeak.com/directory/tools/integration/TeamSpeak-3-PHP-Framework.html',
     'version callback' => 'eve_api_teamspeak_get_version',

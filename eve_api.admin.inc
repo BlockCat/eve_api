@@ -792,7 +792,7 @@ function eve_api_admin_add_blues_form($form, &$form_state) {
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  $form_state['redirect'] = 'admin/settings/eve_api/list_blues';
+  $form_state['redirect'] = 'admin/eve_api/list_blues';
   $form['#validate'] = array('eve_api_admin_add_blues_form_validate');
   $form['#submit'] = array('eve_api_admin_add_blues_form_submit');
 
@@ -1056,7 +1056,7 @@ function eve_api_admin_add_whitelist_form($form, &$form_state) {
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  $form_state['redirect'] = 'admin/settings/eve_api/list_whitelist';
+  $form_state['redirect'] = 'admin/eve_api/list_whitelist';
   $form['#validate'] = array('eve_api_admin_add_whitelist_form_validate');
   $form['#submit'] = array('eve_api_admin_add_whitelist_form_submit');
 
@@ -1347,7 +1347,7 @@ function eve_api_admin_add_role_whitelist_form_validate($form, &$form_state) {
  * @see eve_api_admin_add_role_whitelist_form_validate()
  */
 function eve_api_admin_add_role_whitelist_form_submit($form, &$form_state) {
-  $form_state['redirect'] = 'admin/settings/eve_api/role_whitelist';
+  $form_state['redirect'] = 'admin/eve_api/role_whitelist';
 
   $character_name = (string) $form_state['values']['characterName'];
   $is_ceo = ($form_state['values']['isCEO'] == TRUE) ? 1 : 0;
