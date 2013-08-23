@@ -781,7 +781,7 @@ function eve_api_verify_blue($characters) {
  * @return array
  *   A simple array of characters blue to the alliance.
  */
-function eve_api_list_valid_characters($characters, $empty) {
+function eve_api_list_valid_characters($characters) {
   $chars = array();
 
   if (!empty($characters)) {
@@ -795,7 +795,7 @@ function eve_api_list_valid_characters($characters, $empty) {
       ));
 
       if ($result->rowCount()) {
-        $chars[check_plain($character['characterName'])] = check_plain($character['characterName']);
+        $chars[$character['characterName']] = $character['characterName'];
         continue;
       }
 
@@ -804,13 +804,9 @@ function eve_api_list_valid_characters($characters, $empty) {
       ));
 
       if ($result->rowCount()) {
-        $chars[check_plain($character['characterName'])] = check_plain($character['characterName']);
+        $chars[$character['characterName']] = $character['characterName'];
       }
     }
-  }
-
-  if (empty($chars)) {
-    $chars[$empty] = t('No Character\'s Found');
   }
 
   return $chars;

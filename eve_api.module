@@ -458,15 +458,7 @@ function eve_api_form_user_profile_form_alter(&$form, &$form_state) {
   $admin = user_access('administer users');
 
   $uid_api_list = eve_api_list_api_simple($account->uid);
-  $valid_characters_list = eve_api_list_valid_characters($uid_api_list, $account->name);
-
-  $result = db_query('SELECT characterID FROM {users} WHERE characterID = 0 AND uid = :uid', array(
-    ':uid' => $uid,
-  ));
-
-  if ($result->rowCount()) {
-    $valid_characters_list = $valid_characters_list + array($account->name => t('-- Select a New Character --'));
-  }
+  $valid_characters_list = eve_api_list_valid_characters($uid_api_list);
 
   $form['account']['name'] = array(
     '#type' => 'select',
@@ -479,6 +471,18 @@ function eve_api_form_user_profile_form_alter(&$form, &$form_state) {
     '#access' => ($register || ($user->uid == $account->uid && user_access('change own username')) || $admin),
     '#weight' => -10,
   );
+
+  $result = db_query('SELECT characterID FROM {users} WHERE characterID = 0 AND uid = :uid', array(
+    ':uid' => $uid,
+  ));
+
+  if ($result->rowCount() && empty($valid_characters_list)) {
+    $form['account']['name']['#options'] = array($account->name => t('No Character\'s Found'));
+  }
+  elseif ($result->rowCount()) {
+    $form['account']['name']['#empty_option'] = t('- Select a New Character -');
+    unset($form['account']['name']['#default_value']);
+  }
 
   $form_state['characterName'] = (!$register ? $account->name : '');
 

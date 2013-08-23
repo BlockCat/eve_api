@@ -54,7 +54,7 @@ function eve_api_jabber_menu() {
     ) + $admin_base;
 
     if (variable_get('eve_api_jabber_enable', FALSE)) {
-      $items['user/%user/eve_api/jabber'] = array(
+      $items['user/%user/jabber'] = array(
         'title' => 'Jabber',
         'description' => 'Register on the Jabber server.',
         'page arguments' => array(
@@ -62,7 +62,7 @@ function eve_api_jabber_menu() {
           1,
         ),
         'type' => MENU_LOCAL_TASK,
-        'weight' => 40,
+        'weight' => 1,
       ) + $user_base;
     }
   }
@@ -97,8 +97,27 @@ function eve_api_jabber_user_delete($account) {
 /**
  * Implements hook_eve_api_user_update().
  */
-function eve_api_jabber_eve_api_user_update($account) {
+function eve_api_jabber_eve_api_user_update($account, $old_name = NULL) {
   if (variable_get('eve_api_jabber_enable', FALSE)) {
+    if (isset($old_name)) {
+      try {
+        eve_api_jabber_connect();
+
+        $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
+          ':username' => (string) eve_api_jabber_format_name($old_namee),
+        ));
+
+        if ($result->rowCount()) {
+          eve_api_jabber_url_query('delete', $old_name);
+        }
+
+        eve_api_jabber_disconnect();
+      }
+      catch (EveApiException $e) {
+        // Log Error ?
+      }
+    }
+
     $queue = DrupalQueue::get('eve_api_jabber_cron_user_sync');
     $queue->createItem(array(
       'uid' => $account->uid,

@@ -492,7 +492,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
 
   $form['registration']['expires'] = array(
     '#type' => 'radios',
-    '#title' => t('Allow Expired Keys'),
+    '#title' => t('Allow Keys to Expire'),
     '#description' => t('API keys can be set to expire at a certain date and time. You can allow users to register with API Keys that will expire, but this may cause issues if the user forgets that the API Key has/will expire.'),
     '#options' => array(0 => t('No'), 1 => t('Yes')),
     '#weight' => 20,

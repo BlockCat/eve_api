@@ -34,7 +34,7 @@ function eve_api_teamspeak_menu() {
 
   $admin_base = array(
     'page callback' => 'drupal_get_form',
-    'access arguments' => array('administer eve_api_teamspeak settings'),
+    'access arguments' => array('administer eve_api settings'),
     'file' => 'eve_api_teamspeak.admin.inc',
   );
 
@@ -54,7 +54,7 @@ function eve_api_teamspeak_menu() {
     ) + $admin_base;
 
     if (variable_get('eve_api_teamspeak_enable', FALSE)) {
-      $items['user/%user/eve_api/teamspeak'] = array(
+      $items['user/%user/teamspeak'] = array(
         'title' => 'TeamSpeak',
         'description' => 'Register on the TeamSpeak 3 server.',
         'page arguments' => array(
@@ -62,7 +62,7 @@ function eve_api_teamspeak_menu() {
           1,
         ),
         'type' => MENU_LOCAL_TASK,
-        'weight' => 30,
+        'weight' => 1,
       ) + $user_base;
     }
   }
@@ -88,7 +88,7 @@ function eve_api_teamspeak_user_delete($account) {
 /**
  * Implements hook_eve_api_user_update().
  */
-function eve_api_teamspeak_eve_api_user_update($account) {
+function eve_api_teamspeak_eve_api_user_update($account, $old_name = NULL) {
   if (variable_get('eve_api_teamspeak_enable', FALSE) && $account->teamspeakDBID != 0) {
     $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_sync');
     $queue->createItem(array(
