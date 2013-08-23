@@ -496,7 +496,7 @@ function eve_api_curl_http_request($url, array $query = array(), $method = 'POST
  *   A complex array of a single character information.
  */
 function eve_api_get_character_info($character_name) {
-  $result = db_query('SELECT uid, characterName, characterID, corporationName, corporationID, corporationTicker, allianceID, allianceName, allianceTicker FROM {eve_api_characters} WHERE characterName = :characterName', array(
+  $result = db_query('SELECT uid, deleted, errorID, apiID, characterName, characterID, corporationName, corporationID, corporationTicker, allianceID, allianceName, allianceTicker FROM {eve_api_characters} WHERE characterName = :characterName', array(
     ':characterName' => (string) $character_name,
   ));
 
@@ -505,6 +505,9 @@ function eve_api_get_character_info($character_name) {
 
     $api_data = array(
       'uid' => check_plain($row['uid']),
+      'deleted' => check_plain($row['deleted']),
+      'errorID' => check_plain($row['errorID']),
+      'apiID' => check_plain($row['apiID']),
       'characterName' => check_plain($row['characterName']),
       'characterID' => check_plain($row['characterID']),
       'corporationName' => check_plain($row['corporationName']),
@@ -807,7 +810,7 @@ function eve_api_list_valid_characters($characters, $empty) {
   }
 
   if (empty($chars)) {
-    $chars[$empty] = t('No Characters Found');
+    $chars[$empty] = t('No Character\'s Found');
   }
 
   return $chars;

@@ -49,7 +49,7 @@ function eve_api_teamspeak_user_form($form, &$form_state, $account) {
   $form['teamspeak']['teamspeak_name'] = array(
     '#type' => 'markup',
     '#prefix' => '<p>',
-    '#markup' => ($account->characterID != 0) ? t('TeamSpeak Name: @teamspeak', array('@teamspeak' => eve_api_teamspeak_format_name($account->name))) : t('TeamSpeak Name: <a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/eve_api/select_main_character'))),
+    '#markup' => ($account->characterID != 0) ? t('TeamSpeak Name: @teamspeak', array('@teamspeak' => eve_api_teamspeak_format_name($account->name))) : t('TeamSpeak Name: <a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/edit'))),
     '#suffix' => '</p>',
     '#weight' => 10,
   );
@@ -87,7 +87,7 @@ function eve_api_teamspeak_user_form_validate($form, &$form_state) {
   $uid = $account->uid;
 
   if ($account->characterID == 0) {
-    drupal_goto('user/' . $uid . '/eve_api/select_main_character');
+    drupal_goto('user/' . $uid . '/edit');
   }
 
   try {

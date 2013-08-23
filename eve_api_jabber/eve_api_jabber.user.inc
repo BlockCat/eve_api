@@ -44,7 +44,7 @@ function eve_api_jabber_user_form($form, &$form_state, $account) {
   $form['jabber']['username'] = array(
     '#type' => 'markup',
     '#prefix' => '<p>',
-    '#markup' => ($account->characterID != 0) ? t('Jabber Username: @jabber', array('@jabber' => eve_api_jabber_format_name($account->name) . '@' . variable_get('eve_api_jabber_domain', 'yourdomain.com'))) : t('Jabber Username: <a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/eve_api/select_main_character'))),
+    '#markup' => ($account->characterID != 0) ? t('Jabber Username: @jabber', array('@jabber' => eve_api_jabber_format_name($account->name) . '@' . variable_get('eve_api_jabber_domain', 'yourdomain.com'))) : t('Jabber Username: <a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/edit'))),
     '#suffix' => '</p>',
     '#weight' => 10,
   );
@@ -86,7 +86,7 @@ function eve_api_jabber_user_form_validate($form, &$form_state) {
   $uid = $account->uid;
 
   if ($account->characterID == 0) {
-    drupal_goto('user/' . $uid . '/eve_api/select_main_character');
+    drupal_goto('user/' . $uid . '/edit');
   }
 
   try {

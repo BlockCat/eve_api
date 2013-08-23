@@ -542,19 +542,3 @@ function eve_api_requirements($phase) {
 
   return $requirements;
 }
-
-/**
- * Implements hook_update_N().
- */
-function eve_api_update_7200(&$sandbox) {
-  db_change_field('eve_api_characters_roles', 'roleID', 'roleID',
-    array(
-      'description' => 'The character role ID.',
-      'type' => 'int',
-      'size' => 'big',
-      'not null' => TRUE,
-    ),
-    array(
-      'primary key' => array('characterID', 'roleID')
-    ));
-}

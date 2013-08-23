@@ -153,34 +153,13 @@ function eve_api_menu() {
     ) + $admin_base;
 
     $items['user/%user/eve_api'] = array(
-      'title' => 'EVE API',
+      'title' => 'List API Keys',
       'page arguments' => array(
         'eve_api_user_list_api_form',
         1,
       ),
       'type' => MENU_LOCAL_TASK,
       'weight' => 0,
-    ) + $user_base;
-
-    $items['user/%user/eve_api/list_api'] = array(
-      'title' => 'API Keys',
-      'page arguments' => array(
-        'eve_api_user_list_api_form',
-        1,
-      ),
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-      'weight' => 0,
-    ) + $user_base;
-
-    $items['user/%user/eve_api/select_main_character'] = array(
-      'title' => 'Main Character',
-      'description' => 'Select a Main Character to associate with your account.',
-      'page arguments' => array(
-        'eve_api_user_select_main_character_form',
-        1,
-      ),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 10,
     ) + $user_base;
 
     $items['user/%user/eve_api/add_api_key'] = array(
@@ -190,8 +169,8 @@ function eve_api_menu() {
         'eve_api_user_add_api_form',
         1,
       ),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 20,
+      'type' => MENU_LOCAL_ACTION,
+      'weight' => 0,
     ) + $user_base;
 
     $items['user/%user/eve_api/update_api_key/%'] = array(
@@ -204,7 +183,6 @@ function eve_api_menu() {
       ),
       'context' => MENU_CONTEXT_INLINE,
       'type' => MENU_LOCAL_ACTION,
-      'weight' => 25,
     ) + $user_base;
   }
 
@@ -463,26 +441,144 @@ function eve_api_get_eve_avatar($character_id) {
 
 /**
  * Implements hook_form_FORM_ID_alter() for user_profile_form().
+ *
+ * @see eve_api_user_list_api_form_validate()
+ * @see eve_api_user_list_api_form_submit()
+ *
+ * @ingroup forms
  */
 function eve_api_form_user_profile_form_alter(&$form, &$form_state) {
-  $account = $form['#user'];
+  global $user;
 
+  $account = $form_state['user'];
+  $category = $form['#user_category'];
+
+  $uid = $account->uid;
   $register = ($account->uid > 0 ? FALSE : TRUE);
   $admin = user_access('administer users');
 
   $uid_api_list = eve_api_list_api_simple($account->uid);
+  $valid_characters_list = eve_api_list_valid_characters($uid_api_list, $account->name);
+
+  $result = db_query('SELECT characterID FROM {users} WHERE characterID = 0 AND uid = :uid', array(
+    ':uid' => $uid,
+  ));
+
+  if ($result->rowCount()) {
+    $valid_characters_list = $valid_characters_list + array($account->name => t('-- Select a New Character --'));
+  }
 
   $form['account']['name'] = array(
     '#type' => 'select',
     '#title' => t('Select your Main Character'),
-    '#default_value' => (!$register ? $account->name : ''),
-    '#options' => eve_api_list_valid_characters($uid_api_list, $account->name),
+    '#options' => $valid_characters_list,
     '#description' => t('Detected valid Main Characters.'),
     '#required' => TRUE,
     '#attributes' => array('class' => array('username')),
-    '#access' => ($register || $admin),
+    '#default_value' => (!$register ? $account->name : ''),
+    '#access' => ($register || ($user->uid == $account->uid && user_access('change own username')) || $admin),
     '#weight' => -10,
   );
+
+  $form_state['characterName'] = (!$register ? $account->name : '');
+
+  $form['#validate'][] = 'eve_api_user_profile_form_validate';
+  $form['#submit'][] = 'eve_api_user_profile_form_submit';
+}
+
+/**
+ * Form validation handler for eve_api_form_user_profile_form_alter().
+ *
+ * @see eve_api_user_profile_form_submit()
+ */
+function eve_api_user_profile_form_validate($form, &$form_state) {
+  $account = $form_state['user'];
+  $uid = $account->uid;
+
+  $character_name = (string) $form_state['values']['name'];
+  $character_data = eve_api_get_character_info($character_name);
+
+  if ($character_data === FALSE || $character_data['uid'] != $uid) {
+    $form_state['values']['name'] = $account->name;
+  }
+
+  $form_state['character_data'] = $character_data;
+}
+
+/**
+ * Form submission handler for eve_api_form_user_profile_form_alter().
+ *
+ * @see eve_api_user_profile_form_validate()
+ */
+function eve_api_user_profile_form_submit($form, &$form_state) {
+  $account = $form_state['user'];
+  $character_data = $form_state['character_data'];
+  $uid = (int) $account->uid;
+
+  if (((string) $form_state['characterName'] == (string) $form_state['values']['name'] && $account->characterID != 0) || $character_data === FALSE || $character_data['uid'] != $uid || $character_data['deleted'] == 1) {
+    return;
+  }
+
+  $old_character_name = (string) $form_state['characterName'];
+  $old_character_data = eve_api_get_character_info($old_character_name);
+
+  if ($corporation_role = user_role_load_by_name($old_character_data['corporationName'])) {
+    user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
+
+    $alliance_role = user_role_load(variable_get('eve_api_alliance_role', 2));
+    user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
+
+    $director_role = user_role_load(variable_get('eve_api_director_role', 2));
+    user_multiple_role_edit(array($uid), 'remove_role', $director_role->rid);
+
+    $ceo_role = user_role_load(variable_get('eve_api_ceo_role', 2));
+    user_multiple_role_edit(array($uid), 'remove_role', $ceo_role->rid);
+  }
+  elseif ($blue_role = user_role_load(variable_get('eve_api_blue_role', 2))) {
+    user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
+  }
+
+  $default_role = user_role_load(variable_get('eve_api_unverified_role', 2));
+  user_multiple_role_edit(array($uid), 'remove_role', $default_role->rid);
+
+  $character_name = (string) $form_state['values']['name'];
+  $character_data = eve_api_get_character_info($character_name);
+
+  $character_is_blue = eve_api_verify_blue($character_data);
+
+  if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
+    user_multiple_role_edit(array($uid), 'add_role', $corporation_role->rid);
+
+    $alliance_role = user_role_load(variable_get('eve_api_alliance_role', 2));
+    user_multiple_role_edit(array($uid), 'add_role', $alliance_role->rid);
+
+    if (eve_api_character_is_director($character_data['characterID'])) {
+      $director_role = user_role_load(variable_get('eve_api_director_role', 2));
+      user_multiple_role_edit(array($uid), 'add_role', $director_role->rid);
+    }
+
+    if (eve_api_character_is_ceo($character_data['characterID'])) {
+      $ceo_role = user_role_load(variable_get('eve_api_ceo_role', 2));
+      user_multiple_role_edit(array($uid), 'add_role', $ceo_role->rid);
+    }
+  }
+  elseif (($blue_role = user_role_load(variable_get('eve_api_blue_role', 2))) && $character_is_blue) {
+    user_multiple_role_edit(array($uid), 'add_role', $blue_role->rid);
+  }
+  else {
+    $default_role = user_role_load(variable_get('eve_api_unverified_role', 2));
+    user_multiple_role_edit(array($uid), 'add_role', $default_role->rid);
+  }
+
+  db_update('users')->fields(array('characterID' => (int) $character_data['characterID'], 'name' => (string) $character_data['characterName']))->condition('uid', $uid, '=')->execute();
+
+  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue->createItem(array(
+    'uid' => $uid,
+    'runs' => 1,
+  ));
+
+  module_invoke_all('eve_api_user_update', $account, $form_state['characterName']);
 }
 
 /**
@@ -518,6 +614,6 @@ function eve_api_boot() {
   }
 
   if ($GLOBALS['user']->characterID == 0 && variable_get('eve_api_nag_user', TRUE)) {
-    drupal_set_message(t('Your account is not associated with an EVE Character, you must select a <a href="@url">Main Character</a>.', array('@url' => '/user/' . $GLOBALS['user']->uid . '/eve_api/select_main_character')), 'error', FALSE);
+    drupal_set_message(t('Your account is not associated with an EVE Character, you must select a <a href="@url">Main Character</a>.', array('@url' => '/user/' . $GLOBALS['user']->uid . '/edit')), 'error', FALSE);
   }
 }

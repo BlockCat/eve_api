@@ -219,15 +219,18 @@ function eve_api_form_user_register_form_alter(&$form, &$form_state) {
     drupal_goto('user/register');
   }
 
+  $valid_characters_list = eve_api_list_valid_characters($characters, '');
+  $valid_characters_list = $valid_characters_list + array('' => t('-- Select a New Character --'));
+
   $form['account']['name'] = array(
     '#type' => 'select',
     '#title' => t('Select your Main Character'),
-    '#default_value' => (!$register ? $account->name : ''),
-    '#options' => eve_api_list_valid_characters($characters, ''),
+    '#options' => $valid_characters_list,
     '#description' => t('Detected valid Main Characters.'),
     '#required' => TRUE,
     '#attributes' => array('class' => array('username')),
-    '#access' => ($register || $admin),
+    '#default_value' => (!$register ? $account->name : ''),
+    '#access' => ($register || ($user->uid == $account->uid && user_access('change own username')) || $admin),
     '#weight' => -10,
   );
 }
