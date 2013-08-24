@@ -348,7 +348,7 @@ function eve_api_user_list_api_form($form, &$form_state, $account) {
     if (isset($api_single['characters'])) {
       foreach ($api_single['characters'] as $characters) {
         $corp_alliance = ($characters['allianceID'] == 0) ? $characters['corporationName'] : $characters['corporationName'] . '/' . $characters['allianceName'];
-        $list_characters .= check_plain('[' . $characters['corporationTicker'] . '] ' . $characters['characterName'] . ' (' . $corp_alliance . ')');
+        $list_characters .= '[' . $characters['corporationTicker'] . '] ' . $characters['characterName'] . ' (' . $corp_alliance . ')';
         $list_characters .= '<br />';
       }
     }

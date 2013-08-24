@@ -226,7 +226,7 @@ function eve_api_form_user_register_form_alter(&$form, &$form_state) {
   $form['account']['name'] = array(
     '#type' => 'select',
     '#title' => t('Select your Main Character'),
-    '#options' => $valid_characters_list,
+    '#options' => drupal_map_assoc($valid_characters_list),
     '#description' => t('Detected valid Main Characters.'),
     '#required' => TRUE,
     '#empty_option' => t('- Select a New Character -'),

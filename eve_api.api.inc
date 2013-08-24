@@ -508,14 +508,14 @@ function eve_api_get_character_info($character_name) {
       'deleted' => check_plain($row['deleted']),
       'errorID' => check_plain($row['errorID']),
       'apiID' => check_plain($row['apiID']),
-      'characterName' => check_plain($row['characterName']),
+      'characterName' => strip_tags(decode_entities($row['characterName'])),
       'characterID' => check_plain($row['characterID']),
-      'corporationName' => check_plain($row['corporationName']),
+      'corporationName' => strip_tags(decode_entities($row['corporationName'])),
       'corporationID' => check_plain($row['corporationID']),
-      'corporationTicker' => check_plain($row['corporationTicker']),
+      'corporationTicker' => strip_tags(decode_entities($row['corporationTicker'])),
       'allianceID' => check_plain($row['allianceID']),
-      'allianceName' => check_plain($row['allianceName']),
-      'allianceTicker' => check_plain($row['allianceTicker']),
+      'allianceName' => strip_tags(decode_entities($row['allianceName'])),
+      'allianceTicker' => strip_tags(decode_entities($row['allianceTicker'])),
     );
   }
   else {
@@ -738,34 +738,58 @@ function eve_api_get_character_name($query) {
  *   Indicates a character is blue to the alliance.
  */
 function eve_api_verify_blue($characters) {
-  if (!isset($characters['characters'])) {
-    return FALSE;
-  }
+  if (isset($characters['characterID'])) {
+    if (($characters['allianceID'] == variable_get('eve_api_allianceID', 0) && variable_get('eve_api_allianceID', 0) != 0) || $characters['corporationID'] == variable_get('eve_api_corporationID', 0)) {
+      return TRUE;
+    }
 
-  foreach ($characters['characters'] as $character) {
+    $result = db_query('SELECT corporationID FROM {eve_api_alliance_corporations} WHERE corporationID = :corporationID', array(
+      ':corporationID' => (int) $characters['corporationID'],
+    ));
+
+    if ($result->rowCount()) {
+      return TRUE;
+    }
+
     $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE standing >= :standing AND deleted = 0 AND contactID IN (:contactIDs)', array(
       ':standing' => (float) variable_get('eve_api_required_standing', 0.1),
       ':contactIDs' => array(
-        (int) $character['characterID'],
-        (int) $character['corporationID'],
-        (int) $character['allianceID'],
+        (int) $characters['characterID'],
+        (int) $characters['corporationID'],
+        (int) $characters['allianceID'],
       ),
     ));
 
     if ($result->rowCount()) {
       return TRUE;
     }
+  }
+  elseif (isset($characters['characters'])) {
+    foreach ($characters['characters'] as $character) {
+      if (($character['allianceID'] == variable_get('eve_api_allianceID', 0) && variable_get('eve_api_allianceID', 0) != 0) || $character['corporationID'] == variable_get('eve_api_corporationID', 0)) {
+        return TRUE;
+      }
 
-    if (($character['allianceID'] == variable_get('eve_api_allianceID', 0) && variable_get('eve_api_allianceID', 0) != 0) || $character['corporationID'] == variable_get('eve_api_corporationID', 0)) {
-      return TRUE;
-    }
+      $result = db_query('SELECT corporationID FROM {eve_api_alliance_corporations} WHERE corporationID = :corporationID', array(
+        ':corporationID' => (int) $character['corporationID'],
+      ));
 
-    $result = db_query('SELECT corporationID FROM {eve_api_alliance_corporations} WHERE corporationID = :corporationID', array(
-      ':corporationID' => (int) $character['corporationID'],
-    ));
+      if ($result->rowCount()) {
+        return TRUE;
+      }
 
-    if ($result->rowCount()) {
-      return TRUE;
+      $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE standing >= :standing AND deleted = 0 AND contactID IN (:contactIDs)', array(
+        ':standing' => (float) variable_get('eve_api_required_standing', 0.1),
+        ':contactIDs' => array(
+          (int) $character['characterID'],
+          (int) $character['corporationID'],
+          (int) $character['allianceID'],
+        ),
+      ));
+
+      if ($result->rowCount()) {
+        return TRUE;
+      }
     }
   }
 
@@ -795,7 +819,7 @@ function eve_api_list_valid_characters($characters) {
       ));
 
       if ($result->rowCount()) {
-        $chars[$character['characterName']] = $character['characterName'];
+        $chars[] = $character['characterName'];
         continue;
       }
 
@@ -804,7 +828,7 @@ function eve_api_list_valid_characters($characters) {
       ));
 
       if ($result->rowCount()) {
-        $chars[$character['characterName']] = $character['characterName'];
+        $chars[] = $character['characterName'];
       }
     }
   }
@@ -1042,13 +1066,13 @@ function eve_api_list_api_simple($uid) {
         foreach ($result_b->fetchAll() as $row_b) {
           $api_list['characters'][$row_b->characterID] = array(
             'characterID' => check_plain($row_b->characterID),
-            'characterName' => check_plain($row_b->characterName),
+            'characterName' => strip_tags(decode_entities($row_b->characterName)),
             'corporationID' => check_plain($row_b->corporationID),
-            'corporationName' => check_plain($row_b->corporationName),
-            'corporationTicker' => check_plain($row_b->corporationTicker),
+            'corporationName' => strip_tags(decode_entities($row_b->corporationName)),
+            'corporationTicker' => strip_tags(decode_entities($row_b->corporationTicker)),
             'allianceID' => check_plain($row_b->allianceID),
-            'allianceName' => check_plain($row_b->allianceName),
-            'allianceTicker' => check_plain($row_b->allianceTicker),
+            'allianceName' => strip_tags(decode_entities($row_b->allianceName)),
+            'allianceTicker' => strip_tags(decode_entities($row_b->allianceTicker)),
           );
         }
       }
