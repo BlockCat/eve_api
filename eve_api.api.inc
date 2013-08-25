@@ -1037,6 +1037,10 @@ function eve_api_character_is_ceo($character_id, $corporation_id = NULL) {
  */
 function eve_api_api_error_msg($error_id) {
   switch ($error_id) {
+    case -1:
+      $message = t('Request Timed Out');
+      break;
+
     case 0:
       $message = t('OK');
       break;
