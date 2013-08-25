@@ -207,7 +207,7 @@ function eve_api_jabber_user_form_submit($form, &$form_state) {
       }
     }
     else {
-      drupal_set_message(t('There was an error updateing your Jabber account, please try again later.'));
+      drupal_set_message(t('There was an error updateing your Jabber account, please try again later.'), 'error');
     }
 
     $queue = DrupalQueue::get('eve_api_jabber_cron_user_sync');
@@ -220,6 +220,6 @@ function eve_api_jabber_user_form_submit($form, &$form_state) {
     ));
   }
   catch (EveApiException $e) {
-    drupal_set_message(t('There was an error updateing your Jabber account, please try again later.'));
+    drupal_set_message(t('There was an error updateing your Jabber account, please try again later.'), 'error');
   }
 }

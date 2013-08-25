@@ -170,10 +170,16 @@ function eve_api_cron_api_user_sync($item) {
         if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
           $error = 1;
         }
+        elseif (isset($characters['errorCode'])) {
+          $error = (int) $characters['errorCode'];
+        }
       }
       else {
         if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
           $error = 1;
+        }
+        elseif (isset($characters['errorCode'])) {
+          $error = (int) $characters['errorCode'];
         }
       }
 
@@ -213,6 +219,11 @@ function eve_api_cron_api_user_sync($item) {
         $sheet_query = $query + array('characterID' => (int) $character['characterID']);
 
         $character_sheet = eve_api_get_character_sheet($sheet_query);
+        $error2 = 0;
+
+        if (isset($character_sheet['errorCode'])) {
+          $error2 = (int) $character_sheet['errorCode'];
+        }
 
         if (!empty($character_sheet['corporationRoles'])) {
           foreach ($character_sheet['corporationRoles'] as $roles) {
@@ -228,7 +239,7 @@ function eve_api_cron_api_user_sync($item) {
               'roleID' => (int) $roles['roleID'],
               'roleName' => (string) $roles['roleName'],
               'deleted' => 0,
-              'errorID' => (int) $error,
+              'errorID' => (int) $error2,
               ))->execute();
           }
         }
@@ -247,7 +258,7 @@ function eve_api_cron_api_user_sync($item) {
               'roleID' => (int) $roles['roleID'],
               'roleName' => (string) $roles['roleName'],
               'deleted' => 0,
-              'errorID' => (int) $error,
+              'errorID' => (int) $error2,
             ))->execute();
           }
         }
@@ -266,7 +277,7 @@ function eve_api_cron_api_user_sync($item) {
               'roleID' => (int) $roles['roleID'],
               'roleName' => (string) $roles['roleName'],
               'deleted' => 0,
-              'errorID' => (int) $error,
+              'errorID' => (int) $error2,
             ))->execute();
           }
         }
@@ -285,7 +296,7 @@ function eve_api_cron_api_user_sync($item) {
               'roleID' => (int) $roles['roleID'],
               'roleName' => (string) $roles['roleName'],
               'deleted' => 0,
-              'errorID' => (int) $error,
+              'errorID' => (int) $error2,
             ))->execute();
           }
         }

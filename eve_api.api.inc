@@ -65,6 +65,16 @@ function eve_api_get_xml($type, $query = array()) {
   }
 
   if (empty($html)) {
+    if (variable_get('eve_api_cron_error_count', 0) >= variable_get('eve_api_cron_error_count_limit', 5)) {
+      variable_set('eve_api_cron_error_time', time() + variable_get('eve_api_cron_error_time_limit', 10 * 60));
+      variable_set('eve_api_cron_error_count', 0);
+      watchdog('eve_api', 'EVE API has failed 5 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', time() + variable_get('eve_api_cron_error_time_limit', 10 * 60)), NULL, WATCHDOG_WARNING);
+      return 2;
+    }
+    elseif (variable_get('eve_api_cron_error_time', 0) >= time()) {
+      return 2;
+    }
+
     $has_curl = function_exists('curl_init');
     $open_basedir = ini_get('open_basedir');
 
@@ -83,7 +93,6 @@ function eve_api_get_xml($type, $query = array()) {
     }
 
     if (!empty($html->error)) {
-      drupal_set_message(t('EVE API returned an error with the HTTP request.'), 'error', FALSE);
       watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_WARNING);
     }
 
@@ -95,21 +104,12 @@ function eve_api_get_xml($type, $query = array()) {
       $xml = @new SimpleXMLElement($html->data);
     }
     catch (Exception $e) {
-      drupal_set_message(t('EVE API returned an error with the data retrieved.'), 'error', FALSE);
       watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $e->getMessage(), NULL, WATCHDOG_WARNING);
       $xml = NULL;
     }
 
     if (FALSE !== strpos($html->data, '<!DOCTYPE html')) {
-      drupal_set_message(t('EVE API returned an error with the API data: Not valid XML'), 'error', FALSE);
       watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_WARNING);
-      $xml = NULL;
-    }
-
-    if (isset($xml->errorCode)) {
-      drupal_set_message(t('EVE API returned an error with the API data.'), 'error', FALSE);
-      watchdog('eve_api', 'EVE API returned an error with the API data. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $xml->error, NULL, WATCHDOG_WARNING);
-      $error = $xml->errorCode . ' - ' . $xml->errorMessage;
       $xml = NULL;
     }
   }
@@ -119,6 +119,13 @@ function eve_api_get_xml($type, $query = array()) {
     return $xml;
   }
   else {
+    if (isset($xml->errorCode)) {
+      watchdog('eve_api', 'EVE API returned an error with the API data. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $xml->error, NULL, WATCHDOG_WARNING);
+      $error = $xml->errorCode . ' - ' . $xml->errorMessage;
+    }
+
+    variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
+
     return $error;
   }
 }
@@ -548,6 +555,10 @@ function eve_api_get_character_api($query) {
   $api_data['type'] = (string) $api_info->type;
   $api_data['expires'] = ((string) $api_info->expires) ? TRUE : FALSE;
 
+  if (isset($xml->errorCode)) {
+    $api_data['errorCode'] = (int) $xml->errorCode;
+  }
+
   foreach ($xml->result->key->rowset->children() as $rows) {
     $row = $rows->attributes();
 
@@ -588,6 +599,10 @@ function eve_api_get_character_sheet($query) {
   }
 
   $api_data = array();
+
+  if (isset($xml->errorCode)) {
+    $api_data['errorCode'] = (int) $xml->errorCode;
+  }
 
   foreach ($xml->result->children() as $results) {
     switch ((string) $results->getName()) {
@@ -697,6 +712,10 @@ function eve_api_get_corporation_info($query) {
     'ceoID' => (int) $xml->result->ceoID,
   );
 
+  if (isset($xml->errorCode)) {
+    $api_data = $api_data + array('errorCode' => (string) $xml->errorCode);
+  }
+
   return $api_data;
 }
 
@@ -723,6 +742,10 @@ function eve_api_get_character_name($query) {
     $row = $rows->attributes();
 
     $api_data[(int) $row->characterID] = (string) $row->name;
+  }
+
+  if (isset($xml->errorCode)) {
+    $api_data['errorCode'] = (int) $xml->errorCode;
   }
 
   return $api_data;

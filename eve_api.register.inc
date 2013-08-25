@@ -245,6 +245,17 @@ function eve_api_user_register_form_validate(&$form, &$form_state) {
   $key_id = (int) $form_state['signup_object']['keyID'];
   $v_code = (string) $form_state['signup_object']['vCode'];
 
+  $result = db_query('SELECT apiID FROM {eve_api_api_keys} WHERE keyID = :keyID AND vCode =:vCode', array(
+    ':keyID' => $key_id,
+    ':vCode' => $v_code,
+  ));
+
+  if ($result->rowCount()) {
+    form_set_error('keyID', t('API Key already exists!'));
+    form_set_error('vCode');
+    drupal_goto('user/register');
+  }
+
   $query = array(
     'keyID' => $key_id,
     'vCode' => $v_code,
@@ -337,8 +348,33 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
 
   foreach ($characters['characters'] as $character) {
     $sheet_query = $query + array('characterID' => (int) $character['characterID']);
+    $error = 0;
+
+    if (isset($characters['errorCode'])) {
+      $error = (int) $characters['errorCode'];
+    }
+
+    db_merge('eve_api_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
+      'characterID' => (int) $character['characterID'],
+      'uid' => $uid,
+      'apiID' => (int) $api_id,
+      'characterName' => (string) $character['characterName'],
+      'corporationID' => (int) $character['corporationID'],
+      'corporationName' => (string) $character['corporationName'],
+      'corporationTicker' => (string) $character['corporationTicker'],
+      'allianceID' => (int) $character['allianceID'],
+      'allianceName' => (string) $character['allianceName'],
+      'allianceTicker' => (string) $character['allianceTicker'],
+      'deleted' => 0,
+      'errorID' => $error,
+    ))->execute();
 
     $character_sheet = eve_api_get_character_sheet($sheet_query);
+    $error = 0;
+
+    if (isset($character_sheet['errorCode'])) {
+      $error = (int) $character_sheet['errorCode'];
+    }
 
     if (!empty($character_sheet['corporationRoles'])) {
       foreach ($character_sheet['corporationRoles'] as $roles) {
@@ -354,7 +390,7 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
           'roleID' => (int) $roles['roleID'],
           'roleName' => (string) $roles['roleName'],
           'deleted' => 0,
-          'errorID' => 0,
+          'errorID' => $error,
         ))->execute();
       }
     }
@@ -373,7 +409,7 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
           'roleID' => (int) $roles['roleID'],
           'roleName' => (string) $roles['roleName'],
           'deleted' => 0,
-          'errorID' => 0,
+          'errorID' => $error,
         ))->execute();
       }
     }
@@ -392,7 +428,7 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
           'roleID' => (int) $roles['roleID'],
           'roleName' => (string) $roles['roleName'],
           'deleted' => 0,
-          'errorID' => 0,
+          'errorID' => $error,
         ))->execute();
       }
     }
@@ -411,25 +447,10 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
           'roleID' => (int) $roles['roleID'],
           'roleName' => (string) $roles['roleName'],
           'deleted' => 0,
-          'errorID' => 0,
+          'errorID' => $error,
         ))->execute();
       }
     }
-
-    db_merge('eve_api_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
-      'characterID' => (int) $character['characterID'],
-      'uid' => $uid,
-      'apiID' => (int) $api_id,
-      'characterName' => (string) $character['characterName'],
-      'corporationID' => (int) $character['corporationID'],
-      'corporationName' => (string) $character['corporationName'],
-      'corporationTicker' => (string) $character['corporationTicker'],
-      'allianceID' => (int) $character['allianceID'],
-      'allianceName' => (string) $character['allianceName'],
-      'allianceTicker' => (string) $character['allianceTicker'],
-      'deleted' => 0,
-      'errorID' => 0,
-    ))->execute();
 
     if ((string) $form_state['values']['name'] == (string) $character['characterName']) {
       $character_name = (string) $character['characterName'];
@@ -531,6 +552,17 @@ function eve_api_enter_api_form_validate($form, &$form_state) {
 
   if (empty($key_id) || empty($v_code) || preg_match('/[^a-z0-9]/i', $v_code) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($v_code) > 64 || strlen($v_code) < 20) {
     form_set_error('keyID', t('Invalid input, please try again.'));
+    form_set_error('vCode');
+    return;
+  }
+
+  $result = db_query('SELECT apiID FROM {eve_api_api_keys} WHERE keyID = :keyID AND vCode =:vCode', array(
+    ':keyID' => $key_id,
+    ':vCode' => $v_code,
+  ));
+
+  if ($result->rowCount()) {
+    form_set_error('keyID', t('API Key already exists!'));
     form_set_error('vCode');
     return;
   }

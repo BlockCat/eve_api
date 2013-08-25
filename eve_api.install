@@ -486,6 +486,10 @@ function eve_api_uninstall() {
   variable_del('eve_api_cron_api_mask_next');
   variable_del('eve_api_cron_api_users_time');
   variable_del('eve_api_cron_api_users_next');
+  variable_del('eve_api_cron_error_count_limit');
+  variable_del('eve_api_cron_error_time_limit');
+  variable_del('eve_api_cron_error_count');
+  variable_del('eve_api_cron_error_time');
 
   $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
   $queue->deleteQueue();

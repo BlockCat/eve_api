@@ -134,6 +134,6 @@ function eve_api_teamspeak_user_form_submit($form, &$form_state) {
     drupal_set_message(t('TeamSpeak access granted.'));
   }
   catch (EveApiException $e) {
-    drupal_set_message(check_plain($e->getMessage()), 'error');
+    drupal_set_message(t('TeamSpeak connection failed, please try again later. Error: @error', array('@error' => check_plain($e->getMessage()))), 'error');
   }
 }
