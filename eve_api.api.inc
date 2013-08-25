@@ -99,18 +99,25 @@ function eve_api_get_xml($type, $query = array()) {
     $error = $html->code;
   }
 
-  if ($error < 400) {
-    try {
-      $xml = @new SimpleXMLElement($html->data);
-    }
-    catch (Exception $e) {
-      watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $e->getMessage(), NULL, WATCHDOG_WARNING);
-      $xml = NULL;
-    }
+  // Fix for HTTP_REQUEST_TIMEOUT returning as -1
+  if ($error == -1) {
+    return 3;
+  }
 
+  if ($error < 400) {
     if (FALSE !== strpos($html->data, '<!DOCTYPE html')) {
       watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_WARNING);
-      $xml = NULL;
+      $error = 4;
+    }
+    else {
+      try {
+        $xml = @new SimpleXMLElement($html->data);
+      }
+      catch (Exception $e) {
+        watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $e->getMessage(), NULL, WATCHDOG_WARNING);
+        $error = 5;
+        $xml = NULL;
+      }
     }
   }
 
@@ -118,16 +125,15 @@ function eve_api_get_xml($type, $query = array()) {
     cache_set($cache_name, $html, 'cache', strtotime($xml->cachedUntil));
     return $xml;
   }
-  else {
-    if (isset($xml->errorCode)) {
-      watchdog('eve_api', 'EVE API returned an error with the API data. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $xml->error, NULL, WATCHDOG_WARNING);
-      $error = $xml->errorCode . ' - ' . $xml->errorMessage;
-    }
 
-    variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
-
-    return $error;
+  if (isset($xml->errorCode)) {
+    watchdog('eve_api', 'EVE API returned an error with the API data. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $xml->errorCode, NULL, WATCHDOG_WARNING);
+    $error = $xml->errorCode;
   }
+
+  variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
+
+  return $error;
 }
 
 /**
@@ -1037,24 +1043,40 @@ function eve_api_character_is_ceo($character_id, $corporation_id = NULL) {
  */
 function eve_api_api_error_msg($error_id) {
   switch ($error_id) {
-    case -1:
-      $message = t('Request Timed Out');
-      break;
-
     case 0:
       $message = t('OK');
       break;
 
     case 1:
-      $message = t('Invalid API Mask/Type/Expiry.');
+      $message = t('Invalid API Mask/Type/Expiry');
+      break;
+
+    case 2:
+      // Too Many Failed API Requests, we will wait 10 minutes to try again.
+      $message = t('API Temporarily Down');
+      break;
+
+    case 3:
+      // API Request Timed Out.
+      $message = t('API Temporarily Down');
+      break;
+
+    case 4:
+      // Invalid response, response received as a HTML document.
+      $message = t('API Temporarily Down');
+      break;
+
+    case 5:
+      // Invalid response cannot parse as XML.
+      $message = t('API Temporarily Down');
       break;
 
     case 403:
-      $message = t('API Key Does Not Exist.');
+      $message = t('API Key Does Not Exist');
       break;
 
     default:
-      $message = t('Unknown Error ID.');
+      $message = t('API Temporarily Down');
       break;
   }
 
