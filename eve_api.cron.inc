@@ -14,7 +14,7 @@ function eve_api_cron() {
 
   $interval = variable_get('eve_api_cron_api_alliance_fetch_time', 1440 * 60);
 
-  if (time() >= variable_get('eve_api_cron_api_alliance_fetch_next', 0) && date('Gi') >= 212) {
+  if (time() >= variable_get('eve_api_cron_api_alliance_fetch_next', 0) && date('G') == 2 && date('i') >= 12) {
     $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
     $queue->createItem(1);
 
@@ -23,7 +23,7 @@ function eve_api_cron() {
 
   $interval = variable_get('eve_api_cron_api_alliance_sync_time', 1440 * 60);
 
-  if (time() >= variable_get('eve_api_cron_api_alliance_sync_next', 0) && date('Gi') >= 312) {
+  if (time() >= variable_get('eve_api_cron_api_alliance_sync_next', 0) && date('G') == 3 && date('i') >= 12) {
     $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
     $queue->createItem(1);
 
@@ -32,7 +32,7 @@ function eve_api_cron() {
 
   $interval = variable_get('eve_api_cron_api_mask_time', 1440 * 60);
 
-  if (time() >= variable_get('eve_api_cron_api_mask_next', 0) && date('Gi') >= 112) {
+  if (time() >= variable_get('eve_api_cron_api_mask_next', 0) && date('G') == 1 && date('i') >= 12) {
     $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
     $queue->createItem(1);
 
