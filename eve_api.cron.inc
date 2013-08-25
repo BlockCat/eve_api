@@ -32,7 +32,7 @@ function eve_api_cron() {
 
   $interval = variable_get('eve_api_cron_api_mask_time', 1440 * 60);
 
-  if (time() >= variable_get('eve_api_cron_api_mask_next', 0) && date('G') == 1 && date('i') >= 12) {
+  if (time() >= variable_get('eve_api_cron_api_mask_next', 0) && date('w') == 0 && date('G') == 1 && date('i') >= 12) {
     $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
     $queue->createItem(1);
 
