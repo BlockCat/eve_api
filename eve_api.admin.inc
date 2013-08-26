@@ -742,7 +742,7 @@ function eve_api_admin_list_blues_form_submit($form, &$form_state) {
     db_delete('eve_api_blue_standings')->condition('contactID', $deleted_blues, 'IN')->execute();
 
     $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
-    $result = db_query('SELECT DISTINCT uid FROM {users}');
+    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
