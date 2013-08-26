@@ -31,7 +31,7 @@ function eve_api_userlist_menu() {
 
   $user_base = array(
     'page callback' => 'drupal_get_form',
-    'access arguments' => array('view eve_api userlist'),
+    'access arguments' => array('view eve_api_userlist'),
     'file' => 'eve_api_userlist.user.inc',
   );
 
@@ -87,14 +87,14 @@ function eve_api_userlist_menu() {
 function eve_api_userlist_private_access($corporation_id) {
   switch (variable_get('eve_api_userlist_private_access', 0)) {
     case 0:
-      return (eve_api_character_is_director($GLOBALS['user']->characterID, $corporation_id) || (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api private userlist')) || user_access('moderate eve_api users'));
+      return (eve_api_character_is_director($GLOBALS['user']->characterID, $corporation_id) || (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api_userlist private')) || user_access('moderate eve_api users'));
 
     case 1:
-      return (eve_api_character_is_ceo($GLOBALS['user']->characterID, $corporation_id) || (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api private userlist')) || user_access('moderate eve_api users'));
+      return (eve_api_character_is_ceo($GLOBALS['user']->characterID, $corporation_id) || (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api_userlist private')) || user_access('moderate eve_api users'));
 
     default:
     case 2:
-      return (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api private userlist')) || user_access('moderate eve_api users');
+      return (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api_userlist private')) || user_access('moderate eve_api users');
   }
 }
 
@@ -104,15 +104,80 @@ function eve_api_userlist_private_access($corporation_id) {
 function eve_api_userlist_permission() {
   $permissions = array();
 
-  $permissions['view eve_api userlist'] = array(
+  $permissions['view eve_api_userlist'] = array(
     'title' => t('Access EVE API User List'),
     'description' => t('Allow user to view the EVE API User List.'),
   );
 
-  $permissions['view eve_api private userlist'] = array(
+  $permissions['view eve_api_userlist private'] = array(
     'title' => t('Access EVE API Private User List'),
     'description' => t('Allow user to view the Private EVE API User List information within their own corporation.'),
   );
 
   return $permissions;
+}
+
+/**
+ * Implements hook_user_view().
+ */
+function eve_api_userlist_user_view($account) {
+  global $user;
+
+  if (!isset($account->content['eve_api_attributes'])) {
+    $account->content['eve_api_attributes'] = array();
+  }
+
+  if (!isset($account->content['eve_api_skills'])) {
+    $account->content['eve_api_skills'] = array();
+  }
+
+  if ($account->characterID == 0) {
+    return;
+  }
+
+  $character_data = eve_api_get_character_info($account->name);
+  $is_director = eve_api_userlist_private_access($character_data['corporationID']);
+  $is_good = user_access('moderate eve_api users');
+
+  if (!$is_director && $user->uid != $account->uid && !$is_good) {
+    return;
+  }
+
+  $account->content['eve_api_attributes'] += array(
+    '#type' => 'user_profile_category',
+    '#attributes' => array('class' => array('user-member')),
+    '#weight' => 4,
+    '#title' => t('Attributes'),
+  );
+
+  $account->content['eve_api_skills'] += array(
+    '#type' => 'user_profile_category',
+    '#attributes' => array('class' => array('user-member')),
+    '#weight' => 4,
+    '#title' => t('Skills'),
+  );
+
+  $account->content['eve_api_attributes']['race'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => t('Race'),
+    '#markup' => '',
+  );
+
+  $account->content['eve_api_attributes']['gender'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => t('Gender'),
+    '#markup' => '',
+  );
+
+  $account->content['eve_api_attributes']['corporation'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => t('Corporation'),
+    '#markup' => (($is_director || $is_good) ? l($character_data['corporationName'], 'eve_api/userlist/' . $character_data['corporationID'] . '/director') : l($character_data['corporationName'], 'eve_api/userlist/' . $character_data['corporationID'])) . ' (' . $character_data['corporationTicker'] . ')',
+  );
+
+  $account->content['eve_api_attributes']['stats'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => t('Stats'),
+    '#markup' => '',
+  );
 }

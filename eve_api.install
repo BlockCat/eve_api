@@ -8,7 +8,7 @@
  * Implements hook_schema().
  */
 function eve_api_schema() {
-  $schema['eve_api_api_keys'] = array(
+  $schema['eve_api_keys'] = array(
     'description' => 'This table holds all the api\'s associated with all the accounts.',
     'fields' => array(
       'apiID' => array(
@@ -141,21 +141,225 @@ function eve_api_schema() {
     'primary key' => array('characterID'),
   );
 
-  $schema['eve_api_characters_roles'] = array(
-    'description' => 'This table holds all the roles for all characters retrieved from the API.',
+  $schema['eve_api_character_sheet'] = array(
+    'description' => 'This table holds most of the data retrieved from the character sheet ',
     'fields' => array(
       'characterID' => array(
         'description' => 'The unique Character ID associated with the EVE Character.',
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'uid' => array(
-        'description' => 'The link between api and drupal account.',
+      'DoB' => array(
+        'description' => 'The EVE Character Date of Birth.',
+        'type' => 'datetime',
+        'mysql_type' => 'DATETIME',
+        'pgsql_type' => 'timestamp without time zone',
+        'sqlite_type' => 'VARCHAR',
+        'sqlsrv_type' => 'smalldatetime',
+        'not null' => FALSE,
+        'sortable' => TRUE,
+        'views' => TRUE,
+      ),
+      'race' => array(
+        'description' => 'The EVE Character race.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'bloodLine' => array(
+        'description' => 'The EVE Character blood line.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'ancestry' => array(
+        'description' => 'The EVE Character ancestry.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'gender' => array(
+        'description' => 'The EVE Character gender.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'cloneName' => array(
+        'description' => 'The EVE Character clone name.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'cloneSkillPoints' => array(
+        'description' => 'The EVE Character clone skill points.',
+        'type' => 'int',
+        'size' => 'big',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'balance' => array(
+        'description' => 'The EVE Character balance.',
+        'type' => 'float',
+        'not null' => TRUE,
+        'precision' => 20,
+        'scale' => 2,
+        'unsigned' => FALSE,
+        'default' => 0.0,
+      ),
+      'intelligence' => array(
+        'description' => 'The EVE Character attributes intelligence.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'memory' => array(
+        'description' => 'The EVE Character attributes memory.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'charisma' => array(
+        'description' => 'The EVE Character attributes charisma.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'perception' => array(
+        'description' => 'The EVE Character attributes perception.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'willpower' => array(
+        'description' => 'The EVE Character attributes willpower.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'errorID' => array(
+        'description' => 'Error code to identify any problems with a registered characters.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+    ),
+    'unique keys' => array('characterID' => array('characterID')),
+    'primary key' => array('characterID'),
+  );
+
+  $schema['eve_api_character_sheet_attribute_enhancers'] = array(
+    'description' => 'This table holds all the attribute enhancers for each character.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'The unique Character ID associated with the EVE Character.',
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'apiID' => array(
-        'description' => 'The link between api and the character.',
+      'bonusName' => array(
+        'description' => 'The EVE Character bonus name.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'augmentatorName' => array(
+        'description' => 'The EVE Character augmentator name.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'augmentatorValue' => array(
+        'description' => 'The EVE Character augmentator value.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array('characterID' => array('characterID')),
+  );
+
+  $schema['eve_api_character_sheet_certificates'] = array(
+    'description' => 'This table holds all the certificates for each character.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'The unique Character ID associated with the EVE Character.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'certificateID' => array(
+        'description' => 'The EVE Character augmentator value.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array('characterID' => array('characterID')),
+  );
+
+  $schema['eve_api_character_sheet_titles'] = array(
+    'description' => 'This table holds all the corporation titles for each character.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'The unique Character ID associated with the EVE Character.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'titleID' => array(
+        'description' => 'The EVE Character corporation title ID.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'titleName' => array(
+        'description' => 'The EVE Character corporation title name.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array('characterID' => array('characterID')),
+  );
+
+  $schema['eve_api_character_sheet_skills'] = array(
+    'description' => 'This table holds all the skills for each character.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'The unique Character ID associated with the EVE Character.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'typeID' => array(
+        'description' => 'The EVE Character skills skill type.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'skillpoints' => array(
+        'description' => 'The EVE Character skills skill points.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'level' => array(
+        'description' => 'The EVE Character skills level.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'published' => array(
+        'description' => 'The EVE Character skill published.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array('characterID' => array('characterID')),
+  );
+
+  $schema['eve_api_character_roles'] = array(
+    'description' => 'This table holds all the roles for each character.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'The unique Character ID associated with the EVE Character.',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -177,24 +381,12 @@ function eve_api_schema() {
         'length' => 50,
         'not null' => TRUE,
       ),
-      'errorID' => array(
-        'description' => 'Error code to identify any problems with a registered characters.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'deleted' => array(
-        'description' => 'Identifies if the character was removed from the key at some point.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
     ),
     'indexes' => array('characterid' => array('characterID')),
   );
 
-  $schema['eve_api_characters_roles_whitelist'] = array(
-    'description' => 'This table holds all the roles for all characters retrieved from the API.',
+  $schema['eve_api_whitelist_roles'] = array(
+    'description' => 'This table holds the whitelist for CEO and Directors.',
     'fields' => array(
       'characterID' => array(
         'description' => 'The unique Character ID associated with the EVE Character.',
@@ -239,6 +431,52 @@ function eve_api_schema() {
     ),
     'unique keys' => array('characterID' => array('characterID')),
     'primary key' => array('characterID'),
+  );
+
+  $schema['eve_api_sheet_groups'] = array(
+    'description' => 'This table holds all the definitions for all the skill groups.',
+    'fields' => array(
+      'groupID' => array(
+        'description' => 'The EVE skill group ID.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'groupName' => array(
+        'description' => 'The EVE skill group name.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+    ),
+    'unique keys' => array('groupID' => array('groupID')),
+    'primary key' => array('groupID'),
+  );
+
+  $schema['eve_api_sheet_types'] = array(
+    'description' => 'This table holds all the definitions for all the skills.',
+    'fields' => array(
+      'typeID' => array(
+        'description' => 'The EVE skill type ID.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'typeName' => array(
+        'description' => 'The EVE skill type name.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => FALSE,
+      ),
+      'groupID' => array(
+        'description' => 'The EVE skill group ID.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+    ),
+    'unique keys' => array('typeID' => array('typeID')),
+    'primary key' => array('typeID'),
   );
 
   $schema['eve_api_access_mask'] = array(
@@ -449,6 +687,9 @@ function eve_api_install() {
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
   $queue->createQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
+  $queue->createQueue();
 }
 
 /**
@@ -501,6 +742,9 @@ function eve_api_uninstall() {
   $queue->deleteQueue();
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
   $queue->deleteQueue();
 }
 

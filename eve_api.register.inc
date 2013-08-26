@@ -245,7 +245,7 @@ function eve_api_user_register_form_validate(&$form, &$form_state) {
   $key_id = (int) $form_state['signup_object']['keyID'];
   $v_code = (string) $form_state['signup_object']['vCode'];
 
-  $result = db_query('SELECT apiID FROM {eve_api_api_keys} WHERE keyID = :keyID AND vCode =:vCode', array(
+  $result = db_query('SELECT apiID FROM {eve_api_keys} WHERE keyID = :keyID AND vCode =:vCode', array(
     ':keyID' => $key_id,
     ':vCode' => $v_code,
   ));
@@ -329,143 +329,14 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
   $key_id = (int) $form_state['signup_object']['keyID'];
   $v_code = (string) $form_state['signup_object']['vCode'];
 
-  $query = array(
-    'keyID' => $key_id,
-    'vCode' => $v_code,
-  );
+  $characters = eve_api_update_character('create', $account, $key_id, $v_code);
+  $character = $characters['character_data'];
 
-  $characters = eve_api_get_character_api($query);
-
-  $created = date('Y-m-d H:i:s', time());
-
-  $api_id = db_insert('eve_api_api_keys')->fields(array(
-    'uid' => $uid,
-    'keyID' => $key_id,
-    'vCode' => $v_code,
-    'updated' => (string) $created,
-    'created' => (string) $created,
-  ))->execute();
-
-  foreach ($characters['characters'] as $character) {
-    $sheet_query = $query + array('characterID' => (int) $character['characterID']);
-    $error = 0;
-
-    if (isset($characters['errorCode'])) {
-      $error = (int) $characters['errorCode'];
-    }
-
-    db_merge('eve_api_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
-      'characterID' => (int) $character['characterID'],
-      'uid' => $uid,
-      'apiID' => (int) $api_id,
-      'characterName' => (string) $character['characterName'],
-      'corporationID' => (int) $character['corporationID'],
-      'corporationName' => (string) $character['corporationName'],
-      'corporationTicker' => (string) $character['corporationTicker'],
-      'allianceID' => (int) $character['allianceID'],
-      'allianceName' => (string) $character['allianceName'],
-      'allianceTicker' => (string) $character['allianceTicker'],
-      'deleted' => 0,
-      'errorID' => $error,
-    ))->execute();
-
-    $character_sheet = eve_api_get_character_sheet($sheet_query);
-    $error = 0;
-
-    if (isset($character_sheet['errorCode'])) {
-      $error = (int) $character_sheet['errorCode'];
-      db_update('eve_api_characters_roles')->fields(array('errorID' => (int) $error))->condition('characterID', (int) $character['characterID'], '=')->execute();
-    }
-
-    if (isset($character_sheet['error'])) {
-      $error = (int) $character_sheet['error'];
-      db_update('eve_api_characters_roles')->fields(array('errorID' => (int) $error))->condition('characterID', (int) $character['characterID'], '=')->execute();
-    }
-
-    if (isset($character_sheet['corporationRoles'])) {
-      foreach ($character_sheet['corporationRoles'] as $roles) {
-        db_merge('eve_api_characters_roles')->key(array(
-          'characterID' => (int) $character['characterID'],
-          'type' => 'corporationRoles',
-          'roleID' => (int) $roles['roleID'],
-        ))->fields(array(
-          'characterID' => (int) $character['characterID'],
-          'uid' => (int) $uid,
-          'apiID' => (int) $api_id,
-          'type' => 'corporationRoles',
-          'roleID' => (int) $roles['roleID'],
-          'roleName' => (string) $roles['roleName'],
-          'deleted' => 0,
-          'errorID' => $error,
-        ))->execute();
-      }
-    }
-
-    if (isset($character_sheet['corporationRolesAtHQ'])) {
-      foreach ($character_sheet['corporationRolesAtHQ'] as $roles) {
-        db_merge('eve_api_characters_roles')->key(array(
-          'characterID' => (int) $character['characterID'],
-          'type' => 'corporationRolesAtHQ',
-          'roleID' => (int) $roles['roleID'],
-        ))->fields(array(
-          'characterID' => (int) $character['characterID'],
-          'uid' => (int) $uid,
-          'apiID' => (int) $api_id,
-          'type' => 'corporationRolesAtHQ',
-          'roleID' => (int) $roles['roleID'],
-          'roleName' => (string) $roles['roleName'],
-          'deleted' => 0,
-          'errorID' => $error,
-        ))->execute();
-      }
-    }
-
-    if (isset($character_sheet['corporationRolesAtBase'])) {
-      foreach ($character_sheet['corporationRolesAtBase'] as $roles) {
-        db_merge('eve_api_characters_roles')->key(array(
-          'characterID' => (int) $character['characterID'],
-          'type' => 'corporationRolesAtBase',
-          'roleID' => (int) $roles['roleID'],
-        ))->fields(array(
-          'characterID' => (int) $character['characterID'],
-          'uid' => (int) $uid,
-          'apiID' => (int) $api_id,
-          'type' => 'corporationRolesAtBase',
-          'roleID' => (int) $roles['roleID'],
-          'roleName' => (string) $roles['roleName'],
-          'deleted' => 0,
-          'errorID' => $error,
-        ))->execute();
-      }
-    }
-
-    if (isset($character_sheet['corporationRolesAtOther'])) {
-      foreach ($character_sheet['corporationRolesAtOther'] as $roles) {
-        db_merge('eve_api_characters_roles')->key(array(
-          'characterID' => (int) $character['characterID'],
-          'type' => 'corporationRolesAtOther',
-          'roleID' => (int) $roles['roleID'],
-        ))->fields(array(
-          'characterID' => (int) $character['characterID'],
-          'uid' => (int) $uid,
-          'apiID' => (int) $api_id,
-          'type' => 'corporationRolesAtOther',
-          'roleID' => (int) $roles['roleID'],
-          'roleName' => (string) $roles['roleName'],
-          'deleted' => 0,
-          'errorID' => $error,
-        ))->execute();
-      }
-    }
-
-    if ((string) $form_state['values']['name'] == (string) $character['characterName']) {
-      $character_name = (string) $character['characterName'];
-      $character_id = (int) $character['characterID'];
-      $corporation_name = (string) $character['corporationName'];
-      $is_director = eve_api_character_is_director((int) $character['characterID']);
-      $is_ceo = eve_api_character_is_ceo((int) $character['characterID']);
-    }
-  }
+  $character_name = (string) $character['characterName'];
+  $character_id = (int) $character['characterID'];
+  $corporation_name = (string) $character['corporationName'];
+  $is_director = eve_api_character_is_director((int) $character['characterID']);
+  $is_ceo = eve_api_character_is_ceo((int) $character['characterID']);
 
   if ($corporation_role = user_role_load_by_name($corporation_name)) {
     user_multiple_role_edit(array($uid), 'add_role', (int) $corporation_role->rid);
@@ -562,7 +433,7 @@ function eve_api_enter_api_form_validate($form, &$form_state) {
     return;
   }
 
-  $result = db_query('SELECT apiID FROM {eve_api_api_keys} WHERE keyID = :keyID AND vCode =:vCode', array(
+  $result = db_query('SELECT apiID FROM {eve_api_keys} WHERE keyID = :keyID AND vCode =:vCode', array(
     ':keyID' => $key_id,
     ':vCode' => $v_code,
   ));

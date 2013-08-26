@@ -137,7 +137,7 @@ function eve_api_userlist_user_userlist_director_page($corporation_id) {
 
   $query = db_select('users', 'u');
   $query_join = $query->join('eve_api_characters', 'c', 'u.uid = c.uid');
-  $query->join('eve_api_api_keys', 'ak', 'c.apiID = ak.apiID');
+  $query->join('eve_api_keys', 'ak', 'c.apiID = ak.apiID');
   $query->addField($query_join, 'characterID', 'cID');
   $query->fields('u', array(
       'name',

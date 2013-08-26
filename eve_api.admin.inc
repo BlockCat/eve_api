@@ -112,7 +112,6 @@ function eve_api_admin_settings_form($form, &$form_state) {
   if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['enter_api']['enable']['#default_value'] = TRUE;
-    $form['submit_button']['#disabled'] = TRUE;
   }
 
   $form['#validate'] = array('eve_api_admin_settings_form_validate');
@@ -188,6 +187,9 @@ function eve_api_admin_settings_form_submit($form, &$form_state) {
     $queue->createItem(1);
 
     $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
+    $queue->createItem(1);
+
+    $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
     $queue->createItem(1);
 
     drupal_set_message(t('The Alliance API Info is set to be retrieved on the next cron job, it can take up to a minute for the cron task to be triggered.'));
@@ -1158,7 +1160,7 @@ function eve_api_admin_role_whitelist_form($form, &$form_state) {
 
   $options = array();
 
-  $query = db_select('eve_api_characters_roles_whitelist', 'crw');
+  $query = db_select('eve_api_whitelist_roles', 'crw');
   $query->join('eve_api_characters', 'c', 'crw.characterID = c.characterID');
   $query->fields('crw', array(
         'isCEO',
@@ -1258,7 +1260,7 @@ function eve_api_admin_role_whitelist_form_submit($form, &$form_state) {
     }
   }
 
-  db_delete('eve_api_characters_roles_whitelist')->condition('characterID', $deleted_whitelist, 'IN')->execute();
+  db_delete('eve_api_whitelist_roles')->condition('characterID', $deleted_whitelist, 'IN')->execute();
 
   drupal_set_message(t('The Character Roles Whitelist has been updated.'));
 }
@@ -1361,7 +1363,7 @@ function eve_api_admin_add_role_whitelist_form_submit($form, &$form_state) {
     'runs' => 1,
   ));
 
-  db_merge('eve_api_characters_roles_whitelist')->key(array('characterID' => (int) $character['characterID']))->fields(array(
+  db_merge('eve_api_whitelist_roles')->key(array('characterID' => (int) $character['characterID']))->fields(array(
     'characterID' => (int) $character['characterID'],
     'isCEO' => $is_ceo,
     'isDirector' => $is_director,

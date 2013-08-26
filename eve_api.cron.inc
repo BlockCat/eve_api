@@ -12,7 +12,7 @@ function eve_api_cron() {
     return;
   }
 
-  $interval = variable_get('eve_api_cron_api_alliance_fetch_time', 1440 * 60);
+  $interval = variable_get('eve_api_cron_api_alliance_fetch_time', 1439 * 60);
 
   if (time() >= variable_get('eve_api_cron_api_alliance_fetch_next', 0) && date('G') == 2 && date('i') >= 12) {
     $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
@@ -21,7 +21,7 @@ function eve_api_cron() {
     variable_set('eve_api_cron_api_alliance_fetch_next', time() + $interval);
   }
 
-  $interval = variable_get('eve_api_cron_api_alliance_sync_time', 1440 * 60);
+  $interval = variable_get('eve_api_cron_api_alliance_sync_time', 1439 * 60);
 
   if (time() >= variable_get('eve_api_cron_api_alliance_sync_next', 0) && date('G') == 3 && date('i') >= 12) {
     $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
@@ -30,7 +30,7 @@ function eve_api_cron() {
     variable_set('eve_api_cron_api_alliance_sync_next', time() + $interval);
   }
 
-  $interval = variable_get('eve_api_cron_api_mask_time', 1440 * 60);
+  $interval = variable_get('eve_api_cron_api_mask_time', 1439 * 60);
 
   if (time() >= variable_get('eve_api_cron_api_mask_next', 0) && date('w') == 0 && date('G') == 1 && date('i') >= 12) {
     $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
@@ -40,11 +40,11 @@ function eve_api_cron() {
   }
 
   if (variable_get('eve_api_enable', FALSE)) {
-    $interval = variable_get('eve_api_cron_api_users_time', 60 * 60);
+    $interval = variable_get('eve_api_cron_api_users_time', 59 * 60);
 
-    if (time() >= variable_get('eve_api_cron_api_users_next', 0)) {
+    if (time() >= variable_get('eve_api_cron_api_users_next', 0) && date('i') >= 18) {
       $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
-      $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters}');
+      $result = db_query('SELECT DISTINCT uid FROM {users} WHERE uid != 0');
 
       if ($result->rowCount()) {
         foreach ($result->fetchAll() as $item) {
@@ -69,7 +69,7 @@ function eve_api_cron_queue_info() {
   $queue = array();
   $queue['eve_api_cron_api_user_sync'] = array(
     'worker callback' => 'eve_api_cron_api_user_sync',
-    'time' => 15,
+    'time' => 60,
   );
   $queue['eve_api_cron_api_alliance_fetch'] = array(
     'worker callback' => 'eve_api_cron_api_alliance_fetch',
@@ -83,6 +83,10 @@ function eve_api_cron_queue_info() {
     'worker callback' => 'eve_api_cron_api_alliance_sync',
     'time' => 60,
   );
+  $queue['eve_api_cron_api_skill_tree'] = array(
+    'worker callback' => 'eve_api_cron_api_skill_tree',
+    'time' => 60,
+  );
   return $queue;
 }
 
@@ -91,6 +95,9 @@ function eve_api_cron_queue_info() {
  *
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
+ * 
+ * @return bool
+ *   TRUE or FALSE.
  */
 function eve_api_cron_api_user_sync($item) {
   if ($item['runs'] == 3) {
@@ -103,7 +110,7 @@ function eve_api_cron_api_user_sync($item) {
 
   $account = user_load($uid);
 
-  $result = db_query('SELECT apiID, keyID, vCode FROM {eve_api_api_keys} WHERE uid = :uid', array(
+  $result = db_query('SELECT apiID, keyID, vCode FROM {eve_api_keys} WHERE uid = :uid', array(
     ':uid' => $uid,
   ));
 
@@ -114,204 +121,9 @@ function eve_api_cron_api_user_sync($item) {
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
-      $error = 0;
-
-      $query = array(
-        'keyID' => $row->keyID,
-        'vCode' => $row->vCode,
-      );
-
-      $characters = eve_api_get_character_api($query);
-
-      if (isset($characters['error'])) {
-        switch ($characters['error']) {
-          case 403:
-            db_merge('eve_api_api_keys')->key(array('apiID' => (int) $row->apiID))->fields(array(
-              'apiID' => (int) $row->apiID,
-              'errorID' => (int) $characters['error'],
-              'updated' => (string) $updated,
-            ))->execute();
-
-            db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error'], 'deleted' => 1))->condition('apiID', (int) $row->apiID, '=')->execute();
-            db_update('eve_api_characters_roles')->fields(array('errorID' => (int) $characters['error'], 'deleted' => 1))->condition('apiID', (int) $row->apiID, '=')->execute();
-            continue;
-          default:
-            db_merge('eve_api_api_keys')->key(array('apiID' => (int) $row->apiID))->fields(array(
-              'apiID' => (int) $row->apiID,
-              'errorID' => (int) $characters['error'],
-              'updated' => (string) $updated,
-            ))->execute();
-
-            db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error']))->condition('apiID', (int) $row->apiID, '=')->execute();
-            db_update('eve_api_characters_roles')->fields(array('errorID' => (int) $characters['error']))->condition('apiID', (int) $row->apiID, '=')->execute();
-            $error_found = TRUE;
-            continue;
-        }
-      }
-
-      if (!isset($characters['characters'])) {
-        watchdog('eve_api', 'Error occured, should never happen. (' . drupal_http_build_query($query) . ')<br /><pre>' . print_r($characters, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
-        continue;
-      }
-
-      $whitelist = array();
-
-      if (!empty($characters)) {
-        foreach ($characters['characters'] as $character) {
-          $whitelist[] = (int) $character['characterID'];
-        }
-      }
-
-      $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
-        ':characterIDs' => $whitelist,
-      ));
-
-      $allow_expires = variable_get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
-      $allow_type = variable_get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
-
-      if ($result->rowCount()) {
-        if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
-          $error = 1;
-        }
-        elseif (isset($characters['errorCode'])) {
-          $error = (int) $characters['errorCode'];
-        }
-      }
-      else {
-        if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
-          $error = 1;
-        }
-        elseif (isset($characters['errorCode'])) {
-          $error = (int) $characters['errorCode'];
-        }
-      }
-
-      db_merge('eve_api_api_keys')->key(array('apiID' => (int) $row->apiID))->fields(array(
-        'apiID' => (int) $row->apiID,
-        'errorID' => (int) $error,
-        'updated' => (string) $updated,
-      ))->execute();
-
-      db_update('eve_api_characters')->fields(array('errorID' => (int) $error, 'deleted' => 1))->condition('apiID', (int) $row->apiID, '=')->execute();
-      db_update('eve_api_characters_roles')->fields(array('errorID' => (int) $error, 'deleted' => 1))->condition('apiID', (int) $row->apiID, '=')->execute();
-
-      if ($error == 1) {
-        continue;
-      }
-
-      foreach ($characters['characters'] as $character) {
-        db_merge('eve_api_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
-          'characterID' => (int) $character['characterID'],
-          'uid' => (int) $uid,
-          'apiID' => (int) $row->apiID,
-          'characterName' => (string) $character['characterName'],
-          'corporationID' => (int) $character['corporationID'],
-          'corporationName' => (string) $character['corporationName'],
-          'corporationTicker' => (string) $character['corporationTicker'],
-          'allianceID' => (int) $character['allianceID'],
-          'allianceName' => (string) $character['allianceName'],
-          'allianceTicker' => (string) $character['allianceTicker'],
-          'deleted' => 0,
-          'errorID' => (int) $error,
-        ))->execute();
-
-        if ($account->name == (string) $character['characterName']) {
-          $character_found = TRUE;
-        }
-
-        $sheet_query = $query + array('characterID' => (int) $character['characterID']);
-
-        $character_sheet = eve_api_get_character_sheet($sheet_query);
-        $error2 = 0;
-
-        if (isset($character_sheet['errorCode'])) {
-          $error2 = (int) $character_sheet['errorCode'];
-          db_update('eve_api_characters_roles')->fields(array('errorID' => (int) $error2))->condition('characterID', (int) $character['characterID'], '=')->execute();
-        }
-
-        if (isset($character_sheet['error'])) {
-          $error2 = (int) $character_sheet['error'];
-          db_update('eve_api_characters_roles')->fields(array('errorID' => (int) $error2))->condition('characterID', (int) $character['characterID'], '=')->execute();
-        }
-
-        if (isset($character_sheet['corporationRoles'])) {
-          foreach ($character_sheet['corporationRoles'] as $roles) {
-            db_merge('eve_api_characters_roles')->key(array(
-              'characterID' => (int) $character['characterID'],
-              'type' => 'corporationRoles',
-              'roleID' => (int) $roles['roleID'],
-            ))->fields(array(
-              'characterID' => (int) $character['characterID'],
-              'uid' => (int) $uid,
-              'apiID' => (int) $row->apiID,
-              'type' => 'corporationRoles',
-              'roleID' => (int) $roles['roleID'],
-              'roleName' => (string) $roles['roleName'],
-              'deleted' => 0,
-              'errorID' => (int) $error2,
-              ))->execute();
-          }
-        }
-
-        if (isset($character_sheet['corporationRolesAtHQ'])) {
-          foreach ($character_sheet['corporationRolesAtHQ'] as $roles) {
-            db_merge('eve_api_characters_roles')->key(array(
-              'characterID' => (int) $character['characterID'],
-              'type' => 'corporationRolesAtHQ',
-              'roleID' => (int) $roles['roleID'],
-            ))->fields(array(
-              'characterID' => (int) $character['characterID'],
-              'uid' => (int) $uid,
-              'apiID' => (int) $row->apiID,
-              'type' => 'corporationRolesAtHQ',
-              'roleID' => (int) $roles['roleID'],
-              'roleName' => (string) $roles['roleName'],
-              'deleted' => 0,
-              'errorID' => (int) $error2,
-            ))->execute();
-          }
-        }
-
-        if (isset($character_sheet['corporationRolesAtBase'])) {
-          foreach ($character_sheet['corporationRolesAtBase'] as $roles) {
-            db_merge('eve_api_characters_roles')->key(array(
-              'characterID' => (int) $character['characterID'],
-              'type' => 'corporationRolesAtBase',
-              'roleID' => (int) $roles['roleID'],
-            ))->fields(array(
-              'characterID' => (int) $character['characterID'],
-              'uid' => (int) $uid,
-              'apiID' => (int) $row->apiID,
-              'type' => 'corporationRolesAtBase',
-              'roleID' => (int) $roles['roleID'],
-              'roleName' => (string) $roles['roleName'],
-              'deleted' => 0,
-              'errorID' => (int) $error2,
-            ))->execute();
-          }
-        }
-
-        if (isset($character_sheet['corporationRolesAtOther'])) {
-          foreach ($character_sheet['corporationRolesAtOther'] as $roles) {
-            db_merge('eve_api_characters_roles')->key(array(
-              'characterID' => (int) $character['characterID'],
-              'type' => 'corporationRolesAtOther',
-              'roleID' => (int) $roles['roleID'],
-            ))->fields(array(
-              'characterID' => (int) $character['characterID'],
-              'uid' => (int) $uid,
-              'apiID' => (int) $row->apiID,
-              'type' => 'corporationRolesAtOther',
-              'roleID' => (int) $roles['roleID'],
-              'roleName' => (string) $roles['roleName'],
-              'deleted' => 0,
-              'errorID' => (int) $error2,
-            ))->execute();
-          }
-        }
-      }
-
-      $all_characters = array_replace_recursive($characters, $all_characters);
+      $characters = eve_api_update_character('update', $account, $row->keyID, $row->vCode, $row->apiID);
+      $error_found = ($error_found == TRUE) ? $error_found : $characters['error_found'];
+      $character_found = ($character_found == TRUE) ? $character_found : $characters['character_found'];
     }
   }
 
@@ -322,7 +134,9 @@ function eve_api_cron_api_user_sync($item) {
     return FALSE;
   }
 
-  if (!eve_api_verify_blue($all_characters) || !$character_found) {
+  $character_data = eve_api_get_character_info($account->name);
+
+  if (!eve_api_verify_blue($character_data) || !$character_found) {
     $result = db_query('SELECT corporationID, corporationName FROM {eve_api_alliance_corporations} WHERE deleted = 0');
 
     if ($result->rowCount()) {
@@ -357,8 +171,6 @@ function eve_api_cron_api_user_sync($item) {
       ->execute();
   }
   else {
-    $character_data = eve_api_get_character_info($account->name);
-
     $result = db_query('SELECT corporationID, corporationName FROM {eve_api_alliance_corporations} WHERE deleted = 0');
 
     if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
@@ -436,8 +248,8 @@ function eve_api_cron_api_user_sync($item) {
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
  *
- * @return mixed
- *   A complex array if an error is generated, or TRUE if no error.
+ * @return bool
+ *   TRUE or FALSE.
  */
 function eve_api_cron_api_alliance_fetch($item = NULL) {
   if ($item == 3) {
@@ -496,8 +308,8 @@ function eve_api_cron_api_alliance_fetch($item = NULL) {
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
  *
- * @return mixed
- *   A complex array if an error is generated, or TRUE if no error.
+ * @return bool
+ *   TRUE or FALSE.
  */
 function eve_api_cron_api_alliance_sync($item = NULL) {
   if ($item == 3) {
@@ -601,8 +413,8 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
  * @param mixed $item
  *   whatever was added to the queue via queue->createItem()
  *
- * @return mixed
- *   A complex array if an error is generated, or TRUE if no error.
+ * @return bool
+ *   TRUE or FALSE.
  */
 function eve_api_cron_api_mask_sync($item = NULL) {
   if ($item == 3) {
@@ -645,6 +457,54 @@ function eve_api_cron_api_mask_sync($item = NULL) {
         'description' => (string) $row_b->description,
       ))->execute();
     }
+  }
+
+  return TRUE;
+}
+
+/**
+ * Get the latest skill tree from the EVE API.
+ * 
+ * @param mixed $item
+ *   whatever was added to the queue via queue->createItem()
+ *
+ * @return bool
+ *   TRUE or FALSE.
+ */
+function eve_api_cron_api_skill_tree($item = NULL) {
+  if ($item == 3) {
+    watchdog('eve_api', 'Cron Skill Tree task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_WARNING);
+    return FALSE;
+  }
+
+  $api_data = eve_api_get_skill_tree();
+
+  if (isset($api_data['error'])) {
+    watchdog('eve_api', 'Failed getting Skill Tree API Data. Error: ' . (int) $api_data['error'], NULL, WATCHDOG_WARNING);
+
+    $item = $item + 1;
+    $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
+    $queue->createItem($item);
+
+    return FALSE;
+  }
+
+  db_truncate('eve_api_sheet_groups')->execute();
+  db_truncate('eve_api_sheet_types')->execute();
+
+  foreach ($api_data['group'] as $rows) {
+    db_insert('eve_api_sheet_groups')->fields(array(
+      'groupID' => (int) $rows['groupID'],
+      'groupName' => (string) $rows['groupName'],
+    ))->execute();
+  }
+
+  foreach ($api_data['type'] as $rows) {
+    db_insert('eve_api_sheet_types')->fields(array(
+      'groupID' => (int) $rows['groupID'],
+      'typeID' => (int) $rows['typeID'],
+      'typeName' => (string) $rows['typeName'],
+    ))->execute();
   }
 
   return TRUE;

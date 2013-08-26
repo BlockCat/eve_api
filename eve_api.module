@@ -279,9 +279,8 @@ function eve_api_user_role_delete($role) {
  * Implements hook_user_delete().
  */
 function eve_api_user_delete($account) {
-  db_update('eve_api_characters_roles')->fields(array('deleted' => 1))->condition('uid', (int) $account->uid)->execute();
   db_update('eve_api_characters')->fields(array('deleted' => 1))->condition('uid', (int) $account->uid)->execute();
-  db_delete('eve_api_api_keys')->condition('uid', (int) $account->uid)->execute();
+  db_delete('eve_api_keys')->condition('uid', (int) $account->uid)->execute();
 }
 
 /**
