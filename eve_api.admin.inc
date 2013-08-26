@@ -875,7 +875,7 @@ function eve_api_admin_add_blue_form_validate($form, &$form_state) {
  */
 function eve_api_admin_add_blue_form_submit($form, &$form_state) {
   $standing = round((float) $form_state['values']['standing'], 1);
-  
+
   db_insert('eve_api_blue_standings')->fields(array(
     'contactID' => (int) $form_state['contactID'],
     'contactName' => (string) $form_state['contactName'],
