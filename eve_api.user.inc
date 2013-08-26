@@ -104,7 +104,7 @@ function eve_api_user_add_api_form_validate($form, &$form_state) {
       }
     }
 
-    $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
+    $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE characterID IN (:characterIDs)', array(
       ':characterIDs' => $whitelist,
     ));
 
@@ -296,7 +296,7 @@ function eve_api_user_list_api_form($form, &$form_state, $account) {
  * @see eve_api_user_list_api_form_submit()
  */
 function eve_api_user_list_api_form_validate($form, &$form_state) {
-  if (!is_array($form_state['values']['api_keys']) || !count(array_filter($form_state['values']['api_keys']))) {
+  if (!is_array($form_state['values']['api_keys']) || !count(array_filter((array) $form_state['values']['api_keys']))) {
     form_set_error('', t('No items selected.'));
   }
 }
@@ -309,12 +309,9 @@ function eve_api_user_list_api_form_validate($form, &$form_state) {
 function eve_api_user_list_api_form_submit($form, &$form_state) {
   $account = $form_state['user'];
   $uid = (int) $account->uid;
+  $api_keys = array_filter((array) $form_state['values']['api_keys']);
 
-  foreach ((array) $form_state['values']['api_keys'] as $api_id) {
-    if ($api_id == 0 && !is_int($api_id)) {
-      continue;
-    }
-
+  foreach ($api_keys as $api_id) {
     db_delete('eve_api_keys')->condition('apiID', (int) $api_id, '=')->execute();
     db_delete('eve_api_character_roles')->condition('apiID', (int) $api_id, '=')->execute();
     db_update('eve_api_characters')->fields(array('deleted' => 1))->condition('apiID', (int) $api_id, '=')->execute();
@@ -325,7 +322,7 @@ function eve_api_user_list_api_form_submit($form, &$form_state) {
   ));
 
   if (!$result->rowCount()) {
-    $result = db_query('SELECT corporationID, corporationName FROM {eve_api_alliance_corporations} WHERE deleted = 0');
+    $result = db_query('SELECT corporationID, corporationName FROM {eve_api_alliance_corporations}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -488,7 +485,7 @@ function eve_api_user_update_api_form_validate($form, &$form_state) {
       }
     }
 
-    $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
+    $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE characterID IN (:characterIDs)', array(
       ':characterIDs' => $whitelist,
     ));
 

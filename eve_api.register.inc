@@ -187,7 +187,7 @@ function eve_api_form_user_register_form_alter(&$form, &$form_state) {
     }
   }
 
-  $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
+  $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE characterID IN (:characterIDs)', array(
     ':characterIDs' => $whitelist,
   ));
 
@@ -277,7 +277,7 @@ function eve_api_user_register_form_validate(&$form, &$form_state) {
     }
   }
 
-  $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
+  $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE characterID IN (:characterIDs)', array(
     ':characterIDs' => $whitelist,
   ));
 
@@ -464,7 +464,7 @@ function eve_api_enter_api_form_validate($form, &$form_state) {
       }
     }
 
-    $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
+    $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE characterID IN (:characterIDs)', array(
       ':characterIDs' => $whitelist,
     ));
 

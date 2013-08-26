@@ -620,10 +620,6 @@ function eve_api_admin_registration_form_submit($form, &$form_state) {
  */
 function eve_api_admin_list_blues_form($form, &$form_state) {
   $header = array(
-    'deleted' => array(
-      'data' => t('Deleted'),
-      'field' => 'b.deleted',
-    ),
     'contactID' => array(
       'data' => t('ID'),
       'field' => 'b.contactID',
@@ -640,6 +636,9 @@ function eve_api_admin_list_blues_form($form, &$form_state) {
       'data' => t('Manually Entered'),
       'field' => 'b.manual',
     ),
+    'memo' => array(
+      'data' => t('Memo'),
+    ),
   );
 
   $options = $selected = array();
@@ -649,8 +648,8 @@ function eve_api_admin_list_blues_form($form, &$form_state) {
       'contactID',
       'contactName',
       'standing',
-      'deleted',
       'manual',
+      'memo',
     ))
     ->extend('PagerDefault')
     ->limit(20)
@@ -661,16 +660,12 @@ function eve_api_admin_list_blues_form($form, &$form_state) {
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
       $options[$row->contactID] = array(
-        'deleted' => ($row->deleted) ? t('Yes') : t('No'),
         'contactID' => check_plain($row->contactID),
         'contactName' => check_plain($row->contactName),
         'standing' => check_plain($row->standing),
         'manual' => ($row->manual) ? t('Yes') : t('No'),
+        'memo' => check_plain($row->memo),
       );
-
-      if ($row->deleted) {
-        $selected[$row->contactID] = TRUE;
-      }
     }
   }
 
@@ -717,7 +712,7 @@ function eve_api_admin_list_blues_form($form, &$form_state) {
  * @see eve_api_admin_list_blues_form_submit()
  */
 function eve_api_admin_list_blues_form_validate($form, &$form_state) {
-  if (!is_array($form_state['values']['blues']) || !count(array_filter($form_state['values']['blues']))) {
+  if (!is_array($form_state['values']['blues']) || !count(array_filter((array) $form_state['values']['blues']))) {
     form_set_error('', t('No items selected.'));
   }
 }
@@ -728,22 +723,26 @@ function eve_api_admin_list_blues_form_validate($form, &$form_state) {
  * @see eve_api_admin_list_blues_form_validate()
  */
 function eve_api_admin_list_blues_form_submit($form, &$form_state) {
-  db_update('eve_api_blue_standings')->fields(array('deleted' => 0))->execute();
-
   $deleted_blues = array();
-  $is_change = FALSE;
+  $deleted = array_filter((array) $form_state['values']['blues']);
 
-  foreach ((array) $form_state['values']['blues'] as $blue_id) {
+  foreach ($deleted as $blue_id) {
     $deleted_blues[] = (int) $blue_id;
-    $is_change = TRUE;
   }
 
-  db_update('eve_api_blue_standings')->fields(array('deleted' => 1))->condition('contactID', $deleted_blues, 'IN')->execute();
+  if (!empty($deleted_blues)) {
+    $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE manual = 0 AND contactID IN (:contactIDs)', array(
+      ':contactIDs' => $deleted_blues,
+    ));
 
-  if ($is_change) {
+    if ($result->rowCount()) {
+      drupal_set_message(t('Deleted Blues will get re-added if not removed from your EVE Alliance Standings.'), 'warning');
+    }
+
+    db_delete('eve_api_blue_standings')->condition('contactID', $deleted_blues, 'IN')->execute();
+
     $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
-
-    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters}');
+    $result = db_query('SELECT DISTINCT uid FROM {users}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
@@ -753,35 +752,57 @@ function eve_api_admin_list_blues_form_submit($form, &$form_state) {
         ));
       }
     }
-  }
 
-  drupal_set_message(t('The Alliance Blues List have been updated, the users have been manually added to the cron queue to check standings.  This can take a while to process.'));
+    drupal_set_message(t('The Alliance Blues List has been updated, the users have been manually added to the cron queue to check standings.  This can take a while to process.'));
+  }
+  else {
+    drupal_set_message(t('Nothing changed.'), 'warning');
+  }
 }
 
 /**
  * Form constructor for the admin add blues form.
  *
- * @see eve_api_admin_add_blues_form_validate()
- * @see eve_api_admin_add_blues_form_submit()
+ * @see eve_api_admin_add_blue_form_validate()
+ * @see eve_api_admin_add_blue_form_submit()
  *
  * @ingroup forms
  */
-function eve_api_admin_add_blues_form($form, &$form_state) {
-  $form['add_blues'] = array(
+function eve_api_admin_add_blue_form($form, &$form_state) {
+  $form['add_blue'] = array(
     '#type' => 'fieldset',
     '#title' => t('Add Blue'),
-    '#description' => t('Add a custom blue immediately, this blue will remain permanately and updated with the next cron if found.'),
+    '#description' => t('Add a custom blue immediately, if the blue is found on the next API pull, it will be converted to a full Blue.'),
     '#weight' => 0,
   );
 
-  $form['add_blues']['id'] = array(
+  $form['add_blue']['contactName'] = array(
     '#type' => 'textfield',
-    '#title' => t('Character/Corporation/Alliance ID'),
-    '#description' => t('Please enter the ID of the Character/Corporation/Alliance, if found, details will be retrieved from the API.'),
+    '#title' => t('Character/Corporation/Alliance Name'),
+    '#description' => t('Please enter the Name of the Character/Corporation/Alliance, if found, details will be retrieved from the API.'),
     '#required' => TRUE,
-    '#maxlength' => 20,
-    '#size' => 30,
+    '#size' => 60,
+    '#maxlength' => 50,
     '#weight' => 0,
+  );
+
+  $form['add_blue']['standing'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Standing'),
+    '#description' => t('Enter the standing to assign the new blue. Accepted values are 10.0 to -10.0'),
+    '#required' => TRUE,
+    '#maxlength' => 5,
+    '#size' => 10,
+    '#weight' => 10,
+  );
+
+  $form['add_blue']['memo'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Memo'),
+    '#description' => t('Some information about why you manually adding a blue standing.'),
+    '#required' => TRUE,
+    '#default_value' => '',
+    '#weight' => 20,
   );
 
   $form['submit_button'] = array(
@@ -795,75 +816,72 @@ function eve_api_admin_add_blues_form($form, &$form_state) {
   }
 
   $form_state['redirect'] = 'admin/eve_api/list_blues';
-  $form['#validate'] = array('eve_api_admin_add_blues_form_validate');
-  $form['#submit'] = array('eve_api_admin_add_blues_form_submit');
+  $form['#validate'] = array('eve_api_admin_add_blue_form_validate');
+  $form['#submit'] = array('eve_api_admin_add_blue_form_submit');
 
   return $form;
 }
 
 /**
- * Form validation handler for eve_api_admin_add_blues_form().
+ * Form validation handler for eve_api_admin_add_blue_form().
  *
- * @see eve_api_admin_add_blues_form_submit()
+ * @see eve_api_admin_add_blue_form_submit()
  */
-function eve_api_admin_add_blues_form_validate($form, &$form_state) {
-  $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE contactID = :contactID', array(
-    ':contactID' => (int) $form_state['values']['id'],
-  ));
+function eve_api_admin_add_blue_form_validate($form, &$form_state) {
+  $contact_name = (string) $form_state['values']['contactName'];
 
-  if ($result->rowCount()) {
-    form_set_error('id', t('Character/Corporation/Alliance already added to the standings.'));
+  if ((float) $form_state['values']['standing'] != round($form_state['values']['standing'], 1) || $form_state['values']['standing'] != (float) $form_state['values']['standing'] || (float) $form_state['values']['standing'] < -10.0 || (float) $form_state['values']['standing'] > 10.0) {
+    form_set_error('standing', t('Standings are required to be between -10.0 and 10.0'));
   }
 
-  $result = db_query('SELECT corporationID FROM {eve_api_alliance_corporations} WHERE deleted = 0 AND corporationID = :corporationID', array(
-    ':corporationID' => (int) $form_state['values']['id'],
-  ));
-
-  if ($result->rowCount()) {
-    form_set_error('id', t('Corporation already listed as an Alliance Corporation.'));
+  if (!preg_match("/^[a-z0-9 '.\-]+$/i", $contact_name)) {
+    form_set_error('contact_name', t('Contact Name may only contain the characters A-Z, a-z, 0-9, and single quotation. (Corporation names may also include minus and dot characters.)'));
+    return;
   }
 
-  $query = array('corporationID' => (int) $form_state['values']['id']);
-  $corp_info = eve_api_get_corporation_info($query);
+  if (!empty($contact_name)) {
+    $query = array('names' => $contact_name);
+    $contact_data = eve_api_get_unique_id($query);
+    $contact_name = strtoupper($contact_name);
+  }
 
-  $query = array('ids' => (int) $form_state['values']['id']);
-  $char_info = eve_api_get_character_name($query);
-
-  if (isset($char_info['error'])) {
-    form_set_error('id', t('There was an error with the API.'));
+  if (isset($contact_data['error'])) {
+    form_set_error('contact_name', t('There was an error with the API.'));
   }
   else {
-    $result = db_query('SELECT allianceName FROM {eve_api_alliance_info} WHERE allianceID = :allianceID', array(
-      ':allianceID' => (int) $form_state['values']['id'],
-    ));
+    if (isset($contact_data[$contact_name]) && (int) $contact_data[$contact_name]['characterID'] != 0) {
+      $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE contactID = :contactID', array(
+        ':contactID' => (int) $contact_data[$contact_name]['characterID'],
+      ));
 
-    if (isset($corp_info['corporationName'])) {
-      $form_state['values']['name'] = (string) $corp_info['corporationName'];
-    }
-    elseif (isset($char_info[(int) $form_state['values']['id']])) {
-      $form_state['values']['name'] = $char_info[(int) $form_state['values']['id']];
-    }
-    elseif ($result->rowCount()) {
-      $row = $result->fetchAssoc();
-      $form_state['values']['name'] = (string) $row['allianceName'];
+      if ($result->rowCount()) {
+        form_set_error('contact_name', t('Character/Corporation/Alliance already added to the standings.'));
+      }
+      else {
+        $form_state['contactID'] = (int) $contact_data[$contact_name]['characterID'];
+        $form_state['contactName'] = (string) $contact_data[$contact_name]['name'];
+      }
     }
     else {
-      form_set_error('id', t('No match found.'));
+      form_set_error('contact_name', t('No match found.'));
     }
   }
 }
 
 /**
- * Form submission handler for eve_api_admin_add_blues_form().
+ * Form submission handler for eve_api_admin_add_blue_form().
  *
- * @see eve_api_admin_add_blues_form_validate()
+ * @see eve_api_admin_add_blue_form_validate()
  */
-function eve_api_admin_add_blues_form_submit($form, &$form_state) {
+function eve_api_admin_add_blue_form_submit($form, &$form_state) {
+  $standing = round((float) $form_state['values']['standing'], 1);
+  
   db_insert('eve_api_blue_standings')->fields(array(
-    'contactID' => (int) $form_state['values']['id'],
-    'contactName' => (string) $form_state['values']['name'],
-    'standing' => 1,
+    'contactID' => (int) $form_state['contactID'],
+    'contactName' => (string) $form_state['contactName'],
+    'standing' => (float) $standing,
     'manual' => 1,
+    'memo' => (string) $form_state['values']['memo'],
   ))->execute();
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
@@ -892,10 +910,6 @@ function eve_api_admin_add_blues_form_submit($form, &$form_state) {
  */
 function eve_api_admin_list_whitelist_form($form, &$form_state) {
   $header = array(
-    'deleted' => array(
-      'data' => t('Deleted'),
-      'field' => 'w.deleted',
-    ),
     'characterID' => array(
       'data' => t('Character ID'),
       'field' => 'w.characterID',
@@ -903,6 +917,9 @@ function eve_api_admin_list_whitelist_form($form, &$form_state) {
     'characterName' => array(
       'data' => t('Character Name'),
       'field' => 'w.characterName',
+    ),
+    'memo' => array(
+      'data' => t('Memo'),
     ),
   );
 
@@ -912,7 +929,7 @@ function eve_api_admin_list_whitelist_form($form, &$form_state) {
     ->fields('w', array(
       'characterID',
       'characterName',
-      'deleted',
+      'memo',
     ))
     ->extend('PagerDefault')
     ->limit(20)
@@ -923,21 +940,17 @@ function eve_api_admin_list_whitelist_form($form, &$form_state) {
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
       $options[$row->characterID] = array(
-        'deleted' => ($row->deleted) ? t('Yes') : t('No'),
         'characterID' => check_plain($row->characterID),
         'characterName' => check_plain($row->characterName),
+        'memo' => check_plain($row->memo),
       );
-
-      if ($row->deleted) {
-        $selected[$row->characterID] = TRUE;
-      }
     }
   }
 
   $form['whitelist'] = array(
     '#type' => 'fieldset',
     '#title' => t('Update Whitelist'),
-    '#description' => t('Toggle the checkbox to remove/add an Whitelisted Character.'),
+    '#description' => t('Toggle the checkbox to remove a Whitelisted Character.'),
     '#weight' => 0,
   );
 
@@ -977,7 +990,7 @@ function eve_api_admin_list_whitelist_form($form, &$form_state) {
  * @see eve_api_admin_list_whitelist_form_submit()
  */
 function eve_api_admin_list_whitelist_form_validate($form, &$form_state) {
-  if (!is_array($form_state['values']['whitelist']) || !count(array_filter($form_state['values']['whitelist']))) {
+  if (!is_array($form_state['values']['whitelist']) || !count(array_filter((array) $form_state['values']['whitelist']))) {
     form_set_error('', t('No items selected.'));
   }
 }
@@ -988,28 +1001,33 @@ function eve_api_admin_list_whitelist_form_validate($form, &$form_state) {
  * @see eve_api_admin_list_whitelist_form_validate()
  */
 function eve_api_admin_list_whitelist_form_submit($form, &$form_state) {
-  db_update('eve_api_whitelist')->fields(array('deleted' => 0))->execute();
   $deleted_whitelist = array();
+  $deleted = array_filter((array) $form_state['values']['whitelist']);
 
-  foreach ((array) $form_state['values']['whitelist'] as $whitelist) {
+  foreach ($deleted as $whitelist) {
     $deleted_whitelist[] = (int) $whitelist;
   }
 
-  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
-  $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE characterID IN (:characterIDs)', array(':characterIDs' => $deleted_whitelist));
+  if (!empty($deleted_whitelist)) {
+    db_update('eve_api_whitelist')->condition('characterID', $deleted_whitelist, 'IN')->execute();
 
-  if ($result->rowCount()) {
-    foreach ($result->fetchAll() as $item) {
-      $queue->createItem(array(
-        'uid' => $item->uid,
-        'runs' => 1,
-      ));
+    $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE characterID IN (:characterIDs)', array(':characterIDs' => $deleted_whitelist));
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $item) {
+        $queue->createItem(array(
+          'uid' => $item->uid,
+          'runs' => 1,
+        ));
+      }
     }
+
+    drupal_set_message(t('The Alliance White List has been updated.'));
   }
-
-  db_update('eve_api_whitelist')->fields(array('deleted' => 1))->condition('characterID', $deleted_whitelist, 'IN')->execute();
-
-  drupal_set_message(t('The Alliance White List have been updated.'));
+  else {
+    drupal_set_message(t('Nothing changed.'), 'warning');
+  }
 }
 
 /**
@@ -1046,6 +1064,15 @@ function eve_api_admin_add_whitelist_form($form, &$form_state) {
     '#size' => 80,
     '#maxlength' => 64,
     '#weight' => 10,
+  );
+
+  $form['add_whitelist']['memo'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Memo'),
+    '#description' => t('Some information about why you adding to the whitelist.'),
+    '#required' => TRUE,
+    '#default_value' => '',
+    '#weight' => 20,
   );
 
   $form['submit_button'] = array(
@@ -1119,7 +1146,7 @@ function eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
     db_merge('eve_api_whitelist')->key(array('characterID' => (int) $character['characterID']))->fields(array(
       'characterID' => (int) $character['characterID'],
       'characterName' => (string) $character['characterName'],
-      'deleted' => 0,
+      'memo' => (string) $form_state['values']['memo'],
     ))->execute();
   }
 
@@ -1136,10 +1163,6 @@ function eve_api_admin_add_whitelist_form_submit($form, &$form_state) {
  */
 function eve_api_admin_role_whitelist_form($form, &$form_state) {
   $header = array(
-    'characterID' => array(
-      'data' => t('Character ID'),
-      'field' => 'c.characterID',
-    ),
     'characterName' => array(
       'data' => t('Character Name'),
       'field' => 'c.characterName',
@@ -1156,6 +1179,9 @@ function eve_api_admin_role_whitelist_form($form, &$form_state) {
       'data' => t('Director'),
       'field' => 'crw.isDirector',
     ),
+    'memo' => array(
+      'data' => t('Memo'),
+    ),
   );
 
   $options = array();
@@ -1165,6 +1191,7 @@ function eve_api_admin_role_whitelist_form($form, &$form_state) {
   $query->fields('crw', array(
         'isCEO',
         'isDirector',
+        'memo',
       ))
     ->fields('c', array(
         'characterID',
@@ -1180,11 +1207,11 @@ function eve_api_admin_role_whitelist_form($form, &$form_state) {
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
       $options[$row->characterID] = array(
-        'characterID' => check_plain($row->characterID),
         'characterName' => check_plain($row->characterName),
         'corporationName' => check_plain($row->corporationName),
         'isCEO' => ($row->isCEO) ? t('Yes') : t('No'),
         'isDirector' => ($row->isDirector) ? t('Yes') : t('No'),
+        'memo' => check_plain($row->memo),
       );
     }
   }
@@ -1231,7 +1258,7 @@ function eve_api_admin_role_whitelist_form($form, &$form_state) {
  * @see eve_api_admin_role_whitelist_form_submit()
  */
 function eve_api_admin_role_whitelist_form_validate($form, &$form_state) {
-  if (!is_array($form_state['values']['role_whitelist']) || !count(array_filter($form_state['values']['role_whitelist']))) {
+  if (!is_array($form_state['values']['role_whitelist']) || !count(array_filter((array) $form_state['values']['role_whitelist']))) {
     form_set_error('', t('No items selected.'));
   }
 }
@@ -1243,26 +1270,32 @@ function eve_api_admin_role_whitelist_form_validate($form, &$form_state) {
  */
 function eve_api_admin_role_whitelist_form_submit($form, &$form_state) {
   $deleted_whitelist = array();
+  $deleted = array_filter((array) $form_state['values']['role_whitelist']);
 
-  foreach ((array) $form_state['values']['role_whitelist'] as $whitelist) {
+  foreach ($deleted as $whitelist) {
     $deleted_whitelist[] = (int) $whitelist;
   }
 
-  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
-  $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE characterID IN (:characterIDs)', array(':characterIDs' => $deleted_whitelist));
+  if (!empty($deleted_whitelist)) {
+    db_delete('eve_api_whitelist_roles')->condition('characterID', $deleted_whitelist, 'IN')->execute();
 
-  if ($result->rowCount()) {
-    foreach ($result->fetchAll() as $item) {
-      $queue->createItem(array(
-        'uid' => $item->uid,
-        'runs' => 1,
-      ));
+    $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE characterID IN (:characterIDs)', array(':characterIDs' => $deleted_whitelist));
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $item) {
+        $queue->createItem(array(
+          'uid' => $item->uid,
+          'runs' => 1,
+        ));
+      }
     }
+
+    drupal_set_message(t('The Character Roles Whitelist has been updated.'));
   }
-
-  db_delete('eve_api_whitelist_roles')->condition('characterID', $deleted_whitelist, 'IN')->execute();
-
-  drupal_set_message(t('The Character Roles Whitelist has been updated.'));
+  else {
+    drupal_set_message(t('Nothing changed.'), 'warning');
+  }
 }
 
 /**
@@ -1303,6 +1336,15 @@ function eve_api_admin_add_role_whitelist_form($form, &$form_state) {
     '#title' => t('Director'),
     '#description' => t('Manually add the role Director to this character.'),
     '#weight' => 20,
+  );
+
+  $form['add_role_whitelist']['memo'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Memo'),
+    '#description' => t('Some information about why you manually adding the roles to the character.'),
+    '#required' => TRUE,
+    '#default_value' => '',
+    '#weight' => 30,
   );
 
   $form['submit_button'] = array(
@@ -1367,6 +1409,7 @@ function eve_api_admin_add_role_whitelist_form_submit($form, &$form_state) {
     'characterID' => (int) $character['characterID'],
     'isCEO' => $is_ceo,
     'isDirector' => $is_director,
+    'memo' => (string) $form_state['values']['memo'],
   ))->execute();
 
   drupal_set_message(t('Whitelisted Characters successfully added!'));

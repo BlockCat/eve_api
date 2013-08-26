@@ -773,13 +773,49 @@ function eve_api_get_corporation_info($query) {
 }
 
 /**
+ * Function to retrieve Character/Alliance/Corporation ID's from a name.
+ *
+ * @param array $query
+ *   The URL variables to pass through the URL.
+ *
+ * @return array
+ *   A simple array containing unique name and ID information.
+ */
+function eve_api_get_unique_id($query) {
+  $xml = eve_api_get_xml('CharacterID', $query);
+
+  if (!isset($xml->cachedUntil)) {
+    watchdog('eve_api', 'Failed getting Character ID API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
+    return array('error' => $xml);
+  }
+
+  $api_data = array();
+
+  foreach ($xml->result->rowset->children() as $rows) {
+    $row = $rows->attributes();
+    $name = strtoupper((string) $row->name);
+
+    $api_data[$name] = array(
+      'name' => (string) $row->name,
+      'characterID' => (int) $row->characterID,
+    );
+  }
+
+  if (isset($xml->errorCode)) {
+    $api_data['errorCode'] = (int) $xml->errorCode;
+  }
+
+  return $api_data;
+}
+
+/**
  * Function to retrieve character names from character ids.
  *
  * @param array $query
  *   The URL variables to pass through the URL.
  *
  * @return array
- *   A complex array of corporate information.
+ *   A simple array containing unique name and ID information.
  */
 function eve_api_get_character_name($query) {
   $xml = eve_api_get_xml('CharacterName', $query);
@@ -827,7 +863,7 @@ function eve_api_verify_blue($characters) {
       return TRUE;
     }
 
-    $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE standing >= :standing AND deleted = 0 AND contactID IN (:contactIDs)', array(
+    $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE standing >= :standing AND contactID IN (:contactIDs)', array(
       ':standing' => (float) variable_get('eve_api_required_standing', 0.1),
       ':contactIDs' => array(
         (int) $characters['characterID'],
@@ -854,7 +890,7 @@ function eve_api_verify_blue($characters) {
         return TRUE;
       }
 
-      $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE standing >= :standing AND deleted = 0 AND contactID IN (:contactIDs)', array(
+      $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE standing >= :standing AND contactID IN (:contactIDs)', array(
         ':standing' => (float) variable_get('eve_api_required_standing', 0.1),
         ':contactIDs' => array(
           (int) $character['characterID'],
@@ -886,7 +922,7 @@ function eve_api_list_valid_characters($characters) {
 
   if (!empty($characters)) {
     foreach ($characters['characters'] as $character) {
-      $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE standing > 0 AND deleted = 0 AND contactID IN (:contactIDs)', array(
+      $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE standing > 0 AND contactID IN (:contactIDs)', array(
         ':contactIDs' => array(
           (int) $character['characterID'],
           (int) $character['corporationID'],
@@ -1048,7 +1084,6 @@ function eve_api_character_is_ceo($character_id, $corporation_id = NULL) {
   $result = $query->fields('ac', array(
       'ceoID',
     ))
-    ->condition('ac.deleted', 0, '=')
     ->condition('ac.ceoID', (int) $character_id, '=')
     ->execute();
 
@@ -1266,7 +1301,7 @@ function eve_api_update_character($action, $account, $key_id, $v_code, $api_id =
     }
   }
 
-  $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(
+  $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE characterID IN (:characterIDs)', array(
     ':characterIDs' => $whitelist,
   ));
 
@@ -1454,7 +1489,19 @@ function eve_api_update_character($action, $account, $key_id, $v_code, $api_id =
             'errorID' => (int) $error,
           ));
 
+          $ignored = array(
+            'corporationName',
+            'corporationID',
+            'allianceName',
+            'allianceID',
+            'name',
+          );
+
           foreach ($data as $infoname => $infodata) {
+            if (in_array($infodata, $ignored)) {
+              continue;
+            }
+
             $query->fields(array(
               (string) $infoname => (string) $infodata,
             ));

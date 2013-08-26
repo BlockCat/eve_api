@@ -117,7 +117,7 @@ function eve_api_menu() {
     $items['admin/eve_api/list_blues/add_blue'] = array(
       'title' => 'Add Blue',
       'description' => 'Add a new Blue standing.',
-      'page arguments' => array('eve_api_admin_add_blues_form'),
+      'page arguments' => array('eve_api_admin_add_blue_form'),
       'type' => MENU_LOCAL_ACTION,
       'weight' => 55,
     ) + $admin_base;
