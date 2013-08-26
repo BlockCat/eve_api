@@ -676,12 +676,9 @@ function eve_api_get_character_sheet($query) {
 
   return $api_data;
 }
- 
+
 /**
  * Function to retrieve skill definitions.
- *
- * @param array $query
- *   The URL variables to pass through the URL.
  *
  * @return array
  *   A complex array of skill definitions.
@@ -1184,13 +1181,13 @@ function eve_api_list_api_simple($uid) {
  *
  * @param string $action
  *   Action to perform, either update or create.
- * @param object $uid
+ * @param object $account
  *   A Drupal user object containing.
  * @param int $key_id
  *   A unique EVE API Key ID.
  * @param string $v_code
  *   A unique EVE API Verification Code.
- * @param $api_id $uid
+ * @param int $api_id
  *   (optional) A unique API ID.
  *
  * @return mixed

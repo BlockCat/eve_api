@@ -106,15 +106,11 @@ function eve_api_cron_api_user_sync($item) {
   }
 
   $uid = (int) $item['uid'];
-  $all_characters = array();
-
   $account = user_load($uid);
 
   $result = db_query('SELECT apiID, keyID, vCode FROM {eve_api_keys} WHERE uid = :uid', array(
     ':uid' => $uid,
   ));
-
-  $updated = date('Y-m-d H:i:s', time());
 
   $character_found = FALSE;
   $error_found = FALSE;

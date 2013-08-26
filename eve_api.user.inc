@@ -138,7 +138,6 @@ function eve_api_user_add_api_form_validate($form, &$form_state) {
  */
 function eve_api_user_add_api_form_submit($form, &$form_state) {
   $account = $form_state['user'];
-  $uid = (int) $account->uid;
   $key_id = (int) $form_state['values']['keyID'];
   $v_code = (string) $form_state['values']['vCode'];
 
@@ -549,5 +548,10 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
 
   module_invoke_all('eve_api_user_update', $account);
 
-  drupal_set_message(t('API Key successfully updated!'));
+  if ($characters['error'] == TRUE) {
+    drupal_set_message(t('There was an error updateing the API Key!'), 'error');
+  }
+  else {
+    drupal_set_message(t('API Key successfully updated!'));
+  }
 }
