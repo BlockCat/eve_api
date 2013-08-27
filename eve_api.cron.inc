@@ -289,7 +289,7 @@ function eve_api_cron_api_alliance_fetch($item = NULL) {
         'standing' => (float) $row->standing,
         'manual' => 0,
         'checked' => 0,
-        'memo' => 'Manually Entered via CRON Task.',
+        'memo' => 'Created via CRON Task.',
       ))->execute();
     }
   }
@@ -379,7 +379,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
           'ceoName' => (string) $corp_info['ceoName'],
           'checked' => 0,
           'manual' => 0,
-          'memo' => 'Manually Entered via CRON Task.',
+          'memo' => 'Created via CRON Task.',
         ))->execute();
       }
     }

@@ -313,7 +313,6 @@ function eve_api_user_list_api_form_submit($form, &$form_state) {
 
   foreach ($api_keys as $api_id) {
     db_delete('eve_api_keys')->condition('apiID', (int) $api_id, '=')->execute();
-    db_delete('eve_api_character_roles')->condition('apiID', (int) $api_id, '=')->execute();
     db_update('eve_api_characters')->fields(array('deleted' => 1))->condition('apiID', (int) $api_id, '=')->execute();
   }
 

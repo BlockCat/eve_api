@@ -1263,7 +1263,6 @@ function eve_api_update_character($action, $account, $key_id, $v_code, $api_id =
 
     if ((int) $characters['error'] == 403) {
       db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error'], 'deleted' => 1))->condition('apiID', (int) $api_id, '=')->execute();
-      db_delete('eve_api_character_roles')->condition('apiID', (int) $api_id, '=')->execute();
     }
     else {
       db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error']))->condition('apiID', (int) $api_id, '=')->execute();
@@ -1466,23 +1465,23 @@ function eve_api_update_character($action, $account, $key_id, $v_code, $api_id =
 
         case 'attributeEnhancers':
           foreach ($data as $attributename => $attributedata) {
-            $query = db_insert('eve_api_character_sheet_attribute_enhancers')->fields(array(
+            $query_data = db_insert('eve_api_character_sheet_attribute_enhancers')->fields(array(
               'characterID' => (int) $character['characterID'],
               'bonusName' => (string) $attributename,
             ));
 
             foreach ($attributedata as $attribute => $attributes) {
-              $query->fields(array(
+              $query_data->fields(array(
                 (string) $attribute => (string) $attributes,
               ));
             }
 
-            $query->execute();
+            $query_data->execute();
           }
           break;
 
         case 'info':
-          $query = db_merge('eve_api_character_sheet')->key(array(
+          $query_data = db_merge('eve_api_character_sheet')->key(array(
             'characterID' => (int) $character['characterID'],
           ))->fields(array(
             'characterID' => (int) $character['characterID'],
@@ -1498,16 +1497,16 @@ function eve_api_update_character($action, $account, $key_id, $v_code, $api_id =
           );
 
           foreach ($data as $infoname => $infodata) {
-            if (in_array($infodata, $ignored)) {
+            if (in_array($infoname, $ignored)) {
               continue;
             }
 
-            $query->fields(array(
+            $query_data->fields(array(
               (string) $infoname => (string) $infodata,
             ));
           }
 
-          $query->execute();
+          $query_data->execute();
           break;
 
         default:

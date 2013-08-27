@@ -452,8 +452,8 @@ function eve_api_get_eve_avatar($character_id) {
 /**
  * Implements hook_form_FORM_ID_alter() for user_profile_form().
  *
- * @see eve_api_user_list_api_form_validate()
- * @see eve_api_user_list_api_form_submit()
+ * @see eve_api_user_profile_form_validate()
+ * @see eve_api_user_profile_form_submit()
  *
  * @ingroup forms
  */
