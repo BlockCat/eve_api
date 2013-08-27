@@ -50,7 +50,7 @@ function eve_api_teamspeak_menu() {
       'title' => 'TeamSpeak',
       'description' => 'Configure and edit TeamSpeak 3 connection settings.',
       'page arguments' => array('eve_api_teamspeak_admin_form'),
-      'weight' => 30,
+      'weight' => 90,
     ) + $admin_base;
 
     if (variable_get('eve_api_teamspeak_enable', FALSE)) {

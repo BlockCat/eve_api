@@ -93,25 +93,39 @@ function eve_api_menu() {
   ) + $admin_base;
 
   if (variable_get('eve_api_enable', FALSE)) {
-    $items['admin/eve_api/roles'] = array(
-      'title' => 'Roles',
-      'description' => 'Configure default roles for various roles required for EVE API to function.',
-      'page arguments' => array('eve_api_admin_roles_form'),
-      'weight' => 10,
-    ) + $admin_base;
-
     $items['admin/eve_api/registration'] = array(
       'title' => 'Registration',
       'description' => 'Modify the requirements to register.',
       'page arguments' => array('eve_api_admin_registration_form'),
+      'weight' => 10,
+    ) + $admin_base;
+
+    $items['admin/eve_api/roles'] = array(
+      'title' => 'Roles',
+      'description' => 'Configure default roles for various roles required for EVE API to function.',
+      'page arguments' => array('eve_api_admin_roles_form'),
       'weight' => 20,
+    ) + $admin_base;
+
+    $items['admin/eve_api/list_corporations'] = array(
+      'title' => 'Alliance Corporations',
+      'description' => 'Edit Alliance Corporations.',
+      'page arguments' => array('eve_api_admin_list_corporations_form'),
+      'weight' => 30,
+    ) + $admin_base;
+
+    $items['admin/eve_api/list_corporations/add_corporation'] = array(
+      'title' => 'Add Alliance Corporation',
+      'description' => 'Add a new Alliance Corporation.',
+      'page arguments' => array('eve_api_admin_add_corporation_form'),
+      'type' => MENU_LOCAL_ACTION,
     ) + $admin_base;
 
     $items['admin/eve_api/list_blues'] = array(
       'title' => 'Blues',
       'description' => 'Edit Blue standings.',
       'page arguments' => array('eve_api_admin_list_blues_form'),
-      'weight' => 50,
+      'weight' => 40,
     ) + $admin_base;
 
     $items['admin/eve_api/list_blues/add_blue'] = array(
@@ -119,14 +133,13 @@ function eve_api_menu() {
       'description' => 'Add a new Blue standing.',
       'page arguments' => array('eve_api_admin_add_blue_form'),
       'type' => MENU_LOCAL_ACTION,
-      'weight' => 55,
     ) + $admin_base;
 
     $items['admin/eve_api/list_whitelist'] = array(
       'title' => 'Whitelist',
       'description' => 'Edit Character Whitelist.',
       'page arguments' => array('eve_api_admin_list_whitelist_form'),
-      'weight' => 60,
+      'weight' => 50,
     ) + $admin_base;
 
     $items['admin/eve_api/list_whitelist/add_whitelist'] = array(
@@ -134,22 +147,20 @@ function eve_api_menu() {
       'description' => 'Add a new Whitelisted character.',
       'page arguments' => array('eve_api_admin_add_whitelist_form'),
       'type' => MENU_LOCAL_ACTION,
-      'weight' => 65,
     ) + $admin_base;
 
-    $items['admin/eve_api/role_whitelist'] = array(
-      'title' => 'Role Whitelist',
-      'description' => 'Edit CEO and Director Whitelist.',
-      'page arguments' => array('eve_api_admin_role_whitelist_form'),
-      'weight' => 70,
+    $items['admin/eve_api/role_ceo_director'] = array(
+      'title' => 'CEO/Directors',
+      'description' => 'Edit characters elevated to CEO/Directors.',
+      'page arguments' => array('eve_api_admin_role_ceo_director_form'),
+      'weight' => 60,
     ) + $admin_base;
 
-    $items['admin/eve_api/role_whitelist/add_role_whitelist'] = array(
-      'title' => 'Add Role Whitelist',
-      'description' => 'Add a new CEO or Director Whitelist.',
-      'page arguments' => array('eve_api_admin_add_role_whitelist_form'),
+    $items['admin/eve_api/role_ceo_director/add_role_ceo_director'] = array(
+      'title' => 'Add CEO/Director',
+      'description' => 'Elevate an existing character to a CEO or Director.',
+      'page arguments' => array('eve_api_admin_add_role_ceo_director_form'),
       'type' => MENU_LOCAL_ACTION,
-      'weight' => 75,
     ) + $admin_base;
 
     $items['user/%user/eve_api'] = array(

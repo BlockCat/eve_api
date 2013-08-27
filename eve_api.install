@@ -385,7 +385,7 @@ function eve_api_schema() {
     'indexes' => array('characterid' => array('characterID')),
   );
 
-  $schema['eve_api_whitelist_roles'] = array(
+  $schema['eve_api_role_ceo_director'] = array(
     'description' => 'This table holds the whitelist for CEO and Directors.',
     'fields' => array(
       'characterID' => array(

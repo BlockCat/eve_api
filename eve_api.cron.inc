@@ -342,11 +342,12 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
       foreach ($rows_a->rowset->children() as $rows_b) {
         $row_b = $rows_b->attributes();
 
-        $result = db_query('SELECT corporationID FROM {eve_api_alliance_corporations} WHERE corporationID = :corporationID', array(
+        $result = db_query('SELECT corporationID FROM {eve_api_alliance_corporations} WHERE corporationID = :corporationID AND manual = 0', array(
           ':corporationID' => (int) $row_b->corporationID,
         ));
 
         if ($result->rowCount()) {
+          db_update('eve_api_alliance_corporations')->fields(array('checked' => 0))->condition('corporationID', (int) $row_b->corporationID, '=')->execute();
           continue;
         }
 
@@ -354,6 +355,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
         $corp_info = eve_api_get_corporation_info($query);
 
         if (isset($corp_info['error'])) {
+          db_update('eve_api_alliance_corporations')->fields(array('checked' => 0))->condition('corporationID', (int) $row_b->corporationID, '=')->execute();
           continue;
         }
 
@@ -388,9 +390,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
       if (user_role_load_by_name($row->corporationName) == TRUE) {
-        $user_role = new stdClass();
-        $user_role->name = $row->corporationName;
-        user_role_delete($user_role);
+        user_role_delete($row->corporationName);
       }
     }
   }

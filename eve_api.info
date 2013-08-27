@@ -4,4 +4,4 @@ core = 7.x
 package = Omni EVE API
 dependencies[] = ctools
 dependencies[] = libraries
-configure = admin/eve_api
+configure = admin/eve_api/settings

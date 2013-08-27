@@ -50,7 +50,7 @@ function eve_api_jabber_menu() {
       'title' => 'Jabber',
       'description' => 'Configure and edit Jabber connection settings.',
       'page arguments' => array('eve_api_jabber_admin_form'),
-      'weight' => 40,
+      'weight' => 80,
     ) + $admin_base;
 
     if (variable_get('eve_api_jabber_enable', FALSE)) {

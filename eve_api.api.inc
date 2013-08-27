@@ -1042,7 +1042,7 @@ function eve_api_character_is_director($character_id, $corporation_id = NULL) {
     return TRUE;
   }
 
-  $query = db_select('eve_api_whitelist_roles', 'crw');
+  $query = db_select('eve_api_role_ceo_director', 'crw');
 
   if (isset($corporation_id)) {
     $query->join('eve_api_characters', 'c', 'crw.characterID = c.characterID');
@@ -1091,7 +1091,7 @@ function eve_api_character_is_ceo($character_id, $corporation_id = NULL) {
     return TRUE;
   }
 
-  $query = db_select('eve_api_whitelist_roles', 'crw');
+  $query = db_select('eve_api_role_ceo_director', 'crw');
 
   if (isset($corporation_id)) {
     $query->join('eve_api_characters', 'c', 'crw.characterID = c.characterID');
