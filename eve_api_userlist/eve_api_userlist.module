@@ -157,16 +157,68 @@ function eve_api_userlist_user_view($account) {
     '#title' => t('Skills'),
   );
 
+  $account->content['eve_api_attributes']['DoB'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => t('Date of Birth'),
+    '#markup' => $character_data['DoB'],
+  );
+
   $account->content['eve_api_attributes']['race'] = array(
     '#type' => 'user_profile_item',
     '#title' => t('Race'),
-    '#markup' => '',
+    '#markup' => $character_data['race'],
   );
 
   $account->content['eve_api_attributes']['gender'] = array(
     '#type' => 'user_profile_item',
     '#title' => t('Gender'),
-    '#markup' => '',
+    '#markup' => $character_data['gender'],
+  );
+
+  $account->content['eve_api_attributes']['securityStatus'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => t('Security Status'),
+    '#markup' => $character_data['securityStatus'],
+  );
+
+  $options = array();
+  $options += array('intelligence' => array(
+    'attribute' => 'Intelligence',
+    'points' => $character_data['intelligence'],
+    'bonus' => isset($character_data['intelligenceBonus']) ? $character_data['intelligenceBonus'] : 0,
+  ));
+  $options += array('memory' => array(
+    'attribute' => 'Memory',
+    'points' => $character_data['memory'],
+    'bonus' => isset($character_data['memoryBonus']) ? $character_data['memoryBonus'] : 0,
+  ));
+  $options += array('charisma' => array(
+    'attribute' => 'Charisma',
+    'points' => $character_data['charisma'],
+    'bonus' => isset($character_data['charismaBonus']) ? $character_data['charismaBonus'] : 0,
+  ));
+  $options += array('perception' => array(
+    'attribute' => 'Perception',
+    'points' => $character_data['perception'],
+    'bonus' => isset($character_data['perceptionBonus']) ? $character_data['perceptionBonus'] : 0,
+  ));
+  $options += array('willpower' => array(
+    'attribute' => 'Willpower',
+    'points' => $character_data['willpower'],
+    'bonus' => isset($character_data['willpowerBonus']) ? $character_data['willpowerBonus'] : 0,
+  ));
+
+  $account->content['eve_api_attributes']['stats'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => t('Stats'),
+    '#markup' => theme('table', array(
+      'header' => array(
+        'attribute' => t('Attribute'),
+        'points' => t('Points'),
+        'bonus' => t('Bonus'),
+      ),
+      'rows' => $options,
+    )),
   );
 
   $account->content['eve_api_attributes']['corporation'] = array(
@@ -175,9 +227,15 @@ function eve_api_userlist_user_view($account) {
     '#markup' => (($is_director || $is_good) ? l($character_data['corporationName'], 'eve_api/userlist/' . $character_data['corporationID'] . '/director') : l($character_data['corporationName'], 'eve_api/userlist/' . $character_data['corporationID'])) . ' (' . $character_data['corporationTicker'] . ')',
   );
 
-  $account->content['eve_api_attributes']['stats'] = array(
+  $account->content['eve_api_attributes']['corporationDate'] = array(
     '#type' => 'user_profile_item',
-    '#title' => t('Stats'),
-    '#markup' => '',
+    '#title' => t('Joined Corporation'),
+    '#markup' => $character_data['corporationDate'],
+  );
+
+  $account->content['eve_api_skills']['skillPoints'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => t('Total Skillpoints'),
+    '#markup' => $character_data['skillPoints'],
   );
 }

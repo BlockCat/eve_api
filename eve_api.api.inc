@@ -47,6 +47,10 @@ function eve_api_get_xml($type, $query = array()) {
       $url .= "/eve/CharacterName.xml.aspx";
       break;
 
+    case 'CharacterInfo':
+      $url .= "/eve/CharacterInfo.xml.aspx";
+      break;
+
     case 'callList':
       $url .= "/api/callList.xml.aspx";
       break;
@@ -514,27 +518,64 @@ function eve_api_curl_http_request($url, array $query = array(), $method = 'POST
  *   A complex array of a single character information.
  */
 function eve_api_get_character_info($character_name) {
-  $result = db_query('SELECT uid, deleted, errorID, apiID, characterName, characterID, corporationName, corporationID, corporationTicker, allianceID, allianceName, allianceTicker FROM {eve_api_characters} WHERE characterName = :characterName', array(
+  db_query('SET group_concat_max_len = 1048576');
+  $result = db_query('SELECT c.uid, c.deleted, c.errorID, c.apiID, c.characterName, c.characterID, c.corporationName, c.corporationID, c.corporationTicker, c.allianceID, c.allianceName, c.allianceTicker,
+    cs.DoB, cs.race, cs.bloodLine, cs.ancestry, cs.gender, cs.cloneName, cs.cloneSkillPoints, cs.balance, cs.intelligence, cs.memory, cs.charisma, cs.perception, cs.willpower,
+    ci.skillPoints, ci.shipName, ci.shipTypeID, ci.shipTypeName, ci.corporationDate, ci.allianceDate, ci.lastKnownLocation, ci.securityStatus,
+    GROUP_CONCAT( DISTINCT CONCAT(csae.bonusName, \'~\', csae.augmentatorValue) SEPARATOR \'|\') AS bonusName,
+    GROUP_CONCAT( DISTINCT CONCAT(\'recordID!\', cich.recordID, \'~\', \'corporationID!\', cich.corporationID, \'~\', \'startDate!\', cich.startDate) SEPARATOR \'|\') AS history
+    FROM {eve_api_characters} c
+    INNER JOIN {eve_api_character_sheet} cs ON cs.characterID = c.characterID
+    INNER JOIN {eve_api_character_info} ci ON ci.characterID = c.characterID
+    LEFT JOIN {eve_api_character_sheet_attribute_enhancers} csae on csae.characterID = c.characterID
+    LEFT JOIN {eve_api_character_info_corporation_history} cich on cich.characterID = c.characterID
+    WHERE c.characterName = :characterName', array(
     ':characterName' => (string) $character_name,
   ));
 
-  if ($result->rowCount()) {
-    $row = $result->fetchAssoc();
+  $api_data = array();
 
-    $api_data = array(
-      'uid' => check_plain($row['uid']),
-      'deleted' => check_plain($row['deleted']),
-      'errorID' => check_plain($row['errorID']),
-      'apiID' => check_plain($row['apiID']),
-      'characterName' => strip_tags(decode_entities($row['characterName'])),
-      'characterID' => check_plain($row['characterID']),
-      'corporationName' => strip_tags(decode_entities($row['corporationName'])),
-      'corporationID' => check_plain($row['corporationID']),
-      'corporationTicker' => strip_tags(decode_entities($row['corporationTicker'])),
-      'allianceID' => check_plain($row['allianceID']),
-      'allianceName' => strip_tags(decode_entities($row['allianceName'])),
-      'allianceTicker' => strip_tags(decode_entities($row['allianceTicker'])),
-    );
+  if ($result->rowCount()) {
+    foreach ($result->fetchAssoc() as $name => $data) {
+      if ($name == 'bonusName') {
+        $bonus_rows = explode('|', $data);
+
+        foreach ($bonus_rows as $bonus_row) {
+          $bonus_data = explode('~', $bonus_row);
+
+          if (empty($bonus_data[0])) {
+            continue;
+          }
+
+          $api_data += array($bonus_data[0] => strip_tags(decode_entities($bonus_data[1])));
+        }
+        continue;
+      }
+
+      if ($name == 'history') {
+        $history_results = explode('|', $data);
+
+        foreach ($history_results as $history_result) {
+          $history_rows = explode('~', $history_result);
+          $history_corp = array();
+
+          foreach ($history_rows as $history_row) {
+            $history_data = explode('!', $history_row);
+
+            if (empty($history_data[0])) {
+              continue;
+            }
+
+            $history_corp += array($history_data[0] => strip_tags(decode_entities($history_data[1])));
+          }
+
+          $api_data['history'][] = $history_corp;
+        }
+        continue;
+      }
+
+      $api_data += array($name => strip_tags(decode_entities($data)));
+    }
   }
   else {
     $api_data = FALSE;
@@ -593,6 +634,54 @@ function eve_api_get_character_api($query) {
 }
 
 /**
+ * Function to retrieve a single characters character info.
+ *
+ * @param array $query
+ *   The URL variables to pass through the URL.
+ *
+ * @return array
+ *   A complex array of character information.
+ */
+function eve_api_get_character_info_api($query) {
+  $xml = eve_api_get_xml('CharacterInfo', $query);
+
+  if (!isset($xml->cachedUntil)) {
+    watchdog('eve_api', 'Failed getting Character Sheet API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
+    return array('error' => (int) $xml);
+  }
+
+  $api_data = array();
+
+  if (isset($xml->errorCode)) {
+    $api_data['errorCode'] = (int) $xml->errorCode;
+  }
+
+  foreach ($xml->result->children() as $results) {
+    switch ((string) $results->getName()) {
+      case 'rowset':
+        $rowset = $results->attributes();
+
+        foreach ($results->children() as $rows) {
+          $row = $rows->attributes();
+
+          $api_data['employmentHistory'][(int) $row->recordID] = array(
+            'recordID' => (int) $row->recordID,
+            'corporationID' => (int) $row->corporationID,
+            'startDate' => (string) $row->startDate,
+          );
+        }
+        break;
+
+      default:
+        $api_data['info'][(string) $results->getName()] = (string) $results;
+        break;
+    }
+  }
+
+  return $api_data;
+}
+
+/**
  * Function to retrieve a single characters character sheet.
  *
  * @param array $query
@@ -601,7 +690,7 @@ function eve_api_get_character_api($query) {
  * @return array
  *   A complex array of character sheet information.
  */
-function eve_api_get_character_sheet($query) {
+function eve_api_get_character_sheet_api($query) {
   $xml = eve_api_get_xml('CharacterSheet', $query);
 
   if (!isset($xml->cachedUntil)) {
@@ -1380,7 +1469,7 @@ function eve_api_update_character($action, $account, $key_id, $v_code, $api_id =
     }
 
     $sheet_query = $query + array('characterID' => (int) $character['characterID']);
-    $character_sheet = eve_api_get_character_sheet($sheet_query);
+    $character_sheet = eve_api_get_character_sheet_api($sheet_query);
     $error = 0;
 
     if (isset($character_sheet['errorCode'])) {
@@ -1465,17 +1554,20 @@ function eve_api_update_character($action, $account, $key_id, $v_code, $api_id =
 
         case 'attributeEnhancers':
           foreach ($data as $attributename => $attributedata) {
-            $query_data = db_insert('eve_api_character_sheet_attribute_enhancers')->fields(array(
+            $query_data = db_insert('eve_api_character_sheet_attribute_enhancers');
+
+            $fields = array(
               'characterID' => (int) $character['characterID'],
               'bonusName' => (string) $attributename,
-            ));
+            );
 
             foreach ($attributedata as $attribute => $attributes) {
-              $query_data->fields(array(
+              $fields += array(
                 (string) $attribute => (string) $attributes,
-              ));
+              );
             }
 
+            $query_data->fields($fields);
             $query_data->execute();
           }
           break;
@@ -1483,10 +1575,12 @@ function eve_api_update_character($action, $account, $key_id, $v_code, $api_id =
         case 'info':
           $query_data = db_merge('eve_api_character_sheet')->key(array(
             'characterID' => (int) $character['characterID'],
-          ))->fields(array(
+          ));
+
+          $fields = array(
             'characterID' => (int) $character['characterID'],
             'errorID' => (int) $error,
-          ));
+          );
 
           $ignored = array(
             'corporationName',
@@ -1501,11 +1595,84 @@ function eve_api_update_character($action, $account, $key_id, $v_code, $api_id =
               continue;
             }
 
-            $query_data->fields(array(
+            $fields += array(
               (string) $infoname => (string) $infodata,
-            ));
+            );
           }
 
+          $query_data->fields($fields);
+          $query_data->execute();
+          break;
+
+        default:
+          break;
+      }
+    }
+
+    $info_query = $query + array('characterID' => (int) $character['characterID']);
+    $character_info = eve_api_get_character_info_api($info_query);
+    $error = 0;
+
+    if (isset($character_info['errorCode'])) {
+      $error = (int) $character_info['errorCode'];
+    }
+
+    if (isset($character_info['error'])) {
+      $error = (int) $character_info['error'];
+
+      db_merge('eve_api_character_info')->key(array(
+        'characterID' => (int) $character['characterID'],
+      ))->fields(array(
+        'characterID' => (int) $character['characterID'],
+        'errorID' => (int) $error,
+      ))->execute();
+      continue;
+    }
+    else {
+      db_delete('eve_api_character_info_corporation_history')->condition('characterID', (int) $character['characterID'], '=')->execute();
+    }
+
+    foreach ($character_info as $type => $data) {
+      switch ((string) $type) {
+        case 'employmentHistory':
+          foreach ($data as $historydata) {
+            db_merge('eve_api_character_info_corporation_history')->key(array(
+              'characterID' => (int) $character['characterID'],
+              'recordID' => (int) $historydata['recordID'],
+            ))->fields(array(
+              'characterID' => (int) $character['characterID'],
+              'recordID' => (int) $historydata['recordID'],
+              'corporationID' => (int) $historydata['corporationID'],
+              'startDate' => (string) $historydata['startDate'],
+            ))->execute();
+          }
+          break;
+
+        case 'info':
+          $query_data = db_merge('eve_api_character_info')->key(array(
+            'characterID' => (int) $character['characterID'],
+          ));
+
+          $fields = array(
+            'characterID' => (int) $character['characterID'],
+            'errorID' => (int) $error,
+          );
+
+          $ignored = array(
+            'characterID',
+          );
+
+          foreach ($data as $infoname => $infodata) {
+            if (in_array($infoname, $ignored)) {
+              continue;
+            }
+
+            $fields += array(
+              (string) $infoname => (string) $infodata,
+            );
+          }
+
+          $query_data->fields($fields);
           $query_data->execute();
           break;
 
