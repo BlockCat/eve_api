@@ -139,10 +139,6 @@ function eve_api_userlist_user_view($account) {
   $is_director = eve_api_userlist_private_access($character_data['corporationID']);
   $is_good = user_access('moderate eve_api users');
 
-  if (!$is_director && $user->uid != $account->uid && !$is_good) {
-    return;
-  }
-
   $account->content['eve_api_attributes'] += array(
     '#type' => 'user_profile_category',
     '#attributes' => array('class' => array('user-member')),
@@ -181,6 +177,22 @@ function eve_api_userlist_user_view($account) {
     '#markup' => $character_data['securityStatus'],
   );
 
+  $account->content['eve_api_attributes']['corporation'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => t('Corporation'),
+    '#markup' => (($is_director || $is_good) ? l($character_data['corporationName'], 'eve_api/userlist/' . $character_data['corporationID'] . '/director') : l($character_data['corporationName'], 'eve_api/userlist/' . $character_data['corporationID'])) . ' (' . $character_data['corporationTicker'] . ')',
+  );
+
+  $account->content['eve_api_attributes']['corporationDate'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => t('Joined Corporation'),
+    '#markup' => $character_data['corporationDate'],
+  );
+
+  if (!$is_director && $user->uid != $account->uid && !$is_good) {
+    return;
+  }
+
   $options = array();
   $options += array('intelligence' => array(
     'attribute' => 'Intelligence',
@@ -208,7 +220,13 @@ function eve_api_userlist_user_view($account) {
     'bonus' => isset($character_data['willpowerBonus']) ? $character_data['willpowerBonus'] : 0,
   ));
 
-  $account->content['eve_api_attributes']['stats'] = array(
+  $account->content['eve_api_skills']['skillPoints'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => t('Total Skillpoints'),
+    '#markup' => $character_data['skillPoints'],
+  );
+
+  $account->content['eve_api_skills']['stats'] = array(
     '#type' => 'user_profile_item',
     '#title' => t('Stats'),
     '#markup' => theme('table', array(
@@ -219,23 +237,5 @@ function eve_api_userlist_user_view($account) {
       ),
       'rows' => $options,
     )),
-  );
-
-  $account->content['eve_api_attributes']['corporation'] = array(
-    '#type' => 'user_profile_item',
-    '#title' => t('Corporation'),
-    '#markup' => (($is_director || $is_good) ? l($character_data['corporationName'], 'eve_api/userlist/' . $character_data['corporationID'] . '/director') : l($character_data['corporationName'], 'eve_api/userlist/' . $character_data['corporationID'])) . ' (' . $character_data['corporationTicker'] . ')',
-  );
-
-  $account->content['eve_api_attributes']['corporationDate'] = array(
-    '#type' => 'user_profile_item',
-    '#title' => t('Joined Corporation'),
-    '#markup' => $character_data['corporationDate'],
-  );
-
-  $account->content['eve_api_skills']['skillPoints'] = array(
-    '#type' => 'user_profile_item',
-    '#title' => t('Total Skillpoints'),
-    '#markup' => $character_data['skillPoints'],
   );
 }
