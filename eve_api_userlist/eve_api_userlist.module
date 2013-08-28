@@ -131,6 +131,10 @@ function eve_api_userlist_user_view($account) {
     $account->content['eve_api_skills'] = array();
   }
 
+  if (!isset($account->content['eve_api_private'])) {
+    $account->content['eve_api_private'] = array();
+  }
+
   if ($account->characterID == 0) {
     return;
   }
@@ -142,15 +146,8 @@ function eve_api_userlist_user_view($account) {
   $account->content['eve_api_attributes'] += array(
     '#type' => 'user_profile_category',
     '#attributes' => array('class' => array('user-member')),
-    '#weight' => 4,
+    '#weight' => 2,
     '#title' => t('Attributes'),
-  );
-
-  $account->content['eve_api_skills'] += array(
-    '#type' => 'user_profile_category',
-    '#attributes' => array('class' => array('user-member')),
-    '#weight' => 4,
-    '#title' => t('Skills'),
   );
 
   $account->content['eve_api_attributes']['DoB'] = array(
@@ -219,6 +216,34 @@ function eve_api_userlist_user_view($account) {
     'points' => $character_data['willpower'],
     'bonus' => isset($character_data['willpowerBonus']) ? $character_data['willpowerBonus'] : 0,
   ));
+
+  if ((variable_get('eve_api_access_mask', 268435455) & 16777216) == 16777216) {
+    $account->content['eve_api_private'] += array(
+      '#type' => 'user_profile_category',
+      '#attributes' => array('class' => array('user-member')),
+      '#weight' => 3,
+      '#title' => t('Private Information'),
+    );
+
+    $account->content['eve_api_private']['lastKnownLocation'] = array(
+      '#type' => 'user_profile_item',
+      '#title' => t('Last Known Location'),
+      '#markup' => $character_data['lastKnownLocation'],
+    );
+
+    $account->content['eve_api_private']['shipName'] = array(
+      '#type' => 'user_profile_item',
+      '#title' => t('Last Known Ship Name'),
+      '#markup' => $character_data['shipName'],
+    );
+  }
+
+  $account->content['eve_api_skills'] += array(
+    '#type' => 'user_profile_category',
+    '#attributes' => array('class' => array('user-member')),
+    '#weight' => 4,
+    '#title' => t('Skills'),
+  );
 
   $account->content['eve_api_skills']['skillPoints'] = array(
     '#type' => 'user_profile_item',
