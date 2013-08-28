@@ -190,49 +190,49 @@ function eve_api_userlist_user_view($account) {
     return;
   }
 
-  $options = array();
-
-  $options += array(
-    'intelligence' => array(
-      'attribute' => 'Intelligence',
-      'points' => $character_data['intelligence'],
-      'bonus' => isset($character_data['intelligenceBonus']) ? $character_data['intelligenceBonus'] : 0,
-    ),
-  );
-
-  $options += array(
-    'memory' => array(
-      'attribute' => 'Memory',
-      'points' => $character_data['memory'],
-      'bonus' => isset($character_data['memoryBonus']) ? $character_data['memoryBonus'] : 0,
-    ),
-  );
-
-  $options += array(
-    'charisma' => array(
-      'attribute' => 'Charisma',
-      'points' => $character_data['charisma'],
-      'bonus' => isset($character_data['charismaBonus']) ? $character_data['charismaBonus'] : 0,
-    ),
-  );
-
-  $options += array(
-    'perception' => array(
-      'attribute' => 'Perception',
-      'points' => $character_data['perception'],
-      'bonus' => isset($character_data['perceptionBonus']) ? $character_data['perceptionBonus'] : 0,
-    ),
-  );
-
-  $options += array(
-    'willpower' => array(
-      'attribute' => 'Willpower',
-      'points' => $character_data['willpower'],
-      'bonus' => isset($character_data['willpowerBonus']) ? $character_data['willpowerBonus'] : 0,
-    ),
-  );
-
   if ((variable_get('eve_api_access_mask', 268435455) & 16777216) == 16777216) {
+    $options = array();
+
+    $options += array(
+      'intelligence' => array(
+        'attribute' => 'Intelligence',
+        'points' => $character_data['intelligence'],
+        'bonus' => isset($character_data['intelligenceBonus']) ? $character_data['intelligenceBonus'] : 0,
+      ),
+    );
+
+    $options += array(
+      'memory' => array(
+        'attribute' => 'Memory',
+        'points' => $character_data['memory'],
+        'bonus' => isset($character_data['memoryBonus']) ? $character_data['memoryBonus'] : 0,
+      ),
+    );
+
+    $options += array(
+      'charisma' => array(
+        'attribute' => 'Charisma',
+        'points' => $character_data['charisma'],
+        'bonus' => isset($character_data['charismaBonus']) ? $character_data['charismaBonus'] : 0,
+      ),
+    );
+
+    $options += array(
+      'perception' => array(
+        'attribute' => 'Perception',
+        'points' => $character_data['perception'],
+        'bonus' => isset($character_data['perceptionBonus']) ? $character_data['perceptionBonus'] : 0,
+      ),
+    );
+
+    $options += array(
+      'willpower' => array(
+        'attribute' => 'Willpower',
+        'points' => $character_data['willpower'],
+        'bonus' => isset($character_data['willpowerBonus']) ? $character_data['willpowerBonus'] : 0,
+      ),
+    );
+
     $account->content['eve_api_private'] += array(
       '#type' => 'user_profile_category',
       '#attributes' => array('class' => array('user-member')),
@@ -251,6 +251,25 @@ function eve_api_userlist_user_view($account) {
       '#title' => t('Last Known Ship Name'),
       '#markup' => $character_data['shipName'],
     );
+
+    $account->content['eve_api_private']['skillPoints'] = array(
+      '#type' => 'user_profile_item',
+      '#title' => t('Total Skillpoints'),
+      '#markup' => $character_data['skillPoints'],
+    );
+
+    $account->content['eve_api_private']['stats'] = array(
+      '#type' => 'user_profile_item',
+      '#title' => t('Stats'),
+      '#markup' => theme('table', array(
+        'header' => array(
+          'attribute' => t('Attribute'),
+          'points' => t('Points'),
+          'bonus' => t('Bonus'),
+        ),
+        'rows' => $options,
+      )),
+    );
   }
 
   $account->content['eve_api_skills'] += array(
@@ -258,25 +277,6 @@ function eve_api_userlist_user_view($account) {
     '#attributes' => array('class' => array('user-member')),
     '#weight' => 4,
     '#title' => t('Skills'),
-  );
-
-  $account->content['eve_api_skills']['skillPoints'] = array(
-    '#type' => 'user_profile_item',
-    '#title' => t('Total Skillpoints'),
-    '#markup' => $character_data['skillPoints'],
-  );
-
-  $account->content['eve_api_skills']['stats'] = array(
-    '#type' => 'user_profile_item',
-    '#title' => t('Stats'),
-    '#markup' => theme('table', array(
-      'header' => array(
-        'attribute' => t('Attribute'),
-        'points' => t('Points'),
-        'bonus' => t('Bonus'),
-      ),
-      'rows' => $options,
-    )),
   );
 
   $character_skills = eve_api_get_character_skills($account->characterID);
