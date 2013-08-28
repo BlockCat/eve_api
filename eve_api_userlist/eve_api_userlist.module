@@ -278,4 +278,29 @@ function eve_api_userlist_user_view($account) {
       'rows' => $options,
     )),
   );
+
+  $character_skills = eve_api_get_character_skills($account->characterID);
+
+  foreach ($character_skills as $skill_group => $skills) {
+    $options = array();
+
+    foreach ($skills as $skill) {
+      $options[] = array(
+        'skillname' => $skill['typeName'],
+        'skilllevel' => $skill['level'],
+      );
+    }
+
+    $account->content['eve_api_skills'][$skill_group] = array(
+      '#type' => 'user_profile_item',
+      '#title' => $skill_group,
+      '#markup' => theme('table', array(
+        'header' => array(
+          'skillname' => t('Skill Name'),
+          'skilllevel' => t('Skill Level'),
+        ),
+        'rows' => $options,
+      )),
+    );
+  }
 }

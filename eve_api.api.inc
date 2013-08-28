@@ -586,6 +586,42 @@ function eve_api_get_character_info($character_name) {
 }
 
 /**
+ * Function to retrieve individual characters skills from the database.
+ *
+ * @param int $character_id
+ *   Unique character id used to retrieve information about the character
+ *
+ * @return array
+ *   A complex array of a single character skills.
+ */
+function eve_api_get_character_skills($character_id) {
+  $result = db_query('SELECT css.level, css.skillpoints, st.typeName, sg.groupName
+    FROM {eve_api_character_sheet_skills} css
+    INNER JOIN {eve_api_sheet_types} st ON st.typeID = css.typeID
+    INNER JOIN {eve_api_sheet_groups} sg ON sg.groupID = st.groupID
+    WHERE css.characterID = :characterID ORDER BY sg.groupName, st.typeName ASC', array(
+      ':characterID' => (int) $character_id,
+    ));
+
+  $api_data = array();
+
+  if ($result->rowCount()) {
+    foreach ($result->fetchAll() as $row) {
+      $api_data[(string) $row->groupName][] = array(
+        'level' => check_plain((int) $row->level),
+        'typeName' => check_plain((string) $row->typeName),
+        'skillpoints' => check_plain((int) $row->skillpoints),
+      );
+    }
+  }
+  else {
+    $api_data = FALSE;
+  }
+
+  return $api_data;
+}
+
+/**
  * Function to retrieve individual characters API info.
  *
  * @param array $query
