@@ -530,8 +530,8 @@ function eve_api_get_character_info($character_name) {
     LEFT JOIN {eve_api_character_sheet_attribute_enhancers} csae on csae.characterID = c.characterID
     LEFT JOIN {eve_api_character_info_corporation_history} cich on cich.characterID = c.characterID
     WHERE c.characterName = :characterName', array(
-    ':characterName' => (string) $character_name,
-  ));
+      ':characterName' => (string) $character_name,
+    ));
 
   $api_data = array();
 
@@ -549,6 +549,7 @@ function eve_api_get_character_info($character_name) {
 
           $api_data += array($bonus_data[0] => strip_tags(decode_entities($bonus_data[1])));
         }
+
         continue;
       }
 
@@ -659,8 +660,6 @@ function eve_api_get_character_info_api($query) {
   foreach ($xml->result->children() as $results) {
     switch ((string) $results->getName()) {
       case 'rowset':
-        $rowset = $results->attributes();
-
         foreach ($results->children() as $rows) {
           $row = $rows->attributes();
 

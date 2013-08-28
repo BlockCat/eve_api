@@ -191,31 +191,46 @@ function eve_api_userlist_user_view($account) {
   }
 
   $options = array();
-  $options += array('intelligence' => array(
-    'attribute' => 'Intelligence',
-    'points' => $character_data['intelligence'],
-    'bonus' => isset($character_data['intelligenceBonus']) ? $character_data['intelligenceBonus'] : 0,
-  ));
-  $options += array('memory' => array(
-    'attribute' => 'Memory',
-    'points' => $character_data['memory'],
-    'bonus' => isset($character_data['memoryBonus']) ? $character_data['memoryBonus'] : 0,
-  ));
-  $options += array('charisma' => array(
-    'attribute' => 'Charisma',
-    'points' => $character_data['charisma'],
-    'bonus' => isset($character_data['charismaBonus']) ? $character_data['charismaBonus'] : 0,
-  ));
-  $options += array('perception' => array(
-    'attribute' => 'Perception',
-    'points' => $character_data['perception'],
-    'bonus' => isset($character_data['perceptionBonus']) ? $character_data['perceptionBonus'] : 0,
-  ));
-  $options += array('willpower' => array(
-    'attribute' => 'Willpower',
-    'points' => $character_data['willpower'],
-    'bonus' => isset($character_data['willpowerBonus']) ? $character_data['willpowerBonus'] : 0,
-  ));
+
+  $options += array(
+    'intelligence' => array(
+      'attribute' => 'Intelligence',
+      'points' => $character_data['intelligence'],
+      'bonus' => isset($character_data['intelligenceBonus']) ? $character_data['intelligenceBonus'] : 0,
+    ),
+  );
+
+  $options += array(
+    'memory' => array(
+      'attribute' => 'Memory',
+      'points' => $character_data['memory'],
+      'bonus' => isset($character_data['memoryBonus']) ? $character_data['memoryBonus'] : 0,
+    ),
+  );
+
+  $options += array(
+    'charisma' => array(
+      'attribute' => 'Charisma',
+      'points' => $character_data['charisma'],
+      'bonus' => isset($character_data['charismaBonus']) ? $character_data['charismaBonus'] : 0,
+    ),
+  );
+
+  $options += array(
+    'perception' => array(
+      'attribute' => 'Perception',
+      'points' => $character_data['perception'],
+      'bonus' => isset($character_data['perceptionBonus']) ? $character_data['perceptionBonus'] : 0,
+    ),
+  );
+
+  $options += array(
+    'willpower' => array(
+      'attribute' => 'Willpower',
+      'points' => $character_data['willpower'],
+      'bonus' => isset($character_data['willpowerBonus']) ? $character_data['willpowerBonus'] : 0,
+    ),
+  );
 
   if ((variable_get('eve_api_access_mask', 268435455) & 16777216) == 16777216) {
     $account->content['eve_api_private'] += array(
