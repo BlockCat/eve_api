@@ -321,7 +321,7 @@ function eve_api_userlist_user_view($account) {
         'skilllevel' => t('Skill Level'),
       );
 
-      $table_id = 'skillgroups' . '-' . $id_tab;
+      $table_id = 'skillgroups-' . $id_tab;
 
       $form['tabs'][$id_tab]['table']['#markup'] = theme('table', array(
         'header' => $header,
