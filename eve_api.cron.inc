@@ -108,6 +108,10 @@ function eve_api_cron_api_user_sync($item) {
   $uid = (int) $item['uid'];
   $account = user_load($uid);
 
+  if ($uid == 0) {
+    return FALSE;
+  }
+
   $result = db_query('SELECT apiID, keyID, vCode FROM {eve_api_keys} WHERE uid = :uid', array(
     ':uid' => $uid,
   ));

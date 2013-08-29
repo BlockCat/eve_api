@@ -138,13 +138,11 @@ function eve_api_user_add_api_form_validate($form, &$form_state) {
  */
 function eve_api_user_add_api_form_submit($form, &$form_state) {
   $account = $form_state['user'];
+  $uid = (int) $account->uid;
   $key_id = (int) $form_state['values']['keyID'];
   $v_code = (string) $form_state['values']['vCode'];
 
-  if (!($characters = eve_api_create_key($account, $key_id, $v_code))) {
-    drupal_set_message(t('There was an error with the API.'), 'error');
-    return;
-  }
+  $character = eve_api_create_key($account, $key_id, $v_code);
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
   $queue->createItem(array(
@@ -152,7 +150,12 @@ function eve_api_user_add_api_form_submit($form, &$form_state) {
     'runs' => 1,
   ));
 
-  drupal_set_message(t('API Key successfully added!'));
+  if ($character == FALSE) {
+    drupal_set_message(t('There was an error with the API.'), 'error');
+  }
+  else {
+    drupal_set_message(t('API Key successfully added!'));
+  }
 }
 
 /**

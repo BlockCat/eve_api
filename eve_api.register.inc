@@ -329,7 +329,9 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
   $key_id = (int) $form_state['signup_object']['keyID'];
   $v_code = (string) $form_state['signup_object']['vCode'];
 
-  if (!($character = eve_api_create_key($account, $key_id, $v_code))) {
+  $character = eve_api_create_key($account, $key_id, $v_code);
+
+  if (isset($character['not_found']) || $character == FALSE) {
     db_update('users')->fields(array(
         'characterID' => 0,
         'name' => $account->name,

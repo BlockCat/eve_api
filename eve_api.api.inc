@@ -1440,7 +1440,7 @@ function eve_api_create_key($account, $key_id, $v_code) {
     }
   }
 
-  return isset($character_data) ? $character_data : FALSE;
+  return isset($character_data) ? $character_data : array('not_found' => TRUE);
 }
 
 /**
