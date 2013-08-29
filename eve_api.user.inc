@@ -141,14 +141,18 @@ function eve_api_user_add_api_form_submit($form, &$form_state) {
   $key_id = (int) $form_state['values']['keyID'];
   $v_code = (string) $form_state['values']['vCode'];
 
-  $characters = eve_api_update_character('create', $account, $key_id, $v_code);
-
-  if ($characters['error']) {
+  if (!($characters = eve_api_create_key($account, $key_id, $v_code))) {
     drupal_set_message(t('There was an error with the API.'), 'error');
+    return;
   }
-  else {
-    drupal_set_message(t('API Key successfully added!'));
-  }
+
+  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue->createItem(array(
+    'uid' => $uid,
+    'runs' => 1,
+  ));
+
+  drupal_set_message(t('API Key successfully added!'));
 }
 
 /**
@@ -518,7 +522,7 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
   $v_code = (string) $form_state['values']['vCode'];
   $api_id = (int) $form_state['apiID'];
 
-  $characters = eve_api_update_character('update', $account, $key_id, $v_code, $api_id);
+  $characters = eve_api_modify_key($account, $key_id, $v_code, $api_id);
 
   $result = db_query('SELECT c.characterName, c.characterID FROM {eve_api_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.uid = :uid', array(
     ':uid' => $uid,

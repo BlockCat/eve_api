@@ -117,7 +117,7 @@ function eve_api_cron_api_user_sync($item) {
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
-      $characters = eve_api_update_character('update', $account, $row->keyID, $row->vCode, $row->apiID);
+      $characters = eve_api_update_key($account, $row->keyID, $row->vCode, $row->apiID);
       $error_found = ($error_found == TRUE) ? $error_found : $characters['error_found'];
       $character_found = ($character_found == TRUE) ? $character_found : $characters['character_found'];
     }

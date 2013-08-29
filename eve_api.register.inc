@@ -329,38 +329,35 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
   $key_id = (int) $form_state['signup_object']['keyID'];
   $v_code = (string) $form_state['signup_object']['vCode'];
 
-  $characters = eve_api_update_character('create', $account, $key_id, $v_code);
-  $character = $characters['character_data'];
+  if (!($character = eve_api_create_key($account, $key_id, $v_code))) {
+    db_update('users')->fields(array(
+        'characterID' => 0,
+        'name' => $account->name,
+        'signature' => '',
+      ))->condition('uid', $uid, '=')->execute();
+
+    $default_role = user_role_load(variable_get('eve_api_unverified_role', 2));
+    user_multiple_role_edit(array($uid), 'add_role', $default_role->rid);
+
+    drupal_set_message(t('Registration partially failed, please verify API Key when activated.'), 'error');
+    return;
+  }
+
+  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue->createItem(array(
+    'uid' => $uid,
+    'runs' => 1,
+  ));
 
   $character_name = (string) $character['characterName'];
   $character_id = (int) $character['characterID'];
   $corporation_name = (string) $character['corporationName'];
-  $is_director = eve_api_character_is_director((int) $character['characterID']);
-  $is_ceo = eve_api_character_is_ceo((int) $character['characterID']);
 
   if ($corporation_role = user_role_load_by_name($corporation_name)) {
     user_multiple_role_edit(array($uid), 'add_role', (int) $corporation_role->rid);
 
     $alliance_role = user_role_load(variable_get('eve_api_alliance_role', 2));
     user_multiple_role_edit(array($uid), 'add_role', (int) $alliance_role->rid);
-
-    if ($is_director) {
-      $director_role = user_role_load(variable_get('eve_api_director_role', 2));
-      user_multiple_role_edit(array($uid), 'add_role', (int) $director_role->rid);
-    }
-    else {
-      $director_role = user_role_load(variable_get('eve_api_director_role', 2));
-      user_multiple_role_edit(array($uid), 'remove_role', (int) $director_role->rid);
-    }
-
-    if ($is_ceo) {
-      $ceo_role = user_role_load(variable_get('eve_api_ceo_role', 2));
-      user_multiple_role_edit(array($uid), 'add_role', (int) $ceo_role->rid);
-    }
-    else {
-      $ceo_role = user_role_load(variable_get('eve_api_ceo_role', 2));
-      user_multiple_role_edit(array($uid), 'remove_role', (int) $ceo_role->rid);
-    }
   }
   else {
     $blue_role = user_role_load(variable_get('eve_api_blue_role', 2));

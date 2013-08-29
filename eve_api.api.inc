@@ -1338,8 +1338,114 @@ function eve_api_list_api_simple($uid) {
 /**
  * Function that retrieves a simple list of API's associated with a user id.
  *
- * @param string $action
- *   Action to perform, either update or create.
+ * @param object $account
+ *   A Drupal user object containing.
+ * @param int $key_id
+ *   A unique EVE API Key ID.
+ * @param string $v_code
+ *   A unique EVE API Verification Code.
+ *
+ * @return mixed
+ *   A mixed array of data regarding the success/failure.
+ */
+function eve_api_create_key($account, $key_id, $v_code) {
+  $created = date('Y-m-d H:i:s', time());
+  $uid = (int) $account->uid;
+
+  $error_found = FALSE;
+  $character_data = FALSE;
+
+  $query = array(
+    'keyID' => $key_id,
+    'vCode' => $v_code,
+  );
+
+  $characters = eve_api_get_character_api($query);
+
+  $error = 0;
+
+  if (isset($characters['error'])) {
+    watchdog('eve_api', 'Error occured during registration. (' . drupal_http_build_query($query) . ')<br /><pre>' . print_r($characters, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
+
+    return FALSE;
+  }
+
+  if (!isset($characters['characters'])) {
+    watchdog('eve_api', 'Error occured, should never happen. (' . drupal_http_build_query($query) . ')<br /><pre>' . print_r($characters, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
+
+    return FALSE;
+  }
+
+  if (isset($characters['errorCode'])) {
+    $error = (int) $characters['errorCode'];
+  }
+
+  $whitelist = array();
+
+  if (!empty($characters)) {
+    foreach ($characters['characters'] as $character) {
+      $whitelist[] = (int) $character['characterID'];
+    }
+  }
+
+  $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE characterID IN (:characterIDs)', array(
+    ':characterIDs' => $whitelist,
+  ));
+
+  $allow_expires = variable_get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
+  $allow_type = variable_get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
+
+  if ($result->rowCount()) {
+    if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
+      $error = 1;
+    }
+  }
+  else {
+    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
+      $error = 1;
+    }
+  }
+
+  $api_id = db_insert('eve_api_keys')->fields(array(
+    'uid' => (int) $uid,
+    'keyID' => (int) $key_id,
+    'vCode' => (string) $v_code,
+    'updated' => (string) $created,
+    'created' => (string) $created,
+    'errorID' => (int) $error,
+  ))->execute();
+
+  if ($error == 1) {
+    return FALSE;
+  }
+
+  foreach ($characters['characters'] as $character) {
+    db_merge('eve_api_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
+      'characterID' => (int) $character['characterID'],
+      'uid' => (int) $uid,
+      'apiID' => (int) $api_id,
+      'characterName' => (string) $character['characterName'],
+      'corporationID' => (int) $character['corporationID'],
+      'corporationName' => (string) $character['corporationName'],
+      'corporationTicker' => (string) $character['corporationTicker'],
+      'allianceID' => (int) $character['allianceID'],
+      'allianceName' => (string) $character['allianceName'],
+      'allianceTicker' => (string) $character['allianceTicker'],
+      'errorID' => (int) $error,
+      'deleted' => 0,
+    ))->execute();
+
+    if ($account->name == (string) $character['characterName']) {
+      $character_data = $character;
+    }
+  }
+
+  return isset($character_data) ? $character_data : FALSE;
+}
+
+/**
+ * Function that retrieves a simple list of API's associated with a user id.
+ *
  * @param object $account
  *   A Drupal user object containing.
  * @param int $key_id
@@ -1347,12 +1453,12 @@ function eve_api_list_api_simple($uid) {
  * @param string $v_code
  *   A unique EVE API Verification Code.
  * @param int $api_id
- *   (optional) A unique API ID.
+ *   A unique API ID.
  *
  * @return mixed
  *   A mixed array of data regarding the success/failure.
  */
-function eve_api_update_character($action, $account, $key_id, $v_code, $api_id = 0) {
+function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
   $updated = date('Y-m-d H:i:s', time());
   $uid = (int) $account->uid;
 
@@ -1442,30 +1548,175 @@ function eve_api_update_character($action, $account, $key_id, $v_code, $api_id =
     }
   }
 
-  switch ($action) {
-    case 'update':
-      db_update('eve_api_characters')->fields(array('errorID' => (int) $error, 'deleted' => 1))->condition('apiID', (int) $api_id)->execute();
-      db_merge('eve_api_keys')->key(array('apiID' => (int) $api_id))->fields(array(
-        'apiID' => (int) $api_id,
-        'uid' => (int) $uid,
-        'keyID' => (int) $key_id,
-        'vCode' => (string) $v_code,
-        'updated' => (string) $updated,
-        'errorID' => (int) $error,
-      ))->execute();
-      break;
+  db_update('eve_api_characters')->fields(array('errorID' => (int) $error, 'deleted' => 1))->condition('apiID', (int) $api_id)->execute();
+  db_merge('eve_api_keys')->key(array('apiID' => (int) $api_id))->fields(array(
+    'apiID' => (int) $api_id,
+    'uid' => (int) $uid,
+    'keyID' => (int) $key_id,
+    'vCode' => (string) $v_code,
+    'updated' => (string) $updated,
+    'errorID' => (int) $error,
+  ))->execute();
 
-    case 'create':
-      $api_id = db_insert('eve_api_keys')->fields(array(
-        'uid' => (int) $uid,
-        'keyID' => (int) $key_id,
-        'vCode' => (string) $v_code,
-        'updated' => (string) $updated,
-        'created' => (string) $updated,
-        'errorID' => (int) $error,
-      ))->execute();
-      break;
+  if ($error == 1) {
+    return array(
+      'error' => FALSE,
+      'error_found' => $error_found,
+      'character_data' => $character_data,
+      'character_found' => $character_found,
+    );
   }
+
+  foreach ($characters['characters'] as $character) {
+    $error = 0;
+
+    if (isset($characters['errorCode'])) {
+      $error = (int) $characters['errorCode'];
+    }
+
+    db_merge('eve_api_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
+      'characterID' => (int) $character['characterID'],
+      'uid' => (int) $uid,
+      'apiID' => (int) $api_id,
+      'characterName' => (string) $character['characterName'],
+      'corporationID' => (int) $character['corporationID'],
+      'corporationName' => (string) $character['corporationName'],
+      'corporationTicker' => (string) $character['corporationTicker'],
+      'allianceID' => (int) $character['allianceID'],
+      'allianceName' => (string) $character['allianceName'],
+      'allianceTicker' => (string) $character['allianceTicker'],
+      'errorID' => (int) $error,
+      'deleted' => 0,
+    ))->execute();
+
+    if ($account->name == (string) $character['characterName']) {
+      $character_found = TRUE;
+      $character_data = $character;
+    }
+  }
+
+  return array(
+    'error' => FALSE,
+    'error_found' => $error_found,
+    'character_data' => $character_data,
+    'character_found' => $character_found,
+  );
+}
+
+/**
+ * Function that retrieves a simple list of API's associated with a user id.
+ *
+ * @param object $account
+ *   A Drupal user object containing.
+ * @param int $key_id
+ *   A unique EVE API Key ID.
+ * @param string $v_code
+ *   A unique EVE API Verification Code.
+ * @param int $api_id
+ *   A unique API ID.
+ *
+ * @return mixed
+ *   A mixed array of data regarding the success/failure.
+ */
+function eve_api_update_key($account, $key_id, $v_code, $api_id) {
+  $updated = date('Y-m-d H:i:s', time());
+  $uid = (int) $account->uid;
+
+  $character_found = FALSE;
+  $error_found = FALSE;
+  $character_data = FALSE;
+
+  $query = array(
+    'keyID' => $key_id,
+    'vCode' => $v_code,
+  );
+
+  $characters = eve_api_get_character_api($query);
+
+  $error = 0;
+
+  if (isset($characters['error'])) {
+    if ($api_id == 0) {
+      return array(
+        'error' => TRUE,
+        'error_found' => $error_found,
+        'character_data' => $character_data,
+        'character_found' => $character_found,
+      );
+    }
+
+    db_merge('eve_api_keys')->key(array('apiID' => (int) $api_id))->fields(array(
+      'apiID' => (int) $api_id,
+      'errorID' => (int) $characters['error'],
+      'updated' => (string) $updated,
+    ))->execute();
+
+    if ((int) $characters['error'] == 403) {
+      db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error'], 'deleted' => 1))->condition('apiID', (int) $api_id, '=')->execute();
+    }
+    else {
+      db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error']))->condition('apiID', (int) $api_id, '=')->execute();
+      $error_found = TRUE;
+    }
+
+    return array(
+      'error' => FALSE,
+      'error_found' => $error_found,
+      'character_data' => $character_data,
+      'character_found' => $character_found,
+    );
+  }
+
+  if (!isset($characters['characters'])) {
+    watchdog('eve_api', 'Error occured, should never happen. (' . drupal_http_build_query($query) . ')<br /><pre>' . print_r($characters, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
+
+    return array(
+      'error' => TRUE,
+      'error_found' => $error_found,
+      'character_data' => $character_data,
+      'character_found' => $character_found,
+    );
+  }
+
+  if (isset($characters['errorCode'])) {
+    $error = (int) $characters['errorCode'];
+  }
+
+  $whitelist = array();
+
+  if (!empty($characters)) {
+    foreach ($characters['characters'] as $character) {
+      $whitelist[] = (int) $character['characterID'];
+    }
+  }
+
+  $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE characterID IN (:characterIDs)', array(
+    ':characterIDs' => $whitelist,
+  ));
+
+  $allow_expires = variable_get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
+  $allow_type = variable_get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
+
+  if ($result->rowCount()) {
+    if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
+      $error = 1;
+    }
+  }
+  else {
+    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
+      $error = 1;
+    }
+  }
+
+  db_update('eve_api_characters')->fields(array('errorID' => (int) $error, 'deleted' => 1))->condition('apiID', (int) $api_id)->execute();
+  db_merge('eve_api_keys')->key(array('apiID' => (int) $api_id))->fields(array(
+    'apiID' => (int) $api_id,
+    'uid' => (int) $uid,
+    'keyID' => (int) $key_id,
+    'vCode' => (string) $v_code,
+    'updated' => (string) $updated,
+    'errorID' => (int) $error,
+  ))->execute();
 
   if ($error == 1) {
     return array(
