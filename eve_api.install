@@ -62,6 +62,11 @@ function eve_api_schema() {
         'views' => TRUE,
       ),
     ),
+    'indexes' => array(
+      'uid' => array('uid'),
+      'keyID' => array('keyID'),
+      'errorID' => array('errorID'),
+    ),
     'unique keys' => array('apiID' => array('apiID')),
     'primary key' => array('apiID'),
   );
@@ -137,6 +142,12 @@ function eve_api_schema() {
         'default' => 0,
       ),
     ),
+    'indexes' => array(
+      'uid' => array('uid'),
+      'apiID' => array('apiID'),
+      'errorID' => array('errorID'),
+      'deleted' => array('deleted'),
+    ),
     'unique keys' => array('characterID' => array('characterID')),
     'primary key' => array('characterID'),
   );
@@ -206,8 +217,8 @@ function eve_api_schema() {
         'description' => 'The EVE Character balance.',
         'type' => 'float',
         'not null' => TRUE,
-        'precision' => 20,
-        'scale' => 2,
+        'precision' => 32,
+        'scale' => 8,
         'unsigned' => FALSE,
         'default' => 0.0,
       ),
@@ -285,8 +296,8 @@ function eve_api_schema() {
         'description' => 'The EVE Character balance.',
         'type' => 'float',
         'not null' => TRUE,
-        'precision' => 20,
-        'scale' => 2,
+        'precision' => 32,
+        'scale' => 8,
         'unsigned' => FALSE,
         'default' => 0.0,
       ),
@@ -424,7 +435,9 @@ function eve_api_schema() {
         'views' => TRUE,
       ),
     ),
-    'indexes' => array('characterID' => array('characterID')),
+    'indexes' => array(
+      'characterID' => array('characterID'),
+    ),
   );
 
   $schema['eve_api_skill_training'] = array(
@@ -494,8 +507,417 @@ function eve_api_schema() {
         'default' => 0,
       ),
     ),
+    'indexes' => array(
+      'trainingTypeID' => array('trainingTypeID'),
+    ),
     'unique keys' => array('characterID' => array('characterID')),
     'primary key' => array('characterID'),
+  );
+
+  $schema['eve_api_mail_messages'] = array(
+    'description' => 'The mail messages headers.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'The unique Character ID associated with the EVE Character.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'messageID' => array(
+        'description' => 'The unique message ID number.',
+        'type' => 'int',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'senderID' => array(
+        'description' => 'Transaction type.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'sentDate' => array(
+        'description' => 'Date & time message sent.',
+        'type' => 'datetime',
+        'mysql_type' => 'DATETIME',
+        'pgsql_type' => 'timestamp without time zone',
+        'sqlite_type' => 'VARCHAR',
+        'sqlsrv_type' => 'smalldatetime',
+        'not null' => FALSE,
+        'sortable' => TRUE,
+        'views' => TRUE,
+      ),
+      'title' => array(
+        'description' => 'Comma-separated list of character IDs of the characters that received the message.',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'toCorpOrAllianceID' => array(
+        'description' => 'Comma-separated list of mailing lists that the mail was sent to.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'toCharacterIDs' => array(
+        'description' => 'Comma-separated list of character IDs of the characters that received the message.',
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+      'toListID' => array(
+        'description' => 'Comma-separated list of mailing lists that the mail was sent to.',
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+    ),
+    'indexes' => array(
+      'characterID' => array('characterID'),
+      'senderID' => array('senderID'),
+      'toCorpOrAllianceID' => array('toCorpOrAllianceID'),
+    ),
+    'unique keys' => array('messageID' => array('messageID')),
+    'primary key' => array('messageID'),
+  );
+
+  $schema['eve_api_mail_bodies'] = array(
+    'description' => 'The mail messages body.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'The unique Character ID associated with the EVE Character.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'messageID' => array(
+        'description' => 'The unique message ID number.',
+        'type' => 'int',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'message' => array(
+        'description' => 'The Mail Message',
+        'type' => 'text',
+        'size' => 'medium',
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'characterID' => array('characterID'),
+    ),
+    'unique keys' => array('messageID' => array('messageID')),
+    'primary key' => array('messageID'),
+  );
+
+  $schema['eve_api_character_contracts'] = array(
+    'description' => 'The contracts index.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'The unique Character ID associated with the EVE Character.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'contractID' => array(
+        'description' => 'The unique message ID number.',
+        'type' => 'int',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'issuerID' => array(
+        'description' => 'Character ID who created contract.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'issuerCorpID' => array(
+        'description' => 'Corporation ID who created contract.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'assigneeID' => array(
+        'description' => 'Character ID to whom the contract was discharged.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'acceptorID' => array(
+        'description' => 'Who will accept the contract. If assigneeID is same as acceptorID then CharacterID else CorporationID.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'startStationID' => array(
+        'description' => 'Start station ID.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'endStationID' => array(
+        'description' => 'End station ID.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'type' => array(
+        'description' => 'Type of the contract.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'status' => array(
+        'description' => 'Status of the the contract.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'title' => array(
+        'description' => 'Title of the contract.',
+        'type' => 'varchar',
+        'length' => 250,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'forCorp' => array(
+        'description' => '1 if the contract was issued on behalf of the issuers corporation, 0 otherwise.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'availability' => array(
+        'description' => 'Public or Private.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'dateIssued' => array(
+        'description' => 'Сreation date of the contract.',
+        'type' => 'datetime',
+        'mysql_type' => 'DATETIME',
+        'pgsql_type' => 'timestamp without time zone',
+        'sqlite_type' => 'VARCHAR',
+        'sqlsrv_type' => 'smalldatetime',
+        'not null' => FALSE,
+        'sortable' => TRUE,
+        'views' => TRUE,
+      ),
+      'dateExpired' => array(
+        'description' => 'Expiration date of the contract.',
+        'type' => 'datetime',
+        'mysql_type' => 'DATETIME',
+        'pgsql_type' => 'timestamp without time zone',
+        'sqlite_type' => 'VARCHAR',
+        'sqlsrv_type' => 'smalldatetime',
+        'not null' => FALSE,
+        'sortable' => TRUE,
+        'views' => TRUE,
+      ),
+      'dateAccepted' => array(
+        'description' => 'Date of confirmation of contract.',
+        'type' => 'datetime',
+        'mysql_type' => 'DATETIME',
+        'pgsql_type' => 'timestamp without time zone',
+        'sqlite_type' => 'VARCHAR',
+        'sqlsrv_type' => 'smalldatetime',
+        'not null' => FALSE,
+        'sortable' => TRUE,
+        'views' => TRUE,
+      ),
+      'numDays' => array(
+        'description' => 'Number of days to perform the contract.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'dateCompleted' => array(
+        'description' => 'Date of completed of contract.',
+        'type' => 'datetime',
+        'mysql_type' => 'DATETIME',
+        'pgsql_type' => 'timestamp without time zone',
+        'sqlite_type' => 'VARCHAR',
+        'sqlsrv_type' => 'smalldatetime',
+        'not null' => FALSE,
+        'sortable' => TRUE,
+        'views' => TRUE,
+      ),
+      'price' => array(
+        'description' => 'Price of contract (for ItemsExchange and Auctions)',
+        'type' => 'float',
+        'not null' => TRUE,
+        'precision' => 32,
+        'scale' => 8,
+        'unsigned' => FALSE,
+        'default' => 0.0,
+      ),
+      'reward' => array(
+        'description' => 'Remuneration for contract (for Couriers only).',
+        'type' => 'float',
+        'not null' => TRUE,
+        'precision' => 32,
+        'scale' => 8,
+        'unsigned' => FALSE,
+        'default' => 0.0,
+      ),
+      'collateral' => array(
+        'description' => 'Collateral price (for Couriers only).',
+        'type' => 'float',
+        'not null' => TRUE,
+        'precision' => 32,
+        'scale' => 8,
+        'unsigned' => FALSE,
+        'default' => 0.0,
+      ),
+      'buyout' => array(
+        'description' => 'Buyout price (for Auctions only).',
+        'type' => 'float',
+        'not null' => TRUE,
+        'precision' => 32,
+        'scale' => 8,
+        'unsigned' => FALSE,
+        'default' => 0.0,
+      ),
+      'volume' => array(
+        'description' => 'Volume of items in the contract.',
+        'type' => 'float',
+        'not null' => TRUE,
+        'precision' => 32,
+        'scale' => 8,
+        'unsigned' => FALSE,
+        'default' => 0.0,
+      ),
+    ),
+    'indexes' => array(
+      'characterID' => array('characterID'),
+    ),
+    'unique keys' => array('messageID' => array('messageID')),
+    'primary key' => array('messageID'),
+  );
+
+  $schema['eve_api_wallet_journal'] = array(
+    'description' => 'This table holds all the wallet transactions for each character.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'The unique Character ID associated with the EVE Character.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'date' => array(
+        'description' => 'Date & time of the transaction.',
+        'type' => 'datetime',
+        'mysql_type' => 'DATETIME',
+        'pgsql_type' => 'timestamp without time zone',
+        'sqlite_type' => 'VARCHAR',
+        'sqlsrv_type' => 'smalldatetime',
+        'not null' => FALSE,
+        'sortable' => TRUE,
+        'views' => TRUE,
+      ),
+      'refID' => array(
+        'description' => 'ID of transaction.',
+        'type' => 'int',
+        'size' => 'big',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'refTypeID' => array(
+        'description' => 'Transaction type.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'ownerName1' => array(
+        'description' => 'Name of first party in the transaction.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'ownerID1' => array(
+        'description' => 'Character or corporation ID of the first party.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'ownerName2' => array(
+        'description' => 'Name of second party in the transaction.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'ownerID2' => array(
+        'description' => 'Character or corporation ID of the second party.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'argName1' => array(
+        'description' => 'Depending on the RefTypeID, this row will change.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'argID1' => array(
+        'description' => 'The value of argName1.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'amount' => array(
+        'description' => 'The amount transferred between parties',
+        'type' => 'float',
+        'not null' => TRUE,
+        'precision' => 32,
+        'scale' => 8,
+        'unsigned' => FALSE,
+        'default' => 0.0,
+      ),
+      'balance' => array(
+        'description' => 'The overall balance in this wallet, after this transaction.',
+        'type' => 'float',
+        'not null' => TRUE,
+        'precision' => 32,
+        'scale' => 8,
+        'unsigned' => FALSE,
+        'default' => 0.0,
+      ),
+      'reason' => array(
+        'description' => 'Either empty or a message related to the transaction.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'taxReceiverID' => array(
+        'description' => 'If the row is related to taxation, then this is the CorporationID of who recieved the tax.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'taxAmount' => array(
+        'description' => 'If the row is related to taxation, then this is the amount of tax paid.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'owner1TypeID' => array(
+        'description' => 'Character or corporation Type ID of the first party.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'owner2TypeID' => array(
+        'description' => 'Character or corporation Type ID of the second party.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'characterID' => array('characterID'),
+      'refTypeID' => array('refTypeID'),
+    ),
+    'unique keys' => array('refID' => array('refID')),
+    'primary key' => array('refID'),
   );
 
   $schema['eve_api_character_sheet_attribute_enhancers'] = array(
@@ -527,7 +949,9 @@ function eve_api_schema() {
         'default' => 0,
       ),
     ),
-    'indexes' => array('characterID' => array('characterID')),
+    'indexes' => array(
+      'characterID' => array('characterID'),
+    ),
   );
 
   $schema['eve_api_character_sheet_certificates'] = array(
@@ -545,7 +969,9 @@ function eve_api_schema() {
         'default' => 0,
       ),
     ),
-    'indexes' => array('characterID' => array('characterID')),
+    'indexes' => array(
+      'characterID' => array('characterID'),
+    ),
   );
 
   $schema['eve_api_character_sheet_titles'] = array(
@@ -570,7 +996,9 @@ function eve_api_schema() {
         'default' => '',
       ),
     ),
-    'indexes' => array('characterID' => array('characterID')),
+    'indexes' => array(
+      'characterID' => array('characterID'),
+    ),
   );
 
   $schema['eve_api_character_sheet_skills'] = array(
@@ -606,7 +1034,11 @@ function eve_api_schema() {
         'default' => 0,
       ),
     ),
-    'indexes' => array('characterID' => array('characterID')),
+    'indexes' => array(
+      'characterID' => array('characterID'),
+      'typeID' => array('typeID'),
+      'level' => array('level'),
+    ),
   );
 
   $schema['eve_api_character_roles'] = array(
@@ -618,27 +1050,30 @@ function eve_api_schema() {
         'not null' => TRUE,
       ),
       'type' => array(
-        'description' => 'The character role type.',
+        'description' => 'The role type.',
         'type' => 'varchar',
         'length' => 50,
         'not null' => TRUE,
         'default' => '',
       ),
       'roleID' => array(
-        'description' => 'The character role ID.',
+        'description' => 'The role ID.',
         'type' => 'int',
         'size' => 'big',
         'not null' => TRUE,
       ),
       'roleName' => array(
-        'description' => 'The Corporation Name the Character is currently associated with in EVE.',
+        'description' => 'The role name.',
         'type' => 'varchar',
         'length' => 50,
         'not null' => TRUE,
         'default' => '',
       ),
     ),
-    'indexes' => array('characterid' => array('characterID')),
+    'indexes' => array(
+      'characterID' => array('characterID'),
+      'roleID' => array('roleID'),
+    ),
   );
 
   $schema['eve_api_role_ceo_director'] = array(
@@ -650,20 +1085,24 @@ function eve_api_schema() {
         'not null' => TRUE,
       ),
       'isCEO' => array(
-        'description' => 'Character is a CEO.',
+        'description' => 'Indicate if the character is a CEO.',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'isDirector' => array(
-        'description' => 'Character is a Director.',
+        'description' => 'Indicate if the character is a Director.',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'memo' => array(
         'description' => 'Short description of why character was added.',
         'type' => 'text',
-        'not null' => TRUE,
+        'not null' => FALSE,
       ),
+    ),
+    'indexes' => array(
+      'isCEO' => array('isCEO'),
+      'isDirector' => array('isDirector'),
     ),
     'unique keys' => array('characterID' => array('characterID')),
     'primary key' => array('characterID'),
@@ -686,7 +1125,7 @@ function eve_api_schema() {
       'memo' => array(
         'description' => 'Short description of why character was added.',
         'type' => 'text',
-        'not null' => TRUE,
+        'not null' => FALSE,
       ),
     ),
     'unique keys' => array('characterID' => array('characterID')),
@@ -735,6 +1174,9 @@ function eve_api_schema() {
         'default' => 0,
       ),
     ),
+    'indexes' => array(
+      'groupID' => array('groupID'),
+    ),
     'unique keys' => array('typeID' => array('typeID')),
     'primary key' => array('typeID'),
   );
@@ -765,6 +1207,9 @@ function eve_api_schema() {
         'length' => 255,
         'not null' => TRUE,
       ),
+    ),
+    'indexes' => array(
+      'type' => array('type'),
     ),
     'unique keys' => array('accessmask' => array('accessmask')),
     'primary key' => array('accessmask'),
@@ -808,8 +1253,13 @@ function eve_api_schema() {
       'memo' => array(
         'description' => 'Short description of why standing was added.',
         'type' => 'text',
-        'not null' => TRUE,
+        'not null' => FALSE,
       ),
+    ),
+    'indexes' => array(
+      'standing' => array('standing'),
+      'manual' => array('manual'),
+      'checked' => array('checked'),
     ),
     'unique keys' => array('contactID' => array('contactID')),
     'primary key' => array('contactID'),
@@ -866,8 +1316,13 @@ function eve_api_schema() {
       'memo' => array(
         'description' => 'Short description of why corporation was added.',
         'type' => 'text',
-        'not null' => TRUE,
+        'not null' => FALSE,
       ),
+    ),
+    'indexes' => array(
+      'ceoID' => array('ceoID'),
+      'manual' => array('manual'),
+      'checked' => array('checked'),
     ),
     'unique keys' => array('corporationID' => array('corporationID')),
     'primary key' => array('corporationID'),
