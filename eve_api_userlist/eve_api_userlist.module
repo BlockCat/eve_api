@@ -281,6 +281,9 @@ function eve_api_userlist_user_view($account) {
 
   $character_skills = eve_api_get_character_skills($account->characterID);
 
+  drupal_add_js('/misc/form.js');
+  drupal_add_js('/misc/collapse.js');
+
   foreach ($character_skills as $skill_group => $skills) {
     $options = array();
 
@@ -293,14 +296,21 @@ function eve_api_userlist_user_view($account) {
 
     $account->content['eve_api_skills'][$skill_group] = array(
       '#type' => 'user_profile_item',
-      '#title' => $skill_group,
-      '#markup' => theme('table', array(
-        'header' => array(
-          'skillname' => t('Skill Name'),
-          'skilllevel' => t('Skill Level'),
+      '#title' => '',
+      '#markup' => theme('fieldset', array('element' => array(
+        '#children' => theme('table', array(
+          'header' => array(
+            'skillname' => t('Skill Name'),
+            'skilllevel' => t('Skill Level'),
+          ),
+          'rows' => $options,
+        )),
+        '#title' => $skill_group,
+        '#attributes' => array(
+          'class' => array('collapsible', 'collapsed'),
         ),
-        'rows' => $options,
-      )),
+        ))
+      ),
     );
   }
 }
