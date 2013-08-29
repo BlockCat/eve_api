@@ -284,33 +284,56 @@ function eve_api_userlist_user_view($account) {
   drupal_add_js('/misc/form.js');
   drupal_add_js('/misc/collapse.js');
 
+  $form['tabs'] = array('#type' => 'vertical_tabs');
+
   foreach ($character_skills as $skill_group => $skills) {
     $options = array();
 
     foreach ($skills as $skill) {
-      $options[] = array(
-        'skillname' => $skill['typeName'],
-        'skilllevel' => $skill['level'],
-      );
+      $group_id = $skill['groupID'];
+
+      $form['tabs'][$group_id][$skill['typeID']]['Skill Name']['#markup'] = $skill['typeName'];
+      $form['tabs'][$group_id][$skill['typeID']]['Skill Level']['#markup'] = $skill['level'];
     }
 
-    $account->content['eve_api_skills'][$skill_group] = array(
-      '#type' => 'user_profile_item',
-      '#title' => '',
-      '#markup' => theme('fieldset', array('element' => array(
-        '#children' => theme('table', array(
-          'header' => array(
-            'skillname' => t('Skill Name'),
-            'skilllevel' => t('Skill Level'),
-          ),
-          'rows' => $options,
-        )),
-        '#title' => $skill_group,
-        '#attributes' => array(
-          'class' => array('collapsible', 'collapsed'),
-        ),
-        ))
-      ),
-    );
+    $form['tabs'][$group_id]['#type'] = 'fieldset';
+    $form['tabs'][$group_id]['#title'] = $skill_group;
   }
+
+  foreach (element_children($form['tabs']) as $id_tab) {
+    if (is_int($id_tab)) {
+      $rows = array();
+
+      foreach (element_children($form['tabs'][$id_tab]) as $id_row) {
+        $classes = array('');
+
+        $rows[] = array(
+          'data' => array(
+            drupal_render($form['tabs'][$id_tab][$id_row]['Skill Name']),
+            drupal_render($form['tabs'][$id_tab][$id_row]['Skill Level']),
+          ),
+          'class' => $classes,
+        );
+      }
+
+      $header = array(
+        'skillname' => t('Skill Name'),
+        'skilllevel' => t('Skill Level'),
+      );
+
+      $table_id = 'skillgroups' . '-' . $id_tab;
+
+      $form['tabs'][$id_tab]['table']['#markup'] = theme('table', array(
+        'header' => $header,
+        'rows' => $rows,
+        'attributes' => array('id' => $table_id),
+      ));
+    }
+  }
+
+  $account->content['eve_api_skills']['skills'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => '',
+    '#markup' => drupal_render_children($form),
+  );
 }
