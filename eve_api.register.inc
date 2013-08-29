@@ -171,7 +171,7 @@ function eve_api_form_user_register_form_alter(&$form, &$form_state) {
     'vCode' => $v_code,
   );
 
-  $characters = eve_api_get_character_api($query);
+  $characters = eve_api_get_api_key_info_api($query);
 
   if (isset($characters['error'])) {
     form_set_error('keyID', t('Unknown Error, please try again.'));
@@ -261,7 +261,7 @@ function eve_api_user_register_form_validate(&$form, &$form_state) {
     'vCode' => $v_code,
   );
 
-  $characters = eve_api_get_character_api($query);
+  $characters = eve_api_get_api_key_info_api($query);
 
   if (isset($characters['error'])) {
     form_set_error('keyID', t('Unknown Error, please try again.'));
@@ -448,7 +448,7 @@ function eve_api_enter_api_form_validate($form, &$form_state) {
     'vCode' => $v_code,
   );
 
-  $characters = eve_api_get_character_api($query);
+  $characters = eve_api_get_api_key_info_api($query);
 
   if (isset($characters['error'])) {
     form_set_error('keyID', t('There was an error with the API.'));

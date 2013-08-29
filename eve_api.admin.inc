@@ -140,7 +140,7 @@ function eve_api_admin_settings_form_validate($form, &$form_state) {
     'vCode' => $v_code,
   );
 
-  $characters = eve_api_get_character_api($query);
+  $characters = eve_api_get_api_key_info_api($query);
 
   if (isset($characters['error'])) {
     form_set_error('keyID', t('There was an error with the API.'));
@@ -845,7 +845,7 @@ function eve_api_admin_add_blue_form_validate($form, &$form_state) {
 
   if (!empty($contact_name)) {
     $query = array('names' => $contact_name);
-    $contact_data = eve_api_get_unique_id($query);
+    $contact_data = eve_api_get_character_id_api($query);
     $contact_name = strtoupper($contact_name);
   }
 
@@ -1130,7 +1130,7 @@ function eve_api_admin_add_corporation_form_validate($form, &$form_state) {
 
   if (!empty($corporation_name)) {
     $query = array('names' => $corporation_name);
-    $contact_data = eve_api_get_unique_id($query);
+    $contact_data = eve_api_get_character_id_api($query);
     $corporation_name = strtoupper($corporation_name);
   }
 
@@ -1148,7 +1148,7 @@ function eve_api_admin_add_corporation_form_validate($form, &$form_state) {
       }
       else {
         $query = array('corporationID' => (int) $contact_data[$corporation_name]['characterID']);
-        $corp_info = eve_api_get_corporation_info($query);
+        $corp_info = eve_api_get_corporation_sheet_api($query);
 
         if (isset($corp_info['corporationName'])) {
           $form_state['corp_info'] = $corp_info;
@@ -1426,7 +1426,7 @@ function eve_api_admin_add_whitelist_form_validate($form, &$form_state) {
     'vCode' => $v_code,
   );
 
-  $characters = eve_api_get_character_api($query);
+  $characters = eve_api_get_api_key_info_api($query);
 
   if (isset($characters['error'])) {
     form_set_error('keyID', t('There was an error with the API.'));

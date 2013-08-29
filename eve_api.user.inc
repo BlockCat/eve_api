@@ -89,7 +89,7 @@ function eve_api_user_add_api_form_validate($form, &$form_state) {
     'vCode' => $v_code,
   );
 
-  $characters = eve_api_get_character_api($query);
+  $characters = eve_api_get_api_key_info_api($query);
 
   if (isset($characters['error'])) {
     form_set_error('keyID', t('There was an error with the API.'));
@@ -476,7 +476,7 @@ function eve_api_user_update_api_form_validate($form, &$form_state) {
     'vCode' => $v_code,
   );
 
-  $characters = eve_api_get_character_api($query);
+  $characters = eve_api_get_api_key_info_api($query);
 
   if (isset($characters['error'])) {
     form_set_error('keyID', t('There was an error with the API.'));

@@ -356,7 +356,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
         }
 
         $query = array('corporationID' => (int) $row_b->corporationID);
-        $corp_info = eve_api_get_corporation_info($query);
+        $corp_info = eve_api_get_corporation_sheet_api($query);
 
         if (isset($corp_info['error'])) {
           db_update('eve_api_alliance_corporations')->fields(array('checked' => 0))->condition('corporationID', (int) $row_b->corporationID, '=')->execute();
@@ -479,7 +479,7 @@ function eve_api_cron_api_skill_tree($item = NULL) {
     return FALSE;
   }
 
-  $api_data = eve_api_get_skill_tree();
+  $api_data = eve_api_get_skill_tree_api();
 
   if (isset($api_data['error'])) {
     watchdog('eve_api', 'Failed getting Skill Tree API Data. Error: ' . (int) $api_data['error'], NULL, WATCHDOG_WARNING);

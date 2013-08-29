@@ -427,6 +427,77 @@ function eve_api_schema() {
     'indexes' => array('characterID' => array('characterID')),
   );
 
+  $schema['eve_api_skill_training'] = array(
+    'description' => 'This table holds all the skills the characters are currently training.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'The unique Character ID associated with the EVE Character.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'trainingEndTime' => array(
+        'description' => 'The time until the training completes.',
+        'type' => 'datetime',
+        'mysql_type' => 'DATETIME',
+        'pgsql_type' => 'timestamp without time zone',
+        'sqlite_type' => 'VARCHAR',
+        'sqlsrv_type' => 'smalldatetime',
+        'not null' => FALSE,
+        'sortable' => TRUE,
+        'views' => TRUE,
+      ),
+      'trainingStartTime' => array(
+        'description' => 'The time when the training started.',
+        'type' => 'datetime',
+        'mysql_type' => 'DATETIME',
+        'pgsql_type' => 'timestamp without time zone',
+        'sqlite_type' => 'VARCHAR',
+        'sqlsrv_type' => 'smalldatetime',
+        'not null' => FALSE,
+        'sortable' => TRUE,
+        'views' => TRUE,
+      ),
+      'trainingTypeID' => array(
+        'description' => 'The EVE Character skills skill type.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'trainingStartSP' => array(
+        'description' => 'The training skill starting skill points.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'trainingDestinationSP' => array(
+        'description' => 'The training skill completed skill points.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'trainingToLevel' => array(
+        'description' => 'The level of the skill being trained.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'skillInTraining' => array(
+        'description' => 'Indicates if the EVE Character is training.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+      'errorID' => array(
+        'description' => 'Error code to identify any problems with a registered characters.',
+        'type' => 'int',
+        'not null' => FALSE,
+        'default' => 0,
+      ),
+    ),
+    'unique keys' => array('characterID' => array('characterID')),
+    'primary key' => array('characterID'),
+  );
+
   $schema['eve_api_character_sheet_attribute_enhancers'] = array(
     'description' => 'This table holds all the attribute enhancers for each character.',
     'fields' => array(

@@ -59,6 +59,10 @@ function eve_api_get_xml($type, $query = array()) {
       $url .= "/eve/SkillTree.xml.aspx";
       break;
 
+    case 'SkillInTraining':
+      $url .= "/char/SkillInTraining.xml.aspx";
+      break;
+
     default:
     case 'APIKeyInfo':
       $url .= "/account/APIKeyInfo.xml.aspx";
@@ -522,11 +526,15 @@ function eve_api_get_character_info($character_name) {
   $result = db_query('SELECT c.uid, c.deleted, c.errorID, c.apiID, c.characterName, c.characterID, c.corporationName, c.corporationID, c.corporationTicker, c.allianceID, c.allianceName, c.allianceTicker,
     cs.DoB, cs.race, cs.bloodLine, cs.ancestry, cs.gender, cs.cloneName, cs.cloneSkillPoints, cs.balance, cs.intelligence, cs.memory, cs.charisma, cs.perception, cs.willpower,
     ci.skillPoints, ci.shipName, ci.shipTypeID, ci.shipTypeName, ci.corporationDate, ci.allianceDate, ci.lastKnownLocation, ci.securityStatus,
+    st.trainingEndTime, st.trainingStartTime, st.trainingTypeID AS typeID, st.trainingStartSP, st.trainingDestinationSP, st.trainingToLevel, st.skillInTraining,
+    sts.typeName,
     GROUP_CONCAT( DISTINCT CONCAT(csae.bonusName, \'~\', csae.augmentatorValue) SEPARATOR \'|\') AS bonusName,
     GROUP_CONCAT( DISTINCT CONCAT(\'recordID!\', cich.recordID, \'~\', \'corporationID!\', cich.corporationID, \'~\', \'startDate!\', cich.startDate) SEPARATOR \'|\') AS history
     FROM {eve_api_characters} c
+    INNER JOIN {eve_api_skill_training} st ON st.characterID = c.characterID
     INNER JOIN {eve_api_character_sheet} cs ON cs.characterID = c.characterID
     INNER JOIN {eve_api_character_info} ci ON ci.characterID = c.characterID
+    INNER JOIN {eve_api_sheet_types} sts ON sts.typeID = st.trainingTypeID
     LEFT JOIN {eve_api_character_sheet_attribute_enhancers} csae on csae.characterID = c.characterID
     LEFT JOIN {eve_api_character_info_corporation_history} cich on cich.characterID = c.characterID
     WHERE c.characterName = :characterName', array(
@@ -632,11 +640,11 @@ function eve_api_get_character_skills($character_id) {
  * @return array
  *   A complex array of multiple character information.
  */
-function eve_api_get_character_api($query) {
+function eve_api_get_api_key_info_api($query) {
   $xml = eve_api_get_xml('APIKeyInfo', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting Character API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
+    watchdog('eve_api', 'Failed getting API Key Info API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
     return array('error' => (int) $xml);
   }
 
@@ -654,7 +662,7 @@ function eve_api_get_character_api($query) {
     $row = $rows->attributes();
 
     $query = array('corporationID' => (int) $row->corporationID);
-    $corp_info = eve_api_get_corporation_info($query);
+    $corp_info = eve_api_get_corporation_sheet_api($query);
 
     if (isset($corp_info['error'])) {
       return array('error' => $corp_info);
@@ -667,6 +675,36 @@ function eve_api_get_character_api($query) {
         'corporationID' => (int) $row->corporationID,
       ), $corp_info);
     }
+  }
+
+  return $api_data;
+}
+
+/**
+ * Function to retrieve a single characters skills in training.
+ *
+ * @param array $query
+ *   The URL variables to pass through the URL.
+ *
+ * @return array
+ *   A complex array of character information.
+ */
+function eve_api_get_skill_in_training_api($query) {
+  $xml = eve_api_get_xml('SkillInTraining', $query);
+
+  if (!isset($xml->cachedUntil)) {
+    watchdog('eve_api', 'Failed getting Skil in Training API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
+    return array('error' => (int) $xml);
+  }
+
+  $api_data = array();
+
+  if (isset($xml->errorCode)) {
+    $api_data['errorCode'] = (int) $xml->errorCode;
+  }
+
+  foreach ($xml->result->children() as $result) {
+    $api_data['info'][(string) $result->getName()] = (string) $result;
   }
 
   return $api_data;
@@ -809,7 +847,7 @@ function eve_api_get_character_sheet_api($query) {
  * @return array
  *   A complex array of skill definitions.
  */
-function eve_api_get_skill_tree() {
+function eve_api_get_skill_tree_api() {
   $xml = eve_api_get_xml('SkillTree');
 
   if (!isset($xml->cachedUntil)) {
@@ -872,11 +910,11 @@ function eve_api_get_alliance_ticker($alliance_id) {
  * @return array
  *   A complex array of corporate information.
  */
-function eve_api_get_corporation_info($query) {
+function eve_api_get_corporation_sheet_api($query) {
   $xml = eve_api_get_xml('CorporationSheet', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting Corporation API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
+    watchdog('eve_api', 'Failed getting Corporation Sheet API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
     return array('error' => $xml);
   }
 
@@ -907,7 +945,7 @@ function eve_api_get_corporation_info($query) {
  * @return array
  *   A simple array containing unique name and ID information.
  */
-function eve_api_get_unique_id($query) {
+function eve_api_get_character_id_api($query) {
   $xml = eve_api_get_xml('CharacterID', $query);
 
   if (!isset($xml->cachedUntil)) {
@@ -943,7 +981,7 @@ function eve_api_get_unique_id($query) {
  * @return array
  *   A simple array containing unique name and ID information.
  */
-function eve_api_get_character_name($query) {
+function eve_api_get_character_name_api($query) {
   $xml = eve_api_get_xml('CharacterName', $query);
 
   if (!isset($xml->cachedUntil)) {
@@ -1338,7 +1376,7 @@ function eve_api_list_api_simple($uid) {
 }
 
 /**
- * Function that retrieves a simple list of API's associated with a user id.
+ * Function that inserts a new API Key.
  *
  * @param object $account
  *   A Drupal user object containing.
@@ -1362,7 +1400,7 @@ function eve_api_create_key($account, $key_id, $v_code) {
     'vCode' => $v_code,
   );
 
-  $characters = eve_api_get_character_api($query);
+  $characters = eve_api_get_api_key_info_api($query);
 
   $error = 0;
 
@@ -1446,7 +1484,7 @@ function eve_api_create_key($account, $key_id, $v_code) {
 }
 
 /**
- * Function that retrieves a simple list of API's associated with a user id.
+ * Function that modifys an existing API Key.
  *
  * @param object $account
  *   A Drupal user object containing.
@@ -1473,7 +1511,7 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
     'vCode' => $v_code,
   );
 
-  $characters = eve_api_get_character_api($query);
+  $characters = eve_api_get_api_key_info_api($query);
 
   $error = 0;
 
@@ -1606,7 +1644,7 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
 }
 
 /**
- * Function that retrieves a simple list of API's associated with a user id.
+ * Function that verifies and updates all characters on an API Key.
  *
  * @param object $account
  *   A Drupal user object containing.
@@ -1633,7 +1671,7 @@ function eve_api_update_key($account, $key_id, $v_code, $api_id) {
     'vCode' => $v_code,
   );
 
-  $characters = eve_api_get_character_api($query);
+  $characters = eve_api_get_api_key_info_api($query);
 
   $error = 0;
 
@@ -1756,6 +1794,46 @@ function eve_api_update_key($account, $key_id, $v_code, $api_id) {
       $character_data = $character;
     }
 
+    eve_api_import_character_sheet($query, $character);
+    eve_api_import_character_info($query, $character);
+
+    if (($characters['accessMask'] & 131072) == 131072) {
+      eve_api_import_skill_in_training($query, $character);
+    }
+
+    if (($characters['accessMask'] & 2097152) == 2097152) {
+      // Wallet Journal.
+      // eve_api_import_skill_in_training($query, $character);
+    }
+
+    if (($characters['accessMask'] & 2048) == 2048 && ($characters['accessMask'] & 512) == 512) {
+      // Mail.
+      // eve_api_import_skill_in_training($query, $character);
+    }
+
+    if (($characters['accessMask'] & 67108864) == 67108864) {
+      // Contracts.
+      // eve_api_import_skill_in_training($query, $character);
+    }
+  }
+
+  return array(
+    'error' => FALSE,
+    'error_found' => $error_found,
+    'character_data' => $character_data,
+    'character_found' => $character_found,
+  );
+}
+
+/**
+ * Function that imports the character sheet of a single character.
+ *
+ * @param array $query
+ *   The API Key and vCode being imported.
+ * @param array $character
+ *   The data of the character being imported.
+ */
+function eve_api_import_character_sheet($query, $character) {
     $sheet_query = $query + array('characterID' => (int) $character['characterID']);
     $character_sheet = eve_api_get_character_sheet_api($sheet_query);
     $error = 0;
@@ -1773,130 +1851,139 @@ function eve_api_update_key($account, $key_id, $v_code, $api_id) {
         'characterID' => (int) $character['characterID'],
         'errorID' => (int) $error,
       ))->execute();
-      continue;
     }
     else {
       db_delete('eve_api_character_sheet_attribute_enhancers')->condition('characterID', (int) $character['characterID'], '=')->execute();
       db_delete('eve_api_character_roles')->condition('characterID', (int) $character['characterID'], '=')->execute();
       db_delete('eve_api_character_sheet_titles')->condition('characterID', (int) $character['characterID'], '=')->execute();
-    }
 
-    foreach ($character_sheet as $type => $data) {
-      switch ((string) $type) {
-        case 'skills':
-          foreach ($data as $skillsdata) {
-            db_merge('eve_api_character_sheet_skills')->key(array(
-              'characterID' => (int) $character['characterID'],
-              'typeID' => (int) $skillsdata['typeID'],
-            ))->fields(array(
-              'characterID' => (int) $character['characterID'],
-              'typeID' => (int) $skillsdata['typeID'],
-              'skillpoints' => (int) $skillsdata['skillpoints'],
-              'level' => (int) $skillsdata['level'],
-              'published' => (int) $skillsdata['published'],
-            ))->execute();
-          }
-          break;
-
-        case 'certificates':
-          foreach ($data as $certificatesdata) {
-            db_merge('eve_api_character_sheet_certificates')->key(array(
-              'characterID' => (int) $character['characterID'],
-              'certificateID' => (int) $certificatesdata['certificateID'],
-            ))->fields(array(
-              'characterID' => (int) $character['characterID'],
-              'certificateID' => (int) $certificatesdata['certificateID'],
-            ))->execute();
-          }
-          break;
-
-        case 'corporationTitles':
-          foreach ($data as $titlesdata) {
-            db_merge('eve_api_character_sheet_titles')->key(array(
-              'characterID' => (int) $character['characterID'],
-              'titleID' => (int) $titlesdata['titleID'],
-            ))->fields(array(
-              'characterID' => (int) $character['characterID'],
-              'titleID' => (int) $titlesdata['titleID'],
-              'titleName' => (int) $titlesdata['titleName'],
-            ))->execute();
-          }
-          break;
-
-        case 'roles':
-          foreach ($data as $rolename => $roledata) {
-            foreach ($roledata as $roles) {
-              db_merge('eve_api_character_roles')->key(array(
+      foreach ($character_sheet as $type => $data) {
+        switch ((string) $type) {
+          case 'skills':
+            foreach ($data as $skillsdata) {
+              db_merge('eve_api_character_sheet_skills')->key(array(
                 'characterID' => (int) $character['characterID'],
-                'type' => (string) $rolename,
-                'roleID' => (int) $roles['roleID'],
+                'typeID' => (int) $skillsdata['typeID'],
               ))->fields(array(
                 'characterID' => (int) $character['characterID'],
-                'type' => (string) $rolename,
-                'roleID' => (int) $roles['roleID'],
-                'roleName' => (string) $roles['roleName'],
+                'typeID' => (int) $skillsdata['typeID'],
+                'skillpoints' => (int) $skillsdata['skillpoints'],
+                'level' => (int) $skillsdata['level'],
+                'published' => (int) $skillsdata['published'],
               ))->execute();
             }
-          }
-          break;
+            break;
 
-        case 'attributeEnhancers':
-          foreach ($data as $attributename => $attributedata) {
-            $query_data = db_insert('eve_api_character_sheet_attribute_enhancers');
+          case 'certificates':
+            foreach ($data as $certificatesdata) {
+              db_merge('eve_api_character_sheet_certificates')->key(array(
+                'characterID' => (int) $character['characterID'],
+                'certificateID' => (int) $certificatesdata['certificateID'],
+              ))->fields(array(
+                'characterID' => (int) $character['characterID'],
+                'certificateID' => (int) $certificatesdata['certificateID'],
+              ))->execute();
+            }
+            break;
+
+          case 'corporationTitles':
+            foreach ($data as $titlesdata) {
+              db_merge('eve_api_character_sheet_titles')->key(array(
+                'characterID' => (int) $character['characterID'],
+                'titleID' => (int) $titlesdata['titleID'],
+              ))->fields(array(
+                'characterID' => (int) $character['characterID'],
+                'titleID' => (int) $titlesdata['titleID'],
+                'titleName' => (int) $titlesdata['titleName'],
+              ))->execute();
+            }
+            break;
+
+          case 'roles':
+            foreach ($data as $rolename => $roledata) {
+              foreach ($roledata as $roles) {
+                db_merge('eve_api_character_roles')->key(array(
+                  'characterID' => (int) $character['characterID'],
+                  'type' => (string) $rolename,
+                  'roleID' => (int) $roles['roleID'],
+                ))->fields(array(
+                  'characterID' => (int) $character['characterID'],
+                  'type' => (string) $rolename,
+                  'roleID' => (int) $roles['roleID'],
+                  'roleName' => (string) $roles['roleName'],
+                ))->execute();
+              }
+            }
+            break;
+
+          case 'attributeEnhancers':
+            foreach ($data as $attributename => $attributedata) {
+              $query_data = db_insert('eve_api_character_sheet_attribute_enhancers');
+
+              $fields = array(
+                'characterID' => (int) $character['characterID'],
+                'bonusName' => (string) $attributename,
+              );
+
+              foreach ($attributedata as $attribute => $attributes) {
+                $fields += array(
+                  (string) $attribute => (string) $attributes,
+                );
+              }
+
+              $query_data->fields($fields);
+              $query_data->execute();
+            }
+            break;
+
+          case 'info':
+            $query_data = db_merge('eve_api_character_sheet')->key(array(
+              'characterID' => (int) $character['characterID'],
+            ));
 
             $fields = array(
               'characterID' => (int) $character['characterID'],
-              'bonusName' => (string) $attributename,
+              'errorID' => (int) $error,
             );
 
-            foreach ($attributedata as $attribute => $attributes) {
+            $ignored = array(
+              'corporationName',
+              'corporationID',
+              'allianceName',
+              'allianceID',
+              'name',
+            );
+
+            foreach ($data as $infoname => $infodata) {
+              if (in_array($infoname, $ignored)) {
+                continue;
+              }
+
               $fields += array(
-                (string) $attribute => (string) $attributes,
+                (string) $infoname => (string) $infodata,
               );
             }
 
             $query_data->fields($fields);
             $query_data->execute();
-          }
-          break;
+            break;
 
-        case 'info':
-          $query_data = db_merge('eve_api_character_sheet')->key(array(
-            'characterID' => (int) $character['characterID'],
-          ));
-
-          $fields = array(
-            'characterID' => (int) $character['characterID'],
-            'errorID' => (int) $error,
-          );
-
-          $ignored = array(
-            'corporationName',
-            'corporationID',
-            'allianceName',
-            'allianceID',
-            'name',
-          );
-
-          foreach ($data as $infoname => $infodata) {
-            if (in_array($infoname, $ignored)) {
-              continue;
-            }
-
-            $fields += array(
-              (string) $infoname => (string) $infodata,
-            );
-          }
-
-          $query_data->fields($fields);
-          $query_data->execute();
-          break;
-
-        default:
-          break;
+          default:
+            break;
+        }
       }
     }
+}
 
+/**
+ * Function that imports the character info of a single character.
+ *
+ * @param array $query
+ *   The API Key and vCode being imported.
+ * @param array $character
+ *   The data of the character being imported.
+ */
+function eve_api_import_character_info($query, $character) {
     $info_query = $query + array('characterID' => (int) $character['characterID']);
     $character_info = eve_api_get_character_info_api($info_query);
     $error = 0;
@@ -1914,30 +2001,93 @@ function eve_api_update_key($account, $key_id, $v_code, $api_id) {
         'characterID' => (int) $character['characterID'],
         'errorID' => (int) $error,
       ))->execute();
-      continue;
     }
     else {
       db_delete('eve_api_character_info_corporation_history')->condition('characterID', (int) $character['characterID'], '=')->execute();
-    }
 
+      foreach ($character_info as $type => $data) {
+        switch ((string) $type) {
+          case 'employmentHistory':
+            foreach ($data as $historydata) {
+              db_merge('eve_api_character_info_corporation_history')->key(array(
+                'characterID' => (int) $character['characterID'],
+                'recordID' => (int) $historydata['recordID'],
+              ))->fields(array(
+                'characterID' => (int) $character['characterID'],
+                'recordID' => (int) $historydata['recordID'],
+                'corporationID' => (int) $historydata['corporationID'],
+                'startDate' => (string) $historydata['startDate'],
+              ))->execute();
+            }
+            break;
+
+          case 'info':
+            $query_data = db_merge('eve_api_character_info')->key(array(
+              'characterID' => (int) $character['characterID'],
+            ));
+
+            $fields = array(
+              'characterID' => (int) $character['characterID'],
+              'errorID' => (int) $error,
+            );
+
+            $ignored = array(
+              'characterID',
+            );
+
+            foreach ($data as $infoname => $infodata) {
+              if (in_array($infoname, $ignored)) {
+                continue;
+              }
+
+              $fields += array(
+                (string) $infoname => (string) $infodata,
+              );
+            }
+
+            $query_data->fields($fields);
+            $query_data->execute();
+            break;
+
+          default:
+            break;
+        }
+      }
+    }
+}
+
+/**
+ * Function that imports the skills being trained of a single character.
+ *
+ * @param array $query
+ *   The API Key and vCode being imported.
+ * @param array $character
+ *   The data of the character being imported.
+ */
+function eve_api_import_skill_in_training($query, $character) {
+  $training_query = $query + array('characterID' => (int) $character['characterID']);
+  $training_info = eve_api_get_skill_in_training_api($training_query);
+  $error = 0;
+
+  if (isset($training_info['errorCode'])) {
+    $error = (int) $training_info['errorCode'];
+  }
+
+  if (isset($training_info['error'])) {
+    $error = (int) $training_info['error'];
+
+    db_merge('eve_api_skill_training')->key(array(
+      'characterID' => (int) $character['characterID'],
+    ))->fields(array(
+      'characterID' => (int) $character['characterID'],
+      'errorID' => (int) $error,
+    ))->execute();
+  }
+  else {
     foreach ($character_info as $type => $data) {
       switch ((string) $type) {
-        case 'employmentHistory':
-          foreach ($data as $historydata) {
-            db_merge('eve_api_character_info_corporation_history')->key(array(
-              'characterID' => (int) $character['characterID'],
-              'recordID' => (int) $historydata['recordID'],
-            ))->fields(array(
-              'characterID' => (int) $character['characterID'],
-              'recordID' => (int) $historydata['recordID'],
-              'corporationID' => (int) $historydata['corporationID'],
-              'startDate' => (string) $historydata['startDate'],
-            ))->execute();
-          }
-          break;
-
         case 'info':
-          $query_data = db_merge('eve_api_character_info')->key(array(
+          $query_data = db_merge('eve_api_skill_training')->key(array(
             'characterID' => (int) $character['characterID'],
           ));
 
@@ -1947,7 +2097,7 @@ function eve_api_update_key($account, $key_id, $v_code, $api_id) {
           );
 
           $ignored = array(
-            'characterID',
+            'currentTQTime',
           );
 
           foreach ($data as $infoname => $infodata) {
@@ -1969,11 +2119,4 @@ function eve_api_update_key($account, $key_id, $v_code, $api_id) {
       }
     }
   }
-
-  return array(
-    'error' => FALSE,
-    'error_found' => $error_found,
-    'character_data' => $character_data,
-    'character_found' => $character_found,
-  );
 }
