@@ -537,10 +537,8 @@ function eve_api_cron_api_skill_tree($item = NULL) {
 /**
  * Cron that imports the character sheet of a single character.
  *
- * @param array $query
- *   The API Key and vCode being imported.
- * @param array $character
- *   The data of the character being imported.
+ * @param array $item
+ *   The characterID and API Key and vCode.
  */
 function eve_api_cron_import_character_sheet($item) {
   $character_id = (int) $item['characterID'];
@@ -694,10 +692,8 @@ function eve_api_cron_import_character_sheet($item) {
 /**
  * Cron that imports the character info of a single character.
  *
- * @param array $query
- *   The API Key and vCode being imported.
- * @param array $character
- *   The data of the character being imported.
+ * @param array $item
+ *   The characterID and API Key and vCode.
  */
 function eve_api_cron_import_character_info($item) {
   $character_id = (int) $item['characterID'];
@@ -782,10 +778,8 @@ function eve_api_cron_import_character_info($item) {
 /**
  * Cron that imports the skills being trained of a single character.
  *
- * @param array $query
- *   The API Key and vCode being imported.
- * @param array $character
- *   The data of the character being imported.
+ * @param array $item
+ *   The characterID and API Key and vCode.
  */
 function eve_api_cron_import_skill_in_training($item) {
   $character_id = (int) $item['characterID'];
@@ -854,10 +848,8 @@ function eve_api_cron_import_skill_in_training($item) {
 /**
  * Cron that imports the wallet journal of a single character.
  *
- * @param array $query
- *   The API Key and vCode being imported.
- * @param array $character
- *   The data of the character being imported.
+ * @param array $item
+ *   The characterID and API Key and vCode.
  */
 function eve_api_cron_import_wallet_journal($item) {
   $character_id = (int) $item['characterID'];
@@ -886,7 +878,6 @@ function eve_api_cron_import_wallet_journal($item) {
 
   do {
     $wallet_info = eve_api_get_wallet_journal_api($wallet_query);
-    $error = 0;
 
     if (isset($wallet_info['error'])) {
       return FALSE;
@@ -946,7 +937,7 @@ function eve_api_cron_import_wallet_journal($item) {
         'fromID' => $from_id,
       ) + $wallet_query;
     }
-  } while($counter--);
+  } while ($counter--);
 
   return TRUE;
 }
@@ -954,10 +945,8 @@ function eve_api_cron_import_wallet_journal($item) {
 /**
  * Cron that imports the contracts of a single character.
  *
- * @param array $query
- *   The API Key and vCode being imported.
- * @param array $character
- *   The data of the character being imported.
+ * @param array $item
+ *   The characterID and API Key and vCode.
  */
 function eve_api_cron_import_contracts($item) {
   $character_id = (int) $item['characterID'];
@@ -968,7 +957,6 @@ function eve_api_cron_import_contracts($item) {
   );
 
   $contract_info = eve_api_get_contracts_api($contract_query);
-  $error = 0;
 
   if (isset($contract_info['error'])) {
     return FALSE;
@@ -1025,10 +1013,8 @@ function eve_api_cron_import_contracts($item) {
 /**
  * Cron that imports the mail of a single character.
  *
- * @param array $query
- *   The API Key and vCode being imported.
- * @param array $character
- *   The data of the character being imported.
+ * @param array $item
+ *   The characterID and API Key and vCode.
  */
 function eve_api_cron_import_mail($item) {
   $character_id = (int) $item['characterID'];
@@ -1054,7 +1040,6 @@ function eve_api_cron_import_mail($item) {
 
   do {
     $mail_info = eve_api_get_mail_messages_api($mail_query);
-    $error = 0;
 
     if (isset($mail_info['error'])) {
       return FALSE;
@@ -1145,7 +1130,7 @@ function eve_api_cron_import_mail($item) {
         break;
       }
     }
-  } while($counter--);
+  } while ($counter--);
 
   return TRUE;
 }

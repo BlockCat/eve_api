@@ -667,7 +667,7 @@ function eve_api_admin_list_blues_form($form, &$form_state) {
         'contactName' => check_plain($row->contactName),
         'standing' => check_plain($row->standing),
         'manual' => ($row->manual) ? t('Yes') : t('No'),
-        'action' =>  l(t('Edit'), 'admin/eve_api/list_blues/edit_blue/' . $row->contactID),
+        'action' => l(t('Edit'), 'admin/eve_api/list_blues/edit_blue/' . $row->contactID),
         'memo' => check_plain($row->memo),
       );
     }
@@ -1065,7 +1065,7 @@ function eve_api_admin_list_corporations_form($form, &$form_state) {
       $options[$row->corporationID] = array(
         'corporationName' => check_plain($row->corporationName),
         'manual' => ($row->manual) ? t('Yes') : t('No'),
-        'action' =>  l(t('Edit'), 'admin/eve_api/list_corporations/edit_corporation/' . $row->corporationID),
+        'action' => l(t('Edit'), 'admin/eve_api/list_corporations/edit_corporation/' . $row->corporationID),
         'memo' => check_plain($row->memo),
       );
     }

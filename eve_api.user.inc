@@ -518,9 +518,9 @@ function eve_api_user_update_api_form_validate($form, &$form_state) {
  * @see eve_api_user_update_api_form_validate()
  */
 function eve_api_user_update_api_form_submit($form, &$form_state) {
-  $form_state['redirect'] = 'user/' . $uid . '/eve_api';
   $account = $form_state['user'];
   $uid = (int) $account->uid;
+  $form_state['redirect'] = 'user/' . $uid . '/eve_api';
   $key_id = (int) $form_state['values']['keyID'];
   $v_code = (string) $form_state['values']['vCode'];
   $api_id = (int) $form_state['apiID'];
