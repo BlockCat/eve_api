@@ -22,7 +22,7 @@ function eve_api_user_add_api_form($form, &$form_state, $account) {
 
   $form['enter_api'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Verify Blue Status'),
+    '#title' => t('Add API Key'),
     '#description' => t('Please enter your EVE API in order to add it to your existing account.  A Full API is required for registration. Please ensure that the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'),
     '#weight' => 0,
   );
@@ -436,7 +436,6 @@ function eve_api_user_update_api_form($form, &$form_state, $account, $api_id) {
   );
 
   $form_state['apiID'] = $api_id;
-  $form_state['redirect'] = 'user/' . $uid . '/eve_api';
   $form['#validate'] = array('eve_api_user_update_api_form_validate');
   $form['#submit'] = array('eve_api_user_update_api_form_submit');
 
@@ -519,6 +518,7 @@ function eve_api_user_update_api_form_validate($form, &$form_state) {
  * @see eve_api_user_update_api_form_validate()
  */
 function eve_api_user_update_api_form_submit($form, &$form_state) {
+  $form_state['redirect'] = 'user/' . $uid . '/eve_api';
   $account = $form_state['user'];
   $uid = (int) $account->uid;
   $key_id = (int) $form_state['values']['keyID'];

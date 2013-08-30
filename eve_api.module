@@ -121,17 +121,39 @@ function eve_api_menu() {
       'type' => MENU_LOCAL_ACTION,
     ) + $admin_base;
 
+    $items['admin/eve_api/list_corporations/edit_corporation/%'] = array(
+      'title' => 'Edit Alliance Corporation',
+      'description' => 'Edit the memo for an existing Alliance Corporation.',
+      'page arguments' => array(
+        'eve_api_admin_edit_corporation_form',
+        4,
+      ),
+      'context' => MENU_CONTEXT_INLINE,
+      'type' => MENU_LOCAL_ACTION,
+    ) + $admin_base;
+
     $items['admin/eve_api/list_blues'] = array(
-      'title' => 'Blues',
-      'description' => 'Edit Blue standings.',
+      'title' => 'Blue Standings',
+      'description' => 'Edit Blue Standings.',
       'page arguments' => array('eve_api_admin_list_blues_form'),
       'weight' => 40,
     ) + $admin_base;
 
     $items['admin/eve_api/list_blues/add_blue'] = array(
-      'title' => 'Add Blue',
-      'description' => 'Add a new Blue standing.',
+      'title' => 'Add Blue Standing',
+      'description' => 'Add a new Blue Standing.',
       'page arguments' => array('eve_api_admin_add_blue_form'),
+      'type' => MENU_LOCAL_ACTION,
+    ) + $admin_base;
+
+    $items['admin/eve_api/list_blues/edit_blue/%'] = array(
+      'title' => 'Edit Blue Standing',
+      'description' => 'Edit the memo for an existing Blue Standing.',
+      'page arguments' => array(
+        'eve_api_admin_edit_blue_form',
+        4,
+      ),
+      'context' => MENU_CONTEXT_INLINE,
       'type' => MENU_LOCAL_ACTION,
     ) + $admin_base;
 
@@ -509,7 +531,7 @@ function eve_api_user_profile_form_validate($form, &$form_state) {
   $uid = $account->uid;
 
   $character_name = (string) $form_state['values']['name'];
-  $character_data = eve_api_get_character_info($character_name);
+  $character_data = eve_api_get_basic_character_info($character_name);
 
   if ($character_data === FALSE || $character_data['uid'] != $uid) {
     $form_state['values']['name'] = $account->name;
@@ -525,7 +547,7 @@ function eve_api_user_profile_form_validate($form, &$form_state) {
  */
 function eve_api_user_profile_form_submit($form, &$form_state) {
   $account = $form_state['user'];
-  $character_data = $form_state['character_data'];
+  $character_data = (array) $form_state['character_data'];
   $uid = (int) $account->uid;
 
   if (((string) $form_state['characterName'] == (string) $form_state['values']['name'] && $account->characterID != 0) || $character_data === FALSE || $character_data['uid'] != $uid || $character_data['deleted'] == 1) {
@@ -533,7 +555,7 @@ function eve_api_user_profile_form_submit($form, &$form_state) {
   }
 
   $old_character_name = (string) $form_state['characterName'];
-  $old_character_data = eve_api_get_character_info($old_character_name);
+  $old_character_data = eve_api_get_basic_character_info($old_character_name);
 
   if ($corporation_role = user_role_load_by_name($old_character_data['corporationName'])) {
     user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
@@ -555,7 +577,7 @@ function eve_api_user_profile_form_submit($form, &$form_state) {
   user_multiple_role_edit(array($uid), 'remove_role', $default_role->rid);
 
   $character_name = (string) $form_state['values']['name'];
-  $character_data = eve_api_get_character_info($character_name);
+  $character_data = eve_api_get_basic_character_info($character_name);
 
   $character_is_blue = eve_api_verify_blue($character_data);
 

@@ -1414,6 +1414,24 @@ function eve_api_install() {
 
   $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
   $queue->createQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_character_sheet');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_character_info');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_skill_in_training');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_wallet_journal');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_mail');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_contracts');
+  $queue->createQueue();
 }
 
 /**
@@ -1469,6 +1487,24 @@ function eve_api_uninstall() {
   $queue->deleteQueue();
 
   $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_character_sheet');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_character_info');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_skill_in_training');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_wallet_journal');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_mail');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_contracts');
   $queue->deleteQueue();
 }
 

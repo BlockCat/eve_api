@@ -61,7 +61,7 @@ function eve_api_teamspeak_format_name($character_name) {
   // @alliance = Alliance Ticker.
   $teamspeak_name = variable_get('eve_api_teamspeak_nickname', '[@corp] @name');
 
-  $character_data = eve_api_get_character_info($character_name);
+  $character_data = eve_api_get_basic_character_info($character_name);
 
   $teamspeak_name = str_replace('@alliance', $character_data['allianceTicker'], $teamspeak_name);
   $teamspeak_name = str_replace('@corp', $character_data['corporationTicker'], $teamspeak_name);

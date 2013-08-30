@@ -9,7 +9,7 @@
  */
 function eve_api_userlist_user_userlist_page($id = NULL) {
   $account = $GLOBALS['user'];
-  $character_data = eve_api_get_character_info($account->name);
+  $character_data = eve_api_get_basic_character_info($account->name);
   $is_director = eve_api_character_is_director($account->characterID, $character_data['corporationID']);
   $is_good = user_access('moderate eve_api users');
 

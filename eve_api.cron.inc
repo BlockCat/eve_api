@@ -73,11 +73,11 @@ function eve_api_cron_queue_info() {
   );
   $queue['eve_api_cron_api_alliance_fetch'] = array(
     'worker callback' => 'eve_api_cron_api_alliance_fetch',
-    'time' => 15,
+    'time' => 60,
   );
   $queue['eve_api_cron_api_mask_sync'] = array(
     'worker callback' => 'eve_api_cron_api_mask_sync',
-    'time' => 15,
+    'time' => 60,
   );
   $queue['eve_api_cron_api_alliance_sync'] = array(
     'worker callback' => 'eve_api_cron_api_alliance_sync',
@@ -85,6 +85,30 @@ function eve_api_cron_queue_info() {
   );
   $queue['eve_api_cron_api_skill_tree'] = array(
     'worker callback' => 'eve_api_cron_api_skill_tree',
+    'time' => 60,
+  );
+  $queue['eve_api_cron_import_character_sheet'] = array(
+    'worker callback' => 'eve_api_cron_import_character_sheet',
+    'time' => 60,
+  );
+  $queue['eve_api_cron_import_character_info'] = array(
+    'worker callback' => 'eve_api_cron_import_character_info',
+    'time' => 60,
+  );
+  $queue['eve_api_cron_import_skill_in_training'] = array(
+    'worker callback' => 'eve_api_cron_import_skill_in_training',
+    'time' => 60,
+  );
+  $queue['eve_api_cron_import_wallet_journal'] = array(
+    'worker callback' => 'eve_api_cron_import_wallet_journal',
+    'time' => 60,
+  );
+  $queue['eve_api_cron_import_contracts'] = array(
+    'worker callback' => 'eve_api_cron_import_contracts',
+    'time' => 60,
+  );
+  $queue['eve_api_cron_import_mail'] = array(
+    'worker callback' => 'eve_api_cron_import_mail',
     'time' => 60,
   );
   return $queue;
@@ -134,7 +158,7 @@ function eve_api_cron_api_user_sync($item) {
     return FALSE;
   }
 
-  $character_data = eve_api_get_character_info($account->name);
+  $character_data = eve_api_get_basic_character_info($account->name);
 
   if (!eve_api_verify_blue($character_data) || !$character_found) {
     $result = db_query('SELECT corporationID, corporationName FROM {eve_api_alliance_corporations}');
@@ -293,7 +317,6 @@ function eve_api_cron_api_alliance_fetch($item = NULL) {
         'standing' => (float) $row->standing,
         'manual' => 0,
         'checked' => 0,
-        'memo' => 'Created via CRON Task.',
       ))->execute();
     }
   }
@@ -383,7 +406,6 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
           'ceoName' => (string) $corp_info['ceoName'],
           'checked' => 0,
           'manual' => 0,
-          'memo' => 'Created via CRON Task.',
         ))->execute();
       }
     }
@@ -508,6 +530,622 @@ function eve_api_cron_api_skill_tree($item = NULL) {
       'typeName' => (string) $rows['typeName'],
     ))->execute();
   }
+
+  return TRUE;
+}
+
+/**
+ * Cron that imports the character sheet of a single character.
+ *
+ * @param array $query
+ *   The API Key and vCode being imported.
+ * @param array $character
+ *   The data of the character being imported.
+ */
+function eve_api_cron_import_character_sheet($item) {
+  $character_id = (int) $item['characterID'];
+  $query = (array) $item['query'];
+
+  $sheet_query = $query + array('characterID' => (int) $character_id);
+  $character_sheet = eve_api_get_character_sheet_api($sheet_query);
+  $error = 0;
+
+  if (isset($character_sheet['errorCode'])) {
+    $error = (int) $character_sheet['errorCode'];
+  }
+
+  if (isset($character_sheet['error'])) {
+    $error = (int) $character_sheet['error'];
+
+    db_merge('eve_api_character_sheet')->key(array(
+      'characterID' => (int) $character_id,
+    ))->fields(array(
+      'characterID' => (int) $character_id,
+      'errorID' => (int) $error,
+    ))->execute();
+
+    return FALSE;
+  }
+  else {
+    db_delete('eve_api_character_sheet_attribute_enhancers')->condition('characterID', (int) $character_id, '=')->execute();
+    db_delete('eve_api_character_roles')->condition('characterID', (int) $character_id, '=')->execute();
+    db_delete('eve_api_character_sheet_titles')->condition('characterID', (int) $character_id, '=')->execute();
+
+    foreach ($character_sheet as $type => $data) {
+      switch ((string) $type) {
+        case 'skills':
+          foreach ($data as $skillsdata) {
+            db_merge('eve_api_character_sheet_skills')->key(array(
+              'characterID' => (int) $character_id,
+              'typeID' => (int) $skillsdata['typeID'],
+            ))->fields(array(
+              'characterID' => (int) $character_id,
+              'typeID' => (int) $skillsdata['typeID'],
+              'skillpoints' => (int) $skillsdata['skillpoints'],
+              'level' => (int) $skillsdata['level'],
+              'published' => (int) $skillsdata['published'],
+            ))->execute();
+          }
+          break;
+
+        case 'certificates':
+          foreach ($data as $certificatesdata) {
+            db_merge('eve_api_character_sheet_certificates')->key(array(
+              'characterID' => (int) $character_id,
+              'certificateID' => (int) $certificatesdata['certificateID'],
+            ))->fields(array(
+              'characterID' => (int) $character_id,
+              'certificateID' => (int) $certificatesdata['certificateID'],
+            ))->execute();
+          }
+          break;
+
+        case 'corporationTitles':
+          foreach ($data as $titlesdata) {
+            db_merge('eve_api_character_sheet_titles')->key(array(
+              'characterID' => (int) $character_id,
+              'titleID' => (int) $titlesdata['titleID'],
+            ))->fields(array(
+              'characterID' => (int) $character_id,
+              'titleID' => (int) $titlesdata['titleID'],
+              'titleName' => (int) $titlesdata['titleName'],
+            ))->execute();
+          }
+          break;
+
+        case 'roles':
+          foreach ($data as $rolename => $roledata) {
+            foreach ($roledata as $roles) {
+              db_merge('eve_api_character_roles')->key(array(
+                'characterID' => (int) $character_id,
+                'type' => (string) $rolename,
+                'roleID' => (int) $roles['roleID'],
+              ))->fields(array(
+                'characterID' => (int) $character_id,
+                'type' => (string) $rolename,
+                'roleID' => (int) $roles['roleID'],
+                'roleName' => (string) $roles['roleName'],
+              ))->execute();
+            }
+          }
+          break;
+
+        case 'attributeEnhancers':
+          foreach ($data as $attributename => $attributedata) {
+            $query_data = db_insert('eve_api_character_sheet_attribute_enhancers');
+
+            $fields = array(
+              'characterID' => (int) $character_id,
+              'bonusName' => (string) $attributename,
+            );
+
+            foreach ($attributedata as $attribute => $attributes) {
+              $fields += array(
+                (string) $attribute => (string) $attributes,
+              );
+            }
+
+            $query_data->fields($fields);
+            $query_data->execute();
+          }
+          break;
+
+        case 'info':
+          $query_data = db_merge('eve_api_character_sheet')->key(array(
+            'characterID' => (int) $character_id,
+          ));
+
+          $fields = array(
+            'characterID' => (int) $character_id,
+            'errorID' => (int) $error,
+          );
+
+          $ignored = array(
+            'corporationName',
+            'corporationID',
+            'allianceName',
+            'allianceID',
+            'name',
+          );
+
+          foreach ($data as $infoname => $infodata) {
+            if (in_array($infoname, $ignored)) {
+              continue;
+            }
+
+            $fields += array(
+              (string) $infoname => (string) $infodata,
+            );
+          }
+
+          $query_data->fields($fields);
+          $query_data->execute();
+          break;
+
+        default:
+          break;
+      }
+    }
+  }
+
+  return TRUE;
+}
+
+/**
+ * Cron that imports the character info of a single character.
+ *
+ * @param array $query
+ *   The API Key and vCode being imported.
+ * @param array $character
+ *   The data of the character being imported.
+ */
+function eve_api_cron_import_character_info($item) {
+  $character_id = (int) $item['characterID'];
+  $query = (array) $item['query'];
+
+  $info_query = $query + array('characterID' => (int) $character_id);
+  $character_info = eve_api_get_character_info_api($info_query);
+  $error = 0;
+
+  if (isset($character_info['errorCode'])) {
+    $error = (int) $character_info['errorCode'];
+  }
+
+  if (isset($character_info['error'])) {
+    $error = (int) $character_info['error'];
+
+    db_merge('eve_api_character_info')->key(array(
+      'characterID' => (int) $character_id,
+    ))->fields(array(
+      'characterID' => (int) $character_id,
+      'errorID' => (int) $error,
+    ))->execute();
+
+    return FALSE;
+  }
+  else {
+    db_delete('eve_api_character_info_corporation_history')->condition('characterID', (int) $character_id, '=')->execute();
+
+    foreach ($character_info as $type => $data) {
+      switch ((string) $type) {
+        case 'employmentHistory':
+          foreach ($data as $historydata) {
+            db_merge('eve_api_character_info_corporation_history')->key(array(
+              'characterID' => (int) $character_id,
+              'recordID' => (int) $historydata['recordID'],
+            ))->fields(array(
+              'characterID' => (int) $character_id,
+              'recordID' => (int) $historydata['recordID'],
+              'corporationID' => (int) $historydata['corporationID'],
+              'startDate' => (string) $historydata['startDate'],
+            ))->execute();
+          }
+          break;
+
+        case 'info':
+          $query_data = db_merge('eve_api_character_info')->key(array(
+            'characterID' => (int) $character_id,
+          ));
+
+          $fields = array(
+            'characterID' => (int) $character_id,
+            'errorID' => (int) $error,
+          );
+
+          $ignored = array(
+            'characterID',
+          );
+
+          foreach ($data as $infoname => $infodata) {
+            if (in_array($infoname, $ignored)) {
+              continue;
+            }
+
+            $fields += array(
+              (string) $infoname => (string) $infodata,
+            );
+          }
+
+          $query_data->fields($fields);
+          $query_data->execute();
+          break;
+
+        default:
+          break;
+      }
+    }
+  }
+
+  return TRUE;
+}
+
+/**
+ * Cron that imports the skills being trained of a single character.
+ *
+ * @param array $query
+ *   The API Key and vCode being imported.
+ * @param array $character
+ *   The data of the character being imported.
+ */
+function eve_api_cron_import_skill_in_training($item) {
+  $character_id = (int) $item['characterID'];
+  $query = (array) $item['query'];
+
+  $training_query = $query + array('characterID' => (int) $character_id);
+  $training_info = eve_api_get_skill_in_training_api($training_query);
+  $error = 0;
+
+  if (isset($training_info['errorCode'])) {
+    $error = (int) $training_info['errorCode'];
+  }
+
+  if (isset($training_info['error'])) {
+    $error = (int) $training_info['error'];
+
+    db_merge('eve_api_skill_training')->key(array(
+      'characterID' => (int) $character_id,
+    ))->fields(array(
+      'characterID' => (int) $character_id,
+      'errorID' => (int) $error,
+    ))->execute();
+
+    return FALSE;
+  }
+  else {
+    foreach ($training_info as $type => $data) {
+      switch ((string) $type) {
+        case 'info':
+          $query_data = db_merge('eve_api_skill_training')->key(array(
+            'characterID' => (int) $character_id,
+          ));
+
+          $fields = array(
+            'characterID' => (int) $character_id,
+            'errorID' => (int) $error,
+          );
+
+          $ignored = array(
+            'currentTQTime',
+          );
+
+          foreach ($data as $infoname => $infodata) {
+            if (in_array($infoname, $ignored)) {
+              continue;
+            }
+
+            $fields += array(
+              (string) $infoname => (string) $infodata,
+            );
+          }
+
+          $query_data->fields($fields);
+          $query_data->execute();
+          break;
+
+        default:
+          break;
+      }
+    }
+  }
+
+  return TRUE;
+}
+
+/**
+ * Cron that imports the wallet journal of a single character.
+ *
+ * @param array $query
+ *   The API Key and vCode being imported.
+ * @param array $character
+ *   The data of the character being imported.
+ */
+function eve_api_cron_import_wallet_journal($item) {
+  $character_id = (int) $item['characterID'];
+  $query = (array) $item['query'];
+
+  $row_count = '100';
+
+  $wallet_query = $query + array(
+    'characterID' => (int) $character_id,
+    'rowCount' => $row_count,
+  );
+
+  $counter = 100;
+
+  $result = db_query('SELECT MAX(refID) AS maxRefID FROM {eve_api_wallet_journal} WHERE characterID = :characterID', array(
+    ':characterID' => (int) $character_id,
+  ));
+
+  if (!$result->rowCount()) {
+    $max_ref_id = 0;
+  }
+  else {
+    $row = $result->fetchAssoc();
+    $max_ref_id = isset($row['maxRefID']) ? (int) $row['maxRefID'] : 0;
+  }
+
+  do {
+    $wallet_info = eve_api_get_wallet_journal_api($wallet_query);
+    $error = 0;
+
+    if (isset($wallet_info['error'])) {
+      return FALSE;
+    }
+    else {
+      $max_ref_id_found = FALSE;
+      $count = 0;
+
+      foreach ($wallet_info as $type => $data) {
+        switch ((string) $type) {
+          case 'wallet_journal':
+            foreach ($data as $walletdata) {
+              if ($max_ref_id >= (int) $walletdata['refID']) {
+                $max_ref_id_found = TRUE;
+                continue;
+              }
+
+              if (!isset($from_id)) {
+                $from_id = (int) $walletdata['refID'];
+              }
+
+              if ($from_id >= (int) $walletdata['refID']) {
+                $from_id = (int) $walletdata['refID'];
+              }
+
+              $query_data = db_merge('eve_api_wallet_journal')->key(array(
+                'refID' => (int) $walletdata['refID'],
+              ));
+
+              $fields = array(
+                'characterID' => (int) $character_id,
+              );
+
+              foreach ($walletdata as $infoname => $infodata) {
+                $fields += array(
+                  (string) $infoname => (string) $infodata,
+                );
+              }
+
+              $query_data->fields($fields);
+              $query_data->execute();
+
+              $count++;
+            }
+            break;
+
+          default:
+            break;
+        }
+      }
+
+      if ($max_ref_id_found || !isset($from_id) || $count != $row_count) {
+        break;
+      }
+
+      $wallet_query = array(
+        'fromID' => $from_id,
+      ) + $wallet_query;
+    }
+  } while($counter--);
+
+  return TRUE;
+}
+
+/**
+ * Cron that imports the contracts of a single character.
+ *
+ * @param array $query
+ *   The API Key and vCode being imported.
+ * @param array $character
+ *   The data of the character being imported.
+ */
+function eve_api_cron_import_contracts($item) {
+  $character_id = (int) $item['characterID'];
+  $query = (array) $item['query'];
+
+  $contract_query = $query + array(
+    'characterID' => (int) $character_id,
+  );
+
+  $contract_info = eve_api_get_contracts_api($contract_query);
+  $error = 0;
+
+  if (isset($contract_info['error'])) {
+    return FALSE;
+  }
+  else {
+    $result = db_query('SELECT MAX(contractID) AS maxContractID FROM {eve_api_character_contracts} WHERE characterID = :characterID', array(
+      ':characterID' => (int) $character_id,
+    ));
+
+    if (!$result->rowCount()) {
+      $max_contract_id = 0;
+    }
+    else {
+      $row = $result->fetchAssoc();
+      $max_contract_id = isset($row['maxContractID']) ? (int) $row['maxContractID'] : 0;
+    }
+
+    foreach ($contract_info as $type => $data) {
+      switch ((string) $type) {
+        case 'contracts':
+          foreach ($data as $contractdata) {
+            if ($max_contract_id >= (int) $contractdata['contractID']) {
+              continue;
+            }
+
+            $query_data = db_merge('eve_api_character_contracts')->key(array(
+              'contractID' => (int) $contractdata['contractID'],
+            ));
+
+            $fields = array(
+              'characterID' => (int) $character_id,
+            );
+
+            foreach ($contractdata as $infoname => $infodata) {
+              $fields += array(
+                (string) $infoname => (string) $infodata,
+              );
+            }
+
+            $query_data->fields($fields);
+            $query_data->execute();
+          }
+          break;
+
+        default:
+          break;
+      }
+    }
+  }
+
+  return TRUE;
+}
+
+/**
+ * Cron that imports the mail of a single character.
+ *
+ * @param array $query
+ *   The API Key and vCode being imported.
+ * @param array $character
+ *   The data of the character being imported.
+ */
+function eve_api_cron_import_mail($item) {
+  $character_id = (int) $item['characterID'];
+  $query = (array) $item['query'];
+
+  $mail_query = $query + array(
+    'characterID' => (int) $character_id,
+  );
+
+  $counter = 100;
+
+  $result = db_query('SELECT MAX(messageID) AS maxMessageID FROM {eve_api_mail_bodies} WHERE characterID = :characterID', array(
+    ':characterID' => (int) $character_id,
+  ));
+
+  if (!$result->rowCount()) {
+    $max_message_id = 0;
+  }
+  else {
+    $row = $result->fetchAssoc();
+    $max_message_id = isset($row['maxMessageID']) ? (int) $row['maxMessageID'] : 0;
+  }
+
+  do {
+    $mail_info = eve_api_get_mail_messages_api($mail_query);
+    $error = 0;
+
+    if (isset($mail_info['error'])) {
+      return FALSE;
+    }
+    else {
+      $max_message_id_found = FALSE;
+      $message_ids = array();
+
+      foreach ($mail_info as $type => $data) {
+        switch ((string) $type) {
+          case 'mail':
+            foreach ($data as $maildata) {
+              if ($max_message_id >= (int) $maildata['messageID']) {
+                $max_message_id_found = TRUE;
+                continue;
+              }
+
+              $message_ids[] = (int) $maildata['messageID'];
+
+              $query_data = db_merge('eve_api_mail_messages')->key(array(
+                'messageID' => (int) $maildata['messageID'],
+              ));
+
+              $fields = array(
+                'characterID' => (int) $character_id,
+              );
+
+              foreach ($maildata as $infoname => $infodata) {
+                $fields += array(
+                  (string) $infoname => (string) $infodata,
+                );
+              }
+
+              $query_data->fields($fields);
+              $query_data->execute();
+            }
+            break;
+
+          default:
+            break;
+        }
+      }
+
+      if (empty($message_ids)) {
+        break;
+      }
+
+      $body_query = array(
+        'ids' => implode(',', $message_ids),
+      ) + $mail_query;
+
+      $body_info = eve_api_get_mail_bodies_api($body_query);
+
+      if (isset($body_info['error'])) {
+        return FALSE;
+      }
+      else {
+        foreach ($body_info as $type => $data) {
+          switch ((string) $type) {
+            case 'mail_body':
+              foreach ($data as $bodydata) {
+                $query_data = db_merge('eve_api_mail_bodies')->key(array(
+                  'messageID' => (int) $bodydata['messageID'],
+                ));
+
+                $fields = array(
+                  'characterID' => (int) $character_id,
+                );
+
+                foreach ($bodydata as $infoname => $infodata) {
+                  $fields += array(
+                    (string) $infoname => (string) $infodata,
+                  );
+                }
+
+                $query_data->fields($fields);
+                $query_data->execute();
+              }
+              break;
+
+            default:
+              break;
+          }
+        }
+      }
+
+      if ($max_message_id_found) {
+        break;
+      }
+    }
+  } while($counter--);
 
   return TRUE;
 }
