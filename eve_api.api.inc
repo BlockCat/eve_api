@@ -20,52 +20,68 @@ function eve_api_get_xml($type, $query = array()) {
 
   switch ($type) {
     case 'ContactList':
-      $url .= "/corp/ContactList.xml.aspx";
+      $url .= '/corp/ContactList.xml.aspx';
       break;
 
     case 'AllianceList':
-      $url .= "/eve/AllianceList.xml.aspx";
+      $url .= '/eve/AllianceList.xml.aspx';
       break;
 
     case 'CorporationSheet':
-      $url .= "/corp/CorporationSheet.xml.aspx";
+      $url .= '/corp/CorporationSheet.xml.aspx';
       break;
 
     case 'CharacterSheet':
-      $url .= "/char/CharacterSheet.xml.aspx";
+      $url .= '/char/CharacterSheet.xml.aspx';
       break;
 
     case 'FacWarStats':
-      $url .= "/char/FacWarStats.xml.aspx";
+      $url .= '/char/FacWarStats.xml.aspx';
       break;
 
     case 'CharacterID':
-      $url .= "/eve/CharacterID.xml.aspx";
+      $url .= '/eve/CharacterID.xml.aspx';
       break;
 
     case 'CharacterName':
-      $url .= "/eve/CharacterName.xml.aspx";
+      $url .= '/eve/CharacterName.xml.aspx';
       break;
 
     case 'CharacterInfo':
-      $url .= "/eve/CharacterInfo.xml.aspx";
+      $url .= '/eve/CharacterInfo.xml.aspx';
       break;
 
     case 'callList':
-      $url .= "/api/callList.xml.aspx";
+      $url .= '/api/callList.xml.aspx';
       break;
 
     case 'SkillTree':
-      $url .= "/eve/SkillTree.xml.aspx";
+      $url .= '/eve/SkillTree.xml.aspx';
       break;
 
     case 'SkillInTraining':
-      $url .= "/char/SkillInTraining.xml.aspx";
+      $url .= '/char/SkillInTraining.xml.aspx';
+      break;
+
+    case 'WalletJournal':
+      $url .= '/char/WalletJournal.xml.aspx';
+      break;
+
+    case 'Contracts':
+      $url .= '/char/Contracts.xml.aspx';
+      break;
+
+    case 'MailMessages':
+      $url .= '/char/MailMessages.xml.aspx';
+      break;
+
+    case 'MailBodies':
+      $url .= '/char/MailBodies.xml.aspx';
       break;
 
     default:
     case 'APIKeyInfo':
-      $url .= "/account/APIKeyInfo.xml.aspx";
+      $url .= '/account/APIKeyInfo.xml.aspx';
       break;
   }
 
@@ -693,7 +709,7 @@ function eve_api_get_skill_in_training_api($query) {
   $xml = eve_api_get_xml('SkillInTraining', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting Skil in Training API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
+    watchdog('eve_api', 'Failed getting Skill in Training API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
     return array('error' => (int) $xml);
   }
 
@@ -705,6 +721,152 @@ function eve_api_get_skill_in_training_api($query) {
 
   foreach ($xml->result->children() as $result) {
     $api_data['info'][(string) $result->getName()] = (string) $result;
+  }
+
+  return $api_data;
+}
+
+/**
+ * Function to retrieve a single characters wallet journal.
+ *
+ * @param array $query
+ *   The URL variables to pass through the URL.
+ *
+ * @return array
+ *   A complex array of character information.
+ */
+function eve_api_get_wallet_journal_api($query) {
+  $xml = eve_api_get_xml('WalletJournal', $query);
+
+  if (!isset($xml->cachedUntil)) {
+    watchdog('eve_api', 'Failed getting Wallet Journal API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
+    return array('error' => (int) $xml);
+  }
+
+  $api_data = array();
+
+  if (isset($xml->errorCode)) {
+    $api_data['errorCode'] = (int) $xml->errorCode;
+  }
+
+  $count = 0;
+
+  foreach ($xml->result->rowset->children() as $rows) {
+    foreach ($rows->attributes() as $name => $value) {
+      $api_data['wallet_journal'][(int) $count][(string) $name] = (string) $value;
+    }
+
+    $count++;
+  }
+
+  return $api_data;
+}
+
+/**
+ * Function to retrieve a single characters contracts.
+ *
+ * @param array $query
+ *   The URL variables to pass through the URL.
+ *
+ * @return array
+ *   A complex array of character information.
+ */
+function eve_api_get_contracts_api($query) {
+  $xml = eve_api_get_xml('Contracts', $query);
+
+  if (!isset($xml->cachedUntil)) {
+    watchdog('eve_api', 'Failed getting Contracts API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
+    return array('error' => (int) $xml);
+  }
+
+  $api_data = array();
+
+  if (isset($xml->errorCode)) {
+    $api_data['errorCode'] = (int) $xml->errorCode;
+  }
+
+  $count = 0;
+
+  foreach ($xml->result->rowset->children() as $rows) {
+    foreach ($rows->attributes() as $name => $value) {
+      $api_data['contracts'][(int) $count][(string) $name] = (string) $value;
+    }
+
+    $count++;
+  }
+
+  return $api_data;
+}
+
+/**
+ * Function to retrieve a single characters mail headers.
+ *
+ * @param array $query
+ *   The URL variables to pass through the URL.
+ *
+ * @return array
+ *   A complex array of character information.
+ */
+function eve_api_get_mail_messages_api($query) {
+  $xml = eve_api_get_xml('MailMessages', $query);
+
+  if (!isset($xml->cachedUntil)) {
+    watchdog('eve_api', 'Failed getting Contracts API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
+    return array('error' => (int) $xml);
+  }
+
+  $api_data = array();
+
+  if (isset($xml->errorCode)) {
+    $api_data['errorCode'] = (int) $xml->errorCode;
+  }
+
+  foreach ($xml->result->rowset->children() as $rows) {
+    $row = $rows->attributes();
+
+    foreach ($rows->attributes() as $name => $value) {
+      $api_data['mail'][(int) $row->messageID][(string) $name] = (string) $value;
+    }
+  }
+
+  return $api_data;
+}
+
+/**
+ * Function to retrieve a single characters mail bodies.
+ *
+ * @param array $query
+ *   The URL variables to pass through the URL.
+ *
+ * @return array
+ *   A complex array of character information.
+ */
+function eve_api_get_mail_bodies_api($query) {
+  $xml = eve_api_get_xml('MailBodies', $query);
+
+  if (!isset($xml->cachedUntil)) {
+    watchdog('eve_api', 'Failed getting Contracts API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
+    return array('error' => (int) $xml);
+  }
+
+  $api_data = array();
+
+  if (isset($xml->errorCode)) {
+    $api_data['errorCode'] = (int) $xml->errorCode;
+  }
+
+  if (isset($xml->result->missingMessageIDs)) {
+    $api_data['missingMessageIDs'] = (string) $xml->result->missingMessageIDs;
+  }
+
+  foreach ($xml->result->rowset->children() as $rows) {
+    $row = $rows->attributes();
+
+    $api_data['mail_body'][(int) $row->messageID]['message'] = (string) $rows;
+
+    foreach ($rows->attributes() as $name => $value) {
+      $api_data['mail_body'][(int) $row->messageID][(string) $name] = (string) $value;
+    }
   }
 
   return $api_data;
@@ -1792,7 +1954,9 @@ function eve_api_update_key($account, $key_id, $v_code, $api_id) {
       $character_found = TRUE;
       $character_data = $character;
     }
+  }
 
+  foreach ($characters['characters'] as $character) {
     eve_api_import_character_sheet($query, $character);
     eve_api_import_character_info($query, $character);
 
@@ -1801,18 +1965,15 @@ function eve_api_update_key($account, $key_id, $v_code, $api_id) {
     }
 
     if (($characters['accessMask'] & 2097152) == 2097152) {
-      // Wallet Journal.
-      // eve_api_import_skill_in_training($query, $character);
+      eve_api_import_wallet_journal($query, $character);
     }
 
     if (($characters['accessMask'] & 2048) == 2048 && ($characters['accessMask'] & 512) == 512) {
-      // Mail.
-      // eve_api_import_skill_in_training($query, $character);
+      eve_api_import_mail($query, $character);
     }
 
     if (($characters['accessMask'] & 67108864) == 67108864) {
-      // Contracts.
-      // eve_api_import_skill_in_training($query, $character);
+      eve_api_import_contracts($query, $character);
     }
   }
 
@@ -2118,4 +2279,289 @@ function eve_api_import_skill_in_training($query, $character) {
       }
     }
   }
+}
+
+/**
+ * Function that imports the wallet journal of a single character.
+ *
+ * @param array $query
+ *   The API Key and vCode being imported.
+ * @param array $character
+ *   The data of the character being imported.
+ */
+function eve_api_import_wallet_journal($query, $character) {
+  $row_count = '100';
+
+  $wallet_query = $query + array(
+    'characterID' => (int) $character['characterID'],
+    'rowCount' => $row_count,
+  );
+
+  $counter = 1000;
+
+  $result = db_query('SELECT MAX(refID) AS maxRefID FROM {eve_api_wallet_journal} WHERE characterID = :characterID', array(
+    ':characterID' => (int) $character['characterID'],
+  ));
+
+  if (!$result->rowCount()) {
+    $max_ref_id = 0;
+  }
+  else {
+    $row = $result->fetchAssoc();
+    $max_ref_id = isset($row['maxRefID']) ? (int) $row['maxRefID'] : 0;
+  }
+
+  do {
+    $wallet_info = eve_api_get_wallet_journal_api($wallet_query);
+    $error = 0;
+
+    if (isset($wallet_info['error'])) {
+      break;
+    }
+    else {
+      $max_ref_id_found = FALSE;
+      $count = 0;
+
+      foreach ($wallet_info as $type => $data) {
+        switch ((string) $type) {
+          case 'wallet_journal':
+            foreach ($data as $walletdata) {
+              if ($max_ref_id >= (int) $walletdata['refID']) {
+                $max_ref_id_found = TRUE;
+                continue;
+              }
+
+              if (!isset($from_id)) {
+                $from_id = (int) $walletdata['refID'];
+              }
+
+              if ($from_id >= (int) $walletdata['refID']) {
+                $from_id = (int) $walletdata['refID'];
+              }
+
+              $query_data = db_merge('eve_api_wallet_journal')->key(array(
+                'refID' => (int) $walletdata['refID'],
+              ));
+
+              $fields = array(
+                'characterID' => (int) $character['characterID'],
+              );
+
+              foreach ($walletdata as $infoname => $infodata) {
+                $fields += array(
+                  (string) $infoname => (string) $infodata,
+                );
+              }
+
+              $query_data->fields($fields);
+              $query_data->execute();
+
+              $count++;
+            }
+            break;
+
+          default:
+            break;
+        }
+      }
+
+      if ($max_ref_id_found || !isset($from_id) || $count != $row_count) {
+        break;
+      }
+
+      $wallet_query = array(
+        'fromID' => $from_id,
+      ) + $wallet_query;
+    }
+  } while($counter--);
+}
+
+/**
+ * Function that imports the contracts of a single character.
+ *
+ * @param array $query
+ *   The API Key and vCode being imported.
+ * @param array $character
+ *   The data of the character being imported.
+ */
+function eve_api_import_contracts($query, $character) {
+  $contract_query = $query + array(
+    'characterID' => (int) $character['characterID'],
+  );
+
+  $contract_info = eve_api_get_contracts_api($contract_query);
+  $error = 0;
+
+  if (isset($contract_info['error'])) {
+    return;
+  }
+  else {
+    $result = db_query('SELECT MAX(contractID) AS maxContractID FROM {eve_api_character_contracts} WHERE characterID = :characterID', array(
+      ':characterID' => (int) $character['characterID'],
+    ));
+
+    if (!$result->rowCount()) {
+      $max_contract_id = 0;
+    }
+    else {
+      $row = $result->fetchAssoc();
+      $max_contract_id = isset($row['maxContractID']) ? (int) $row['maxContractID'] : 0;
+    }
+
+    foreach ($contract_info as $type => $data) {
+      switch ((string) $type) {
+        case 'contracts':
+          foreach ($data as $contractdata) {
+            if ($max_contract_id >= (int) $contractdata['contractID']) {
+              continue;
+            }
+
+            $query_data = db_merge('eve_api_character_contracts')->key(array(
+              'contractID' => (int) $contractdata['contractID'],
+            ));
+
+            $fields = array(
+              'characterID' => (int) $character['characterID'],
+            );
+
+            foreach ($contractdata as $infoname => $infodata) {
+              $fields += array(
+                (string) $infoname => (string) $infodata,
+              );
+            }
+
+            $query_data->fields($fields);
+            $query_data->execute();
+          }
+          break;
+
+        default:
+          break;
+      }
+    }
+  }
+}
+
+
+/**
+ * Function that imports the mail of a single character.
+ *
+ * @param array $query
+ *   The API Key and vCode being imported.
+ * @param array $character
+ *   The data of the character being imported.
+ */
+function eve_api_import_mail($query, $character) {
+  $mail_query = $query + array(
+    'characterID' => (int) $character['characterID'],
+  );
+
+  $counter = 1000;
+
+  $result = db_query('SELECT MAX(messageID) AS maxMessageID FROM {eve_api_mail_bodies} WHERE characterID = :characterID', array(
+    ':characterID' => (int) $character['characterID'],
+  ));
+
+  if (!$result->rowCount()) {
+    $max_message_id = 0;
+  }
+  else {
+    $row = $result->fetchAssoc();
+    $max_message_id = isset($row['maxMessageID']) ? (int) $row['maxMessageID'] : 0;
+  }
+
+  do {
+    $mail_info = eve_api_get_mail_messages_api($mail_query);
+    $error = 0;
+
+    if (isset($mail_info['error'])) {
+      break;
+    }
+    else {
+      $max_message_id_found = FALSE;
+      $message_ids = array();
+
+      foreach ($mail_info as $type => $data) {
+        switch ((string) $type) {
+          case 'mail':
+            foreach ($data as $maildata) {
+              if ($max_message_id >= (int) $maildata['messageID']) {
+                $max_message_id_found = TRUE;
+                continue;
+              }
+
+              $message_ids[] = (int) $maildata['messageID'];
+
+              $query_data = db_merge('eve_api_mail_messages')->key(array(
+                'messageID' => (int) $maildata['messageID'],
+              ));
+
+              $fields = array(
+                'characterID' => (int) $character['characterID'],
+              );
+
+              foreach ($maildata as $infoname => $infodata) {
+                $fields += array(
+                  (string) $infoname => (string) $infodata,
+                );
+              }
+
+              $query_data->fields($fields);
+              $query_data->execute();
+            }
+            break;
+
+          default:
+            break;
+        }
+      }
+
+      if (empty($message_ids)) {
+        break;
+      }
+
+      $body_query = array(
+        'ids' => implode(',', $message_ids),
+      ) + $mail_query;
+
+      $body_info = eve_api_get_mail_bodies_api($body_query);
+
+      if (isset($body_info['error'])) {
+        return;
+      }
+      else {
+        foreach ($body_info as $type => $data) {
+          switch ((string) $type) {
+            case 'mail_body':
+              foreach ($data as $bodydata) {
+                $query_data = db_merge('eve_api_mail_bodies')->key(array(
+                  'messageID' => (int) $bodydata['messageID'],
+                ));
+
+                $fields = array(
+                  'characterID' => (int) $character['characterID'],
+                );
+
+                foreach ($bodydata as $infoname => $infodata) {
+                  $fields += array(
+                    (string) $infoname => (string) $infodata,
+                  );
+                }
+
+                $query_data->fields($fields);
+                $query_data->execute();
+              }
+              break;
+
+            default:
+              break;
+          }
+        }
+      }
+
+      if ($max_message_id_found) {
+        break;
+      }
+    }
+  } while($counter--);
 }

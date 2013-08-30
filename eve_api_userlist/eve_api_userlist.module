@@ -252,12 +252,6 @@ function eve_api_userlist_user_view($account) {
       '#markup' => $character_data['shipName'],
     );
 
-    $account->content['eve_api_private']['skillPoints'] = array(
-      '#type' => 'user_profile_item',
-      '#title' => t('Total Skillpoints'),
-      '#markup' => $character_data['skillPoints'],
-    );
-
     $account->content['eve_api_private']['stats'] = array(
       '#type' => 'user_profile_item',
       '#title' => t('Stats'),
@@ -277,6 +271,22 @@ function eve_api_userlist_user_view($account) {
     '#attributes' => array('class' => array('user-member')),
     '#weight' => 4,
     '#title' => t('Skills'),
+  );
+
+  $account->content['eve_api_skills']['skillPoints'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => t('Total Skillpoints'),
+    '#markup' => $character_data['skillPoints'],
+  );
+
+  $account->content['eve_api_skills']['training'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => t('Currently Training'),
+    '#markup' => t('Currently Training @typeName to Level @level. Training will end on @finish.', array(
+    '@typeName' => $character_data['typeName'],
+    '@level' => $character_data['trainingToLevel'],
+    '@finish' => $character_data['trainingEndTime'],
+    )),
   );
 
   $character_skills = eve_api_get_character_skills($account->characterID);
