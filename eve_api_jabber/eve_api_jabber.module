@@ -23,7 +23,7 @@ require_once dirname(__FILE__) . '/eve_api_jabber.cron.inc';
  * `-------- Major Version Change.
  */
 function eve_api_jabber_version() {
-  return '2.0.1.9';
+  return '2.0.1.10';
 }
 
 /**
