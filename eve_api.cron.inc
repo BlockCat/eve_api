@@ -921,6 +921,7 @@ function eve_api_cron_import_wallet_journal($item) {
 
               $query_data = db_merge('eve_api_wallet_journal')->key(array(
                 'refID' => (int) $walletdata['refID'],
+                'characterID' => (int) $walletdata['characterID'],
               ));
 
               $fields = array(

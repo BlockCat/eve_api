@@ -938,9 +938,8 @@ function eve_api_schema() {
     'indexes' => array(
       'characterID' => array('characterID'),
       'refTypeID' => array('refTypeID'),
+      'refID' => array('refID'),
     ),
-    'unique keys' => array('refID' => array('refID')),
-    'primary key' => array('refID'),
   );
 
   $schema['eve_api_character_sheet_attribute_enhancers'] = array(
