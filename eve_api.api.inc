@@ -666,7 +666,7 @@ function eve_api_get_character_info($character_name) {
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
-          $api_data += array($row->bonusName => strip_tags(decode_entities($row->augmentatorValue)));
+        $api_data += array($row->bonusName => strip_tags(decode_entities($row->augmentatorValue)));
       }
     }
 
