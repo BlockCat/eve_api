@@ -586,7 +586,8 @@ function eve_api_schema() {
       'senderTypeID' => array(
         'description' => 'The character ID or Mailing List ID type.',
         'type' => 'int',
-        'not null' => TRUE,
+        'not null' => FALSE,
+        'default' => 0,
       ),
     ),
     'indexes' => array(
@@ -616,7 +617,7 @@ function eve_api_schema() {
         'description' => 'The Mail Message',
         'type' => 'text',
         'size' => 'medium',
-        'not null' => TRUE,
+        'not null' => FALSE,
       ),
     ),
     'indexes' => array(

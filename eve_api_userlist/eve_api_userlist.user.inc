@@ -204,3 +204,10 @@ function eve_api_userlist_user_userlist_director_page($corporation_id) {
 
   return $output;
 }
+
+/**
+ * Create the character user list page.
+ */
+function eve_api_userlist_user_userlist_character_page($character_id) {
+  return $output;
+}

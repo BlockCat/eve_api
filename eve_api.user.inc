@@ -141,6 +141,7 @@ function eve_api_user_add_api_form_submit($form, &$form_state) {
   $uid = (int) $account->uid;
   $key_id = (int) $form_state['values']['keyID'];
   $v_code = (string) $form_state['values']['vCode'];
+  $form_state['redirect'] = 'user/' . $uid . '/eve_api';
 
   $character = eve_api_create_key($account, $key_id, $v_code);
 
@@ -150,7 +151,7 @@ function eve_api_user_add_api_form_submit($form, &$form_state) {
     'runs' => 1,
   ));
 
-  if ($character == FALSE) {
+  if ($character === FALSE && !isset($character['not_found'])) {
     drupal_set_message(t('There was an error with the API.'), 'error');
   }
   else {

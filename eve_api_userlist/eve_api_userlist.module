@@ -76,6 +76,15 @@ function eve_api_userlist_menu() {
       'access callback' => 'eve_api_userlist_private_access',
       'access arguments' => array(2),
     ) + $user_base;
+
+    $items['eve_api/userlist/%/character'] = array(
+      'title' => 'Character Information',
+      'description' => 'Information on a specific character in the database.',
+      'page callback' => 'eve_api_userlist_user_userlist_character_page',
+      'page arguments' => array(2),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 0,
+    ) + $user_base;
   }
 
   return $items;
@@ -284,7 +293,7 @@ function eve_api_userlist_user_view($account) {
       $account->content['eve_api_skills']['training'] = array(
         '#type' => 'user_profile_item',
         '#title' => t('Currently Training'),
-        '#markup' => t('Currently Training @typeName to Level @level. Training will end on @finish.', array(
+        '#markup' => t('Currently Training @typeName to Level @level. Training will end on @finish UTC EVE Time.', array(
         '@typeName' => $character_data['typeName'],
         '@level' => $character_data['trainingToLevel'],
         '@finish' => $character_data['trainingEndTime'],
@@ -354,7 +363,59 @@ function eve_api_userlist_user_view($account) {
 
   $account->content['eve_api_skills']['skills'] = array(
     '#type' => 'user_profile_item',
-    '#title' => '',
+    '#title' => t('Skill Sheet'),
     '#markup' => drupal_render_children($form),
+  );
+
+  if (!$is_director && !$is_good) {
+    return;
+  }
+
+  $options = array();
+
+  foreach ($character_data['characters'] as $row) {
+    $options[$row['characterID']] = array(
+      'characterName' => check_plain($row['characterName']),
+      'corporation' => check_plain($row['corporationName'] . ' [' . $row['corporationTicker'] . ']'),
+      'alliance' => ($row['allianceID'] == 0) ? '' : check_plain($row['allianceName'] . ' [' . $row['allianceTicker'] . ']'),
+      'status' => ($row['deleted'] == 1) ? t('Deleted') : eve_api_api_error_msg($row['errorID']),
+    );
+  }
+
+  $account->content['eve_api_private']['characters'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => t('Known Characters'),
+    '#markup' => theme('table', array(
+      'header' => array(
+        'characterName' => t('Character Name'),
+        'corporation' => t('Corporation'),
+        'alliance' => t('Alliance'),
+        'status' => t('Status'),
+      ),
+      'rows' => $options,
+    )),
+  );
+
+  $options = array();
+
+  foreach ($character_data['api_keys'] as $row) {
+    $options[$row['apiID']] = array(
+      'keyID' => check_plain($row['keyID']),
+      'vCode' => check_plain($row['vCode']),
+      'status' => eve_api_api_error_msg($row['errorID']),
+    );
+  }
+
+  $account->content['eve_api_private']['api_keys'] = array(
+    '#type' => 'user_profile_item',
+    '#title' => t('API Keys'),
+    '#markup' => theme('table', array(
+      'header' => array(
+        'keyID' => t('Key ID'),
+        'vCode' => t('Verification Code'),
+        'status' => t('Status'),
+      ),
+      'rows' => $options,
+    )),
   );
 }

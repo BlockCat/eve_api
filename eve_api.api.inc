@@ -570,20 +570,18 @@ function eve_api_get_basic_character_info($character_name) {
  *   A complex array of a single character information.
  */
 function eve_api_get_character_info($character_name) {
-  $result = db_query('SELECT c.accessMask, st.skillInTraining FROM {eve_api_characters} c INNER JOIN {eve_api_skill_training} st ON st.characterID = c.characterID WHERE c.characterName = :characterName', array(
+  $result = db_query('SELECT c.accessMask, c.uid, st.skillInTraining FROM {eve_api_characters} c INNER JOIN {eve_api_skill_training} st ON st.characterID = c.characterID WHERE c.characterName = :characterName', array(
     ':characterName' => (string) $character_name,
   ));
 
   $row = $result->fetchAssoc();
 
-  if (isset($row['accessMask'])) {
-    $access_mask = $row['accessMask'];
-    $is_training = $row['skillInTraining'];
+  if (empty($row)) {
   }
-  else {
-    $access_mask = variable_get('eve_api_access_mask', 268435455);
-    $is_training = 0;
-  }
+
+  $access_mask = $row['accessMask'];
+  $is_training = $row['skillInTraining'];
+  $uid = $row['uid'];
 
   $query = db_select('eve_api_characters', 'c');
   $query->join('eve_api_character_sheet', 'cs', 'cs.characterID = c.characterID');
@@ -675,14 +673,46 @@ function eve_api_get_character_info($character_name) {
     ));
 
     if ($result->rowCount()) {
-      foreach ($result->fetchAll() as $rows) {
+      foreach ($result->fetchAll() as $row) {
         $history_corp = array();
 
-        foreach ($rows as $name => $data) {
+        foreach ($row as $name => $data) {
           $history_corp += array($name => strip_tags(decode_entities($data)));
         }
 
         $api_data['history'][] = $history_corp;
+      }
+    }
+
+    $result = db_query('SELECT deleted, errorID, characterName, characterID, characterName, characterID, corporationName, corporationID, corporationTicker, allianceID, allianceName, allianceTicker FROM {eve_api_characters} WHERE uid = :uid', array(
+      ':uid' => (string) $uid,
+    ));
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $row) {
+        $characters = array();
+
+        foreach ($row as $name => $data) {
+          $characters += array($name => strip_tags(decode_entities($data)));
+        }
+
+        $api_data['characters'][] = $characters;
+      }
+    }
+
+    $result = db_query('SELECT apiID, keyID, vCode, errorID FROM {eve_api_keys} WHERE uid = :uid', array(
+      ':uid' => (string) $uid,
+    ));
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $row) {
+        $api_keys = array();
+
+        foreach ($row as $name => $data) {
+          $api_keys += array($name => strip_tags(decode_entities($data)));
+        }
+
+        $api_data['api_keys'][] = $api_keys;
       }
     }
   }
@@ -1638,7 +1668,7 @@ function eve_api_create_key($account, $key_id, $v_code) {
   $created = date('Y-m-d H:i:s', time());
   $uid = (int) $account->uid;
 
-  $character_data = FALSE;
+  $character_found = FALSE;
 
   $query = array(
     'keyID' => $key_id,
@@ -1701,6 +1731,7 @@ function eve_api_create_key($account, $key_id, $v_code) {
   ))->execute();
 
   if ($error == 1) {
+
     return FALSE;
   }
 
@@ -1723,6 +1754,7 @@ function eve_api_create_key($account, $key_id, $v_code) {
 
     if ($account->name == (string) $character['characterName']) {
       $character_data = $character;
+      $character_found = TRUE;
     }
   }
 
