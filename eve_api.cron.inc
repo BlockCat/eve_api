@@ -638,6 +638,10 @@ function eve_api_cron_import_character_sheet($item) {
             );
 
             foreach ($attributedata as $attribute => $attributes) {
+              if (empty($attributes)) {
+                continue;
+              }
+
               $fields += array(
                 (string) $attribute => (string) $attributes,
               );
@@ -668,6 +672,10 @@ function eve_api_cron_import_character_sheet($item) {
 
           foreach ($data as $infoname => $infodata) {
             if (in_array($infoname, $ignored)) {
+              continue;
+            }
+
+            if (empty($infodata)) {
               continue;
             }
 
@@ -757,6 +765,10 @@ function eve_api_cron_import_character_info($item) {
               continue;
             }
 
+            if (empty($infodata)) {
+              continue;
+            }
+
             $fields += array(
               (string) $infoname => (string) $infodata,
             );
@@ -824,6 +836,10 @@ function eve_api_cron_import_skill_in_training($item) {
 
           foreach ($data as $infoname => $infodata) {
             if (in_array($infoname, $ignored)) {
+              continue;
+            }
+
+            if (empty($infodata)) {
               continue;
             }
 
@@ -912,6 +928,10 @@ function eve_api_cron_import_wallet_journal($item) {
               );
 
               foreach ($walletdata as $infoname => $infodata) {
+                if (empty($infodata)) {
+                  continue;
+                }
+
                 $fields += array(
                   (string) $infoname => (string) $infodata,
                 );
@@ -991,6 +1011,10 @@ function eve_api_cron_import_contracts($item) {
             );
 
             foreach ($contractdata as $infoname => $infodata) {
+              if (empty($infodata)) {
+                continue;
+              }
+
               $fields += array(
                 (string) $infoname => (string) $infodata,
               );
@@ -1068,6 +1092,10 @@ function eve_api_cron_import_mail($item) {
               );
 
               foreach ($maildata as $infoname => $infodata) {
+                if (empty($infodata)) {
+                  continue;
+                }
+
                 $fields += array(
                   (string) $infoname => (string) $infodata,
                 );
@@ -1110,6 +1138,10 @@ function eve_api_cron_import_mail($item) {
                 );
 
                 foreach ($bodydata as $infoname => $infodata) {
+                  if (empty($infodata)) {
+                    continue;
+                  }
+
                   $fields += array(
                     (string) $infoname => (string) $infodata,
                   );

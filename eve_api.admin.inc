@@ -578,10 +578,6 @@ function eve_api_admin_registration_form_validate($form, &$form_state) {
  * @see eve_api_admin_registration_form_validate()
  */
 function eve_api_admin_registration_form_submit($form, &$form_state) {
-  variable_set('eve_api_required_standing', round((float) $form_state['values']['standing'], 1));
-  variable_set('eve_api_require_expires', (bool) $form_state['values']['expires']);
-  variable_set('eve_api_require_type', (bool) $form_state['values']['type']);
-
   $new_access_mask = 8388616;
 
   foreach ((array) $form_state['values']['access_mask'] as $access_bit) {
@@ -592,7 +588,11 @@ function eve_api_admin_registration_form_submit($form, &$form_state) {
 
   variable_set('eve_api_access_mask', $new_access_mask);
 
-  if ($access_mask != $new_access_mask) {
+  if ($access_mask != $new_access_mask || round((float) variable_get('eve_api_required_standing', 0.1), 1) != round((float) $form_state['values']['standing'], 1) || (int) variable_get('eve_api_require_expires', FALSE) != (int) $form_state['values']['expires'] || (int) variable_get('eve_api_require_type', TRUE) != (int) $form_state['values']['type']) {
+    variable_set('eve_api_required_standing', round((float) $form_state['values']['standing'], 1));
+    variable_set('eve_api_require_expires', (bool) $form_state['values']['expires']);
+    variable_set('eve_api_require_type', (bool) $form_state['values']['type']);
+
     $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
 
     $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters}');

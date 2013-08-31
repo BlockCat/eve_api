@@ -190,7 +190,7 @@ function eve_api_userlist_user_view($account) {
     return;
   }
 
-  if ((variable_get('eve_api_access_mask', 268435455) & 16777216) == 16777216) {
+  if (($character_data['accessMask'] & 16777216) == 16777216) {
     $options = array();
 
     $options += array(
@@ -279,15 +279,26 @@ function eve_api_userlist_user_view($account) {
     '#markup' => $character_data['skillPoints'],
   );
 
-  $account->content['eve_api_skills']['training'] = array(
-    '#type' => 'user_profile_item',
-    '#title' => t('Currently Training'),
-    '#markup' => t('Currently Training @typeName to Level @level. Training will end on @finish.', array(
-    '@typeName' => $character_data['typeName'],
-    '@level' => $character_data['trainingToLevel'],
-    '@finish' => $character_data['trainingEndTime'],
-    )),
-  );
+  if (($character_data['accessMask'] & 131072) == 131072) {
+    if ($character_data['skillInTraining'] == 1) {
+      $account->content['eve_api_skills']['training'] = array(
+        '#type' => 'user_profile_item',
+        '#title' => t('Currently Training'),
+        '#markup' => t('Currently Training @typeName to Level @level. Training will end on @finish.', array(
+        '@typeName' => $character_data['typeName'],
+        '@level' => $character_data['trainingToLevel'],
+        '@finish' => $character_data['trainingEndTime'],
+        )),
+      );
+    }
+    else {
+      $account->content['eve_api_skills']['training'] = array(
+        '#type' => 'user_profile_item',
+        '#title' => t('Currently Training'),
+        '#markup' => t('Character is not currently training anything.'),
+      );
+    }
+  }
 
   $character_skills = eve_api_get_character_skills($account->characterID);
 

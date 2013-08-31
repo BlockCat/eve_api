@@ -129,6 +129,12 @@ function eve_api_schema() {
         'length' => 20,
         'not null' => FALSE,
       ),
+      'accessMask' => array(
+        'description' => 'The Access Mask found on the last API Update.',
+        'type' => 'int',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
       'errorID' => array(
         'description' => 'Error code to identify any problems with a registered characters.',
         'type' => 'int',
@@ -307,6 +313,17 @@ function eve_api_schema() {
         'size' => 'big',
         'not null' => FALSE,
         'default' => 0,
+      ),
+      'nextTrainingEnds' => array(
+        'description' => 'The date the EVE Characters training ends.',
+        'type' => 'datetime',
+        'mysql_type' => 'DATETIME',
+        'pgsql_type' => 'timestamp without time zone',
+        'sqlite_type' => 'VARCHAR',
+        'sqlsrv_type' => 'smalldatetime',
+        'not null' => FALSE,
+        'sortable' => TRUE,
+        'views' => TRUE,
       ),
       'shipName' => array(
         'description' => 'The EVE Characters last known ship name.',

@@ -570,68 +570,120 @@ function eve_api_get_basic_character_info($character_name) {
  *   A complex array of a single character information.
  */
 function eve_api_get_character_info($character_name) {
-  db_query('SET group_concat_max_len = 1048576');
-  $result = db_query('SELECT c.uid, c.deleted, c.errorID, c.apiID, c.characterName, c.characterID, c.corporationName, c.corporationID, c.corporationTicker, c.allianceID, c.allianceName, c.allianceTicker,
-    cs.DoB, cs.race, cs.bloodLine, cs.ancestry, cs.gender, cs.cloneName, cs.cloneSkillPoints, cs.balance, cs.intelligence, cs.memory, cs.charisma, cs.perception, cs.willpower,
-    ci.skillPoints, ci.shipName, ci.shipTypeID, ci.shipTypeName, ci.corporationDate, ci.allianceDate, ci.lastKnownLocation, ci.securityStatus,
-    st.trainingEndTime, st.trainingStartTime, st.trainingTypeID AS typeID, st.trainingStartSP, st.trainingDestinationSP, st.trainingToLevel, st.skillInTraining,
-    sts.typeName,
-    GROUP_CONCAT( DISTINCT CONCAT(csae.bonusName, \'~\', csae.augmentatorValue) SEPARATOR \'|\') AS bonusName,
-    GROUP_CONCAT( DISTINCT CONCAT(\'recordID!\', cich.recordID, \'~\', \'corporationID!\', cich.corporationID, \'~\', \'startDate!\', cich.startDate) SEPARATOR \'|\') AS history
-    FROM {eve_api_characters} c
-    INNER JOIN {eve_api_skill_training} st ON st.characterID = c.characterID
-    INNER JOIN {eve_api_character_sheet} cs ON cs.characterID = c.characterID
-    INNER JOIN {eve_api_character_info} ci ON ci.characterID = c.characterID
-    INNER JOIN {eve_api_sheet_types} sts ON sts.typeID = st.trainingTypeID
-    LEFT JOIN {eve_api_character_sheet_attribute_enhancers} csae on csae.characterID = c.characterID
-    LEFT JOIN {eve_api_character_info_corporation_history} cich on cich.characterID = c.characterID
-    WHERE c.characterName = :characterName', array(
-      ':characterName' => (string) $character_name,
+  $result = db_query('SELECT c.accessMask, st.skillInTraining FROM {eve_api_characters} c INNER JOIN {eve_api_skill_training} st ON st.characterID = c.characterID WHERE c.characterName = :characterName', array(
+    ':characterName' => (string) $character_name,
+  ));
+
+  $row = $result->fetchAssoc();
+
+  if (isset($row['accessMask'])) {
+    $access_mask = $row['accessMask'];
+    $is_training = $row['skillInTraining'];
+  }
+  else {
+    $access_mask = variable_get('eve_api_access_mask', 268435455);
+    $is_training = 0;
+  }
+
+  $query = db_select('eve_api_characters', 'c');
+  $query->join('eve_api_character_sheet', 'cs', 'cs.characterID = c.characterID');
+  $query->join('eve_api_character_info', 'ci', 'ci.characterID = c.characterID');
+  $query->fields('c', array(
+    'uid',
+    'deleted',
+    'errorID',
+    'apiID',
+    'characterName',
+    'characterID',
+    'corporationName',
+    'corporationID',
+    'corporationTicker',
+    'allianceID',
+    'allianceName',
+    'allianceTicker',
+    'accessMask',
+  ));
+  $query->fields('cs', array(
+    'DoB',
+    'race',
+    'bloodLine',
+    'ancestry',
+    'gender',
+    'cloneName',
+    'balance',
+    'intelligence',
+    'memory',
+    'charisma',
+    'perception',
+    'willpower',
+  ));
+  $query->fields('ci', array(
+    'skillPoints',
+    'shipName',
+    'shipTypeID',
+    'shipTypeName',
+    'corporationDate',
+    'allianceDate',
+    'lastKnownLocation',
+    'securityStatus',
+    'nextTrainingEnds',
+  ));
+
+  if (($access_mask & 131072) == 131072) {
+    $query->join('eve_api_skill_training', 'st', 'st.characterID = c.characterID');
+
+    if ($is_training != 0) {
+      $query->join('eve_api_sheet_types', 'sts', 'sts.typeID = st.trainingTypeID');
+      $query->fields('sts', array(
+        'typeName',
+      ));
+    }
+
+    $query->fields('st', array(
+      'trainingEndTime',
+      'trainingStartTime',
+      'trainingStartSP',
+      'trainingDestinationSP',
+      'trainingToLevel',
+      'skillInTraining',
     ));
+    $query->addField('st', 'trainingTypeID', 'typeID');
+  }
+
+  $query->condition('c.characterName', (string) $character_name, '=');
+  $result = $query->execute();
 
   $api_data = array();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAssoc() as $name => $data) {
-      if ($name == 'bonusName') {
-        $bonus_rows = explode('|', $data);
-
-        foreach ($bonus_rows as $bonus_row) {
-          $bonus_data = explode('~', $bonus_row);
-
-          if (empty($bonus_data[0])) {
-            continue;
-          }
-
-          $api_data += array($bonus_data[0] => strip_tags(decode_entities($bonus_data[1])));
-        }
-
-        continue;
-      }
-
-      if ($name == 'history') {
-        $history_results = explode('|', $data);
-
-        foreach ($history_results as $history_result) {
-          $history_rows = explode('~', $history_result);
-          $history_corp = array();
-
-          foreach ($history_rows as $history_row) {
-            $history_data = explode('!', $history_row);
-
-            if (empty($history_data[0])) {
-              continue;
-            }
-
-            $history_corp += array($history_data[0] => strip_tags(decode_entities($history_data[1])));
-          }
-
-          $api_data['history'][] = $history_corp;
-        }
-        continue;
-      }
-
       $api_data += array($name => strip_tags(decode_entities($data)));
+    }
+
+    $result = db_query('SELECT csae.bonusName, csae.augmentatorValue FROM {eve_api_character_sheet_attribute_enhancers} csae LEFT JOIN {eve_api_characters} c ON c.characterID = csae.characterID WHERE c.characterName = :characterName', array(
+      ':characterName' => (string) $character_name,
+    ));
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $row) {
+          $api_data += array($row->bonusName => strip_tags(decode_entities($row->augmentatorValue)));
+      }
+    }
+
+    $result = db_query('SELECT cich.recordID, cich.corporationID, cich.startDate FROM {eve_api_character_info_corporation_history} cich LEFT JOIN {eve_api_characters} c ON c.characterID = cich.characterID WHERE c.characterName = :characterName', array(
+      ':characterName' => (string) $character_name,
+    ));
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $rows) {
+        $history_corp = array();
+
+        foreach ($rows as $name => $data) {
+          $history_corp += array($name => strip_tags(decode_entities($data)));
+        }
+
+        $api_data['history'][] = $history_corp;
+      }
     }
   }
   else {
@@ -1664,6 +1716,7 @@ function eve_api_create_key($account, $key_id, $v_code) {
       'allianceID' => (int) $character['allianceID'],
       'allianceName' => (string) $character['allianceName'],
       'allianceTicker' => (string) $character['allianceTicker'],
+      'accessMask' => (int) $characters['accessMask'],
       'errorID' => (int) $error,
       'deleted' => 0,
     ))->execute();
@@ -1818,6 +1871,7 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
       'allianceID' => (int) $character['allianceID'],
       'allianceName' => (string) $character['allianceName'],
       'allianceTicker' => (string) $character['allianceTicker'],
+      'accessMask' => (int) $characters['accessMask'],
       'errorID' => (int) $error,
       'deleted' => 0,
     ))->execute();
@@ -1978,6 +2032,7 @@ function eve_api_update_key($account, $key_id, $v_code, $api_id) {
       'allianceID' => (int) $character['allianceID'],
       'allianceName' => (string) $character['allianceName'],
       'allianceTicker' => (string) $character['allianceTicker'],
+      'accessMask' => (int) $characters['accessMask'],
       'errorID' => (int) $error,
       'deleted' => 0,
     ))->execute();
