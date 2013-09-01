@@ -1203,6 +1203,31 @@ function eve_api_schema() {
     'primary key' => array('typeID'),
   );
 
+  $schema['eve_api_access_mask_groups'] = array(
+    'description' => 'This table holds all the access mask groups retrieved from the API.',
+    'fields' => array(
+      'groupID' => array(
+        'description' => 'The unique Group ID .',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'The name of the Access Mask Group.',
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+      ),
+      'description' => array(
+        'description' => 'The description of the Access Mask Group.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+    ),
+    'unique keys' => array('groupID' => array('groupID')),
+    'primary key' => array('groupID'),
+  );
+
   $schema['eve_api_access_mask'] = array(
     'description' => 'This table holds all the access mask retrieved from the API.',
     'fields' => array(
@@ -1223,6 +1248,11 @@ function eve_api_schema() {
         'length' => 50,
         'not null' => TRUE,
       ),
+      'groupID' => array(
+        'description' => 'The group id the accsss mask belongs to.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
       'description' => array(
         'description' => 'The description of the Access Mask.',
         'type' => 'varchar',
@@ -1232,9 +1262,9 @@ function eve_api_schema() {
     ),
     'indexes' => array(
       'type' => array('type'),
+      'groupID' => array('groupID'),
+      'accessmask' => array('accessmask'), 
     ),
-    'unique keys' => array('accessmask' => array('accessmask')),
-    'primary key' => array('accessmask'),
   );
 
   $schema['eve_api_blue_standings'] = array(

@@ -77,5 +77,5 @@ CONFIGURE User List
  1. Log in as an administrator on your Drupal site and go to the Modules page
     at admin/modules. Enable User List listed under Omni EVE API.
 
- 2. No further configuration required.  Access to the user list is available at
+ 2. No further configuration required. Access to the user list is available at
     /eve_api/user_list

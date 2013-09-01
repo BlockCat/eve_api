@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Functions related to connecting to Teamspeak3.
+ * Functions related to connecting to TeamSpeak3.
  */
 
 /**
@@ -180,7 +180,7 @@ function eve_api_teamspeak_get_groups(&$ts3) {
 }
 
 /**
- * Retrieve list of users currently connected to Teamspeak.
+ * Retrieve list of users currently connected to TeamSpeak.
  *
  * @param object $ts3
  *   The TeamSpeak connection object.
@@ -200,7 +200,7 @@ function eve_api_teamspeak_user_list(&$ts3) {
 }
 
 /**
- * Retrieve info on user currently connected to Teamspeak.
+ * Retrieve info on user currently connected to TeamSpeak.
  *
  * @param object $ts3
  *   The TeamSpeak connection object.

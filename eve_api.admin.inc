@@ -426,51 +426,15 @@ function eve_api_admin_roles_form_submit($form, &$form_state) {
  */
 function eve_api_admin_registration_form($form, &$form_state) {
   $header = array(
-    'accessmask' => array(
-      'data' => t('Mask'),
-      'field' => 'a.accessmask',
-    ),
     'name' => array(
       'data' => t('Name'),
-      'field' => 'a.name',
     ),
     'description' => array(
       'data' => t('Description'),
-      'field' => 'a.description',
     ),
   );
 
-  $options = $selected = array();
-
   $access_mask = variable_get('eve_api_access_mask', 268435455);
-
-  $result = db_select('eve_api_access_mask', 'a')
-    ->fields('a', array(
-      'accessmask',
-      'type',
-      'name',
-      'description',
-    ))
-    ->condition('type', 'Character', '=')
-    ->extend('PagerDefault')
-    ->limit(30)
-    ->extend('TableSort')
-    ->orderByHeader($header)
-    ->execute();
-
-  if ($result->rowCount()) {
-    foreach ($result->fetchAll() as $row) {
-      $options[$row->accessmask] = array(
-        'accessmask' => check_plain((int) $row->accessmask),
-        'name' => check_plain($row->name),
-        'description' => check_plain($row->description),
-      );
-
-      if (($access_mask & (int) $row->accessmask) == TRUE) {
-        $selected[$row->accessmask] = TRUE;
-      }
-    }
-  }
 
   $form['registration'] = array(
     '#type' => 'fieldset',
@@ -484,7 +448,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
   $form['registration']['standing'] = array(
     '#type' => 'textfield',
     '#title' => t('Standings'),
-    '#description' => t('Set the required standing to register on the site. Standing required will be equal to or greater than the value supplied.  Accepted values are 10.0 to -10.0'),
+    '#description' => t('Set the required standing to register on the site. Standing required will be equal to or greater than the value supplied. Accepted values are 10.0 to -10.0'),
     '#maxlength' => 5,
     '#size' => 10,
     '#weight' => 10,
@@ -528,16 +492,77 @@ function eve_api_admin_registration_form($form, &$form_state) {
   );
 
   $form['mask']['access_mask'] = array(
-    '#type' => 'tableselect',
-    '#header' => $header,
-    '#options' => $options,
-    '#default_value' => $selected,
-    '#empty' => t('Accessmask not retrieved.'),
+    '#type' => 'vertical_tabs',
     '#weight' => 10,
   );
 
-  $form['mask']['access_mask'][8]['#disabled'] = TRUE;
-  $form['mask']['access_mask'][8388608]['#disabled'] = TRUE;
+  $query = db_select('eve_api_access_mask', 'am');
+  $query->fields('am', array(
+      'accessmask',
+      'name',
+      'groupID',
+      'description',
+    ));
+  $query->condition('am.type', 'Character', '=');
+  $query->extend('PagerDefault')
+    ->limit(30)
+    ->extend('TableSort')
+    ->orderByHeader($header);
+  $result = $query->execute();
+
+  if ($result->rowCount()) {
+    $rows = $result->fetchAll();
+  }
+
+  $result_a = db_query('SELECT DISTINCT amg.groupID, amg.name, amg.description
+    FROM {eve_api_access_mask_groups} amg
+    LEFT JOIN {eve_api_access_mask} am ON am.groupID = amg.groupID
+    WHERE am.type = \'Character\' ORDER BY amg.groupID');
+
+  if ($result_a->rowCount()) {
+    foreach ($result_a->fetchAll() as $row_a) {
+      $options = $selected = array();
+
+      foreach ($rows as $row) {
+        if ($row_a->groupID != $row->groupID) {
+          continue;
+        }
+
+        $options[$row->accessmask] = array(
+          'name' => check_plain($row->name),
+          'description' => check_plain($row->description),
+        );
+
+        if (($access_mask & (int) $row->accessmask) == TRUE) {
+          $selected[$row->accessmask] = TRUE;
+        }
+      }
+
+      $form['mask']['access_mask'][(string) $row_a->groupID] = array(
+        '#type' => 'fieldset',
+        '#title' => (string) $row_a->name,
+        '#group' => 'access_mask',
+        '#collapsed' => FALSE,
+        '#collapsible' => TRUE,
+        '#weight' => (int) $row_a->groupID,
+      );
+
+      $group_name = strtolower((string) $row_a->name);
+      $group_name = str_replace(' ', '', $group_name);
+
+      $form['mask']['access_mask'][(string) $row_a->groupID][$group_name] = array(
+        '#type' => 'tableselect',
+        '#header' => $header,
+        '#options' => $options,
+        '#default_value' => $selected,
+        '#empty' => t('Accessmask not retrieved.'),
+        '#weight' => 0,
+      );
+    }
+  }
+
+  $form['mask']['access_mask'][3]['privateinformation'][8]['#disabled'] = TRUE;
+  $form['mask']['access_mask'][4]['publicinformation'][8388608]['#disabled'] = TRUE;
 
   $form['mask']['pager'] = array(
     '#theme' => 'pager',
@@ -580,8 +605,20 @@ function eve_api_admin_registration_form_validate($form, &$form_state) {
 function eve_api_admin_registration_form_submit($form, &$form_state) {
   $new_access_mask = 8388616;
 
-  foreach ((array) $form_state['values']['access_mask'] as $access_bit) {
-    $new_access_mask = $new_access_mask + (int) $access_bit;
+  $result = db_query('SELECT DISTINCT amg.name, amg.groupID
+    FROM {eve_api_access_mask_groups} amg
+    LEFT JOIN {eve_api_access_mask} am ON am.groupID = amg.groupID
+    WHERE am.type = \'Character\'');
+
+  if ($result->rowCount()) {
+    foreach ($result->fetchAll() as $row) {
+      $group_name = strtolower((string) $row->name);
+      $group_name = str_replace(' ', '', $group_name);
+
+      foreach ((array) $form_state['values'][$group_name] as $name => $value) {
+        $new_access_mask = $new_access_mask + (int) $value;
+      }
+    }
   }
 
   $access_mask = variable_get('eve_api_access_mask', 268435455);
@@ -761,7 +798,7 @@ function eve_api_admin_list_blues_form_submit($form, &$form_state) {
       }
     }
 
-    drupal_set_message(t('The Alliance Blue Standings List has been updated, the users have been manually added to the cron queue to check standings.  This can take a while to process.'));
+    drupal_set_message(t('The Alliance Blue Standings List has been updated, the users have been manually added to the cron queue to check standings. This can take a while to process.'));
   }
   else {
     drupal_set_message(t('Nothing changed.'), 'warning');
@@ -1169,7 +1206,7 @@ function eve_api_admin_list_corporations_form_submit($form, &$form_state) {
       }
     }
 
-    drupal_set_message(t('The Alliance Corporations have been updated, the users have been manually added to the cron queue to check standings.  This can take a while to process.'));
+    drupal_set_message(t('The Alliance Corporations have been updated, the users have been manually added to the cron queue to check standings. This can take a while to process.'));
   }
   else {
     drupal_set_message(t('Nothing changed.'), 'warning');
@@ -1554,7 +1591,7 @@ function eve_api_admin_add_whitelist_form($form, &$form_state) {
   $form['add_whitelist'] = array(
     '#type' => 'fieldset',
     '#title' => t('Add Whitelist'),
-    '#description' => t('Add characters to the whitelist, the key is not stored here, it is used to retrieve the characters on the API Key and add them to the whitelist.  There are times when you will have high profile members join your site, they may have sensitive e-mails or items in locations.  With this whitelist you are able to allow the user to register with a very limited and basic API Key, but still provide full functionality on the site.  Please provide the following <a href="@url" target="_blank">link</a> to have the new user create a new limited API Key, the user has the option to list all characters, or just a single character.', array('@url' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=8388680')),
+    '#description' => t('Add characters to the whitelist, the key is not stored here, it is used to retrieve the characters on the API Key and add them to the whitelist. There are times when you will have high profile members join your site, they may have sensitive e-mails or items in locations. With this whitelist you are able to allow the user to register with a very limited and basic API Key, but still provide full functionality on the site. Please provide the following <a href="@url" target="_blank">link</a> to have the new user create a new limited API Key, the user has the option to list all characters, or just a single character.', array('@url' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=8388680')),
     '#weight' => 0,
   );
 

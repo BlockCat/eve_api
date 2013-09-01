@@ -463,23 +463,32 @@ function eve_api_cron_api_mask_sync($item = NULL) {
   foreach ($xml->result->children() as $rowset) {
     $row_a = $rowset->attributes();
 
-    if ($row_a->name == 'callGroups') {
-      continue;
-    }
+    switch ((string) $row_a->name) {
+      case 'callGroups':
+        foreach ($rowset->children() as $rows) {
+          $row_b = $rows->attributes();
 
-    foreach ($rowset->children() as $rows) {
-      $row_b = $rows->attributes();
+          db_insert('eve_api_access_mask_groups')->fields(array(
+            'groupID' => (int) $row_b->groupID,
+            'name' => (string) $row_b->name,
+            'description' => (string) $row_b->description,
+          ))->execute();
+        }
+        break;
 
-      if ($row_b->type == 'Corporation') {
-        continue;
-      }
+      case 'calls':
+        foreach ($rowset->children() as $rows) {
+          $row_b = $rows->attributes();
 
-      db_insert('eve_api_access_mask')->fields(array(
-        'accessmask' => (int) $row_b->accessMask,
-        'type' => (string) $row_b->type,
-        'name' => (string) $row_b->name,
-        'description' => (string) $row_b->description,
-      ))->execute();
+          db_insert('eve_api_access_mask')->fields(array(
+            'accessmask' => (int) $row_b->accessMask,
+            'type' => (string) $row_b->type,
+            'name' => (string) $row_b->name,
+            'groupID' => (int) $row_b->groupID,
+            'description' => (string) $row_b->description,
+          ))->execute();
+        }
+        break;
     }
   }
 

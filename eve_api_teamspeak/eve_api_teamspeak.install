@@ -99,7 +99,7 @@ function eve_api_teamspeak_requirements($phase) {
   if ($phase == 'runtime') {
     // Report Omni EVE API version.
     $requirements['eve_api_teamspeak'] = array(
-      'title' => $t('Omni EVE API (Teamspeak)'),
+      'title' => $t('Omni EVE API (TeamSpeak)'),
       'value' => eve_api_teamspeak_version(),
       'severity' => REQUIREMENT_INFO,
     );

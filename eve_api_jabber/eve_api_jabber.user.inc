@@ -25,27 +25,20 @@ function eve_api_jabber_user_form($form, &$form_state, $account) {
 
   $uid = $account->uid;
 
-  $form['jabber'] = array(
-    '#type' => 'fieldset',
+  $form['jabber']['info'] = array(
+    '#type' => 'item',
     '#title' => t('Register for a Jabber Account.'),
-    '#weight' => 0,
-  );
-
-  $form['jabber']['howto'] = array(
-    '#type' => 'markup',
-    '#prefix' => '<p>',
-    '#markup' => t('If you do not have a Jabber Client already installed, you can download and install Trillian from <a href="@jabber_url" target="_blank">here</a>.', array(
-      '@jabber_url' => 'https://www.trillian.im/download/',
+    '#description' => t('If you do not have a Jabber Client already installed, you can download and install @client from <a href="@client_url" target="_blank">here</a>.', array(
+      '@client' => 'Trillian',
+      '@client_url' => 'https://www.trillian.im/download/',
     )),
-    '#suffix' => '</p>',
     '#weight' => 0,
   );
 
   $form['jabber']['username'] = array(
-    '#type' => 'markup',
-    '#prefix' => '<p>',
-    '#markup' => ($account->characterID != 0) ? t('Jabber Username: @jabber', array('@jabber' => eve_api_jabber_format_name($account->name) . '@' . variable_get('eve_api_jabber_domain', 'yourdomain.com'))) : t('Jabber Username: <a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/edit'))),
-    '#suffix' => '</p>',
+    '#type' => 'item',
+    '#title' => t('Username:'),
+    '#description' => ($account->characterID != 0) ? eve_api_jabber_format_name($account->name) . '@' . variable_get('eve_api_jabber_domain', 'yourdomain.com') : t('<a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/edit'))), 
     '#weight' => 10,
   );
 

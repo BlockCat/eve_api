@@ -58,7 +58,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
   $form['teamspeak']['server_password'] = array(
     '#type' => 'textfield',
     '#title' => t('Server Password'),
-    '#description' => t('If you require a password to connect to your Teamspeak, please input the password, otherwise leave this empty.'),
+    '#description' => t('If you require a password to connect to your TeamSpeak, please input the password, otherwise leave this empty.'),
     '#maxlength' => 50,
     '#size' => 60,
     '#weight' => 20,

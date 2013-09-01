@@ -142,7 +142,7 @@ function eve_api_form_user_register_form_alter(&$form, &$form_state) {
 
   $form['account']['#type'] = 'fieldset';
   $form['account']['#title'] = t('Blue Status Verified');
-  $form['account']['#description'] = t('Please select your main character from the drop down box.  This character will be used to identify yourself throughout the site and various tools.');
+  $form['account']['#description'] = t('Please select your main character from the drop down box. This character will be used to identify yourself throughout the site and various tools.');
 
   $form['#validate'] = array(
     'eve_api_user_register_form_validate',
@@ -286,7 +286,7 @@ function eve_api_user_register_form_validate(&$form, &$form_state) {
 
   if ($result->rowCount()) {
     if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
-      form_set_error('keyID', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
+      form_set_error('keyID', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked. Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
       form_set_error('vCode');
     }
   }
@@ -382,29 +382,132 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
  * @ingroup forms
  */
 function eve_api_enter_api_form($form, &$form_state) {
-  $form['enter_api'] = array(
-    '#type' => 'fieldset',
+  $form['verify']['info'] = array(
+    '#type' => 'item',
     '#title' => t('Verify Blue Status'),
-    '#description' => t('Please enter your EVE API in order to verify you qualify for an account.  A Full API is required for registration. Please ensure that the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'),
+    '#description' => t('Please enter your EVE API Key in order to verify you qualify for an account. Please ensure your key matches the options listed below.'),
     '#weight' => 0,
   );
 
-  $form['enter_api']['keyID'] = array(
+  $allow_expires = variable_get('eve_api_require_expires', FALSE) ? t('You may set an expiry, but the preferred method is to tick the box "No Expiry".') : t('Please tick the box "No Expiry".');
+  $allow_type = variable_get('eve_api_require_type', TRUE) ? t('Please set this to "All".') : t('You may select your main character or "All".');
+
+  $form['verify']['help_character'] = array(
+    '#type' => 'item',
+    '#title' => t('Character:'),
+    '#description' => $allow_type,
+    '#weight' => 10,
+  );
+
+  $form['verify']['help_type'] = array(
+    '#type' => 'item',
+    '#title' => t('Type:'),
+    '#description' => t('Please set this to "Character".'),
+    '#weight' => 20,
+  );
+
+  $form['verify']['help_expire'] = array(
+    '#type' => 'item',
+    '#title' => t('Expires:'),
+    '#description' => $allow_expires,
+    '#weight' => 30,
+  );
+
+  $form['verify']['help_mask'] = array(
+    '#type' => 'item',
+    '#title' => t('Access Mask:'),
+    '#suffix' => '<br clear="all" />',
+    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the above access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('eve_api_access_mask', 268435455))),
+    '#weight' => 40,
+  );
+
+  $header = array(
+    'name' => array(
+      'data' => t('Name'),
+    ),
+    'description' => array(
+      'data' => t('Description'),
+    ),
+  );
+
+  $access_mask = variable_get('eve_api_access_mask', 268435455);
+
+  $form['verify']['help_mask']['access_mask'] = array(
+    '#type' => 'vertical_tabs',
+    '#weight' => 0,
+  );
+
+  $result = db_query('SELECT am.accessmask, am.name, am.description, am.groupID
+    FROM {eve_api_access_mask} am
+    WHERE am.type = \'Character\' AND am.accessmask & :accessmask ORDER BY am.name', array(
+    ':accessmask' => $access_mask,
+  ));
+
+  if ($result->rowCount()) {
+    $rows = $result->fetchAll();
+  }
+
+  $result_a = db_query('SELECT DISTINCT amg.groupID, amg.name, amg.description
+    FROM {eve_api_access_mask_groups} amg
+    LEFT JOIN {eve_api_access_mask} am ON am.groupID = amg.groupID
+    WHERE am.type = \'Character\' AND am.accessmask & :accessmask ORDER BY amg.groupID', array(
+    ':accessmask' => $access_mask,
+  ));
+
+  if ($result_a->rowCount()) {
+    foreach ($result_a->fetchAll() as $row_a) {
+      $options = array();
+
+      foreach ($rows as $row) {
+        if ($row_a->groupID != $row->groupID) {
+          continue;
+        }
+
+        $options[$row->accessmask] = array(
+          'name' => check_plain($row->name),
+          'description' => check_plain($row->description),
+        );
+      }
+
+      $form['verify']['help_mask']['access_mask'][(string) $row_a->groupID] = array(
+        '#type' => 'fieldset',
+        '#title' => (string) $row_a->name,
+        '#group' => 'access_mask',
+        '#collapsed' => FALSE,
+        '#collapsible' => TRUE,
+        '#weight' => (int) $row_a->groupID,
+      );
+
+      $group_name = strtolower((string) $row_a->name);
+      $group_name = str_replace(' ', '', $group_name);
+
+      $form['verify']['help_mask']['access_mask'][(string) $row_a->groupID][$group_name] = array(
+        '#markup' => theme('table', array(
+          'header' => $header,
+          'rows' => $options,
+          'empty' => t('No options required.'),
+        )),
+        '#weight' => 0,
+      );
+    }
+  }
+
+  $form['verify']['keyID'] = array(
     '#type' => 'textfield',
     '#title' => t('Key ID'),
-    '#description' => t('Please enter your Key ID from the EVE API Page located <a href="@mask" target="_blank">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('eve_api_access_mask', 268435455))),
+    '#description' => t('Please enter your Key ID.'),
     '#required' => TRUE,
     '#maxlength' => 15,
-    '#weight' => 0,
+    '#weight' => 50,
   );
 
-  $form['enter_api']['vCode'] = array(
+  $form['verify']['vCode'] = array(
     '#type' => 'textfield',
     '#title' => t('Verification Code'),
-    '#description' => t('Please enter your Verification Code from the EVE API Page located <a href="@mask" target="_blank">here</a>.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('eve_api_access_mask', 268435455))),
+    '#description' => t('Please enter your Verification Code.'),
     '#required' => TRUE,
     '#maxlength' => 64,
-    '#weight' => 10,
+    '#weight' => 60,
   );
 
   if (!variable_get('eve_api_enable', FALSE)) {
@@ -472,7 +575,7 @@ function eve_api_enter_api_form_validate($form, &$form_state) {
 
     if ($result->rowCount()) {
       if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
-        form_set_error('keyID', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.  Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
+        form_set_error('keyID', t('Your account has been whitelisted, please ensure that the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked. Only (Public Information -> (Characterinfo and FacWarStats), (Private Information) -> (CharacterSheet)) are required.'));
         form_set_error('vCode');
       }
     }
