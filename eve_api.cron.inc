@@ -881,6 +881,7 @@ function eve_api_cron_import_wallet_journal($item) {
   $query = (array) $item['query'];
 
   $row_count = '100';
+  $from_id = NULL;
 
   $wallet_query = $query + array(
     'characterID' => (int) $character_id,

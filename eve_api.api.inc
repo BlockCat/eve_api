@@ -1769,7 +1769,6 @@ function eve_api_create_key($account, $key_id, $v_code) {
 
     if ($account->name == (string) $character['characterName']) {
       $character_data = $character;
-      $character_found = TRUE;
     }
   }
 

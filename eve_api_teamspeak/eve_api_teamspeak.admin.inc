@@ -248,12 +248,6 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
       '#default_value' => variable_get('eve_api_teamspeak_reg_ban_time', 10),
     );
 
-    $header = array(
-      'type' => array(
-        'data' => t('Type'),
-      ),
-    );
-
     $options = $selected = array();
 
     $options['reg_message_enable'] = t('Message');
@@ -407,11 +401,6 @@ function eve_api_teamspeak_admin_form_submit($form, &$form_state) {
       variable_set('eve_api_teamspeak_user_time', (int) $form_state['values']['user_time']);
       variable_set('eve_api_teamspeak_reg_ban_time', (int) $form_state['values']['reg_ban_time']);
       variable_set('eve_api_teamspeak_user_ban_time', (int) $form_state['values']['user_ban_time']);
-
-      variable_set('eve_api_teamspeak_reg_message', (string) $form_state['input']['reg_message']);
-      variable_set('eve_api_teamspeak_reg_poke', (string) $form_state['input']['reg_poke']);
-      variable_set('eve_api_teamspeak_user_message', (string) $form_state['input']['user_message']);
-      variable_set('eve_api_teamspeak_user_poke', (string) $form_state['input']['user_poke']);
 
       foreach ((array) $form_state['values']['reg_options'] as $field => $value) {
         $field = 'eve_api_teamspeak_' . (string) $field;

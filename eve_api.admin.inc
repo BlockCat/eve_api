@@ -615,8 +615,8 @@ function eve_api_admin_registration_form_submit($form, &$form_state) {
       $group_name = strtolower((string) $row->name);
       $group_name = str_replace(' ', '', $group_name);
 
-      foreach ((array) $form_state['values'][$group_name] as $name => $value) {
-        $new_access_mask = $new_access_mask + (int) $value;
+      foreach ((array) $form_state['values'][$group_name] as $access_bit) {
+        $new_access_mask = $new_access_mask + (int) $access_bit;
       }
     }
   }
