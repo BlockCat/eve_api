@@ -1795,10 +1795,6 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
   $updated = date('Y-m-d H:i:s', time());
   $uid = (int) $account->uid;
 
-  $character_found = FALSE;
-  $error_found = FALSE;
-  $character_data = FALSE;
-
   $query = array(
     'keyID' => $key_id,
     'vCode' => $v_code,
@@ -1808,16 +1804,11 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
 
   $error = 0;
 
-  if (isset($characters['error'])) {
-    if ($api_id == 0) {
-      return array(
-        'error' => TRUE,
-        'error_found' => $error_found,
-        'character_data' => $character_data,
-        'character_found' => $character_found,
-      );
-    }
+  if ($api_id == 0) {
+    return TRUE;
+  }
 
+  if (isset($characters['error'])) {
     db_merge('eve_api_keys')->key(array('apiID' => (int) $api_id))->fields(array(
       'apiID' => (int) $api_id,
       'errorID' => (int) $characters['error'],
@@ -1826,29 +1817,17 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
 
     if ((int) $characters['error'] == 403) {
       db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error'], 'deleted' => 1))->condition('apiID', (int) $api_id, '=')->execute();
+      return TRUE;
     }
     else {
       db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error']))->condition('apiID', (int) $api_id, '=')->execute();
-      $error_found = TRUE;
+      return FALSE;
     }
-
-    return array(
-      'error' => FALSE,
-      'error_found' => $error_found,
-      'character_data' => $character_data,
-      'character_found' => $character_found,
-    );
   }
 
   if (!isset($characters['characters'])) {
     watchdog('eve_api', 'Error occured, should never happen. (' . drupal_http_build_query($query) . ')<br /><pre>' . print_r($characters, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
-
-    return array(
-      'error' => TRUE,
-      'error_found' => $error_found,
-      'character_data' => $character_data,
-      'character_found' => $character_found,
-    );
+    return TRUE;
   }
 
   if (isset($characters['errorCode'])) {
@@ -1892,12 +1871,7 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
   ))->execute();
 
   if ($error == 1) {
-    return array(
-      'error' => FALSE,
-      'error_found' => $error_found,
-      'character_data' => $character_data,
-      'character_found' => $character_found,
-    );
+    return TRUE;
   }
 
   foreach ($characters['characters'] as $character) {
@@ -1922,19 +1896,9 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
       'errorID' => (int) $error,
       'deleted' => 0,
     ))->execute();
-
-    if ($account->name == (string) $character['characterName']) {
-      $character_found = TRUE;
-      $character_data = $character;
-    }
   }
 
-  return array(
-    'error' => FALSE,
-    'error_found' => $error_found,
-    'character_data' => $character_data,
-    'character_found' => $character_found,
-  );
+  return FALSE;
 }
 
 /**

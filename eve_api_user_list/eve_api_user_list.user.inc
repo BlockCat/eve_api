@@ -149,15 +149,15 @@ function eve_api_user_list_user_general_page($id, $character_data, $is_director,
   switch ($type) {
     default:
     case 0:
-      $title = t('List of All Users and some basic information.');
+      $title = t('List of All Characters and some basic information.');
       break;
 
     case 1:
-      $title = t('List of Corporation Users and some basic information.');
+      $title = t('List of Corporation Characters and some basic information.');
       break;
 
    case 2:
-      $title = t('List of Alliance Users and some basic information.');
+      $title = t('List of Alliance Characters and some basic information.');
       break;
   }
 

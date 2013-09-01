@@ -552,7 +552,7 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
 
   module_invoke_all('eve_api_user_update', $account);
 
-  if ($characters['error'] == TRUE) {
+  if ($characters == TRUE) {
     drupal_set_message(t('There was an error updateing the API Key!'), 'error');
   }
   else {
