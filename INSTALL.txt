@@ -1,6 +1,39 @@
 INSTALLATION
 ------------
 
+ 1. Configure your cron to run through your servers crontab and to run every
+    minute. For more information please open the below link. 
+
+    https://drupal.org/node/23714
+
+ 2. Retrieve the latest version of Omni EVE API from the project page.
+
+    http://drupal.org/project/eve_api
+
+ 3. Create the folder sites/all/modules/eve_api if it does not exist.
+
+ 4. Upload all the files/folders from the zip/tar.gz from step 2 and upload it
+    to your Drupal installation under sites/all/modules/eve_api.
+
+    If done correctly you should see the file eve_api.module and various
+    other files/folders when you navigate to sites/all/modules/eve_api.
+
+ 5. Log in as an administrator on your Drupal site and go to the Modules page
+    at admin/modules. Enable Omni EVE API listed under Omni EVE API.
+
+ 6. Still logged in as an administrator, go to EVE API page at
+    admin/eve_api/settings. Registrations will be disabled until a valid
+    Corporation API Key is entered. Create or retrieve your Corporation API Key
+    from http://goo.gl/LDks44 and enter the "Key ID" and "Verification Code" in
+    the appropriate fields. Be sure to tick the check-box "Enable Omni EVE API"
+    and click on "Update". It may take up to a minute for the cron task to run
+    and pull the data from the EVE API. Once data has been successfully
+    retrieved the module will be enabled and user registrations will be turned
+    back on.
+
+CONFIGURE TeamSpeak 3
+---------------------
+
  1. Download the TeamSpeak 3 PHP Framework.
 
     http://goo.gl/YJavKs
@@ -14,46 +47,19 @@ INSTALLATION
     If done correctly you should see the file TeamSpeak3.php and various other
     files/folders when you navigate to sites/all/libraries/TeamSpeak3.
 
- 4. Retrieve the latest version of Omni EVE API from the git repository.
-
-    http://drupalcode.org/project/eve_api.git
-
- 5. Create the folder sites/all/modules/eve_api if it does not exist.
-
- 6. Upload all the files/folders from the git repository and upload it to your
-    Drupal installation under sites/all/modules/eve_api.
-
-    If done correctly you should see the file eve_api.module and various
-    other files/folders when you navigate to sites/all/modules/eve_api.
-
- 7. Log in as an administrator on your Drupal site and go to the Modules page
-    at admin/modules. Enable Omni EVE API listed under Omni EVE API.
-
- 8. Still logged in as an administrator, go to EVE API page at
-    admin/eve_api. Registrations will be disabled until a valid
-    Alliance API Key is entered. Create or retrieve your Alliance API Key from
-    http://goo.gl/LDks44 and enter the "Key ID" and "Verification Code" in the
-    appropriate fields. Be sure to tick the check-box "Enable Omni EVE API" and
-    click on "Update". It may take up to a minute for the cron task to run and
-    pull the data from the EVE API. Once data has been successfully retrieved
-    the module will be enabled and user registrations will be turned back on.
-
-CONFIGURE TeamSpeak 3
----------------------
-
- 1. Log in as an administrator on your Drupal site and go to the Modules page
+ 4. Log in as an administrator on your Drupal site and go to the Modules page
     at admin/modules. Enable TeamSpeak listed under Omni EVE API.
 
- 2. Log in as an administrator on your Drupal site and go to the EVE API
+ 5. Log in as an administrator on your Drupal site and go to the EVE API
     TeamSpeak 3 settings page at admin/eve_api/teamspeak.
 
- 3. Enter all the information as requested in the fields. Be sure to tick the
+ 6. Enter all the information as requested in the fields. Be sure to tick the
     check-box "Enable TeamSpeak 3 Connection" and click on "Submit". (See NOTE)
 
- 4. You will be notified if the connection to the TeamSpeak 3 server is
+ 7. You will be notified if the connection to the TeamSpeak 3 server is
     successful.
 
- 5. If the TeamSpeak 3 connection is successful, you will have the option to
+ 8. If the TeamSpeak 3 connection is successful, you will have the option to
     select a Bypass Group. Users in the Bypass Group will not be pestered or
     kicked if not registered or if the nickname is not correct on the server.
 
