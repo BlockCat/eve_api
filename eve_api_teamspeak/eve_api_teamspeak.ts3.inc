@@ -102,7 +102,7 @@ function eve_api_teamspeak_connect($check = FALSE) {
     $replacements = array( ' ', '|', '/');
     $nickname = str_replace($chars, $replacements, variable_get('eve_api_teamspeak_query_nickname', 'Teamspeak_Bot'));
     $nickname = str_replace(array("\t", "\v", "\r", "\n", "\f"), '', $nickname);
-    $nickname = $nickname . rand(1, 20);
+    $nickname = $nickname . rand(1, 1000);
 
     $ts3->request('clientupdate client_nickname=' . $nickname);
     $ts3->whoamiSet('client_nickname', $nickname);

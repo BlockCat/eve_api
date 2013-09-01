@@ -13,7 +13,6 @@
  * @ingroup forms
  */
 function eve_api_teamspeak_admin_form($form, &$form_state) {
-eve_api_teamspeak_cron_role_sync(1);
   $form['teamspeak'] = array(
     '#type' => 'fieldset',
     '#title' => t('Configure TeamSpeak 3 Connection'),
