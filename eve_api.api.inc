@@ -589,7 +589,6 @@ function eve_api_get_character_info($character) {
   $is_training = $row['skillInTraining'];
   $uid = $row['uid'];
   $character_id = $row['characterID'];
-  $character_name = $row['characterName'];
 
   $query = db_select('eve_api_characters', 'c');
   $query->join('eve_api_character_sheet', 'cs', 'cs.characterID = c.characterID');
@@ -1685,8 +1684,6 @@ function eve_api_list_api_simple($uid) {
 function eve_api_create_key($account, $key_id, $v_code) {
   $created = date('Y-m-d H:i:s', time());
   $uid = (int) $account->uid;
-
-  $character_found = FALSE;
 
   $query = array(
     'keyID' => $key_id,

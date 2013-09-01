@@ -39,7 +39,6 @@ function eve_api_user_list_user_page($id = NULL) {
       switch ((int) $id) {
         case (int) $row['corporationID']:
           $type = 1;
-          $title = t('List of Corporation Users and some basic information.');
           drupal_set_title(t('@name User List', array('@name' => $row['corporationName'])));
           if ($is_director || $is_good) {
             $output = eve_api_user_list_user_private_page($id, $character_data, $is_director, $is_good);
@@ -51,13 +50,11 @@ function eve_api_user_list_user_page($id = NULL) {
 
         case (int) $row['allianceID']:
           $type = 2;
-          $title = t('List of Alliance Users and some basic information.');
           drupal_set_title(t('@name User List', array('@name' => $row['allianceName'])));
           $output = eve_api_user_list_user_general_page($id, $character_data, $is_director, $is_good, $type);
           break;
 
         case (int) $row['characterID']:
-          $title = t('Information on @name.', array('@name' => $row['characterName']));
           drupal_set_title($row['characterName']);
           $output = eve_api_user_list_user_character_page($id, $character_data, $is_director, $is_good);
           break;
@@ -263,7 +260,7 @@ function eve_api_user_list_user_private_page($corporation_id, $character_data, $
 
   $output['corporation_user_list_description'] = array(
     '#type' => 'item',
-    '#title' => t('List of Corporation Users and some basic information.'),
+    '#title' => t('List of Corporation Users and private information.'),
     '#weight' => 0,
   );
 
