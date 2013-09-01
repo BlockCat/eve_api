@@ -226,7 +226,7 @@ function eve_api_menu() {
  * Access callback for user omni eve api editing.
  */
 function eve_api_edit_access($account) {
-  return (($GLOBALS['user']->uid == $account->uid) || user_access('moderate eve_api users')) && $account->uid > 0;
+  return (($GLOBALS['user']->uid == $account->uid) || user_access('moderate eve_api users') || user_access('administer eve_api settings')) && $account->uid > 0;
 }
 
 /**

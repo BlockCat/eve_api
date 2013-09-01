@@ -48,14 +48,22 @@ CONFIGURE TeamSpeak 3
     TeamSpeak 3 settings page at admin/eve_api/teamspeak.
 
  3. Enter all the information as requested in the fields. Be sure to tick the
-    check-box "Enable TeamSpeak 3 Connection" and click on "Submit".
+    check-box "Enable TeamSpeak 3 Connection" and click on "Submit". (See NOTE)
 
  4. You will be notified if the connection to the TeamSpeak 3 server is
     successful.
 
  5. If the TeamSpeak 3 connection is successful, you will have the option to
     select a Bypass Group. Users in the Bypass Group will not be pestered or
-    kicked if not registered or if the name is not correct on the server.
+    kicked if not registered or if the nickname is not correct on the server.
+
+ NOTE: Before enableing the TeamSpeak connection, you may want to create a
+    permission group on TeamSpeak called "Default Corporation".  Any new groups
+    created by Omni EVE API will first look for this group to use as a template
+    for any groups created.  This may be helpful if you have a large number of
+    corporations within your alliance that require similar settings.  Otherwise,
+    the new groups will be created based off the "Guest" role, with no
+    permissions.
 
 CONFIGURE OPENFIRE (JABBER)
 ---------------------------
@@ -77,5 +85,21 @@ CONFIGURE User List
  1. Log in as an administrator on your Drupal site and go to the Modules page
     at admin/modules. Enable User List listed under Omni EVE API.
 
- 2. No further configuration required. Access to the user list is available at
-    /eve_api/user_list
+ 2. Log in as an administrator on your Drupal site and go to the EVE API
+    User List settings page at admin/eve_api/user_list.
+
+ 3. You can set the access level to the private api key information available
+    through the User List.
+
+    Users with "Moderate Users" or "Admin EVE API" roles have access to view
+    private information for all characters.
+
+    Users with the "Access EVE API Private User List" role are only able to
+    view private information for users within thier own corporation.
+
+    There are 3 options available for viewing the private information within
+    corporations.  Director, CEO, and Permission only.  Permission only refers
+    to the role "Access EVE API Private User List".
+
+ 4. Access to the User List is available at /eve_api/user_list you may create
+    a link anywhere on your site.

@@ -191,7 +191,7 @@ function eve_api_user_add_api_form_submit($form, &$form_state) {
 }
 
 /**
- * Form constructor for the user list API form.
+ * Form constructor for the user List API form.
  *
  * @param string $account
  *   The account information for the user page being viewed.

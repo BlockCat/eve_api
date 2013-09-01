@@ -5,13 +5,13 @@
  */
 
 /**
- * Create the user list page.
+ * Create the User List page.
  */
 function eve_api_user_list_user_page($id = NULL) {
   $account = $GLOBALS['user'];
   $character_data = eve_api_get_basic_character_info($account->name);
   $is_director = eve_api_character_is_director($account->characterID, $character_data['corporationID']);
-  $is_good = user_access('moderate eve_api users');
+  $is_good = user_access('moderate eve_api users') || user_access('administer eve_api settings');
 
   if (!isset($id)) {
     drupal_set_title(t('User List'));
@@ -73,7 +73,7 @@ function eve_api_user_list_user_page($id = NULL) {
 }
 
 /**
- * Create the user list page.
+ * Create the User List page.
  */
 function eve_api_user_list_user_general_page($id, $character_data, $is_director, $is_good, $type) {
   $header = array(
@@ -185,7 +185,7 @@ function eve_api_user_list_user_general_page($id, $character_data, $is_director,
 }
 
 /**
- * Create the director user list page.
+ * Create the director User List page.
  */
 function eve_api_user_list_user_private_page($corporation_id, $character_data, $is_director, $is_good) {
   $header = array(
@@ -282,7 +282,7 @@ function eve_api_user_list_user_private_page($corporation_id, $character_data, $
 }
 
 /**
- * Create the character user list page.
+ * Create the character User List page.
  */
 function eve_api_user_list_user_character_page($character_id, $character_data, $is_director, $is_good) {
   global $user, $is_https;
@@ -322,7 +322,7 @@ function eve_api_user_list_user_character_page($character_id, $character_data, $
   $output['profile']['eve_api_private'] = array();
 
   $is_director = eve_api_user_list_private_access($character_data['corporationID']);
-  $is_good = user_access('moderate eve_api users');
+  $is_good = user_access('moderate eve_api users') || user_access('administer eve_api settings');
 
   $output['profile']['eve_api_attributes'] += array(
     '#theme_wrappers' => array('user_profile_category'),

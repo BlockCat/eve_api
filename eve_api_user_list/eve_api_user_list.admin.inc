@@ -5,7 +5,7 @@
  */
 
 /**
- * Form constructor for the user list form.
+ * Form constructor for the User List form.
  *
  * @see eve_api_user_list_admin_form_validate()
  * @see eve_api_user_list_admin_form_submit()
