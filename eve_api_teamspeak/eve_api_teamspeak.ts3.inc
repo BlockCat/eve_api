@@ -75,12 +75,12 @@ function eve_api_teamspeak_format_name($character_name) {
 }
 
 /**
- * Test the connection to the TeamSpeak 3 Server.
+ * Connect to the TeamSpeak 3 Server.
  *
  * @return object
  *   The TeamSpeak connection object.
  */
-function eve_api_teamspeak_connection($check = FALSE) {
+function eve_api_teamspeak_connect($check = FALSE) {
   if ((!variable_get('eve_api_teamspeak_enable', FALSE) || !variable_get('eve_api_teamspeak_framework_installed', FALSE)) && !$check) {
     throw new EveApiException(t('TeamSpeak 3 Connection disabled.'));
   }
@@ -95,16 +95,43 @@ function eve_api_teamspeak_connection($check = FALSE) {
   }
 
   try {
-    $query = 'serverquery://' . variable_get('eve_api_teamspeak_query_username', 'Username') . ':' . variable_get('eve_api_teamspeak_query_password', 'Password') . '@' . variable_get('eve_api_teamspeak_hostname', '127.0.0.1') . ':' . variable_get('eve_api_teamspeak_query_port', 10011) . '/?server_port=' . variable_get('eve_api_teamspeak_server_port', 9987) . '&blocking=0';
+    $query = 'serverquery://' . variable_get('eve_api_teamspeak_query_username', 'Username') . ':' . variable_get('eve_api_teamspeak_query_password', 'Password') . '@' . variable_get('eve_api_teamspeak_hostname', '127.0.0.1') . ':' . variable_get('eve_api_teamspeak_query_port', 10011) . '/?server_port=' . variable_get('eve_api_teamspeak_server_port', 9987);
     $ts3 = TeamSpeak3::factory($query);
-    $ts3->whoamiSet('client_nickname', 'OEABOT');
-    $ts3->setPredefinedQueryName('OEABOT');
+
+    $chars = array('\s','\p','\/');
+    $replacements = array( ' ', '|', '/');
+    $nickname = str_replace($chars, $replacements, variable_get('eve_api_teamspeak_query_nickname', 'Teamspeak_Bot'));
+    $nickname = str_replace(array("\t", "\v", "\r", "\n", "\f"), '', $nickname);
+    $nickname = $nickname . rand(1, 20);
+
+    $ts3->request('clientupdate client_nickname=' . $nickname);
+    $ts3->whoamiSet('client_nickname', $nickname);
+    $ts3->setPredefinedQueryName($nickname);
   }
   catch (TeamSpeak3_Exception $e) {
     throw new EveApiException(t('TeamSpeak 3 Connection failed. Error: @error', array('@error' => check_plain($e->getMessage()))));
   }
 
   return $ts3;
+}
+
+/**
+ * Disconnect from the TeamSpeak 3 Server.
+ *
+ * @return object
+ *   The TeamSpeak connection object.
+ */
+function eve_api_teamspeak_disconnect(&$ts3, $check = FALSE) {
+  if ((!variable_get('eve_api_teamspeak_enable', FALSE) || !variable_get('eve_api_teamspeak_framework_installed', FALSE)) && !$check) {
+    throw new EveApiException(t('TeamSpeak 3 Connection disabled.'));
+  }
+
+  try {
+    unset($ts3);
+  }
+  catch (TeamSpeak3_Exception $e) {
+    throw new EveApiException(t('TeamSpeak 3 Connection failed. Error: @error', array('@error' => check_plain($e->getMessage()))));
+  }
 }
 
 /**

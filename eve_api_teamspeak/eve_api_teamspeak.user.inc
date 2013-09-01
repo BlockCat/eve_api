@@ -82,10 +82,11 @@ function eve_api_teamspeak_user_form_validate($form, &$form_state) {
   }
 
   try {
-    $ts3 = eve_api_teamspeak_connection();
+    $ts3 = eve_api_teamspeak_connect();
     $teamspeak_name = eve_api_teamspeak_format_name($account->name);
     $teamspeak_data = eve_api_teamspeak_user_by_name($ts3, $teamspeak_name);
     unset($teamspeak_data);
+    eve_api_teamspeak_disconnect($ts3);
   }
   catch (EveApiException $e) {
     form_set_error('teamspeak', check_plain($e->getMessage()));
@@ -102,7 +103,7 @@ function eve_api_teamspeak_user_form_submit($form, &$form_state) {
   $uid = (int) $account->uid;
 
   try {
-    $ts3 = eve_api_teamspeak_connection();
+    $ts3 = eve_api_teamspeak_connect();
     $teamspeak_name = eve_api_teamspeak_format_name($account->name);
     $teamspeak_data = eve_api_teamspeak_user_by_name($ts3, $teamspeak_name);
     $teamspeak_uid = (string) $teamspeak_data->client_unique_identifier;
@@ -123,6 +124,7 @@ function eve_api_teamspeak_user_form_submit($form, &$form_state) {
 
     // Need to assign roles.
     drupal_set_message(t('TeamSpeak access granted.'));
+    eve_api_teamspeak_disconnect($ts3);
   }
   catch (EveApiException $e) {
     drupal_set_message(t('TeamSpeak connection failed, please try again later. Error: @error', array('@error' => check_plain($e->getMessage()))), 'error');

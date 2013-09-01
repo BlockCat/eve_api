@@ -76,8 +76,9 @@ function eve_api_teamspeak_menu() {
 function eve_api_teamspeak_user_delete($account) {
   if (variable_get('eve_api_teamspeak_enable', FALSE)) {
     try {
-      $ts3 = eve_api_teamspeak_connection();
+      $ts3 = eve_api_teamspeak_connect();
       eve_api_teamspeak_delete_user($ts3, $account->teamspeakDBID);
+      eve_api_teamspeak_disconnect($ts3);
     }
     catch (EveApiException $e) {
       // Log Error ?

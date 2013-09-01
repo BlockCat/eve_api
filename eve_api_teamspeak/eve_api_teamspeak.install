@@ -55,6 +55,7 @@ function eve_api_teamspeak_uninstall() {
   variable_del('eve_api_teamspeak_query_port');
   variable_del('eve_api_teamspeak_query_username');
   variable_del('eve_api_teamspeak_query_password');
+  variable_del('eve_api_teamspeak_query_nickname');
   variable_del('eve_api_teamspeak_nickname');
   variable_del('eve_api_teamspeak_bypass_group');
   variable_del('eve_api_teamspeak_reg_message');

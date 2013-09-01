@@ -113,7 +113,7 @@ function eve_api_teamspeak_cron_user_sync($item) {
 
     $uid = (int) $item['uid'];
     $teamspeak_dbid = (int) $item['teamspeakDBID'];
-    $ts3 = eve_api_teamspeak_connection();
+    $ts3 = eve_api_teamspeak_connect();
 
     $result = db_query('SELECT r.rid, r.name FROM {users_roles} ur INNER JOIN {role} r ON (r.rid = ur.rid) WHERE ur.uid = :uid', array(
       ':uid' => $uid,
@@ -142,6 +142,8 @@ function eve_api_teamspeak_cron_user_sync($item) {
         eve_api_teamspeak_user_remove_group($ts3, $rid, $teamspeak_dbid);
       }
     }
+
+    eve_api_teamspeak_disconnect($ts3);
   }
   catch (EveApiException $e) {
     watchdog('eve_api_teamspeak', 'Cron Update TeamSpeak User Permissions task has failed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
@@ -168,7 +170,7 @@ function eve_api_teamspeak_cron_user_check($item) {
   }
 
   try {
-    $ts3 = eve_api_teamspeak_connection();
+    $ts3 = eve_api_teamspeak_connect();
     $teamspeak_user_list = eve_api_teamspeak_user_list($ts3);
 
     foreach ($teamspeak_user_list as $teamspeak_user) {
@@ -298,6 +300,8 @@ function eve_api_teamspeak_cron_user_check($item) {
         }
       }
     }
+
+    eve_api_teamspeak_disconnect($ts3);
   }
   catch (EveApiException $e) {
     watchdog('eve_api_teamspeak', 'Cron Check TeamSpeak Names task has failed.', NULL, WATCHDOG_WARNING);
@@ -325,7 +329,7 @@ function eve_api_teamspeak_cron_role_sync($item) {
 
   try {
     $roles = user_roles();
-    $ts3 = eve_api_teamspeak_connection();
+    $ts3 = eve_api_teamspeak_connect();
     $corp_info = array();
 
     $result = db_query('SELECT corporationName, corporationTicker FROM {eve_api_alliance_corporations}');
@@ -353,6 +357,8 @@ function eve_api_teamspeak_cron_role_sync($item) {
 
       eve_api_teamspeak_group_create($ts3, $rname);
     }
+
+    eve_api_teamspeak_disconnect($ts3);
   }
   catch (EveApiException $e) {
     watchdog('eve_api_teamspeak', 'Cron Sync TeamSpeak Roles task has failed.', NULL, WATCHDOG_WARNING);

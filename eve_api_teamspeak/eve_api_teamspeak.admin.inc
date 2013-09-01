@@ -13,6 +13,7 @@
  * @ingroup forms
  */
 function eve_api_teamspeak_admin_form($form, &$form_state) {
+eve_api_teamspeak_cron_role_sync(1);
   $form['teamspeak'] = array(
     '#type' => 'fieldset',
     '#title' => t('Configure TeamSpeak 3 Connection'),
@@ -98,6 +99,17 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     '#default_value' => variable_get('eve_api_teamspeak_query_password', 'Password'),
   );
 
+  $form['teamspeak']['query_nickname'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Query Nickname'),
+    '#description' => t('The query nickname to use when connecting to the TeamSpeak 3 server.'),
+    '#required' => TRUE,
+    '#size' => 60,
+    '#maxlength' => 25,
+    '#weight' => 60,
+    '#default_value' => variable_get('eve_api_teamspeak_query_nickname', 'Teamspeak_Bot'),
+  );
+
   $form['teamspeak']['enable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable TeamSpeak 3 Connection'),
@@ -129,8 +141,9 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     try {
       $teamspeakgroups = array();
 
-      $ts3 = eve_api_teamspeak_connection();
+      $ts3 = eve_api_teamspeak_connect();
       $teamspeak_groups = $ts3->serverGroupList();
+      eve_api_teamspeak_disconnect($ts3);
 
       foreach ($teamspeak_groups as $teamspeak_group) {
         if ((int) $teamspeak_group->type == 1 && (string) $teamspeak_group->name != 'Guest') {
@@ -433,11 +446,15 @@ function eve_api_teamspeak_admin_form_validate($form, &$form_state) {
   variable_set('eve_api_teamspeak_query_username', (string) $form_state['values']['query_username']);
   variable_set('eve_api_teamspeak_query_password', (string) $form_state['values']['query_password']);
 
+  if (preg_match('/^[a-zA-Z0-9-_]+$/', (string) $form_state['values']['query_nickname']) != 1) {
+    form_set_error('query_nickname', t('TeamSpeak 3 Query Nickname only supports numbers, letters and spaces.'));
+  }
+
   if (variable_get('eve_api_teamspeak_framework_installed', FALSE)) {
-    if ((bool) $form_state['values']['enable']) {
+    if ((bool) $form_state['values']['enable'] && variable_get('eve_api_teamspeak_enable', FALSE) == FALSE) {
       try {
-        $ts3 = eve_api_teamspeak_connection(TRUE);
-        unset($ts3);
+        $ts3 = eve_api_teamspeak_connect(TRUE);
+        eve_api_teamspeak_disconnect($ts3, TRUE);
       }
       catch (EveApiException $e) {
         form_set_error('enable', check_plain($e->getMessage()));
@@ -456,6 +473,8 @@ function eve_api_teamspeak_admin_form_validate($form, &$form_state) {
  * @see eve_api_teamspeak_admin_form_validate()
  */
 function eve_api_teamspeak_admin_form_submit($form, &$form_state) {
+  variable_set('eve_api_teamspeak_query_nickname', (string) $form_state['values']['query_nickname']);
+
   if ((bool) $form_state['values']['enable']) {
     if (variable_get('eve_api_teamspeak_enable', FALSE)) {
       variable_set('eve_api_teamspeak_bypass_group', (int) $form_state['values']['bypass_group']);
@@ -469,8 +488,6 @@ function eve_api_teamspeak_admin_form_submit($form, &$form_state) {
       variable_set('eve_api_teamspeak_reg_poke', (string) $form_state['input']['reg_poke']);
       variable_set('eve_api_teamspeak_user_message', (string) $form_state['input']['user_message']);
       variable_set('eve_api_teamspeak_user_poke', (string) $form_state['input']['user_poke']);
-
-      $form_state['redirect'] = 'admin/eve_api/teamspeak';
 
       foreach ((array) $form_state['values']['reg_options'] as $field => $value) {
         $field = 'eve_api_teamspeak_' . (string) $field;
