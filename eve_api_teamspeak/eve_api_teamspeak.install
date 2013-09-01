@@ -58,16 +58,12 @@ function eve_api_teamspeak_uninstall() {
   variable_del('eve_api_teamspeak_query_nickname');
   variable_del('eve_api_teamspeak_nickname');
   variable_del('eve_api_teamspeak_bypass_group');
-  variable_del('eve_api_teamspeak_reg_message');
-  variable_del('eve_api_teamspeak_reg_poke');
   variable_del('eve_api_teamspeak_reg_ban_time');
   variable_del('eve_api_teamspeak_reg_message_enable');
   variable_del('eve_api_teamspeak_reg_poke_enable');
   variable_del('eve_api_teamspeak_reg_kick_enable');
   variable_del('eve_api_teamspeak_reg_ban_enable');
   variable_del('eve_api_teamspeak_reg_time');
-  variable_del('eve_api_teamspeak_user_message');
-  variable_del('eve_api_teamspeak_user_poke');
   variable_del('eve_api_teamspeak_user_ban_time');
   variable_del('eve_api_teamspeak_user_message_enable');
   variable_del('eve_api_teamspeak_user_poke_enable');

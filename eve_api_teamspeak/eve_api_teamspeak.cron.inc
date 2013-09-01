@@ -199,12 +199,6 @@ function eve_api_teamspeak_cron_user_check($item) {
           }
 
           $teamspeak_user->message('[color=red]' . t('To register, go to [url]@homepage[/url]', array('@homepage' => url('user/register', array('absolute' => TRUE)))) . '[/color]');
-
-          $message = variable_get('eve_api_teamspeak_reg_message', '');
-
-          if (!empty($message)) {
-            $teamspeak_user->message('[color=red]' . $message . '[/color]');
-          }
         }
 
         if (variable_get('eve_api_teamspeak_reg_poke_enable', FALSE)) {
@@ -218,15 +212,9 @@ function eve_api_teamspeak_cron_user_check($item) {
 
           $teamspeak_user->poke($message);
           $teamspeak_user->poke(t('To register, go to @homepage', array('@homepage' => url('user/register', array('absolute' => TRUE)))));
-
-          $message = variable_get('eve_api_teamspeak_reg_poke', '');
-
-          if (!empty($message)) {
-            $teamspeak_user->poke($message);
-          }
         }
 
-        if (variable_get('eve_api_teamspeak_reg_kick_enable', FALSE)) {
+        if (variable_get('eve_api_teamspeak_reg_kick_enable', FALSE) && variable_get('eve_api_teamspeak_reg_ban_enable', FALSE) == FALSE) {
           if (time() >= ($teamspeak_user->client_lastconnected + (60 * variable_get('eve_api_teamspeak_reg_time', 10)))) {
             $teamspeak_user->kick(TeamSpeak3::KICK_SERVER, t('To register, go to @homepage', array('@homepage' => url('user/register', array('absolute' => TRUE)))));
           }
@@ -258,12 +246,6 @@ function eve_api_teamspeak_cron_user_check($item) {
           }
 
           $teamspeak_user->message('[color=red]' . t('Nickname expected: !nickname', array('!nickname' => $expected_teamspeaknickname)) . '[/color]');
-
-          $message = eve_api_teamspeak_clean_input(variable_get('eve_api_teamspeak_user_message', ''));
-
-          if (!empty($message)) {
-            $teamspeak_user->message('[color=red]' . $message . '[/color]');
-          }
         }
 
         if (variable_get('eve_api_teamspeak_user_poke_enable', FALSE)) {
@@ -277,15 +259,9 @@ function eve_api_teamspeak_cron_user_check($item) {
 
           $teamspeak_user->poke($message);
           $teamspeak_user->poke(t('Nickname expected: !nickname', array('!nickname' => $expected_teamspeaknickname)));
-
-          $message = eve_api_teamspeak_clean_input(variable_get('eve_api_teamspeak_user_poke', ''));
-
-          if (!empty($message)) {
-            $teamspeak_user->poke($message);
-          }
         }
 
-        if (variable_get('eve_api_teamspeak_user_kick_enable', FALSE)) {
+        if (variable_get('eve_api_teamspeak_user_kick_enable', FALSE) && variable_get('eve_api_teamspeak_user_ban_enable', FALSE) == FALSE) {
           if (time() >= ($teamspeak_user->client_lastconnected + (60 * variable_get('eve_api_teamspeak_user_time', 10)))) {
             $teamspeak_user->kick(TeamSpeak3::KICK_SERVER, t('You should have fixed your nickname!'));
           }
