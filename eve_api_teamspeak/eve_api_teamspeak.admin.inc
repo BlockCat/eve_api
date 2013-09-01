@@ -252,8 +252,8 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
 
     $options['reg_message_enable'] = t('Message');
     $options['reg_poke_enable'] = t('Poke');
-    $options['reg_kick_enable'] = t('Kick');
-    $options['reg_ban_enable'] = t('Ban');
+    $options['reg_kick_enable'] = t('Kick - (Only when User Register Time Limit has expired.)');
+    $options['reg_ban_enable'] = t('Ban - (Only when User Register Time Limit has expired.)');
 
     $selected['reg_message_enable'] = variable_get('eve_api_teamspeak_reg_message_enable', FALSE);
     $selected['reg_poke_enable'] = variable_get('eve_api_teamspeak_reg_poke_enable', FALSE);
@@ -305,8 +305,8 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
 
     $options['user_message_enable'] = t('Message');
     $options['user_poke_enable'] = t('Poke');
-    $options['user_kick_enable'] = t('Kick');
-    $options['user_ban_enable'] = t('Ban');
+    $options['user_kick_enable'] = t('Kick - (Only when Correct Name Time Limit has expired.)');
+    $options['user_ban_enable'] = t('Ban - (Only when Correct Name Time Limit has expired.)');
 
     $selected['user_message_enable'] = variable_get('eve_api_teamspeak_user_message_enable', FALSE);
     $selected['user_poke_enable'] = variable_get('eve_api_teamspeak_user_poke_enable', FALSE);

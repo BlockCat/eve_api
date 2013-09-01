@@ -95,14 +95,14 @@ function eve_api_teamspeak_connect($check = FALSE) {
   }
 
   try {
-    $query = 'serverquery://' . variable_get('eve_api_teamspeak_query_username', 'Username') . ':' . variable_get('eve_api_teamspeak_query_password', 'Password') . '@' . variable_get('eve_api_teamspeak_hostname', '127.0.0.1') . ':' . variable_get('eve_api_teamspeak_query_port', 10011) . '/?server_port=' . variable_get('eve_api_teamspeak_server_port', 9987);
-    $ts3 = TeamSpeak3::factory($query);
-
     $chars = array('\s','\p','\/');
     $replacements = array( ' ', '|', '/');
     $nickname = str_replace($chars, $replacements, variable_get('eve_api_teamspeak_query_nickname', 'Teamspeak_Bot'));
     $nickname = str_replace(array("\t", "\v", "\r", "\n", "\f"), '', $nickname);
-    $nickname = $nickname . rand(1, 1000);
+    $nickname = $nickname . '_' . rand(1, 1000);
+
+    $query = 'serverquery://' . variable_get('eve_api_teamspeak_query_username', 'Username') . ':' . variable_get('eve_api_teamspeak_query_password', 'Password') . '@' . variable_get('eve_api_teamspeak_hostname', '127.0.0.1') . ':' . variable_get('eve_api_teamspeak_query_port', 10011) . '/?server_port=' . variable_get('eve_api_teamspeak_server_port', 9987);
+    $ts3 = TeamSpeak3::factory($query);
 
     $ts3->request('clientupdate client_nickname=' . $nickname);
     $ts3->whoamiSet('client_nickname', $nickname);
