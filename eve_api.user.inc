@@ -54,81 +54,9 @@ function eve_api_user_add_api_form($form, &$form_state, $account) {
   $form['add_api']['help_mask'] = array(
     '#type' => 'item',
     '#title' => t('Access Mask:'),
-    '#suffix' => '<br clear="all" />',
-    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the above access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('eve_api_access_mask', 268435455))),
+    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the correct access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('eve_api_access_mask', 268435455))),
     '#weight' => 40,
   );
-
-  $header = array(
-    'name' => array(
-      'data' => t('Name'),
-    ),
-    'description' => array(
-      'data' => t('Description'),
-    ),
-  );
-
-  $access_mask = variable_get('eve_api_access_mask', 268435455);
-
-  $form['add_api']['help_mask']['access_mask'] = array(
-    '#type' => 'vertical_tabs',
-    '#weight' => 0,
-  );
-
-  $result = db_query('SELECT am.accessmask, am.name, am.description, am.groupID
-    FROM {eve_api_access_mask} am
-    WHERE am.type = \'Character\' AND am.accessmask & :accessmask ORDER BY am.name', array(
-    ':accessmask' => $access_mask,
-  ));
-
-  if ($result->rowCount()) {
-    $rows = $result->fetchAll();
-  }
-
-  $result_a = db_query('SELECT DISTINCT amg.groupID, amg.name, amg.description
-    FROM {eve_api_access_mask_groups} amg
-    LEFT JOIN {eve_api_access_mask} am ON am.groupID = amg.groupID
-    WHERE am.type = \'Character\' AND am.accessmask & :accessmask ORDER BY amg.groupID', array(
-    ':accessmask' => $access_mask,
-  ));
-
-  if ($result_a->rowCount()) {
-    foreach ($result_a->fetchAll() as $row_a) {
-      $options = array();
-
-      foreach ($rows as $row) {
-        if ($row_a->groupID != $row->groupID) {
-          continue;
-        }
-
-        $options[$row->accessmask] = array(
-          'name' => check_plain($row->name),
-          'description' => check_plain($row->description),
-        );
-      }
-
-      $form['add_api']['help_mask']['access_mask'][(string) $row_a->groupID] = array(
-        '#type' => 'fieldset',
-        '#title' => (string) $row_a->name,
-        '#group' => 'access_mask',
-        '#collapsed' => FALSE,
-        '#collapsible' => TRUE,
-        '#weight' => (int) $row_a->groupID,
-      );
-
-      $group_name = strtolower((string) $row_a->name);
-      $group_name = str_replace(' ', '', $group_name);
-
-      $form['add_api']['help_mask']['access_mask'][(string) $row_a->groupID][$group_name] = array(
-        '#markup' => theme('table', array(
-          'header' => $header,
-          'rows' => $options,
-          'empty' => t('No options required.'),
-        )),
-        '#weight' => 0,
-      );
-    }
-  }
 
   $form['add_api']['keyID'] = array(
     '#type' => 'textfield',
@@ -539,81 +467,9 @@ function eve_api_user_update_api_form($form, &$form_state, $account, $api_id) {
   $form['update_api']['help_mask'] = array(
     '#type' => 'item',
     '#title' => t('Access Mask:'),
-    '#suffix' => '<br clear="all" />',
-    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the above access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('eve_api_access_mask', 268435455))),
+    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the correct access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('eve_api_access_mask', 268435455))),
     '#weight' => 40,
   );
-
-  $header = array(
-    'name' => array(
-      'data' => t('Name'),
-    ),
-    'description' => array(
-      'data' => t('Description'),
-    ),
-  );
-
-  $access_mask = variable_get('eve_api_access_mask', 268435455);
-
-  $form['update_api']['help_mask']['access_mask'] = array(
-    '#type' => 'vertical_tabs',
-    '#weight' => 0,
-  );
-
-  $result = db_query('SELECT am.accessmask, am.name, am.description, am.groupID
-    FROM {eve_api_access_mask} am
-    WHERE am.type = \'Character\' AND am.accessmask & :accessmask ORDER BY am.name', array(
-    ':accessmask' => $access_mask,
-  ));
-
-  if ($result->rowCount()) {
-    $rows = $result->fetchAll();
-  }
-
-  $result_a = db_query('SELECT DISTINCT amg.groupID, amg.name, amg.description
-    FROM {eve_api_access_mask_groups} amg
-    LEFT JOIN {eve_api_access_mask} am ON am.groupID = amg.groupID
-    WHERE am.type = \'Character\' AND am.accessmask & :accessmask ORDER BY amg.groupID', array(
-    ':accessmask' => $access_mask,
-  ));
-
-  if ($result_a->rowCount()) {
-    foreach ($result_a->fetchAll() as $row_a) {
-      $options = array();
-
-      foreach ($rows as $row) {
-        if ($row_a->groupID != $row->groupID) {
-          continue;
-        }
-
-        $options[$row->accessmask] = array(
-          'name' => check_plain($row->name),
-          'description' => check_plain($row->description),
-        );
-      }
-
-      $form['update_api']['help_mask']['access_mask'][(string) $row_a->groupID] = array(
-        '#type' => 'fieldset',
-        '#title' => (string) $row_a->name,
-        '#group' => 'access_mask',
-        '#collapsed' => FALSE,
-        '#collapsible' => TRUE,
-        '#weight' => (int) $row_a->groupID,
-      );
-
-      $group_name = strtolower((string) $row_a->name);
-      $group_name = str_replace(' ', '', $group_name);
-
-      $form['update_api']['help_mask']['access_mask'][(string) $row_a->groupID][$group_name] = array(
-        '#markup' => theme('table', array(
-          'header' => $header,
-          'rows' => $options,
-          'empty' => t('No options required.'),
-        )),
-        '#weight' => 0,
-      );
-    }
-  }
 
   $form['update_api']['keyID'] = array(
     '#type' => 'textfield',
