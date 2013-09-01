@@ -19,68 +19,48 @@
  * |
  * `-------- Major Version Change.
  */
-function eve_api_userlist_version() {
+function eve_api_user_list_version() {
   return '2.0.1.11';
 }
 
 /**
  * Implements hook_menu().
  */
-function eve_api_userlist_menu() {
+function eve_api_user_list_menu() {
   $items = array();
 
   $user_base = array(
     'page callback' => 'drupal_get_form',
-    'access arguments' => array('view eve_api_userlist'),
-    'file' => 'eve_api_userlist.user.inc',
+    'access arguments' => array('view eve_api_user_list'),
+    'file' => 'eve_api_user_list.user.inc',
   );
 
   $admin_base = array(
     'page callback' => 'drupal_get_form',
     'access arguments' => array('administer eve_api settings'),
-    'file' => 'eve_api_userlist.admin.inc',
+    'file' => 'eve_api_user_list.admin.inc',
   );
 
   if (variable_get('eve_api_enable', FALSE)) {
-    $items['admin/eve_api/userlist'] = array(
+    $items['admin/eve_api/user_list'] = array(
       'title' => 'User List',
       'description' => 'Configure and edit User List settings.',
-      'page arguments' => array('eve_api_userlist_admin_form'),
+      'page arguments' => array('eve_api_user_list_admin_form'),
       'weight' => 70,
     ) + $admin_base;
 
-    $items['eve_api/userlist'] = array(
+    $items['eve_api/user_list'] = array(
       'title' => 'User List',
-      'description' => 'List of all Characters registered on the site.',
-      'page callback' => 'eve_api_userlist_user_userlist_page',
+      'description' => 'List of Characters registered on the site.',
+      'page callback' => 'eve_api_user_list_user_page',
       'type' => MENU_LOCAL_TASK,
       'weight' => 0,
     ) + $user_base;
 
-    $items['eve_api/userlist/%'] = array(
-      'title' => 'Alliance User List',
-      'description' => 'List of all Characters within a specified Corporation or Alliance.',
-      'page callback' => 'eve_api_userlist_user_userlist_page',
-      'page arguments' => array(2),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 0,
-    ) + $user_base;
-
-    $items['eve_api/userlist/%/director'] = array(
-      'title' => 'Director Userlist',
-      'description' => 'Private Character Information available to Directors within thier own Corporation.',
-      'page callback' => 'eve_api_userlist_user_userlist_director_page',
-      'page arguments' => array(2),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => 0,
-      'access callback' => 'eve_api_userlist_private_access',
-      'access arguments' => array(2),
-    ) + $user_base;
-
-    $items['eve_api/userlist/%/character'] = array(
-      'title' => 'Character Information',
-      'description' => 'Information on a specific character in the database.',
-      'page callback' => 'eve_api_userlist_user_userlist_character_page',
+    $items['eve_api/user_list/%'] = array(
+      'title' => 'User List',
+      'description' => 'Information on a Alliance, Character or Corporation.',
+      'page callback' => 'eve_api_user_list_user_page',
       'page arguments' => array(2),
       'type' => MENU_LOCAL_TASK,
       'weight' => 0,
@@ -93,32 +73,32 @@ function eve_api_userlist_menu() {
 /**
  * Access callback for user omni eve api director/ceo check.
  */
-function eve_api_userlist_private_access($corporation_id) {
-  switch (variable_get('eve_api_userlist_private_access', 0)) {
+function eve_api_user_list_private_access($corporation_id) {
+  switch (variable_get('eve_api_user_list_private_access', 0)) {
     case 0:
-      return (eve_api_character_is_director($GLOBALS['user']->characterID, $corporation_id) || (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api_userlist private')) || user_access('moderate eve_api users'));
+      return (eve_api_character_is_director($GLOBALS['user']->characterID, $corporation_id) || (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api_user_list private')) || user_access('moderate eve_api users'));
 
     case 1:
-      return (eve_api_character_is_ceo($GLOBALS['user']->characterID, $corporation_id) || (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api_userlist private')) || user_access('moderate eve_api users'));
+      return (eve_api_character_is_ceo($GLOBALS['user']->characterID, $corporation_id) || (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api_user_list private')) || user_access('moderate eve_api users'));
 
     default:
     case 2:
-      return (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api_userlist private')) || user_access('moderate eve_api users');
+      return (eve_api_character_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api_user_list private')) || user_access('moderate eve_api users');
   }
 }
 
 /**
  * Implements hook_permission().
  */
-function eve_api_userlist_permission() {
+function eve_api_user_list_permission() {
   $permissions = array();
 
-  $permissions['view eve_api_userlist'] = array(
+  $permissions['view eve_api_user_list'] = array(
     'title' => t('Access EVE API User List'),
     'description' => t('Allow user to view the EVE API User List.'),
   );
 
-  $permissions['view eve_api_userlist private'] = array(
+  $permissions['view eve_api_user_list private'] = array(
     'title' => t('Access EVE API Private User List'),
     'description' => t('Allow user to view the Private EVE API User List information within their own corporation.'),
   );
@@ -129,7 +109,7 @@ function eve_api_userlist_permission() {
 /**
  * Implements hook_user_view().
  */
-function eve_api_userlist_user_view($account) {
+function eve_api_user_list_user_view($account) {
   global $user;
 
   if (!isset($account->content['eve_api_attributes'])) {
@@ -149,7 +129,12 @@ function eve_api_userlist_user_view($account) {
   }
 
   $character_data = eve_api_get_character_info($account->name);
-  $is_director = eve_api_userlist_private_access($character_data['corporationID']);
+
+  if ($character_data === FALSE) {
+    return;
+  }
+
+  $is_director = eve_api_user_list_private_access($character_data['corporationID']);
   $is_good = user_access('moderate eve_api users');
 
   $account->content['eve_api_attributes'] += array(
@@ -162,38 +147,46 @@ function eve_api_userlist_user_view($account) {
   $account->content['eve_api_attributes']['DoB'] = array(
     '#type' => 'user_profile_item',
     '#title' => t('Date of Birth'),
-    '#markup' => $character_data['DoB'],
+    '#markup' => check_plain($character_data['DoB']),
   );
 
   $account->content['eve_api_attributes']['race'] = array(
     '#type' => 'user_profile_item',
     '#title' => t('Race'),
-    '#markup' => $character_data['race'],
+    '#markup' => check_plain($character_data['race']),
   );
 
   $account->content['eve_api_attributes']['gender'] = array(
     '#type' => 'user_profile_item',
     '#title' => t('Gender'),
-    '#markup' => $character_data['gender'],
+    '#markup' => check_plain($character_data['gender']),
   );
 
   $account->content['eve_api_attributes']['securityStatus'] = array(
     '#type' => 'user_profile_item',
     '#title' => t('Security Status'),
-    '#markup' => $character_data['securityStatus'],
+    '#markup' => check_plain($character_data['securityStatus']),
   );
 
   $account->content['eve_api_attributes']['corporation'] = array(
     '#type' => 'user_profile_item',
     '#title' => t('Corporation'),
-    '#markup' => (($is_director || $is_good) ? l($character_data['corporationName'], 'eve_api/userlist/' . $character_data['corporationID'] . '/director') : l($character_data['corporationName'], 'eve_api/userlist/' . $character_data['corporationID'])) . ' (' . $character_data['corporationTicker'] . ')',
+    '#markup' => (($is_director || $is_good) ? l($character_data['corporationName'], 'eve_api/user_list/' . $character_data['corporationID']) : l($character_data['corporationName'], 'eve_api/user_list/' . $character_data['corporationID'])) . ' (' . $character_data['corporationTicker'] . ')',
   );
 
   $account->content['eve_api_attributes']['corporationDate'] = array(
     '#type' => 'user_profile_item',
     '#title' => t('Joined Corporation'),
-    '#markup' => $character_data['corporationDate'],
+    '#markup' => check_plain($character_data['corporationDate']),
   );
+
+  if ($character_data['allianceID'] != 0) {
+    $account->content['eve_api_attributes']['alliance'] = array(
+      '#theme' => 'user_profile_item',
+      '#title' => t('Alliance'),
+      '#markup' => l($character_data['allianceName'], 'eve_api/user_list/' . $character_data['allianceID']) . ' (' . $character_data['allianceTicker'] . ')',
+    );
+  }
 
   if (!$is_director && $user->uid != $account->uid && !$is_good) {
     return;
@@ -205,40 +198,40 @@ function eve_api_userlist_user_view($account) {
     $options += array(
       'intelligence' => array(
         'attribute' => 'Intelligence',
-        'points' => $character_data['intelligence'],
-        'bonus' => isset($character_data['intelligenceBonus']) ? $character_data['intelligenceBonus'] : 0,
+        'points' => check_plain($character_data['intelligence']),
+        'bonus' => isset($character_data['intelligenceBonus']) ? check_plain($character_data['intelligenceBonus']) : 0,
       ),
     );
 
     $options += array(
       'memory' => array(
         'attribute' => 'Memory',
-        'points' => $character_data['memory'],
-        'bonus' => isset($character_data['memoryBonus']) ? $character_data['memoryBonus'] : 0,
+        'points' => check_plain($character_data['memory']),
+        'bonus' => isset($character_data['memoryBonus']) ? check_plain($character_data['memoryBonus']) : 0,
       ),
     );
 
     $options += array(
       'charisma' => array(
         'attribute' => 'Charisma',
-        'points' => $character_data['charisma'],
-        'bonus' => isset($character_data['charismaBonus']) ? $character_data['charismaBonus'] : 0,
+        'points' => check_plain($character_data['charisma']),
+        'bonus' => isset($character_data['charismaBonus']) ? check_plain($character_data['charismaBonus']) : 0,
       ),
     );
 
     $options += array(
       'perception' => array(
         'attribute' => 'Perception',
-        'points' => $character_data['perception'],
-        'bonus' => isset($character_data['perceptionBonus']) ? $character_data['perceptionBonus'] : 0,
+        'points' => check_plain($character_data['perception']),
+        'bonus' => isset($character_data['perceptionBonus']) ? check_plain($character_data['perceptionBonus']) : 0,
       ),
     );
 
     $options += array(
       'willpower' => array(
         'attribute' => 'Willpower',
-        'points' => $character_data['willpower'],
-        'bonus' => isset($character_data['willpowerBonus']) ? $character_data['willpowerBonus'] : 0,
+        'points' => check_plain($character_data['willpower']),
+        'bonus' => isset($character_data['willpowerBonus']) ? check_plain($character_data['willpowerBonus']) : 0,
       ),
     );
 
@@ -252,13 +245,13 @@ function eve_api_userlist_user_view($account) {
     $account->content['eve_api_private']['lastKnownLocation'] = array(
       '#type' => 'user_profile_item',
       '#title' => t('Last Known Location'),
-      '#markup' => $character_data['lastKnownLocation'],
+      '#markup' => check_plain($character_data['lastKnownLocation']),
     );
 
     $account->content['eve_api_private']['shipName'] = array(
       '#type' => 'user_profile_item',
       '#title' => t('Last Known Ship Name'),
-      '#markup' => $character_data['shipName'],
+      '#markup' => check_plain($character_data['shipName']),
     );
 
     $account->content['eve_api_private']['stats'] = array(
@@ -285,7 +278,7 @@ function eve_api_userlist_user_view($account) {
   $account->content['eve_api_skills']['skillPoints'] = array(
     '#type' => 'user_profile_item',
     '#title' => t('Total Skillpoints'),
-    '#markup' => $character_data['skillPoints'],
+    '#markup' => check_plain($character_data['skillPoints']),
   );
 
   if (($character_data['accessMask'] & 131072) == 131072) {
@@ -294,9 +287,9 @@ function eve_api_userlist_user_view($account) {
         '#type' => 'user_profile_item',
         '#title' => t('Currently Training'),
         '#markup' => t('Currently Training @typeName to Level @level. Training will end on @finish UTC EVE Time.', array(
-        '@typeName' => $character_data['typeName'],
-        '@level' => $character_data['trainingToLevel'],
-        '@finish' => $character_data['trainingEndTime'],
+        '@typeName' => check_plain($character_data['typeName']),
+        '@level' => check_plain($character_data['trainingToLevel']),
+        '@finish' => check_plain($character_data['trainingEndTime']),
         )),
       );
     }
@@ -322,12 +315,12 @@ function eve_api_userlist_user_view($account) {
     foreach ($skills as $skill) {
       $group_id = $skill['groupID'];
 
-      $form['tabs'][$group_id][$skill['typeID']]['Skill Name']['#markup'] = $skill['typeName'];
-      $form['tabs'][$group_id][$skill['typeID']]['Skill Level']['#markup'] = $skill['level'];
+      $form['tabs'][$group_id][$skill['typeID']]['Skill Name']['#markup'] = check_plain($skill['typeName']);
+      $form['tabs'][$group_id][$skill['typeID']]['Skill Level']['#markup'] = check_plain($skill['level']);
     }
 
     $form['tabs'][$group_id]['#type'] = 'fieldset';
-    $form['tabs'][$group_id]['#title'] = $skill_group;
+    $form['tabs'][$group_id]['#title'] = check_plain($skill_group);
   }
 
   foreach (element_children($form['tabs']) as $id_tab) {
@@ -375,9 +368,9 @@ function eve_api_userlist_user_view($account) {
 
   foreach ($character_data['characters'] as $row) {
     $options[$row['characterID']] = array(
-      'characterName' => check_plain($row['characterName']),
-      'corporation' => check_plain($row['corporationName'] . ' [' . $row['corporationTicker'] . ']'),
-      'alliance' => ($row['allianceID'] == 0) ? '' : check_plain($row['allianceName'] . ' [' . $row['allianceTicker'] . ']'),
+      'characterName' => l($row['characterName'], 'eve_api/user_list/' . $row['characterID']),
+      'corporation' => l($row['corporationName'], 'eve_api/user_list/' . $row['corporationID']) . check_plain(' [' . $row['corporationTicker'] . ']'),
+      'alliance' => ($row['allianceID'] == 0) ? l(t('None'), 'eve_api/user_list/0') : l($row['allianceName'], 'eve_api/user_list/' . $row['allianceID']) . check_plain(' [' . $row['allianceTicker'] . ']'),
       'status' => ($row['deleted'] == 1) ? t('Deleted') : eve_api_api_error_msg($row['errorID']),
     );
   }

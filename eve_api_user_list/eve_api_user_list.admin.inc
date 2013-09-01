@@ -7,19 +7,19 @@
 /**
  * Form constructor for the user list form.
  *
- * @see eve_api_userlist_admin_form_validate()
- * @see eve_api_userlist_admin_form_submit()
+ * @see eve_api_user_list_admin_form_validate()
+ * @see eve_api_user_list_admin_form_submit()
  *
  * @ingroup forms
  */
-function eve_api_userlist_admin_form($form, &$form_state) {
-  $form['userlist'] = array(
+function eve_api_user_list_admin_form($form, &$form_state) {
+  $form['user_list'] = array(
     '#type' => 'fieldset',
     '#title' => t('Modify User List Settings'),
     '#weight' => 0,
   );
 
-  $form['userlist']['private_access'] = array(
+  $form['user_list']['private_access'] = array(
     '#type' => 'radios',
     '#title' => t('Private API Key Information'),
     '#description' => t('Which role can access the Private API Key Information. By Permission is assignable to a role by "Access EVE API Private User List".'),
@@ -29,7 +29,7 @@ function eve_api_userlist_admin_form($form, &$form_state) {
       2 => t('By Permission Only'),
     ),
     '#weight' => 0,
-    '#default_value' => (int) variable_get('eve_api_userlist_private_access', 0),
+    '#default_value' => (int) variable_get('eve_api_user_list_private_access', 0),
   );
 
   $form['submit_button'] = array(
@@ -43,27 +43,27 @@ function eve_api_userlist_admin_form($form, &$form_state) {
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  $form['#validate'] = array('eve_api_userlist_admin_form_validate');
-  $form['#submit'] = array('eve_api_userlist_admin_form_submit');
+  $form['#validate'] = array('eve_api_user_list_admin_form_validate');
+  $form['#submit'] = array('eve_api_user_list_admin_form_submit');
 
   return $form;
 }
 
 /**
- * Form validation handler for eve_api_userlist_admin_form().
+ * Form validation handler for eve_api_user_list_admin_form().
  *
- * @see eve_api_userlist_admin_form_submit()
+ * @see eve_api_user_list_admin_form_submit()
  */
-function eve_api_userlist_admin_form_validate($form, &$form_state) {
+function eve_api_user_list_admin_form_validate($form, &$form_state) {
 }
 
 /**
- * Form submission handler for eve_api_userlist_admin_form().
+ * Form submission handler for eve_api_user_list_admin_form().
  *
- * @see eve_api_userlist_admin_form_validate()
+ * @see eve_api_user_list_admin_form_validate()
  */
-function eve_api_userlist_admin_form_submit($form, &$form_state) {
-  variable_set('eve_api_userlist_private_access', (int) $form_state['values']['private_access']);
+function eve_api_user_list_admin_form_submit($form, &$form_state) {
+  variable_set('eve_api_user_list_private_access', (int) $form_state['values']['private_access']);
 
   drupal_set_message(t('User List Settings Updated.'));
 }

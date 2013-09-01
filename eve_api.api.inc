@@ -533,17 +533,18 @@ function eve_api_curl_http_request($url, array $query = array(), $method = 'POST
 /**
  * Function to retrieve individual characters from the database.
  *
- * @param string $character_name
+ * @param string $character
  *   Unique character name used to retrieve information about the character
  *
  * @return array
  *   A complex array of a single character information.
  */
-function eve_api_get_basic_character_info($character_name) {
+function eve_api_get_basic_character_info($character) {
   $result = db_query('SELECT c.uid, c.deleted, c.errorID, c.apiID, c.characterName, c.characterID, c.corporationName, c.corporationID, c.corporationTicker, c.allianceID, c.allianceName, c.allianceTicker
     FROM {eve_api_characters} c
-    WHERE c.characterName = :characterName', array(
-      ':characterName' => (string) $character_name,
+    WHERE c.characterName = :characterName OR c.characterID = :characterID', array(
+      ':characterName' => (string) $character,
+      ':characterID' => (int) $character,
     ));
 
   $api_data = array();
@@ -563,25 +564,32 @@ function eve_api_get_basic_character_info($character_name) {
 /**
  * Function to retrieve individual characters from the database.
  *
- * @param string $character_name
+ * @param string $character
  *   Unique character name used to retrieve information about the character
  *
  * @return array
  *   A complex array of a single character information.
  */
-function eve_api_get_character_info($character_name) {
-  $result = db_query('SELECT c.accessMask, c.uid, st.skillInTraining FROM {eve_api_characters} c INNER JOIN {eve_api_skill_training} st ON st.characterID = c.characterID WHERE c.characterName = :characterName', array(
-    ':characterName' => (string) $character_name,
+function eve_api_get_character_info($character) {
+  $result = db_query('SELECT c.accessMask, c.uid, st.skillInTraining, c.characterName, c.characterID
+    FROM {eve_api_characters} c
+    INNER JOIN {eve_api_skill_training} st ON st.characterID = c.characterID
+    WHERE c.characterName = :characterName OR c.characterID = :characterID', array(
+    ':characterName' => (string) $character,
+    ':characterID' => (int) $character,
   ));
 
   $row = $result->fetchAssoc();
 
   if (empty($row)) {
+    return FALSE;
   }
 
   $access_mask = $row['accessMask'];
   $is_training = $row['skillInTraining'];
   $uid = $row['uid'];
+  $character_id = $row['characterID'];
+  $character_name = $row['characterName'];
 
   $query = db_select('eve_api_characters', 'c');
   $query->join('eve_api_character_sheet', 'cs', 'cs.characterID = c.characterID');
@@ -648,7 +656,7 @@ function eve_api_get_character_info($character_name) {
     $query->addField('st', 'trainingTypeID', 'typeID');
   }
 
-  $query->condition('c.characterName', (string) $character_name, '=');
+  $query->condition('c.characterID', (int) $character_id, '=');
   $result = $query->execute();
 
   $api_data = array();
@@ -658,8 +666,11 @@ function eve_api_get_character_info($character_name) {
       $api_data += array($name => strip_tags(decode_entities($data)));
     }
 
-    $result = db_query('SELECT csae.bonusName, csae.augmentatorValue FROM {eve_api_character_sheet_attribute_enhancers} csae LEFT JOIN {eve_api_characters} c ON c.characterID = csae.characterID WHERE c.characterName = :characterName', array(
-      ':characterName' => (string) $character_name,
+    $result = db_query('SELECT csae.bonusName, csae.augmentatorValue
+      FROM {eve_api_character_sheet_attribute_enhancers} csae
+      LEFT JOIN {eve_api_characters} c ON c.characterID = csae.characterID
+      WHERE c.characterID = :characterID', array(
+      ':characterID' => (int) $character_id,
     ));
 
     if ($result->rowCount()) {
@@ -668,8 +679,11 @@ function eve_api_get_character_info($character_name) {
       }
     }
 
-    $result = db_query('SELECT cich.recordID, cich.corporationID, cich.startDate FROM {eve_api_character_info_corporation_history} cich LEFT JOIN {eve_api_characters} c ON c.characterID = cich.characterID WHERE c.characterName = :characterName', array(
-      ':characterName' => (string) $character_name,
+    $result = db_query('SELECT cich.recordID, cich.corporationID, cich.startDate
+      FROM {eve_api_character_info_corporation_history} cich
+      LEFT JOIN {eve_api_characters} c ON c.characterID = cich.characterID
+      WHERE c.characterID = :characterID', array(
+      ':characterID' => (int) $character_id,
     ));
 
     if ($result->rowCount()) {
@@ -684,7 +698,9 @@ function eve_api_get_character_info($character_name) {
       }
     }
 
-    $result = db_query('SELECT deleted, errorID, characterName, characterID, characterName, characterID, corporationName, corporationID, corporationTicker, allianceID, allianceName, allianceTicker FROM {eve_api_characters} WHERE uid = :uid', array(
+    $result = db_query('SELECT deleted, errorID, characterName, characterID, characterName, characterID, corporationName, corporationID, corporationTicker, allianceID, allianceName, allianceTicker
+      FROM {eve_api_characters}
+      WHERE uid = :uid', array(
       ':uid' => (string) $uid,
     ));
 
@@ -700,7 +716,9 @@ function eve_api_get_character_info($character_name) {
       }
     }
 
-    $result = db_query('SELECT apiID, keyID, vCode, errorID FROM {eve_api_keys} WHERE uid = :uid', array(
+    $result = db_query('SELECT apiID, keyID, vCode, errorID
+      FROM {eve_api_keys}
+      WHERE uid = :uid', array(
       ':uid' => (string) $uid,
     ));
 
@@ -2088,6 +2106,14 @@ function eve_api_update_key($account, $key_id, $v_code, $api_id) {
     if (($characters['accessMask'] & 131072) == 131072) {
       $queue = DrupalQueue::get('eve_api_cron_import_skill_in_training');
       $queue->createItem($item);
+    }
+    else {
+      db_merge('eve_api_skill_training')->key(array(
+        'characterID' => (int) $character['characterID'],
+      ))->fields(array(
+        'characterID' => (int) $character['characterID'],
+        'errorID' => 0,
+      ))->execute();
     }
 
     if (($characters['accessMask'] & 2097152) == 2097152) {

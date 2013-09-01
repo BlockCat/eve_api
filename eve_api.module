@@ -179,7 +179,7 @@ function eve_api_menu() {
     ) + $admin_base;
 
     $items['admin/eve_api/role_ceo_director/add_role_ceo_director'] = array(
-      'title' => 'Add CEO/Director',
+      'title' => 'Add CEO/private',
       'description' => 'Elevate an existing character to a CEO or Director.',
       'page arguments' => array('eve_api_admin_add_role_ceo_director_form'),
       'type' => MENU_LOCAL_ACTION,
