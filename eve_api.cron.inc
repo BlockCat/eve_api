@@ -459,6 +459,7 @@ function eve_api_cron_api_mask_sync($item = NULL) {
   }
 
   db_truncate('eve_api_access_mask')->execute();
+  db_truncate('eve_api_access_mask_groups')->execute();
 
   foreach ($xml->result->children() as $rowset) {
     $row_a = $rowset->attributes();

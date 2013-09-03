@@ -491,8 +491,7 @@ function eve_api_user_list_user_character_page($character_id, $character_data, $
 
   $character_skills = eve_api_get_character_skills($character_data['characterID']);
 
-  drupal_add_js('/misc/form.js');
-  drupal_add_js('/misc/collapse.js');
+  drupal_add_library('system', 'drupal.vertical-tabs');
 
   $form['tabs'] = array('#type' => 'vertical_tabs');
 
