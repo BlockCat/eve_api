@@ -917,17 +917,17 @@ function eve_api_cron_import_wallet_journal($item) {
         switch ((string) $type) {
           case 'wallet_journal':
             foreach ($data as $walletdata) {
-              if ($max_ref_id >= (int) $walletdata['refID']) {
+              if ($max_ref_id >= (float) $walletdata['refID']) {
                 $max_ref_id_found = TRUE;
                 continue;
               }
 
               if (!isset($from_id)) {
-                $from_id = (int) $walletdata['refID'];
+                $from_id = (float) $walletdata['refID'];
               }
 
-              if ($from_id >= (int) $walletdata['refID']) {
-                $from_id = (int) $walletdata['refID'];
+              if ($from_id >= (float) $walletdata['refID']) {
+                $from_id = (float) $walletdata['refID'];
               }
 
               $query_data = db_merge('eve_api_wallet_journal')->key(array(
