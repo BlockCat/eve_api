@@ -23,17 +23,17 @@ function eve_api_user_list_user_page($id = NULL) {
       FROM {eve_api_characters}
       WHERE corporationID = :corporationID OR allianceID = :allianceID OR characterID = :characterID
       LIMIT 1', array(
-      ':corporationID' => (int) $id,
-      ':characterID' => (int) $id,
-      ':allianceID' => (int) $id,
-    ));
+        ':corporationID' => (int) $id,
+        ':characterID' => (int) $id,
+        ':allianceID' => (int) $id,
+      ));
     $row = $result->fetchAssoc();
 
     if (empty($row)) {
-        drupal_set_title(t('User List'));
-        $type = 0;
-        $id = NULL;
-        $output = eve_api_user_list_user_general_page($id, $character_data, $is_director, $is_good, $type);
+      drupal_set_title(t('User List'));
+      $type = 0;
+      $id = NULL;
+      $output = eve_api_user_list_user_general_page($id, $character_data, $is_director, $is_good, $type);
     }
     else {
       switch ((int) $id) {
@@ -156,7 +156,7 @@ function eve_api_user_list_user_general_page($id, $character_data, $is_director,
       $title = t('List of Corporation Characters and some basic information.');
       break;
 
-   case 2:
+    case 2:
       $title = t('List of Alliance Characters and some basic information.');
       break;
   }
@@ -304,10 +304,19 @@ function eve_api_user_list_user_character_page($character_id, $character_data, $
   $alt = t("@user's picture", array('@user' => $character_data['characterName']));
 
   if (module_exists('image') && file_valid_uri($eve_avatar) && $style = variable_get('user_picture_style', '')) {
-    $character_picture = theme('image_style', array('style_name' => $style, 'path' => $eve_avatar, 'alt' => $alt, 'title' => $alt));
+    $character_picture = theme('image_style', array(
+      'style_name' => $style,
+      'path' => $eve_avatar,
+      'alt' => $alt,
+      'title' => $alt,
+    ));
   }
   else {
-    $character_picture = theme('image', array('path' => $eve_avatar, 'alt' => $alt, 'title' => $alt));
+    $character_picture = theme('image', array(
+      'path' => $eve_avatar,
+      'alt' => $alt,
+      'title' => $alt,
+    ));
   }
 
   $output['profile']['user_picture'] = array(

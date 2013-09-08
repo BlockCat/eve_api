@@ -96,7 +96,7 @@ function eve_api_teamspeak_connect($check = FALSE) {
 
   try {
     $chars = array('\s','\p','\/');
-    $replacements = array( ' ', '|', '/');
+    $replacements = array(' ', '|', '/');
     $nickname = str_replace($chars, $replacements, variable_get('eve_api_teamspeak_query_nickname', 'Teamspeak_Bot'));
     $nickname = str_replace(array("\t", "\v", "\r", "\n", "\f"), '', $nickname);
     $nickname = $nickname . '_' . rand(1, 1000);

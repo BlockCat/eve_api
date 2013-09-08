@@ -928,7 +928,7 @@ function eve_api_schema() {
     'indexes' => array(
       'type' => array('type'),
       'groupID' => array('groupID'),
-      'accessmask' => array('accessmask'), 
+      'accessmask' => array('accessmask'),
     ),
   );
 

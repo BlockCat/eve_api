@@ -575,9 +575,9 @@ function eve_api_get_character_info($character) {
     FROM {eve_api_characters} c
     INNER JOIN {eve_api_skill_in_training} st ON st.characterID = c.characterID
     WHERE c.characterName = :characterName OR c.characterID = :characterID', array(
-    ':characterName' => (string) $character,
-    ':characterID' => (int) $character,
-  ));
+      ':characterName' => (string) $character,
+      ':characterID' => (int) $character,
+    ));
 
   $row = $result->fetchAssoc();
 
@@ -669,8 +669,8 @@ function eve_api_get_character_info($character) {
       FROM {eve_api_character_sheet_attribute_enhancers} csae
       LEFT JOIN {eve_api_characters} c ON c.characterID = csae.characterID
       WHERE c.characterID = :characterID', array(
-      ':characterID' => (int) $character_id,
-    ));
+        ':characterID' => (int) $character_id,
+      ));
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -682,8 +682,8 @@ function eve_api_get_character_info($character) {
       FROM {eve_api_character_info_corporation_history} cich
       LEFT JOIN {eve_api_characters} c ON c.characterID = cich.characterID
       WHERE c.characterID = :characterID', array(
-      ':characterID' => (int) $character_id,
-    ));
+        ':characterID' => (int) $character_id,
+      ));
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -700,8 +700,8 @@ function eve_api_get_character_info($character) {
     $result = db_query('SELECT deleted, errorID, characterName, characterID, characterName, characterID, corporationName, corporationID, corporationTicker, allianceID, allianceName, allianceTicker
       FROM {eve_api_characters}
       WHERE uid = :uid', array(
-      ':uid' => (string) $uid,
-    ));
+        ':uid' => (string) $uid,
+      ));
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -718,8 +718,8 @@ function eve_api_get_character_info($character) {
     $result = db_query('SELECT apiID, keyID, vCode, errorID
       FROM {eve_api_keys}
       WHERE uid = :uid', array(
-      ':uid' => (string) $uid,
-    ));
+        ':uid' => (string) $uid,
+      ));
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
