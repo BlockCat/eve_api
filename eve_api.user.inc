@@ -54,7 +54,7 @@ function eve_api_user_add_api_form($form, &$form_state, $account) {
   $form['add_api']['help_mask'] = array(
     '#type' => 'item',
     '#title' => t('Access Mask:'),
-    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the correct access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('eve_api_call_list', 268435455))),
+    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the correct access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('eve_api_access_mask', 268435455))),
     '#weight' => 40,
   );
 
@@ -149,7 +149,7 @@ function eve_api_user_add_api_form_validate($form, &$form_state) {
       }
     }
     else {
-      if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_call_list', 268435455)) != variable_get('eve_api_call_list', 268435455)) {
+      if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
         form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
         form_set_error('vCode');
       }
@@ -467,7 +467,7 @@ function eve_api_user_update_api_form($form, &$form_state, $account, $api_id) {
   $form['update_api']['help_mask'] = array(
     '#type' => 'item',
     '#title' => t('Access Mask:'),
-    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the correct access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('eve_api_call_list', 268435455))),
+    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the correct access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('eve_api_access_mask', 268435455))),
     '#weight' => 40,
   );
 
@@ -567,7 +567,7 @@ function eve_api_user_update_api_form_validate($form, &$form_state) {
       }
     }
     else {
-      if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_call_list', 268435455)) != variable_get('eve_api_call_list', 268435455)) {
+      if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
         form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
         form_set_error('vCode');
       }

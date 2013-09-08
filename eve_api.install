@@ -1140,7 +1140,7 @@ function eve_api_uninstall() {
   variable_del('eve_api_director_role');
   variable_del('eve_api_corp_keyid');
   variable_del('eve_api_corp_vcode');
-  variable_del('eve_api_call_list');
+  variable_del('eve_api_access_mask');
   variable_del('eve_api_require_expires');
   variable_del('eve_api_require_type');
   variable_del('eve_api_required_standing');

@@ -1731,7 +1731,7 @@ function eve_api_create_key($account, $key_id, $v_code) {
     }
   }
   else {
-    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_call_list', 268435455)) != variable_get('eve_api_call_list', 268435455)) {
+    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
       $error = 1;
     }
   }
@@ -1854,7 +1854,7 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
     }
   }
   else {
-    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_call_list', 268435455)) != variable_get('eve_api_call_list', 268435455)) {
+    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
       $error = 1;
     }
   }
@@ -2000,7 +2000,7 @@ function eve_api_update_key($account, $key_id, $v_code, $api_id) {
     }
   }
   else {
-    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_call_list', 268435455)) != variable_get('eve_api_call_list', 268435455)) {
+    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
       $error = 1;
     }
   }

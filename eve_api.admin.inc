@@ -434,7 +434,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
     ),
   );
 
-  $access_mask = variable_get('eve_api_call_list', 268435455);
+  $access_mask = variable_get('eve_api_access_mask', 268435455);
 
   $form['registration'] = array(
     '#type' => 'fieldset',
@@ -621,9 +621,9 @@ function eve_api_admin_registration_form_submit($form, &$form_state) {
     }
   }
 
-  $access_mask = variable_get('eve_api_call_list', 268435455);
+  $access_mask = variable_get('eve_api_access_mask', 268435455);
 
-  variable_set('eve_api_call_list', $new_access_mask);
+  variable_set('eve_api_access_mask', $new_access_mask);
 
   if ($access_mask != $new_access_mask || round((float) variable_get('eve_api_required_standing', 0.1), 1) != round((float) $form_state['values']['standing'], 1) || (int) variable_get('eve_api_require_expires', FALSE) != (int) $form_state['values']['expires'] || (int) variable_get('eve_api_require_type', TRUE) != (int) $form_state['values']['type']) {
     variable_set('eve_api_required_standing', round((float) $form_state['values']['standing'], 1));
