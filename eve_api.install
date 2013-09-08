@@ -8,59 +8,110 @@
  * Implements hook_schema().
  */
 function eve_api_schema() {
+  $tiny_int = array(
+    'type' => 'int',
+    'size' => 'tiny',
+    'length' => 1,
+    'not null' => FALSE,
+    'default' => 0,
+  );
+
+  $small_int = array(
+    'type' => 'int',
+    'size' => 'small',
+    'length' => 3,
+    'not null' => FALSE,
+    'default' => 0,
+  );
+
+  $int = array(
+    'type' => 'int',
+    'length' => 10,
+    'not null' => FALSE,
+    'default' => 0,
+  );
+
+  $big_int = array(
+    'type' => 'int',
+    'size' => 'big',
+    'length' => 20,
+    'not null' => FALSE,
+    'default' => 0,
+  );
+
+  $varchar = array(
+    'type' => 'varchar',
+    'length' => 255,
+    'not null' => FALSE,
+    'default' => '',
+  );
+
+  $date = array(
+    'type' => 'datetime',
+    'mysql_type' => 'DATETIME',
+    'pgsql_type' => 'timestamp without time zone',
+    'sqlite_type' => 'VARCHAR',
+    'sqlsrv_type' => 'smalldatetime',
+    'not null' => FALSE,
+    'sortable' => TRUE,
+    'views' => TRUE,
+  );
+
+  $numeric = array(
+    'type' => 'numeric',
+    'precision' => 17,
+    'scale' => 2,
+    'unsigned' => FALSE,
+    'not null' => FALSE,
+    'default' => 0.0,
+  );
+
+  $double = array(
+    'type' => 'float',
+    'size' => 'big',
+    'precision' => 17,
+    'scale' => 2,
+    'unsigned' => FALSE,
+    'not null' => FALSE,
+    'default' => 0.0,
+  );
+
+  $schema = array();
+
   $schema['eve_api_keys'] = array(
-    'description' => 'This table holds all the api\'s associated with all the accounts.',
+    'description' => 'List of API Keys associated with each drupal user.',
     'fields' => array(
       'apiID' => array(
-        'description' => 'The link between api and the character.',
+        'description' => 'Unique API ID.',
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
       'uid' => array(
-        'description' => 'The link between api and drupal account.',
-        'type' => 'int',
+        'description' => 'Drupal user ID.',
         'not null' => TRUE,
-      ),
+      ) + $int,
       'keyID' => array(
-        'description' => 'The Key ID of the EVE API.',
-        'type' => 'int',
+        'description' => 'API key ID.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'vCode' => array(
-        'description' => 'The Verification Code of the EVE API.',
-        'type' => 'varchar',
-        'length' => 255,
+        'description' => 'API verification code.',
+        'length' => 64,
         'not null' => TRUE,
-      ),
+      ) + $varchar,
       'errorID' => array(
-        'description' => 'Error code to identify any problems with a registered api key.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+        'description' => 'Error code to identify status of last API pull.',
+        'not null' => TRUE,
+      ) + $int,
       'updated' => array(
         'description' => 'When the API was last updated.',
-        'type' => 'datetime',
-        'mysql_type' => 'DATETIME',
-        'pgsql_type' => 'timestamp without time zone',
-        'sqlite_type' => 'VARCHAR',
-        'sqlsrv_type' => 'smalldatetime',
-        'not null' => FALSE,
-        'sortable' => TRUE,
-        'views' => TRUE,
-      ),
+        'not null' => TRUE,
+      ) + $date,
       'created' => array(
-        'description' => 'When the API was initially created.',
-        'type' => 'datetime',
-        'mysql_type' => 'DATETIME',
-        'pgsql_type' => 'timestamp without time zone',
-        'sqlite_type' => 'VARCHAR',
-        'sqlsrv_type' => 'smalldatetime',
-        'not null' => FALSE,
-        'sortable' => TRUE,
-        'views' => TRUE,
-      ),
+        'description' => 'When the API was created.',
+        'not null' => TRUE,
+      ) + $date,
     ),
     'indexes' => array(
       'uid' => array('uid'),
@@ -72,81 +123,58 @@ function eve_api_schema() {
   );
 
   $schema['eve_api_characters'] = array(
-    'description' => 'This table holds all the characters retrieved from the API\'s.',
+    'description' => 'API data pulled from /account/APIKeyInfo.xml.aspx.',
     'fields' => array(
       'characterID' => array(
-        'description' => 'The unique Character ID associated with the EVE Character.',
-        'type' => 'int',
+        'description' => 'Unique character ID.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'uid' => array(
-        'description' => 'The link between api and drupal account.',
-        'type' => 'int',
+        'description' => 'Drupal user ID.',
         'not null' => TRUE,
-      ),
+      ) + $int,
       'apiID' => array(
-        'description' => 'The link between api and the character.',
-        'type' => 'int',
+        'description' => 'API ID.',
         'not null' => TRUE,
-      ),
+      ) + $int,
       'characterName' => array(
-        'description' => 'The EVE Character Name',
-        'type' => 'varchar',
-        'length' => 50,
+        'description' => 'Character name',
         'not null' => TRUE,
-      ),
+      ) + $varchar,
       'corporationID' => array(
-        'description' => 'The Corporation ID the Character is currently associated with in EVE.',
-        'type' => 'int',
+        'description' => 'Corporation id character belongs to.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'corporationName' => array(
-        'description' => 'The Corporation Name the Character is currently associated with in EVE.',
-        'type' => 'varchar',
-        'length' => 50,
+        'description' => 'Corporation name character belongs to.',
         'not null' => TRUE,
-      ),
+      ) + $varchar,
       'corporationTicker' => array(
-        'description' => 'The Corporation Ticker the Character is currently associated with in EVE.',
-        'type' => 'varchar',
-        'length' => 20,
+        'description' => 'Corporation ticker character belongs to.',
         'not null' => TRUE,
-      ),
+      ) + $varchar,
       'allianceID' => array(
-        'description' => 'The Alliance ID the Character is currently associated with in EVE.',
-        'type' => 'int',
-        'not null' => FALSE,
-      ),
+        'description' => 'Alliance id character belongs to.',
+      ) + $big_int,
       'allianceName' => array(
-        'description' => 'The Alliance Name the Character is currently associated with in EVE.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => FALSE,
-      ),
+        'description' => 'Alliance name character belongs to.',
+      ) + $varchar,
       'allianceTicker' => array(
-        'description' => 'The Alliance Ticker the Character is currently associated with in EVE.',
-        'type' => 'varchar',
-        'length' => 20,
-        'not null' => FALSE,
-      ),
+        'description' => 'Alliance ticker character belongs to.',
+      ) + $varchar,
       'accessMask' => array(
-        'description' => 'The Access Mask found on the last API Update.',
-        'type' => 'int',
-        'size' => 'big',
+        'description' => 'API key access mask retrieved from last API pull.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'errorID' => array(
-        'description' => 'Error code to identify any problems with a registered characters.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'deleted' => array(
-        'description' => 'Identifies if the character was removed from the key at some point.',
-        'type' => 'int',
+        'description' => 'Error code to identify status of last API pull.',
         'not null' => TRUE,
-        'default' => 0,
-      ),
+      ) + $int,
+      'deleted' => array(
+        'description' => 'Indicates if character exists to an API key any longer.',
+        'length' => 2,
+        'not null' => TRUE,
+      ) + $tiny_int,
     ),
     'indexes' => array(
       'uid' => array('uid'),
@@ -159,370 +187,362 @@ function eve_api_schema() {
   );
 
   $schema['eve_api_character_sheet'] = array(
-    'description' => 'This table holds most of the data retrieved from the character sheet ',
+    'description' => 'API data pulled from /char/CharacterSheet.xml.aspx.',
     'fields' => array(
       'characterID' => array(
-        'description' => 'The unique Character ID associated with the EVE Character.',
-        'type' => 'int',
+        'description' => 'Unique character ID.',
         'not null' => TRUE,
-      ),
-      'DoB' => array(
-        'description' => 'The EVE Character Date of Birth.',
-        'type' => 'datetime',
-        'mysql_type' => 'DATETIME',
-        'pgsql_type' => 'timestamp without time zone',
-        'sqlite_type' => 'VARCHAR',
-        'sqlsrv_type' => 'smalldatetime',
-        'not null' => FALSE,
-        'sortable' => TRUE,
-        'views' => TRUE,
-      ),
-      'race' => array(
-        'description' => 'The EVE Character race.',
-        'type' => 'varchar',
-        'length' => 50,
+      ) + $big_int,
+      'name' => array(
+        'description' => 'Character name.',
         'not null' => TRUE,
-        'default' => '',
-      ),
-      'bloodLine' => array(
-        'description' => 'The EVE Character blood line.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'ancestry' => array(
-        'description' => 'The EVE Character ancestry.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'gender' => array(
-        'description' => 'The EVE Character gender.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'cloneName' => array(
-        'description' => 'The EVE Character clone name.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'cloneSkillPoints' => array(
-        'description' => 'The EVE Character clone skill points.',
-        'type' => 'int',
-        'size' => 'big',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'balance' => array(
-        'description' => 'The EVE Character balance.',
-        'type' => 'float',
-        'not null' => TRUE,
-        'precision' => 32,
-        'scale' => 2,
-        'unsigned' => FALSE,
-        'default' => 0.0,
-      ),
-      'intelligence' => array(
-        'description' => 'The EVE Character attributes intelligence.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'memory' => array(
-        'description' => 'The EVE Character attributes memory.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'charisma' => array(
-        'description' => 'The EVE Character attributes charisma.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'perception' => array(
-        'description' => 'The EVE Character attributes perception.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'willpower' => array(
-        'description' => 'The EVE Character attributes willpower.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'errorID' => array(
-        'description' => 'Error code to identify any problems with a registered characters.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-    ),
-    'unique keys' => array('characterID' => array('characterID')),
-    'primary key' => array('characterID'),
-  );
-
-  $schema['eve_api_character_info'] = array(
-    'description' => 'This table holds most of the data retrieved from the character sheet ',
-    'fields' => array(
-      'characterID' => array(
-        'description' => 'The unique Character ID associated with the EVE Character.',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'characterName' => array(
-        'description' => 'The EVE Character name.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'race' => array(
-        'description' => 'The EVE Character race.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'bloodLine' => array(
-        'description' => 'The EVE Character blood line.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'accountBalance' => array(
-        'description' => 'The EVE Character balance.',
-        'type' => 'float',
-        'not null' => TRUE,
-        'precision' => 32,
-        'scale' => 2,
-        'unsigned' => FALSE,
-        'default' => 0.0,
-      ),
-      'skillPoints' => array(
-        'description' => 'The EVE Character total skill points.',
-        'type' => 'int',
-        'size' => 'big',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'nextTrainingEnds' => array(
-        'description' => 'The date the EVE Characters training ends.',
-        'type' => 'datetime',
-        'mysql_type' => 'DATETIME',
-        'pgsql_type' => 'timestamp without time zone',
-        'sqlite_type' => 'VARCHAR',
-        'sqlsrv_type' => 'smalldatetime',
-        'not null' => FALSE,
-        'sortable' => TRUE,
-        'views' => TRUE,
-      ),
-      'shipName' => array(
-        'description' => 'The EVE Characters last known ship name.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'shipTypeID' => array(
-        'description' => 'The EVE Characters last known ship type ID.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'shipTypeName' => array(
-        'description' => 'The EVE Characters last known ship type name.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
-      ),
+      ) + $varchar,
       'corporationID' => array(
-        'description' => 'The EVE Characters corporation ID.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'corporation' => array(
-        'description' => 'The EVE Characters corporation name.',
-        'type' => 'varchar',
-        'length' => 50,
+        'description' => 'Corporation id character belongs to.',
         'not null' => TRUE,
-        'default' => '',
-      ),
-      'corporationDate' => array(
-        'description' => 'The date the EVE Character joined the corporation.',
-        'type' => 'datetime',
-        'mysql_type' => 'DATETIME',
-        'pgsql_type' => 'timestamp without time zone',
-        'sqlite_type' => 'VARCHAR',
-        'sqlsrv_type' => 'smalldatetime',
-        'not null' => FALSE,
-        'sortable' => TRUE,
-        'views' => TRUE,
-      ),
+      ) + $big_int,
+      'corporationName' => array(
+        'description' => 'Corporation name character belongs to.',
+        'not null' => TRUE,
+      ) + $varchar,
       'allianceID' => array(
-        'description' => 'The EVE Characters alliance ID.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'alliance' => array(
-        'description' => 'The EVE Characters alliance name.',
-        'type' => 'varchar',
-        'length' => 50,
+        'description' => 'Alliance id character belongs to.',
+      ) + $big_int,
+      'allianceName' => array(
+        'description' => 'Alliance name character belongs to.',
+      ) + $varchar,
+      'DoB' => array(
+        'description' => 'Date of birth of the character.',
         'not null' => TRUE,
-        'default' => '',
-      ),
-      'allianceDate' => array(
-        'description' => 'The date the EVE Characters corporation joined the alliance.',
-        'type' => 'datetime',
-        'mysql_type' => 'DATETIME',
-        'pgsql_type' => 'timestamp without time zone',
-        'sqlite_type' => 'VARCHAR',
-        'sqlsrv_type' => 'smalldatetime',
-        'not null' => FALSE,
-        'sortable' => TRUE,
-        'views' => TRUE,
-      ),
-      'lastKnownLocation' => array(
-        'description' => 'The EVE Characters last known location.',
-        'type' => 'varchar',
-        'length' => 255,
+      ) + $date,
+      'race' => array(
+        'description' => 'Race of the character.',
         'not null' => TRUE,
-        'default' => '',
-      ),
-      'securityStatus' => array(
-        'description' => 'The EVE Character security status.',
-        'type' => 'float',
+      ) + $varchar,
+      'bloodLine' => array(
+        'description' => 'Blood line of the character.',
         'not null' => TRUE,
-        'precision' => 32,
-        'scale' => 8,
-        'unsigned' => FALSE,
-        'default' => 0.0,
-      ),
+      ) + $varchar,
+      'ancestry' => array(
+        'description' => 'Ancestry of the character.',
+        'not null' => TRUE,
+      ) + $varchar,
+      'gender' => array(
+        'description' => 'Gender of the character.',
+        'not null' => TRUE,
+      ) + $varchar,
+      'cloneName' => array(
+        'description' => 'Clone name of the character.',
+        'not null' => TRUE,
+      ) + $varchar,
+      'cloneSkillPoints' => array(
+        'description' => 'Skill points the clone will protect when character dies.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'balance' => array(
+        'description' => 'ISK balance.',
+        'not null' => TRUE,
+      ) + $numeric,
+      'intelligence' => array(
+        'description' => 'Intelligence attribute of the character.',
+        'length' => 2,
+        'not null' => TRUE,
+      ) + $tiny_int,
+      'memory' => array(
+        'description' => 'Memory attribute of the character.',
+        'length' => 2,
+        'not null' => TRUE,
+      ) + $tiny_int,
+      'charisma' => array(
+        'description' => 'Charisma attribute of the character.',
+        'length' => 2,
+        'not null' => TRUE,
+      ) + $tiny_int,
+      'perception' => array(
+        'description' => 'Perception attribute of the character.',
+        'length' => 2,
+        'not null' => TRUE,
+      ) + $tiny_int,
+      'willpower' => array(
+        'description' => 'Willpower attribute of the character.',
+        'length' => 2,
+        'not null' => TRUE,
+      ) + $tiny_int,
       'errorID' => array(
-        'description' => 'Error code to identify any problems with a registered characters.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+        'description' => 'Error code to identify status of last API pull.',
+        'not null' => TRUE,
+      ) + $int,
     ),
     'unique keys' => array('characterID' => array('characterID')),
     'primary key' => array('characterID'),
   );
 
-  $schema['eve_api_character_info_corporation_history'] = array(
-    'description' => 'This table holds all the attribute enhancers for each character.',
+  $schema['eve_api_character_sheet_attribute_enhancers'] = array(
+    'description' => 'API data pulled from /char/CharacterSheet.xml.aspx.',
     'fields' => array(
       'characterID' => array(
-        'description' => 'The unique Character ID associated with the EVE Character.',
-        'type' => 'int',
+        'description' => 'Unique character ID.',
         'not null' => TRUE,
-      ),
-      'recordID' => array(
-        'description' => 'The record ID.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'corporationID' => array(
-        'description' => 'The EVE Characters corporation ID.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'startDate' => array(
-        'description' => 'The date the EVE Character joined the corporation.',
-        'type' => 'datetime',
-        'mysql_type' => 'DATETIME',
-        'pgsql_type' => 'timestamp without time zone',
-        'sqlite_type' => 'VARCHAR',
-        'sqlsrv_type' => 'smalldatetime',
-        'not null' => FALSE,
-        'sortable' => TRUE,
-        'views' => TRUE,
-      ),
+      ) + $big_int,
+      'bonusName' => array(
+        'description' => 'Attribute bonus name.',
+        'length' => 100,
+        'not null' => TRUE,
+      ) + $varchar,
+      'augmentatorName' => array(
+        'description' => 'Attribute augmentator name.',
+        'length' => 100,
+        'not null' => TRUE,
+      ) + $varchar,
+      'augmentatorValue' => array(
+        'description' => 'Attribute augmentator value.',
+        'length' => 2,
+      ) + $int,
     ),
     'indexes' => array(
       'characterID' => array('characterID'),
     ),
   );
 
-  $schema['eve_api_skill_training'] = array(
-    'description' => 'This table holds all the skills the characters are currently training.',
+  $schema['eve_api_character_sheet_certificates'] = array(
+    'description' => 'API data pulled from /char/CharacterSheet.xml.aspx.',
     'fields' => array(
       'characterID' => array(
-        'description' => 'The unique Character ID associated with the EVE Character.',
-        'type' => 'int',
+        'description' => 'Unique character ID.',
         'not null' => TRUE,
-      ),
-      'trainingEndTime' => array(
-        'description' => 'The time until the training completes.',
-        'type' => 'datetime',
-        'mysql_type' => 'DATETIME',
-        'pgsql_type' => 'timestamp without time zone',
-        'sqlite_type' => 'VARCHAR',
-        'sqlsrv_type' => 'smalldatetime',
-        'not null' => FALSE,
-        'sortable' => TRUE,
-        'views' => TRUE,
-      ),
-      'trainingStartTime' => array(
-        'description' => 'The time when the training started.',
-        'type' => 'datetime',
-        'mysql_type' => 'DATETIME',
-        'pgsql_type' => 'timestamp without time zone',
-        'sqlite_type' => 'VARCHAR',
-        'sqlsrv_type' => 'smalldatetime',
-        'not null' => FALSE,
-        'sortable' => TRUE,
-        'views' => TRUE,
-      ),
-      'trainingTypeID' => array(
-        'description' => 'The EVE Character skills skill type.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'trainingStartSP' => array(
-        'description' => 'The training skill starting skill points.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'trainingDestinationSP' => array(
-        'description' => 'The training skill completed skill points.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'trainingToLevel' => array(
-        'description' => 'The level of the skill being trained.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'skillInTraining' => array(
-        'description' => 'Indicates if the EVE Character is training.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+      ) + $big_int,
+      'certificateID' => array(
+        'description' => 'Certificate ID.',
+        'not null' => TRUE,
+      ) + $big_int,
+    ),
+    'indexes' => array(
+      'characterID' => array('characterID'),
+    ),
+  );
+
+  $schema['eve_api_character_sheet_titles'] = array(
+    'description' => 'API data pulled from /char/CharacterSheet.xml.aspx.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'Unique character ID.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'titleID' => array(
+        'description' => 'Title ID.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'titleName' => array(
+        'description' => 'Title name.',
+        'not null' => TRUE,
+      ) + $varchar,
+    ),
+    'indexes' => array(
+      'characterID' => array('characterID'),
+    ),
+  );
+
+  $schema['eve_api_character_sheet_skills'] = array(
+    'description' => 'API data pulled from /char/CharacterSheet.xml.aspx.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'Unique character ID.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'typeID' => array(
+        'description' => 'Skill type ID.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'skillpoints' => array(
+        'description' => 'Total Skill points accumulated for the skill.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'level' => array(
+        'description' => 'Current level of the skill.',
+        'not null' => TRUE,
+      ) + $tiny_int,
+      'published' => array(
+        'description' => 'Is skill published.',
+        'not null' => TRUE,
+      ) + $tiny_int,
+    ),
+    'indexes' => array(
+      'characterID' => array('characterID'),
+      'typeID' => array('typeID'),
+      'level' => array('level'),
+    ),
+  );
+
+  $schema['eve_api_character_sheet_roles'] = array(
+    'description' => 'API data pulled from /char/CharacterSheet.xml.aspx.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'Unique character ID.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'type' => array(
+        'description' => 'Role type.',
+        'not null' => TRUE,
+      ) + $varchar,
+      'roleID' => array(
+        'description' => 'Role ID.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'roleName' => array(
+        'description' => 'Role name.',
+        'not null' => TRUE,
+      ) + $varchar,
+    ),
+    'indexes' => array(
+      'characterID' => array('characterID'),
+      'type' => array('type'),
+      'roleID' => array('roleID'),
+    ),
+  );
+
+  $schema['eve_api_character_info'] = array(
+    'description' => 'API data pulled from /eve/CharacterInfo.xml.aspx.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'Unique character ID.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'characterName' => array(
+        'description' => 'Character name.',
+        'not null' => TRUE,
+      ) + $varchar,
+      'race' => array(
+        'description' => 'Race of the character.',
+        'not null' => TRUE,
+      ) + $varchar,
+      'bloodLine' => array(
+        'description' => 'Blood line of the character.',
+        'not null' => TRUE,
+      ) + $varchar,
+      'accountBalance' => array(
+        'description' => 'ISK balance.',
+        'not null' => TRUE,
+      ) + $numeric,
+      'skillPoints' => array(
+        'description' => 'Total skill points.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'nextTrainingEnds' => array(
+        'description' => 'When the training ends.',
+      ) + $date,
+      'shipName' => array(
+        'description' => 'Last known ship name.',
+        'not null' => TRUE,
+      ) + $varchar,
+      'shipTypeID' => array(
+        'description' => 'Last known ship type ID.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'shipTypeName' => array(
+        'description' => 'Last known ship type name.',
+        'not null' => TRUE,
+      ) + $varchar,
+      'corporationID' => array(
+        'description' => 'Corporation ID character belongs to.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'corporation' => array(
+        'description' => 'Corporation name character belongs to.',
+        'not null' => TRUE,
+      ) + $varchar,
+      'corporationDate' => array(
+        'description' => 'When character joined the corporation.',
+        'not null' => TRUE,
+      ) + $date,
+      'allianceID' => array(
+        'description' => 'Alliance ID character belongs to.',
+      ) + $big_int,
+      'alliance' => array(
+        'description' => 'Alliance name character belongs to.',
+      ) + $varchar,
+      'allianceDate' => array(
+        'description' => 'When corporation joined the alliance.',
+      ) + $date,
+      'lastKnownLocation' => array(
+        'description' => 'Last known location.',
+        'not null' => TRUE,
+      ) + $varchar,
+      'securityStatus' => array(
+        'description' => 'Characters security status.',
+        'not null' => TRUE,
+        'precision' => 32,
+        'scale' => 8,
+      ) + $double,
       'errorID' => array(
-        'description' => 'Error code to identify any problems with a registered characters.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+        'description' => 'Error code to identify status of last API pull.',
+        'not null' => TRUE,
+      ) + $int,
+    ),
+    'unique keys' => array('characterID' => array('characterID')),
+    'primary key' => array('characterID'),
+  );
+
+  $schema['eve_api_character_info_corporation_history'] = array(
+    'description' => 'API data pulled from /eve/CharacterInfo.xml.aspx.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'Unique character ID.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'recordID' => array(
+        'description' => 'Unique record ID.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'corporationID' => array(
+        'description' => 'Corporation ID.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'startDate' => array(
+        'description' => 'Date the character joined the corporation.',
+        'not null' => TRUE,
+      ) + $date,
+    ),
+    'indexes' => array(
+      'characterID' => array('characterID'),
+    ),
+  );
+
+  $schema['eve_api_skill_in_training'] = array(
+    'description' => 'API data pulled from /char/SkillInTraining.xml.aspx.',
+    'fields' => array(
+      'characterID' => array(
+        'description' => 'Unique character ID.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'currentTQTime' => array(
+        'description' => 'EVE Tranquility time.',
+      ) + $date,
+      'trainingEndTime' => array(
+        'description' => 'Time until training completes.',
+      ) + $date,
+      'trainingStartTime' => array(
+        'description' => 'Time when training started.',
+      ) + $date,
+      'trainingTypeID' => array(
+        'description' => 'Type ID of skill in training.',
+      ) + $big_int,
+      'trainingStartSP' => array(
+        'description' => 'Skill points of the skill when training started.',
+      ) + $big_int,
+      'trainingDestinationSP' => array(
+        'description' => 'Skill points of the skill when training ends.',
+      ) + $big_int,
+      'trainingToLevel' => array(
+        'description' => 'Level of the skill being trained.',
+      ) + $tiny_int,
+      'skillInTraining' => array(
+        'description' => 'Indicates if the character is training.',
+        'not null' => TRUE,
+      ) + $tiny_int,
+      'errorID' => array(
+        'description' => 'Error code to identify status of last API pull.',
+        'not null' => TRUE,
+      ) + $int,
     ),
     'indexes' => array(
       'trainingTypeID' => array('trainingTypeID'),
@@ -532,47 +552,32 @@ function eve_api_schema() {
   );
 
   $schema['eve_api_mail_messages'] = array(
-    'description' => 'The mail messages headers.',
+    'description' => 'API data pulled from /char/MailMessages.xml.aspx.',
     'fields' => array(
       'characterID' => array(
-        'description' => 'The unique Character ID associated with the EVE Character.',
-        'type' => 'int',
+        'description' => 'Unique character ID.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'messageID' => array(
-        'description' => 'The unique message ID number.',
-        'type' => 'int',
-        'size' => 'big',
+        'description' => 'Unique message ID.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'senderID' => array(
-        'description' => 'The character ID or Mailing List ID of the message originator.',
-        'type' => 'int',
+        'description' => 'Character ID or mailing list ID of the message originator.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'sentDate' => array(
         'description' => 'Date & time message sent.',
-        'type' => 'datetime',
-        'mysql_type' => 'DATETIME',
-        'pgsql_type' => 'timestamp without time zone',
-        'sqlite_type' => 'VARCHAR',
-        'sqlsrv_type' => 'smalldatetime',
-        'not null' => FALSE,
-        'sortable' => TRUE,
-        'views' => TRUE,
-      ),
+        'not null' => TRUE,
+      ) + $date,
       'title' => array(
-        'description' => 'Comma-separated list of character IDs of the characters that received the message.',
-        'type' => 'text',
+        'description' => 'Title of the message.',
         'not null' => TRUE,
-      ),
+      ) + $varchar,
       'toCorpOrAllianceID' => array(
-        'description' => 'Comma-separated list of mailing lists that the mail was sent to.',
-        'type' => 'varchar',
-        'length' => 50,
+        'description' => 'Corporate or Alliance ID.',
         'not null' => TRUE,
-        'default' => '',
-      ),
+      ) + $big_int,
       'toCharacterIDs' => array(
         'description' => 'Comma-separated list of character IDs of the characters that received the message.',
         'type' => 'text',
@@ -584,11 +589,8 @@ function eve_api_schema() {
         'not null' => FALSE,
       ),
       'senderTypeID' => array(
-        'description' => 'The character ID or Mailing List ID type.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+        'description' => 'Character ID or mailing list ID type.',
+      ) + $big_int,
     ),
     'indexes' => array(
       'characterID' => array('characterID'),
@@ -600,21 +602,18 @@ function eve_api_schema() {
   );
 
   $schema['eve_api_mail_bodies'] = array(
-    'description' => 'The mail messages body.',
+    'description' => 'API data pulled from /char/MailBodies.xml.aspx.',
     'fields' => array(
       'characterID' => array(
-        'description' => 'The unique Character ID associated with the EVE Character.',
-        'type' => 'int',
+        'description' => 'Unique character ID.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'messageID' => array(
-        'description' => 'The unique message ID number.',
-        'type' => 'int',
-        'size' => 'big',
+        'description' => 'Unique message ID.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'message' => array(
-        'description' => 'The Mail Message',
+        'description' => 'Mail message body.',
         'type' => 'text',
         'size' => 'medium',
         'not null' => FALSE,
@@ -627,183 +626,88 @@ function eve_api_schema() {
     'primary key' => array('messageID'),
   );
 
-  $schema['eve_api_character_contracts'] = array(
-    'description' => 'The contracts index.',
+  $schema['eve_api_contracts'] = array(
+    'description' => 'API data pulled from /char/Contracts.xml.aspx.',
     'fields' => array(
       'characterID' => array(
-        'description' => 'The unique Character ID associated with the EVE Character.',
-        'type' => 'int',
+        'description' => 'Unique character ID.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'contractID' => array(
-        'description' => 'The unique message ID number.',
-        'type' => 'int',
-        'size' => 'big',
+        'description' => 'Unique contract ID.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'issuerID' => array(
         'description' => 'Character ID who created contract.',
-        'type' => 'int',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'issuerCorpID' => array(
         'description' => 'Corporation ID who created contract.',
-        'type' => 'int',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'assigneeID' => array(
         'description' => 'Character ID to whom the contract was discharged.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+      ) + $big_int,
       'acceptorID' => array(
         'description' => 'Who will accept the contract. If assigneeID is same as acceptorID then CharacterID else CorporationID.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+      ) + $big_int,
       'startStationID' => array(
         'description' => 'Start station ID.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+      ) + $big_int,
       'endStationID' => array(
         'description' => 'End station ID.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+      ) + $big_int,
       'type' => array(
         'description' => 'Type of the contract.',
-        'type' => 'varchar',
-        'length' => 50,
         'not null' => TRUE,
-        'default' => '',
-      ),
+      ) + $varchar,
       'status' => array(
         'description' => 'Status of the the contract.',
-        'type' => 'varchar',
-        'length' => 50,
         'not null' => TRUE,
-        'default' => '',
-      ),
+      ) + $varchar,
       'title' => array(
         'description' => 'Title of the contract.',
-        'type' => 'varchar',
-        'length' => 255,
         'not null' => TRUE,
-        'default' => '',
-      ),
+      ) + $varchar,
       'forCorp' => array(
         'description' => '1 if the contract was issued on behalf of the issuers corporation, 0 otherwise.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+      ) + $tiny_int,
       'availability' => array(
         'description' => 'Public or Private.',
-        'type' => 'varchar',
-        'length' => 50,
         'not null' => TRUE,
-        'default' => '',
-      ),
+      ) + $varchar,
       'dateIssued' => array(
         'description' => 'Сreation date of the contract.',
-        'type' => 'datetime',
-        'mysql_type' => 'DATETIME',
-        'pgsql_type' => 'timestamp without time zone',
-        'sqlite_type' => 'VARCHAR',
-        'sqlsrv_type' => 'smalldatetime',
-        'not null' => FALSE,
-        'sortable' => TRUE,
-        'views' => TRUE,
-      ),
+        'not null' => TRUE,
+      ) + $date,
       'dateExpired' => array(
         'description' => 'Expiration date of the contract.',
-        'type' => 'datetime',
-        'mysql_type' => 'DATETIME',
-        'pgsql_type' => 'timestamp without time zone',
-        'sqlite_type' => 'VARCHAR',
-        'sqlsrv_type' => 'smalldatetime',
-        'not null' => FALSE,
-        'sortable' => TRUE,
-        'views' => TRUE,
-      ),
+        'not null' => TRUE,
+      ) + $date,
       'dateAccepted' => array(
         'description' => 'Date of confirmation of contract.',
-        'type' => 'datetime',
-        'mysql_type' => 'DATETIME',
-        'pgsql_type' => 'timestamp without time zone',
-        'sqlite_type' => 'VARCHAR',
-        'sqlsrv_type' => 'smalldatetime',
-        'not null' => FALSE,
-        'sortable' => TRUE,
-        'views' => TRUE,
-      ),
+      ) + $date,
       'numDays' => array(
         'description' => 'Number of days to perform the contract.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+      ) + $small_int,
       'dateCompleted' => array(
-        'description' => 'Date of completed of contract.',
-        'type' => 'datetime',
-        'mysql_type' => 'DATETIME',
-        'pgsql_type' => 'timestamp without time zone',
-        'sqlite_type' => 'VARCHAR',
-        'sqlsrv_type' => 'smalldatetime',
-        'not null' => FALSE,
-        'sortable' => TRUE,
-        'views' => TRUE,
-      ),
+        'description' => 'Date contract was completed.',
+      ) + $date,
       'price' => array(
         'description' => 'Price of contract (for ItemsExchange and Auctions)',
-        'type' => 'float',
-        'not null' => TRUE,
-        'precision' => 32,
-        'scale' => 2,
-        'unsigned' => FALSE,
-        'default' => 0.0,
-      ),
+      ) + $double,
       'reward' => array(
         'description' => 'Remuneration for contract (for Couriers only).',
-        'type' => 'float',
-        'not null' => TRUE,
-        'precision' => 32,
-        'scale' => 2,
-        'unsigned' => FALSE,
-        'default' => 0.0,
-      ),
+      ) + $double,
       'collateral' => array(
         'description' => 'Collateral price (for Couriers only).',
-        'type' => 'float',
-        'not null' => TRUE,
-        'precision' => 32,
-        'scale' => 2,
-        'unsigned' => FALSE,
-        'default' => 0.0,
-      ),
+      ) + $double,
       'buyout' => array(
         'description' => 'Buyout price (for Auctions only).',
-        'type' => 'float',
-        'not null' => TRUE,
-        'precision' => 32,
-        'scale' => 2,
-        'unsigned' => FALSE,
-        'default' => 0.0,
-      ),
+      ) + $double,
       'volume' => array(
         'description' => 'Volume of items in the contract.',
-        'type' => 'float',
-        'not null' => TRUE,
-        'precision' => 32,
-        'scale' => 2,
-        'unsigned' => FALSE,
-        'default' => 0.0,
-      ),
+      ) + $big_int,
     ),
     'indexes' => array(
       'characterID' => array('characterID'),
@@ -813,127 +717,71 @@ function eve_api_schema() {
   );
 
   $schema['eve_api_wallet_journal'] = array(
-    'description' => 'This table holds all the wallet transactions for each character.',
+    'description' => 'API data pulled from /char/WalletJournal.xml.aspx.',
     'fields' => array(
       'characterID' => array(
-        'description' => 'The unique Character ID associated with the EVE Character.',
-        'type' => 'int',
+        'description' => 'Unique character ID.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
+      'refID' => array(
+        'description' => 'Unique reference ID.',
+        'not null' => TRUE,
+      ) + $big_int,
       'date' => array(
         'description' => 'Date & time of the transaction.',
-        'type' => 'datetime',
-        'mysql_type' => 'DATETIME',
-        'pgsql_type' => 'timestamp without time zone',
-        'sqlite_type' => 'VARCHAR',
-        'sqlsrv_type' => 'smalldatetime',
-        'not null' => FALSE,
-        'sortable' => TRUE,
-        'views' => TRUE,
-      ),
-      'refID' => array(
-        'description' => 'ID of transaction.',
-        'type' => 'int',
-        'size' => 'big',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+        'not null' => TRUE,
+      ) + $date,
       'refTypeID' => array(
         'description' => 'Transaction type.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+        'not null' => TRUE,
+      ) + $small_int,
       'ownerName1' => array(
         'description' => 'Name of first party in the transaction.',
-        'type' => 'varchar',
-        'length' => 50,
         'not null' => TRUE,
-        'default' => '',
-      ),
+      ) + $varchar,
       'ownerID1' => array(
         'description' => 'Character or corporation ID of the first party.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+        'not null' => TRUE,
+      ) + $big_int,
       'ownerName2' => array(
         'description' => 'Name of second party in the transaction.',
-        'type' => 'varchar',
-        'length' => 50,
         'not null' => TRUE,
-        'default' => '',
-      ),
+      ) + $varchar,
       'ownerID2' => array(
         'description' => 'Character or corporation ID of the second party.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+        'not null' => TRUE,
+      ) + $big_int,
       'argName1' => array(
         'description' => 'Depending on the RefTypeID, this row will change.',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-      ),
+      ) + $varchar,
       'argID1' => array(
         'description' => 'The value of argName1.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+      ) + $big_int,
       'amount' => array(
         'description' => 'The amount transferred between parties',
-        'type' => 'float',
         'not null' => TRUE,
-        'precision' => 32,
-        'scale' => 2,
-        'unsigned' => FALSE,
-        'default' => 0.0,
-      ),
+      ) + $double,
       'balance' => array(
         'description' => 'The overall balance in this wallet, after this transaction.',
-        'type' => 'float',
         'not null' => TRUE,
-        'precision' => 32,
-        'scale' => 2,
-        'unsigned' => FALSE,
-        'default' => 0.0,
-      ),
+      ) + $double,
       'reason' => array(
         'description' => 'Either empty or a message related to the transaction.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
+        'type' => 'text',
+        'not null' => FALSE,
       ),
       'taxReceiverID' => array(
         'description' => 'If the row is related to taxation, then this is the CorporationID of who recieved the tax.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
-      ),
+      ) + $big_int,
       'taxAmount' => array(
         'description' => 'If the row is related to taxation, then this is the amount of tax paid.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
-      ),
+      ) + $double,
       'owner1TypeID' => array(
         'description' => 'Character or corporation Type ID of the first party.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+      ) + $big_int,
       'owner2TypeID' => array(
         'description' => 'Character or corporation Type ID of the second party.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+      ) + $big_int,
     ),
     'indexes' => array(
       'characterID' => array('characterID'),
@@ -942,180 +790,21 @@ function eve_api_schema() {
     ),
   );
 
-  $schema['eve_api_character_sheet_attribute_enhancers'] = array(
-    'description' => 'This table holds all the attribute enhancers for each character.',
-    'fields' => array(
-      'characterID' => array(
-        'description' => 'The unique Character ID associated with the EVE Character.',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'bonusName' => array(
-        'description' => 'The EVE Character bonus name.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'augmentatorName' => array(
-        'description' => 'The EVE Character augmentator name.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'augmentatorValue' => array(
-        'description' => 'The EVE Character augmentator value.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-    ),
-    'indexes' => array(
-      'characterID' => array('characterID'),
-    ),
-  );
-
-  $schema['eve_api_character_sheet_certificates'] = array(
-    'description' => 'This table holds all the certificates for each character.',
-    'fields' => array(
-      'characterID' => array(
-        'description' => 'The unique Character ID associated with the EVE Character.',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'certificateID' => array(
-        'description' => 'The EVE Character augmentator value.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-    ),
-    'indexes' => array(
-      'characterID' => array('characterID'),
-    ),
-  );
-
-  $schema['eve_api_character_sheet_titles'] = array(
-    'description' => 'This table holds all the corporation titles for each character.',
-    'fields' => array(
-      'characterID' => array(
-        'description' => 'The unique Character ID associated with the EVE Character.',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'titleID' => array(
-        'description' => 'The EVE Character corporation title ID.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'titleName' => array(
-        'description' => 'The EVE Character corporation title name.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-    ),
-    'indexes' => array(
-      'characterID' => array('characterID'),
-    ),
-  );
-
-  $schema['eve_api_character_sheet_skills'] = array(
-    'description' => 'This table holds all the skills for each character.',
-    'fields' => array(
-      'characterID' => array(
-        'description' => 'The unique Character ID associated with the EVE Character.',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'typeID' => array(
-        'description' => 'The EVE Character skills skill type.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'skillpoints' => array(
-        'description' => 'The EVE Character skills skill points.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'level' => array(
-        'description' => 'The EVE Character skills level.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'published' => array(
-        'description' => 'The EVE Character skill published.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-    ),
-    'indexes' => array(
-      'characterID' => array('characterID'),
-      'typeID' => array('typeID'),
-      'level' => array('level'),
-    ),
-  );
-
-  $schema['eve_api_character_roles'] = array(
-    'description' => 'This table holds all the roles for each character.',
-    'fields' => array(
-      'characterID' => array(
-        'description' => 'The unique Character ID associated with the EVE Character.',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'type' => array(
-        'description' => 'The role type.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'roleID' => array(
-        'description' => 'The role ID.',
-        'type' => 'int',
-        'size' => 'big',
-        'not null' => TRUE,
-      ),
-      'roleName' => array(
-        'description' => 'The role name.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-    ),
-    'indexes' => array(
-      'characterID' => array('characterID'),
-      'roleID' => array('roleID'),
-    ),
-  );
-
   $schema['eve_api_role_ceo_director'] = array(
-    'description' => 'This table holds the whitelist for CEO and Directors.',
+    'description' => 'List of manually created CEO and Directors.',
     'fields' => array(
       'characterID' => array(
-        'description' => 'The unique Character ID associated with the EVE Character.',
-        'type' => 'int',
+        'description' => 'Unique character ID.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'isCEO' => array(
         'description' => 'Indicate if the character is a CEO.',
-        'type' => 'int',
         'not null' => TRUE,
-      ),
+      ) + $tiny_int,
       'isDirector' => array(
         'description' => 'Indicate if the character is a Director.',
-        'type' => 'int',
         'not null' => TRUE,
-      ),
+      ) + $tiny_int,
       'memo' => array(
         'description' => 'Short description of why character was added.',
         'type' => 'text',
@@ -1131,19 +820,16 @@ function eve_api_schema() {
   );
 
   $schema['eve_api_whitelist'] = array(
-    'description' => 'This table holds all the whitelisted character ID\'s and name.',
+    'description' => 'Whitelist of characters that are only required to enter a limited API Key.',
     'fields' => array(
       'characterID' => array(
-        'description' => 'The unique Character ID associated with the EVE Character.',
-        'type' => 'int',
+        'description' => 'Unique character ID.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'characterName' => array(
-        'description' => 'The EVE Character Name',
-        'type' => 'varchar',
-        'length' => 50,
+        'description' => 'Character name',
         'not null' => TRUE,
-      ),
+      ) + $varchar,
       'memo' => array(
         'description' => 'Short description of why character was added.',
         'type' => 'text',
@@ -1154,47 +840,37 @@ function eve_api_schema() {
     'primary key' => array('characterID'),
   );
 
-  $schema['eve_api_sheet_groups'] = array(
-    'description' => 'This table holds all the definitions for all the skill groups.',
+  $schema['eve_api_skill_tree_groups'] = array(
+    'description' => 'API data pulled from /eve/SkillTree.xml.aspx.',
     'fields' => array(
       'groupID' => array(
-        'description' => 'The EVE skill group ID.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
-      'groupName' => array(
-        'description' => 'The EVE skill group name.',
-        'type' => 'varchar',
-        'length' => 50,
+        'description' => 'Skill group ID.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
+      'groupName' => array(
+        'description' => 'Skill group name.',
+        'not null' => TRUE,
+      ) + $varchar,
     ),
     'unique keys' => array('groupID' => array('groupID')),
     'primary key' => array('groupID'),
   );
 
-  $schema['eve_api_sheet_types'] = array(
-    'description' => 'This table holds all the definitions for all the skills.',
+  $schema['eve_api_skill_tree'] = array(
+    'description' => 'API data pulled from /eve/SkillTree.xml.aspx.',
     'fields' => array(
       'typeID' => array(
-        'description' => 'The EVE skill type ID.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+        'description' => 'Skill type ID.',
+        'not null' => TRUE,
+      ) + $big_int,
       'typeName' => array(
-        'description' => 'The EVE skill type name.',
-        'type' => 'varchar',
-        'length' => 50,
-        'not null' => FALSE,
-      ),
+        'description' => 'Skill type name.',
+        'not null' => TRUE,
+      ) + $varchar,
       'groupID' => array(
-        'description' => 'The EVE skill group ID.',
-        'type' => 'int',
-        'not null' => FALSE,
-        'default' => 0,
-      ),
+        'description' => 'Skill group ID.',
+        'not null' => TRUE,
+      ) + $big_int,
     ),
     'indexes' => array(
       'groupID' => array('groupID'),
@@ -1203,61 +879,50 @@ function eve_api_schema() {
     'primary key' => array('typeID'),
   );
 
-  $schema['eve_api_access_mask_groups'] = array(
-    'description' => 'This table holds all the access mask groups retrieved from the API.',
+  $schema['eve_api_call_list_groups'] = array(
+    'description' => 'API data pulled from /api/calllist.xml.aspx.',
     'fields' => array(
       'groupID' => array(
-        'description' => 'The unique Group ID .',
-        'type' => 'int',
+        'description' => 'Unique group ID.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'name' => array(
-        'description' => 'The name of the Access Mask Group.',
-        'type' => 'varchar',
-        'length' => 50,
+        'description' => 'Access mask group name.',
         'not null' => TRUE,
-      ),
+      ) + $varchar,
       'description' => array(
-        'description' => 'The description of the Access Mask Group.',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
+        'description' => 'Access mask group description.',
+        'type' => 'text',
+        'not null' => FALSE,
       ),
     ),
     'unique keys' => array('groupID' => array('groupID')),
     'primary key' => array('groupID'),
   );
 
-  $schema['eve_api_access_mask'] = array(
-    'description' => 'This table holds all the access mask retrieved from the API.',
+  $schema['eve_api_call_list'] = array(
+    'description' => 'API data pulled from /api/calllist.xml.aspx.',
     'fields' => array(
       'accessmask' => array(
-        'description' => 'The unique Access Mask ID.',
-        'type' => 'int',
+        'description' => 'Access mask.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'type' => array(
-        'description' => 'The Type of Access Mask.',
-        'type' => 'varchar',
-        'length' => 50,
+        'description' => 'Access mask type.',
         'not null' => TRUE,
-      ),
+      ) + $varchar,
       'name' => array(
-        'description' => 'The Name of the Access Mask.',
-        'type' => 'varchar',
-        'length' => 50,
+        'description' => 'Access mask name.',
         'not null' => TRUE,
-      ),
+      ) + $varchar,
       'groupID' => array(
-        'description' => 'The group id the accsss mask belongs to.',
-        'type' => 'int',
+        'description' => 'Unique group ID.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'description' => array(
-        'description' => 'The description of the Access Mask.',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
+        'description' => 'Access mask description.',
+        'type' => 'text',
+        'not null' => FALSE,
       ),
     ),
     'indexes' => array(
@@ -1267,41 +932,32 @@ function eve_api_schema() {
     ),
   );
 
-  $schema['eve_api_blue_standings'] = array(
-    'description' => 'This table holds all the standings of the current alliance or corporation.',
+  $schema['eve_api_contact_list'] = array(
+    'description' => 'API data pulled from /corp/ContactList.xml.aspx.',
     'fields' => array(
       'contactID' => array(
-        'description' => 'The unique ID for a corporation, alliance, or character.',
-        'type' => 'int',
+        'description' => 'Unique contact ID.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'contactName' => array(
-        'description' => 'The name of the corporation, alliance, or character.',
-        'type' => 'varchar',
-        'length' => 50,
+        'description' => 'Contact name.',
         'not null' => TRUE,
-      ),
+      ) + $varchar,
       'standing' => array(
-        'description' => 'The current standing of the corporation, alliance, or character.',
-        'type' => 'float',
+        'description' => 'Contact standing.',
+        'size' => 'small',
         'not null' => TRUE,
         'precision' => 3,
         'scale' => 1,
-        'unsigned' => FALSE,
-        'default' => 0.0,
-      ),
+      ) + $double,
       'manual' => array(
-        'description' => 'Identifies if the standing was manually added.',
-        'type' => 'int',
+        'description' => 'Indicate if manually added.',
         'not null' => TRUE,
-        'default' => 0,
-      ),
+      ) + $tiny_int,
       'checked' => array(
-        'description' => 'Used to check for updates.',
-        'type' => 'int',
+        'description' => 'Temporary indicator for removing expired contacts.',
         'not null' => TRUE,
-        'default' => 0,
-      ),
+      ) + $tiny_int,
       'memo' => array(
         'description' => 'Short description of why standing was added.',
         'type' => 'text',
@@ -1317,54 +973,41 @@ function eve_api_schema() {
     'primary key' => array('contactID'),
   );
 
-  $schema['eve_api_alliance_corporations'] = array(
-    'description' => 'This table holds all the corporations in the alliance.',
+  $schema['eve_api_alliance_list_corporations'] = array(
+    'description' => 'API data pulled from /eve/AllianceList.xml.aspx.',
     'fields' => array(
       'corporationID' => array(
         'description' => 'The Corporation ID.',
-        'type' => 'int',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'rid' => array(
         'description' => 'The Drupal role ID.',
-        'type' => 'int',
         'not null' => TRUE,
-      ),
+      ) + $int,
       'corporationName' => array(
         'description' => 'The Corporation Name.',
-        'type' => 'varchar',
-        'length' => 50,
         'not null' => TRUE,
-      ),
+      ) + $varchar,
       'corporationTicker' => array(
         'description' => 'The Corporation Ticker.',
-        'type' => 'varchar',
-        'length' => 20,
         'not null' => TRUE,
-      ),
+      ) + $varchar,
       'ceoID' => array(
         'description' => 'The CEO ID.',
-        'type' => 'int',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'ceoName' => array(
         'description' => 'The CEO Name.',
-        'type' => 'varchar',
-        'length' => 50,
         'not null' => TRUE,
-      ),
+      ) + $varchar,
       'manual' => array(
         'description' => 'Identifies if the corporation was manually added.',
-        'type' => 'int',
         'not null' => TRUE,
-        'default' => 0,
-      ),
+      ) + $tiny_int,
       'checked' => array(
         'description' => 'Used to check for updates.',
-        'type' => 'int',
         'not null' => TRUE,
-        'default' => 0,
-      ),
+      ) + $tiny_int,
       'memo' => array(
         'description' => 'Short description of why corporation was added.',
         'type' => 'text',
@@ -1380,26 +1023,21 @@ function eve_api_schema() {
     'primary key' => array('corporationID'),
   );
 
-  $schema['eve_api_alliance_info'] = array(
-    'description' => 'This table holds all the alliance tickers.',
+  $schema['eve_api_alliance_list_tickers'] = array(
+    'description' => 'API data pulled from /eve/AllianceList.xml.aspx.',
     'fields' => array(
       'allianceID' => array(
-        'description' => 'The Alliance ID.',
-        'type' => 'int',
+        'description' => 'Unique alliance ID.',
         'not null' => TRUE,
-      ),
+      ) + $big_int,
       'allianceTicker' => array(
-        'description' => 'The Alliance Ticker.',
-        'type' => 'varchar',
-        'length' => 20,
+        'description' => 'Unique alliance Ticker.',
         'not null' => TRUE,
-      ),
+      ) + $varchar,
       'allianceName' => array(
-        'description' => 'The Alliance Name.',
-        'type' => 'varchar',
-        'length' => 50,
+        'description' => 'Unique alliance Name.',
         'not null' => TRUE,
-      ),
+      ) + $varchar,
     ),
     'unique keys' => array('allianceID' => array('allianceID')),
     'primary key' => array('allianceID'),
@@ -1502,7 +1140,7 @@ function eve_api_uninstall() {
   variable_del('eve_api_director_role');
   variable_del('eve_api_corp_keyid');
   variable_del('eve_api_corp_vcode');
-  variable_del('eve_api_access_mask');
+  variable_del('eve_api_call_list');
   variable_del('eve_api_require_expires');
   variable_del('eve_api_require_type');
   variable_del('eve_api_required_standing');

@@ -202,7 +202,7 @@ function eve_api_form_user_register_form_alter(&$form, &$form_state) {
     }
   }
   else {
-    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
+    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_call_list', 268435455)) != variable_get('eve_api_call_list', 268435455)) {
       form_set_error('keyID', t('Unknown Error, please try again.'));
       form_set_error('vCode');
       drupal_goto('user/register');
@@ -291,7 +291,7 @@ function eve_api_user_register_form_validate(&$form, &$form_state) {
     }
   }
   else {
-    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
+    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_call_list', 268435455)) != variable_get('eve_api_call_list', 268435455)) {
       form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
       form_set_error('vCode');
     }
@@ -416,7 +416,7 @@ function eve_api_enter_api_form($form, &$form_state) {
   $form['verify']['help_mask'] = array(
     '#type' => 'item',
     '#title' => t('Access Mask:'),
-    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the correct access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('eve_api_access_mask', 268435455))),
+    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the correct access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('eve_api_call_list', 268435455))),
     '#weight' => 40,
   );
 
@@ -508,7 +508,7 @@ function eve_api_enter_api_form_validate($form, &$form_state) {
       }
     }
     else {
-      if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
+      if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_call_list', 268435455)) != variable_get('eve_api_call_list', 268435455)) {
         form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
         form_set_error('vCode');
       }

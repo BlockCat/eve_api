@@ -434,7 +434,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
     ),
   );
 
-  $access_mask = variable_get('eve_api_access_mask', 268435455);
+  $access_mask = variable_get('eve_api_call_list', 268435455);
 
   $form['registration'] = array(
     '#type' => 'fieldset',
@@ -496,7 +496,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
     '#weight' => 10,
   );
 
-  $query = db_select('eve_api_access_mask', 'am');
+  $query = db_select('eve_api_call_list', 'am');
   $query->fields('am', array(
       'accessmask',
       'name',
@@ -515,8 +515,8 @@ function eve_api_admin_registration_form($form, &$form_state) {
   }
 
   $result_a = db_query('SELECT DISTINCT amg.groupID, amg.name, amg.description
-    FROM {eve_api_access_mask_groups} amg
-    LEFT JOIN {eve_api_access_mask} am ON am.groupID = amg.groupID
+    FROM {eve_api_call_list_groups} amg
+    LEFT JOIN {eve_api_call_list} am ON am.groupID = amg.groupID
     WHERE am.type = \'Character\' ORDER BY amg.groupID');
 
   if ($result_a->rowCount()) {
@@ -606,8 +606,8 @@ function eve_api_admin_registration_form_submit($form, &$form_state) {
   $new_access_mask = 8388616;
 
   $result = db_query('SELECT DISTINCT amg.name, amg.groupID
-    FROM {eve_api_access_mask_groups} amg
-    LEFT JOIN {eve_api_access_mask} am ON am.groupID = amg.groupID
+    FROM {eve_api_call_list_groups} amg
+    LEFT JOIN {eve_api_call_list} am ON am.groupID = amg.groupID
     WHERE am.type = \'Character\'');
 
   if ($result->rowCount()) {
@@ -621,9 +621,9 @@ function eve_api_admin_registration_form_submit($form, &$form_state) {
     }
   }
 
-  $access_mask = variable_get('eve_api_access_mask', 268435455);
+  $access_mask = variable_get('eve_api_call_list', 268435455);
 
-  variable_set('eve_api_access_mask', $new_access_mask);
+  variable_set('eve_api_call_list', $new_access_mask);
 
   if ($access_mask != $new_access_mask || round((float) variable_get('eve_api_required_standing', 0.1), 1) != round((float) $form_state['values']['standing'], 1) || (int) variable_get('eve_api_require_expires', FALSE) != (int) $form_state['values']['expires'] || (int) variable_get('eve_api_require_type', TRUE) != (int) $form_state['values']['type']) {
     variable_set('eve_api_required_standing', round((float) $form_state['values']['standing'], 1));
@@ -683,7 +683,7 @@ function eve_api_admin_list_blues_form($form, &$form_state) {
 
   $options = $selected = array();
 
-  $result = db_select('eve_api_blue_standings', 'b')
+  $result = db_select('eve_api_contact_list', 'b')
     ->fields('b', array(
       'contactID',
       'contactName',
@@ -772,7 +772,7 @@ function eve_api_admin_list_blues_form_submit($form, &$form_state) {
   }
 
   if (!empty($deleted_blues)) {
-    $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE manual = 0 AND contactID IN (:contactIDs)', array(
+    $result = db_query('SELECT contactID FROM {eve_api_contact_list} WHERE manual = 0 AND contactID IN (:contactIDs)', array(
       ':contactIDs' => $deleted_blues,
     ));
 
@@ -780,7 +780,7 @@ function eve_api_admin_list_blues_form_submit($form, &$form_state) {
       drupal_set_message(t('Deleted Blue Standings will get re-added if not removed from your EVE Alliance Standings during the next daily cron job.'), 'warning');
     }
 
-    db_delete('eve_api_blue_standings')->condition('contactID', $deleted_blues, 'IN')->execute();
+    db_delete('eve_api_contact_list')->condition('contactID', $deleted_blues, 'IN')->execute();
 
     $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
     $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE corporationID = :corporationID OR characterID = :characterID OR allianceID = :allianceID', array(
@@ -894,7 +894,7 @@ function eve_api_admin_add_blue_form_validate($form, &$form_state) {
   }
   else {
     if (isset($contact_data[$contact_name]) && (int) $contact_data[$contact_name]['characterID'] != 0) {
-      $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE contactID = :contactID', array(
+      $result = db_query('SELECT contactID FROM {eve_api_contact_list} WHERE contactID = :contactID', array(
         ':contactID' => (int) $contact_data[$contact_name]['characterID'],
       ));
 
@@ -921,7 +921,7 @@ function eve_api_admin_add_blue_form_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/eve_api/list_blues';
   $standing = round((float) $form_state['values']['standing'], 1);
 
-  db_insert('eve_api_blue_standings')->fields(array(
+  db_insert('eve_api_contact_list')->fields(array(
     'contactID' => (int) $form_state['contactID'],
     'contactName' => (string) $form_state['contactName'],
     'standing' => (float) $standing,
@@ -965,7 +965,7 @@ function eve_api_admin_edit_blue_form($form, &$form_state, $contact_id) {
     '#weight' => 0,
   );
 
-  $result = db_query('SELECT memo, standing FROM {eve_api_blue_standings} WHERE contactID = :contactID', array(
+  $result = db_query('SELECT memo, standing FROM {eve_api_contact_list} WHERE contactID = :contactID', array(
     ':contactID' => $contact_id,
   ));
 
@@ -1026,7 +1026,7 @@ function eve_api_admin_edit_blue_form_validate($form, &$form_state) {
     form_set_error('standing', t('Standings are required to be between -10.0 and 10.0'));
   }
 
-  $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE contactID = :contactID', array(
+  $result = db_query('SELECT contactID FROM {eve_api_contact_list} WHERE contactID = :contactID', array(
     ':contactID' => (int) $contact_id,
   ));
 
@@ -1046,7 +1046,7 @@ function eve_api_admin_edit_blue_form_submit($form, &$form_state) {
   $memo = (string) $form_state['values']['memo'];
   $standing = round((float) $form_state['values']['standing'], 1);
 
-  db_update('eve_api_blue_standings')->fields(array(
+  db_update('eve_api_contact_list')->fields(array(
       'memo' => $memo,
       'standing' => $standing,
     ))->condition('contactID', (int) $contact_id, '=')->execute();
@@ -1082,7 +1082,7 @@ function eve_api_admin_list_corporations_form($form, &$form_state) {
 
   $options = $selected = array();
 
-  $result = db_select('eve_api_alliance_corporations', 'ac')
+  $result = db_select('eve_api_alliance_list_corporations', 'ac')
     ->fields('ac', array(
       'corporationID',
       'rid',
@@ -1170,7 +1170,7 @@ function eve_api_admin_list_corporations_form_submit($form, &$form_state) {
   }
 
   if (!empty($deleted_corporations)) {
-    $result = db_query('SELECT corporationID FROM {eve_api_alliance_corporations} WHERE manual = 0 AND corporationID IN (:corporationIDs)', array(
+    $result = db_query('SELECT corporationID FROM {eve_api_alliance_list_corporations} WHERE manual = 0 AND corporationID IN (:corporationIDs)', array(
       ':corporationIDs' => $deleted_corporations,
     ));
 
@@ -1178,7 +1178,7 @@ function eve_api_admin_list_corporations_form_submit($form, &$form_state) {
       drupal_set_message(t('Deleted Corporations will get re-added if not removed from your EVE Alliance during the next daily cron job.'), 'warning');
     }
 
-    $result = db_query('SELECT corporationName FROM {eve_api_alliance_corporations} WHERE corporationID IN (:corporationIDs)', array(
+    $result = db_query('SELECT corporationName FROM {eve_api_alliance_list_corporations} WHERE corporationID IN (:corporationIDs)', array(
       ':corporationIDs' => $deleted_corporations,
     ));
 
@@ -1190,7 +1190,7 @@ function eve_api_admin_list_corporations_form_submit($form, &$form_state) {
       }
     }
 
-    db_delete('eve_api_alliance_corporations')->condition('corporationID', $deleted_corporations, 'IN')->execute();
+    db_delete('eve_api_alliance_list_corporations')->condition('corporationID', $deleted_corporations, 'IN')->execute();
 
     $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
     $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE corporationID IN (:corporationIDs)', array(
@@ -1288,7 +1288,7 @@ function eve_api_admin_add_corporation_form_validate($form, &$form_state) {
   }
   else {
     if (isset($contact_data[$corporation_name]) && (int) $contact_data[$corporation_name]['characterID'] != 0) {
-      $result = db_query('SELECT corporationID FROM {eve_api_alliance_corporations} WHERE corporationID = :corporationID', array(
+      $result = db_query('SELECT corporationID FROM {eve_api_alliance_list_corporations} WHERE corporationID = :corporationID', array(
         ':corporationID' => (int) $contact_data[$corporation_name]['characterID'],
       ));
 
@@ -1334,7 +1334,7 @@ function eve_api_admin_add_corporation_form_submit($form, &$form_state) {
     $role = user_role_load_by_name($corp_info['corporationName']);
   }
 
-  db_insert('eve_api_alliance_corporations')->fields(array(
+  db_insert('eve_api_alliance_list_corporations')->fields(array(
     'corporationID' => (int) $corp_info['corporationID'],
     'rid' => (int) $role->rid,
     'corporationName' => (string) $corp_info['corporationName'],
@@ -1380,7 +1380,7 @@ function eve_api_admin_edit_corporation_form($form, &$form_state, $corporation_i
     '#weight' => 0,
   );
 
-  $result = db_query('SELECT memo FROM {eve_api_alliance_corporations} WHERE corporationID = :corporationID', array(
+  $result = db_query('SELECT memo FROM {eve_api_alliance_list_corporations} WHERE corporationID = :corporationID', array(
     ':corporationID' => $corporation_id,
   ));
 
@@ -1425,7 +1425,7 @@ function eve_api_admin_edit_corporation_form($form, &$form_state, $corporation_i
 function eve_api_admin_edit_corporation_form_validate($form, &$form_state) {
   $corporation_id = (int) $form_state['corporation_id'];
 
-  $result = db_query('SELECT corporationID FROM {eve_api_alliance_corporations} WHERE corporationID = :corporationID', array(
+  $result = db_query('SELECT corporationID FROM {eve_api_alliance_list_corporations} WHERE corporationID = :corporationID', array(
     ':corporationID' => (int) $corporation_id,
   ));
 
@@ -1444,7 +1444,7 @@ function eve_api_admin_edit_corporation_form_submit($form, &$form_state) {
   $corporation_id = (int) $form_state['corporation_id'];
   $memo = (string) $form_state['values']['memo'];
 
-  db_update('eve_api_alliance_corporations')->fields(array('memo' => $memo))->condition('corporationID', (int) $corporation_id, '=')->execute();
+  db_update('eve_api_alliance_list_corporations')->fields(array('memo' => $memo))->condition('corporationID', (int) $corporation_id, '=')->execute();
 
   drupal_set_message(t('Corporation has been updated!'));
 }

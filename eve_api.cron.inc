@@ -159,7 +159,7 @@ function eve_api_cron_api_user_sync($item) {
   $character_data = eve_api_get_basic_character_info($account->name);
 
   if (!eve_api_verify_blue($character_data) || !$character_found) {
-    $result = db_query('SELECT corporationID, corporationName FROM {eve_api_alliance_corporations}');
+    $result = db_query('SELECT corporationID, corporationName FROM {eve_api_alliance_list_corporations}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -193,7 +193,7 @@ function eve_api_cron_api_user_sync($item) {
       ->execute();
   }
   else {
-    $result = db_query('SELECT corporationID, corporationName FROM {eve_api_alliance_corporations}');
+    $result = db_query('SELECT corporationID, corporationName FROM {eve_api_alliance_list_corporations}');
 
     if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
       if ($result->rowCount()) {
@@ -301,13 +301,13 @@ function eve_api_cron_api_alliance_fetch($item = NULL) {
     return FALSE;
   }
 
-  db_update('eve_api_blue_standings')->fields(array('checked' => 1))->condition('manual', 0, '=')->execute();
+  db_update('eve_api_contact_list')->fields(array('checked' => 1))->condition('manual', 0, '=')->execute();
 
   foreach ($xml->result->children() as $rowset) {
     foreach ($rowset->children() as $rows) {
       $row = $rows->attributes();
 
-      db_merge('eve_api_blue_standings')->key(array('contactID' => (int) $row->contactID))->fields(array(
+      db_merge('eve_api_contact_list')->key(array('contactID' => (int) $row->contactID))->fields(array(
         'contactID' => (int) $row->contactID,
         'contactName' => (string) $row->contactName,
         'standing' => (float) $row->standing,
@@ -317,7 +317,7 @@ function eve_api_cron_api_alliance_fetch($item = NULL) {
     }
   }
 
-  db_delete('eve_api_blue_standings')->condition('checked', 1, '=')->condition('manual', 0, '=')->execute();
+  db_delete('eve_api_contact_list')->condition('checked', 1, '=')->condition('manual', 0, '=')->execute();
 
   return TRUE;
 }
@@ -347,13 +347,13 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
     return FALSE;
   }
 
-  db_update('eve_api_alliance_corporations')->fields(array('checked' => 1))->condition('manual', 0, '=')->execute();
-  db_truncate('eve_api_alliance_info')->execute();
+  db_update('eve_api_alliance_list_corporations')->fields(array('checked' => 1))->condition('manual', 0, '=')->execute();
+  db_truncate('eve_api_alliance_list_tickers')->execute();
 
   foreach ($xml->result->rowset->children() as $rows_a) {
     $row_a = $rows_a->attributes();
 
-    db_insert('eve_api_alliance_info')->fields(array(
+    db_insert('eve_api_alliance_list_tickers')->fields(array(
       'allianceID' => (int) $row_a->allianceID,
       'allianceTicker' => (string) $row_a->shortName,
       'allianceName' => (string) $row_a->name,
@@ -363,12 +363,12 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
       foreach ($rows_a->rowset->children() as $rows_b) {
         $row_b = $rows_b->attributes();
 
-        $result = db_query('SELECT corporationID FROM {eve_api_alliance_corporations} WHERE corporationID = :corporationID AND manual = 0', array(
+        $result = db_query('SELECT corporationID FROM {eve_api_alliance_list_corporations} WHERE corporationID = :corporationID AND manual = 0', array(
           ':corporationID' => (int) $row_b->corporationID,
         ));
 
         if ($result->rowCount()) {
-          db_update('eve_api_alliance_corporations')->fields(array('checked' => 0))->condition('corporationID', (int) $row_b->corporationID, '=')->execute();
+          db_update('eve_api_alliance_list_corporations')->fields(array('checked' => 0))->condition('corporationID', (int) $row_b->corporationID, '=')->execute();
           continue;
         }
 
@@ -376,7 +376,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
         $corp_info = eve_api_get_corporation_sheet_api($query);
 
         if (isset($corp_info['error'])) {
-          db_update('eve_api_alliance_corporations')->fields(array('checked' => 0))->condition('corporationID', (int) $row_b->corporationID, '=')->execute();
+          db_update('eve_api_alliance_list_corporations')->fields(array('checked' => 0))->condition('corporationID', (int) $row_b->corporationID, '=')->execute();
           continue;
         }
 
@@ -391,7 +391,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
           $role = user_role_load_by_name($corp_info['corporationName']);
         }
 
-        db_merge('eve_api_alliance_corporations')->key(array('corporationID' => (int) $row_b->corporationID))->fields(array(
+        db_merge('eve_api_alliance_list_corporations')->key(array('corporationID' => (int) $row_b->corporationID))->fields(array(
           'corporationID' => (int) $row_b->corporationID,
           'rid' => (int) $role->rid,
           'corporationName' => (string) $corp_info['corporationName'],
@@ -405,7 +405,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
     }
   }
 
-  $result = db_query('SELECT corporationID, corporationName FROM {eve_api_alliance_corporations} WHERE checked = 1');
+  $result = db_query('SELECT corporationID, corporationName FROM {eve_api_alliance_list_corporations} WHERE checked = 1');
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -415,7 +415,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
     }
   }
 
-  db_delete('eve_api_alliance_corporations')->condition('checked', 1, '=')->execute();
+  db_delete('eve_api_alliance_list_corporations')->condition('checked', 1, '=')->execute();
 
   if (!variable_get('eve_api_enable', FALSE)) {
     variable_set('eve_api_enable', TRUE);
@@ -450,8 +450,8 @@ function eve_api_cron_api_mask_sync($item = NULL) {
     return FALSE;
   }
 
-  db_truncate('eve_api_access_mask')->execute();
-  db_truncate('eve_api_access_mask_groups')->execute();
+  db_truncate('eve_api_call_list')->execute();
+  db_truncate('eve_api_call_list_groups')->execute();
 
   foreach ($xml->result->children() as $rowset) {
     $row_a = $rowset->attributes();
@@ -461,7 +461,7 @@ function eve_api_cron_api_mask_sync($item = NULL) {
         foreach ($rowset->children() as $rows) {
           $row_b = $rows->attributes();
 
-          db_insert('eve_api_access_mask_groups')->fields(array(
+          db_insert('eve_api_call_list_groups')->fields(array(
             'groupID' => (int) $row_b->groupID,
             'name' => (string) $row_b->name,
             'description' => (string) $row_b->description,
@@ -473,7 +473,7 @@ function eve_api_cron_api_mask_sync($item = NULL) {
         foreach ($rowset->children() as $rows) {
           $row_b = $rows->attributes();
 
-          db_insert('eve_api_access_mask')->fields(array(
+          db_insert('eve_api_call_list')->fields(array(
             'accessmask' => (int) $row_b->accessMask,
             'type' => (string) $row_b->type,
             'name' => (string) $row_b->name,
@@ -513,18 +513,18 @@ function eve_api_cron_api_skill_tree($item = NULL) {
     return FALSE;
   }
 
-  db_truncate('eve_api_sheet_groups')->execute();
-  db_truncate('eve_api_sheet_types')->execute();
+  db_truncate('eve_api_skill_tree_groups')->execute();
+  db_truncate('eve_api_skill_tree')->execute();
 
   foreach ($api_data['group'] as $rows) {
-    db_insert('eve_api_sheet_groups')->fields(array(
+    db_insert('eve_api_skill_tree_groups')->fields(array(
       'groupID' => (int) $rows['groupID'],
       'groupName' => (string) $rows['groupName'],
     ))->execute();
   }
 
   foreach ($api_data['type'] as $rows) {
-    db_insert('eve_api_sheet_types')->fields(array(
+    db_insert('eve_api_skill_tree')->fields(array(
       'groupID' => (int) $rows['groupID'],
       'typeID' => (int) $rows['typeID'],
       'typeName' => (string) $rows['typeName'],
@@ -568,7 +568,7 @@ function eve_api_cron_import_character_sheet($item) {
   }
   else {
     db_delete('eve_api_character_sheet_attribute_enhancers')->condition('characterID', (int) $character_id, '=')->execute();
-    db_delete('eve_api_character_roles')->condition('characterID', (int) $character_id, '=')->execute();
+    db_delete('eve_api_character_sheet_roles')->condition('characterID', (int) $character_id, '=')->execute();
     db_delete('eve_api_character_sheet_titles')->condition('characterID', (int) $character_id, '=')->execute();
 
     foreach ($character_sheet as $type => $data) {
@@ -616,7 +616,7 @@ function eve_api_cron_import_character_sheet($item) {
         case 'roles':
           foreach ($data as $rolename => $roledata) {
             foreach ($roledata as $roles) {
-              db_merge('eve_api_character_roles')->key(array(
+              db_merge('eve_api_character_sheet_roles')->key(array(
                 'characterID' => (int) $character_id,
                 'type' => (string) $rolename,
                 'roleID' => (int) $roles['roleID'],
@@ -664,19 +664,7 @@ function eve_api_cron_import_character_sheet($item) {
             'errorID' => (int) $error,
           );
 
-          $ignored = array(
-            'corporationName',
-            'corporationID',
-            'allianceName',
-            'allianceID',
-            'name',
-          );
-
           foreach ($data as $infoname => $infodata) {
-            if (in_array($infoname, $ignored)) {
-              continue;
-            }
-
             if (empty($infodata)) {
               continue;
             }
@@ -818,7 +806,7 @@ function eve_api_cron_import_skill_in_training($item) {
   if (isset($training_info['error'])) {
     $error = (int) $training_info['error'];
 
-    db_merge('eve_api_skill_training')->key(array(
+    db_merge('eve_api_skill_in_training')->key(array(
       'characterID' => (int) $character_id,
     ))->fields(array(
       'characterID' => (int) $character_id,
@@ -833,7 +821,7 @@ function eve_api_cron_import_skill_in_training($item) {
     foreach ($training_info as $type => $data) {
       switch ((string) $type) {
         case 'info':
-          $query_data = db_merge('eve_api_skill_training')->key(array(
+          $query_data = db_merge('eve_api_skill_in_training')->key(array(
             'characterID' => (int) $character_id,
           ));
 
@@ -842,15 +830,7 @@ function eve_api_cron_import_skill_in_training($item) {
             'errorID' => (int) $error,
           );
 
-          $ignored = array(
-            'currentTQTime',
-          );
-
           foreach ($data as $infoname => $infodata) {
-            if (in_array($infoname, $ignored)) {
-              continue;
-            }
-
             if (empty($infodata)) {
               continue;
             }
@@ -1006,7 +986,7 @@ function eve_api_cron_import_contracts($item) {
     return FALSE;
   }
   else {
-    $result = db_query('SELECT MAX(contractID) AS maxContractID FROM {eve_api_character_contracts} WHERE characterID = :characterID', array(
+    $result = db_query('SELECT MAX(contractID) AS maxContractID FROM {eve_api_contracts} WHERE characterID = :characterID', array(
       ':characterID' => (int) $character_id,
     ));
 
@@ -1026,7 +1006,7 @@ function eve_api_cron_import_contracts($item) {
               continue;
             }
 
-            $query_data = db_merge('eve_api_character_contracts')->key(array(
+            $query_data = db_merge('eve_api_contracts')->key(array(
               'contractID' => (int) $contractdata['contractID'],
             ));
 

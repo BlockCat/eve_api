@@ -573,7 +573,7 @@ function eve_api_get_basic_character_info($character) {
 function eve_api_get_character_info($character) {
   $result = db_query('SELECT c.accessMask, c.uid, st.skillInTraining, c.characterName, c.characterID
     FROM {eve_api_characters} c
-    INNER JOIN {eve_api_skill_training} st ON st.characterID = c.characterID
+    INNER JOIN {eve_api_skill_in_training} st ON st.characterID = c.characterID
     WHERE c.characterName = :characterName OR c.characterID = :characterID', array(
     ':characterName' => (string) $character,
     ':characterID' => (int) $character,
@@ -635,10 +635,10 @@ function eve_api_get_character_info($character) {
   ));
 
   if (($access_mask & 131072) == 131072) {
-    $query->join('eve_api_skill_training', 'st', 'st.characterID = c.characterID');
+    $query->join('eve_api_skill_in_training', 'st', 'st.characterID = c.characterID');
 
     if ($is_training != 0) {
-      $query->join('eve_api_sheet_types', 'sts', 'sts.typeID = st.trainingTypeID');
+      $query->join('eve_api_skill_tree', 'sts', 'sts.typeID = st.trainingTypeID');
       $query->fields('sts', array(
         'typeName',
       ));
@@ -752,8 +752,8 @@ function eve_api_get_character_info($character) {
 function eve_api_get_character_skills($character_id) {
   $result = db_query('SELECT css.level, css.skillpoints, st.typeName, sg.groupName, sg.groupID, st.typeID
     FROM {eve_api_character_sheet_skills} css
-    INNER JOIN {eve_api_sheet_types} st ON st.typeID = css.typeID
-    INNER JOIN {eve_api_sheet_groups} sg ON sg.groupID = st.groupID
+    INNER JOIN {eve_api_skill_tree} st ON st.typeID = css.typeID
+    INNER JOIN {eve_api_skill_tree_groups} sg ON sg.groupID = st.groupID
     WHERE css.characterID = :characterID ORDER BY sg.groupName, st.typeName ASC', array(
       ':characterID' => (int) $character_id,
     ));
@@ -1186,7 +1186,7 @@ function eve_api_get_skill_tree_api() {
  *   The Alliance ticker for the $allianceID.
  */
 function eve_api_get_alliance_ticker($alliance_id) {
-  $result = db_query('SELECT allianceTicker FROM {eve_api_alliance_info} WHERE allianceID = :id', array(
+  $result = db_query('SELECT allianceTicker FROM {eve_api_alliance_list_tickers} WHERE allianceID = :id', array(
     ':id' => (int) $alliance_id,
   ));
   $row = $result->fetchAssoc();
@@ -1312,7 +1312,7 @@ function eve_api_verify_blue($characters) {
       return TRUE;
     }
 
-    $result = db_query('SELECT corporationID FROM {eve_api_alliance_corporations} WHERE corporationID = :corporationID', array(
+    $result = db_query('SELECT corporationID FROM {eve_api_alliance_list_corporations} WHERE corporationID = :corporationID', array(
       ':corporationID' => (int) $characters['corporationID'],
     ));
 
@@ -1320,7 +1320,7 @@ function eve_api_verify_blue($characters) {
       return TRUE;
     }
 
-    $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE standing >= :standing AND contactID IN (:contactIDs)', array(
+    $result = db_query('SELECT contactID FROM {eve_api_contact_list} WHERE standing >= :standing AND contactID IN (:contactIDs)', array(
       ':standing' => (float) variable_get('eve_api_required_standing', 0.1),
       ':contactIDs' => array(
         (int) $characters['characterID'],
@@ -1339,7 +1339,7 @@ function eve_api_verify_blue($characters) {
         return TRUE;
       }
 
-      $result = db_query('SELECT corporationID FROM {eve_api_alliance_corporations} WHERE corporationID = :corporationID', array(
+      $result = db_query('SELECT corporationID FROM {eve_api_alliance_list_corporations} WHERE corporationID = :corporationID', array(
         ':corporationID' => (int) $character['corporationID'],
       ));
 
@@ -1347,7 +1347,7 @@ function eve_api_verify_blue($characters) {
         return TRUE;
       }
 
-      $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE standing >= :standing AND contactID IN (:contactIDs)', array(
+      $result = db_query('SELECT contactID FROM {eve_api_contact_list} WHERE standing >= :standing AND contactID IN (:contactIDs)', array(
         ':standing' => (float) variable_get('eve_api_required_standing', 0.1),
         ':contactIDs' => array(
           (int) $character['characterID'],
@@ -1379,7 +1379,7 @@ function eve_api_list_valid_characters($characters) {
 
   if (!empty($characters)) {
     foreach ($characters['characters'] as $character) {
-      $result = db_query('SELECT contactID FROM {eve_api_blue_standings} WHERE standing > 0 AND contactID IN (:contactIDs)', array(
+      $result = db_query('SELECT contactID FROM {eve_api_contact_list} WHERE standing > 0 AND contactID IN (:contactIDs)', array(
         ':contactIDs' => array(
           (int) $character['characterID'],
           (int) $character['corporationID'],
@@ -1392,7 +1392,7 @@ function eve_api_list_valid_characters($characters) {
         continue;
       }
 
-      $result = db_query('SELECT corporationID FROM {eve_api_alliance_corporations} WHERE corporationID = :corporationID', array(
+      $result = db_query('SELECT corporationID FROM {eve_api_alliance_list_corporations} WHERE corporationID = :corporationID', array(
         ':corporationID' => (int) $character['corporationID'],
       ));
 
@@ -1448,7 +1448,7 @@ function eve_api_characters_exist($characters) {
  *   TRUE or FALSE.
  */
 function eve_api_character_is_in_corp($character_id, $corporation_id = NULL) {
-  $query = db_select('eve_api_character_roles', 'cr');
+  $query = db_select('eve_api_character_sheet_roles', 'cr');
 
   if (isset($corporation_id)) {
     $query->join('eve_api_characters', 'c', 'cr.characterID = c.characterID');
@@ -1481,7 +1481,7 @@ function eve_api_character_is_in_corp($character_id, $corporation_id = NULL) {
  *   TRUE or FALSE.
  */
 function eve_api_character_is_director($character_id, $corporation_id = NULL) {
-  $query = db_select('eve_api_character_roles', 'cr');
+  $query = db_select('eve_api_character_sheet_roles', 'cr');
 
   if (isset($corporation_id)) {
     $query->join('eve_api_characters', 'c', 'cr.characterID = c.characterID');
@@ -1532,7 +1532,7 @@ function eve_api_character_is_director($character_id, $corporation_id = NULL) {
  *   TRUE or FALSE.
  */
 function eve_api_character_is_ceo($character_id, $corporation_id = NULL) {
-  $query = db_select('eve_api_alliance_corporations', 'ac');
+  $query = db_select('eve_api_alliance_list_corporations', 'ac');
 
   if (isset($corporation_id)) {
     $query->condition('ac.corporationID', $corporation_id, '=');
@@ -1731,7 +1731,7 @@ function eve_api_create_key($account, $key_id, $v_code) {
     }
   }
   else {
-    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
+    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_call_list', 268435455)) != variable_get('eve_api_call_list', 268435455)) {
       $error = 1;
     }
   }
@@ -1854,7 +1854,7 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
     }
   }
   else {
-    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
+    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_call_list', 268435455)) != variable_get('eve_api_call_list', 268435455)) {
       $error = 1;
     }
   }
@@ -2000,7 +2000,7 @@ function eve_api_update_key($account, $key_id, $v_code, $api_id) {
     }
   }
   else {
-    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
+    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_call_list', 268435455)) != variable_get('eve_api_call_list', 268435455)) {
       $error = 1;
     }
   }
@@ -2068,7 +2068,7 @@ function eve_api_update_key($account, $key_id, $v_code, $api_id) {
       $queue->createItem($item);
     }
     else {
-      db_merge('eve_api_skill_training')->key(array(
+      db_merge('eve_api_skill_in_training')->key(array(
         'characterID' => (int) $character['characterID'],
       ))->fields(array(
         'characterID' => (int) $character['characterID'],

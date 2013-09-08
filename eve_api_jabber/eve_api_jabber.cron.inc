@@ -77,7 +77,7 @@ function eve_api_jabber_cron_user_sync($item) {
   try {
     $user_roles = $corp_info = array();
 
-    $result = db_query('SELECT corporationName, corporationTicker FROM {eve_api_alliance_corporations}');
+    $result = db_query('SELECT corporationName, corporationTicker FROM {eve_api_alliance_list_corporations}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -147,7 +147,7 @@ function eve_api_jabber_cron_role_sync($item) {
     $roles = user_roles();
     $corp_info = array();
 
-    $result = db_query('SELECT corporationName, corporationTicker FROM {eve_api_alliance_corporations}');
+    $result = db_query('SELECT corporationName, corporationTicker FROM {eve_api_alliance_list_corporations}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {

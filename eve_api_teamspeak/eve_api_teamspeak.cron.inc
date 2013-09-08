@@ -87,7 +87,7 @@ function eve_api_teamspeak_cron_user_sync($item) {
     $roles = user_roles();
     $valid_roles = $user_roles = $corp_info = array();
 
-    $result = db_query('SELECT corporationName, corporationTicker FROM {eve_api_alliance_corporations}');
+    $result = db_query('SELECT corporationName, corporationTicker FROM {eve_api_alliance_list_corporations}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
@@ -304,7 +304,7 @@ function eve_api_teamspeak_cron_role_sync($item) {
     $ts3 = eve_api_teamspeak_connect();
     $corp_info = array();
 
-    $result = db_query('SELECT corporationName, corporationTicker FROM {eve_api_alliance_corporations}');
+    $result = db_query('SELECT corporationName, corporationTicker FROM {eve_api_alliance_list_corporations}');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
