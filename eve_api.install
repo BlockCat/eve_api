@@ -396,7 +396,7 @@ function eve_api_schema() {
       'lastKnownLocation' => array(
         'description' => 'The EVE Characters last known location.',
         'type' => 'varchar',
-        'length' => 50,
+        'length' => 255,
         'not null' => TRUE,
         'default' => '',
       ),
@@ -692,7 +692,7 @@ function eve_api_schema() {
       'title' => array(
         'description' => 'Title of the contract.',
         'type' => 'varchar',
-        'length' => 250,
+        'length' => 255,
         'not null' => TRUE,
         'default' => '',
       ),
@@ -873,7 +873,7 @@ function eve_api_schema() {
       'argName1' => array(
         'description' => 'Depending on the RefTypeID, this row will change.',
         'type' => 'varchar',
-        'length' => 250,
+        'length' => 255,
         'not null' => TRUE,
         'default' => '',
       ),

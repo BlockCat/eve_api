@@ -97,7 +97,7 @@ function eve_api_get_xml($type, $query = array()) {
     if (variable_get('eve_api_cron_error_count', 0) >= variable_get('eve_api_cron_error_count_limit', 5)) {
       variable_set('eve_api_cron_error_time', time() + variable_get('eve_api_cron_error_time_limit', 10 * 60));
       variable_set('eve_api_cron_error_count', 0);
-      watchdog('eve_api', 'EVE API has failed 5 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', time() + variable_get('eve_api_cron_error_time_limit', 10 * 60)), NULL, WATCHDOG_WARNING);
+      watchdog('eve_api', 'EVE API has failed 5 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', time() + variable_get('eve_api_cron_error_time_limit', 10 * 60)), NULL, WATCHDOG_EMERGENCY);
       return 2;
     }
     elseif (variable_get('eve_api_cron_error_time', 0) >= time()) {
@@ -122,7 +122,7 @@ function eve_api_get_xml($type, $query = array()) {
     }
 
     if (!empty($html->error)) {
-      watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_WARNING);
+      watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_ERROR);
     }
 
     $error = $html->code;
@@ -135,7 +135,7 @@ function eve_api_get_xml($type, $query = array()) {
 
   if ($error < 400) {
     if (FALSE !== strpos($html->data, '<!DOCTYPE html')) {
-      watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_WARNING);
+      watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_ERROR);
       $error = 4;
     }
     else {
@@ -143,7 +143,7 @@ function eve_api_get_xml($type, $query = array()) {
         $xml = @new SimpleXMLElement($html->data);
       }
       catch (Exception $e) {
-        watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $e->getMessage(), NULL, WATCHDOG_WARNING);
+        watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $e->getMessage(), NULL, WATCHDOG_ERROR);
         $error = 5;
         $xml = NULL;
       }
@@ -156,7 +156,7 @@ function eve_api_get_xml($type, $query = array()) {
   }
 
   if (isset($xml->errorCode)) {
-    watchdog('eve_api', 'EVE API returned an error with the API data. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $xml->errorCode, NULL, WATCHDOG_WARNING);
+    watchdog('eve_api', 'EVE API returned an error with the API data. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $xml->errorCode, NULL, WATCHDOG_NOTICE);
     $error = $xml->errorCode;
   }
 
@@ -1701,7 +1701,7 @@ function eve_api_create_key($account, $key_id, $v_code) {
   }
 
   if (!isset($characters['characters'])) {
-    watchdog('eve_api', 'Error occured, should never happen. (' . drupal_http_build_query($query) . ')<br /><pre>' . print_r($characters, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
+    watchdog('eve_api', 'Error occured, should never happen. (' . drupal_http_build_query($query) . ')<br /><pre>' . print_r($characters, TRUE) . '</pre>', NULL, WATCHDOG_DEBUG);
 
     return FALSE;
   }

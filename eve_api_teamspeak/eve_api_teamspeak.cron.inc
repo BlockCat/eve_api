@@ -53,8 +53,6 @@ function eve_api_teamspeak_cron() {
 
 /**
  * Implements hook_cron_queue_info().
- *
- * Set up ten queues that all send items to the same callback function.
  */
 function eve_api_teamspeak_cron_queue_info() {
   $queue = array();
@@ -81,7 +79,7 @@ function eve_api_teamspeak_cron_queue_info() {
  */
 function eve_api_teamspeak_cron_user_sync($item) {
   if ($item['runs'] == 3) {
-    watchdog('eve_api_teamspeak', 'Cron Update TeamSpeak User Permissions task has failed 2 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
+    watchdog('eve_api_teamspeak', 'Cron Update TeamSpeak User Permissions task has failed 2 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_ERROR);
     return FALSE;
   }
 
@@ -146,7 +144,6 @@ function eve_api_teamspeak_cron_user_sync($item) {
     eve_api_teamspeak_disconnect($ts3);
   }
   catch (EveApiException $e) {
-    watchdog('eve_api_teamspeak', 'Cron Update TeamSpeak User Permissions task has failed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_WARNING);
     $item['runs'] = $item['runs'] + 1;
     $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_sync');
     $queue->createItem($item);
@@ -165,7 +162,7 @@ function eve_api_teamspeak_cron_user_sync($item) {
  */
 function eve_api_teamspeak_cron_user_check($item) {
   if ($item == 3) {
-    watchdog('eve_api_teamspeak', 'Cron Check TeamSpeak Names task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_WARNING);
+    watchdog('eve_api_teamspeak', 'Cron Check TeamSpeak Names task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
     return FALSE;
   }
 
@@ -280,7 +277,6 @@ function eve_api_teamspeak_cron_user_check($item) {
     eve_api_teamspeak_disconnect($ts3);
   }
   catch (EveApiException $e) {
-    watchdog('eve_api_teamspeak', 'Cron Check TeamSpeak Names task has failed.', NULL, WATCHDOG_WARNING);
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_check');
     $queue->createItem($item);
@@ -299,7 +295,7 @@ function eve_api_teamspeak_cron_user_check($item) {
  */
 function eve_api_teamspeak_cron_role_sync($item) {
   if ($item == 3) {
-    watchdog('eve_api_teamspeak', 'Cron Sync TeamSpeak Roles task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_WARNING);
+    watchdog('eve_api_teamspeak', 'Cron Sync TeamSpeak Roles task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
     return FALSE;
   }
 
@@ -337,7 +333,6 @@ function eve_api_teamspeak_cron_role_sync($item) {
     eve_api_teamspeak_disconnect($ts3);
   }
   catch (EveApiException $e) {
-    watchdog('eve_api_teamspeak', 'Cron Sync TeamSpeak Roles task has failed.', NULL, WATCHDOG_WARNING);
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_teamspeak_cron_role_sync');
     $queue->createItem($item);

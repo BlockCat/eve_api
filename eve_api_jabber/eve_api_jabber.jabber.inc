@@ -262,7 +262,7 @@ function eve_api_jabber_url_send_query($url) {
   }
 
   if (!empty($html->error)) {
-    watchdog('eve_api_jabber', 'EVE API returned an error with the HTTP request. Error: ' . check_plain($html->error), NULL, WATCHDOG_WARNING);
+    watchdog('eve_api_jabber', 'EVE API returned an error with the HTTP request. Error: ' . check_plain($html->error), NULL, WATCHDOG_ERROR);
   }
 
   if ($html->code == 200) {
@@ -270,7 +270,7 @@ function eve_api_jabber_url_send_query($url) {
       $xml = @new SimpleXMLElement($html->data);
     }
     catch (Exception $e) {
-      watchdog('eve_api_jabber', 'EVE API returned an error with the data retrieved. Error: ' . check_plain($e->getMessage()), NULL, WATCHDOG_WARNING);
+      watchdog('eve_api_jabber', 'EVE API returned an error with the data retrieved. Error: ' . check_plain($e->getMessage()), NULL, WATCHDOG_ERROR);
       $xml = NULL;
     }
   }
