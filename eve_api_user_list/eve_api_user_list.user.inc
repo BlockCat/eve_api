@@ -298,7 +298,14 @@ function eve_api_user_list_user_character_page($character_id, $character_data, $
     '#attributes' => array('class' => array('profile')),
   );
 
-  $attributes = array('attributes' => array('title' => t('View user profile.')), 'html' => TRUE);
+  $attributes = array(
+    'attributes' => array(
+      'title' => t('View user profile.'),
+      'class' => 'user-picture',
+    ),
+    'html' => TRUE,
+  );
+
   $eve_avatar = $is_https ? variable_get('eve_api_avatar_https', 'https://image.eveonline.com/Character/') : variable_get('eve_api_avatar_http', 'http://image.eveonline.com/Character/');
   $eve_avatar .= (int) $character_data['characterID'] . '_' . variable_get('eve_api_user_picture_dimensions', '128') . '.jpg';
   $alt = t("@user's picture", array('@user' => $character_data['characterName']));
