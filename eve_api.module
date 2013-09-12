@@ -274,6 +274,73 @@ function eve_api_permission() {
 }
 
 /**
+* Implements hook_block_info().
+*/
+function eve_api_block_info() {
+  $blocks = array();
+
+  $blocks['standings'] = array(
+    'info' => t('Blue Standings'),
+  );
+
+  return $blocks;
+}
+
+/**
+* Implements hook_block_view().
+*/
+function eve_api_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'standings':
+      $block['subject'] = t('Blue Standings');
+      $block['content'] = _eve_api_standings_block();
+      break;
+  }
+
+  return $block;
+}
+
+/**
+ * Display our standings block.
+ */
+function _eve_api_standings_block() {
+  global $_GET;
+
+  $items = array();
+
+  $result = db_query('SELECT contactID, contactName, standing
+    FROM {eve_api_contact_list}
+    WHERE standing > 0 ORDER BY contactName');
+
+  if ($result->rowCount()) {
+    foreach ($result->fetchAll() as $row) {
+      $attributes = array(
+        'attributes' => array('onclick' => 'try { CCPEVE.addContact(' . $row->contactID . '); } catch(err) { }'),
+        'fragment' => $row->contactID,
+      );
+
+      $item = $row->contactName . ' (' . $row->standing . ')';
+
+      $items[] = array(
+        'data' => l($item, $_GET['q'], $attributes),
+      );
+    }
+  }
+
+  $output['standings'] = array(
+    '#title' => t('Blue Standings'),
+    '#markup' => theme('item_list', array(
+      'items' => $items,
+      'type' => 'ul',
+    )),
+  );
+
+  return $output;
+}
+
+/**
  * Custom function to get list of all Roles.
  *
  * @return array
