@@ -296,7 +296,7 @@ function eve_api_user_list_api_form($form, &$form_state, $account) {
         'data' => array(
           '#type' => 'link',
           '#title' => t('Edit'),
-          '#href' => 'user/' . $uid . '/eve_api/update_api_key/' . $api_single['apiID'],
+          '#href' => 'user/' . $uid . '/eve_api/' . $api_single['apiID'],
         ),
       ),
       'keyID' => check_plain($api_single['keyID']),

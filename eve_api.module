@@ -186,12 +186,24 @@ function eve_api_menu() {
     ) + $admin_base;
 
     $items['user/%user/eve_api'] = array(
-      'title' => 'List API Keys',
+      'title' => 'EVE API',
+      'description' => 'EVE API user settings',
       'page arguments' => array(
         'eve_api_user_list_api_form',
         1,
       ),
       'type' => MENU_LOCAL_TASK,
+      'weight' => 0,
+    ) + $user_base;
+
+    $items['user/%user/eve_api/list_api'] = array(
+      'title' => 'List API Keys',
+      'description' => 'Remove/Update current API keys',
+      'page arguments' => array(
+        'eve_api_user_list_api_form',
+        1,
+      ),
+      'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => 0,
     ) + $user_base;
 
@@ -202,17 +214,17 @@ function eve_api_menu() {
         'eve_api_user_add_api_form',
         1,
       ),
-      'type' => MENU_LOCAL_ACTION,
-      'weight' => 0,
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 1,
     ) + $user_base;
 
-    $items['user/%user/eve_api/update_api_key/%'] = array(
+    $items['user/%user/eve_api/%'] = array(
       'title' => 'Update API Key',
       'description' => 'Update an existing API Key.',
       'page arguments' => array(
         'eve_api_user_update_api_form',
         1,
-        4,
+        3,
       ),
       'context' => MENU_CONTEXT_INLINE,
       'type' => MENU_LOCAL_ACTION,
