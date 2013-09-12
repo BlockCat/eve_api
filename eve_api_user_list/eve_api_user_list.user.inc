@@ -172,6 +172,7 @@ function eve_api_user_list_user_general_page($id, $character_data, $is_director,
     '#markup' => theme('table', array(
       'header' => $header,
       'rows' => $options,
+      'attributes' => array('class' => array('table')),
     )),
     '#weight' => 10,
   );
@@ -269,6 +270,7 @@ function eve_api_user_list_user_private_page($corporation_id, $character_data, $
     '#markup' => theme('table', array(
       'header' => $header,
       'rows' => $options,
+      'attributes' => array('class' => array('table')),
     )),
     '#weight' => 10,
   );
@@ -467,6 +469,7 @@ function eve_api_user_list_user_character_page($character_id, $character_data, $
           'bonus' => t('Bonus'),
         ),
         'rows' => $options,
+        'attributes' => array('class' => array('table')),
       )),
     );
   }
@@ -551,7 +554,7 @@ function eve_api_user_list_user_character_page($character_id, $character_data, $
       $form['tabs'][$id_tab]['table']['#markup'] = theme('table', array(
         'header' => $header,
         'rows' => $rows,
-        'attributes' => array('id' => $table_id),
+        'attributes' => array('id' => $table_id, 'class' => array('table')),
       ));
     }
   }
@@ -588,6 +591,7 @@ function eve_api_user_list_user_character_page($character_id, $character_data, $
         'status' => t('Status'),
       ),
       'rows' => $options,
+      'attributes' => array('class' => array('table')),
     )),
   );
 
@@ -611,6 +615,7 @@ function eve_api_user_list_user_character_page($character_id, $character_data, $
         'status' => t('Status'),
       ),
       'rows' => $options,
+      'attributes' => array('class' => array('table')),
     )),
   );
 
