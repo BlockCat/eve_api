@@ -283,6 +283,10 @@ function eve_api_block_info() {
     'info' => t('Blue Standings'),
   );
 
+  $blocks['tranquility'] = array(
+    'info' => t('Tranquility Server'),
+  );
+
   return $blocks;
 }
 
@@ -296,6 +300,11 @@ function eve_api_block_view($delta = '') {
     case 'standings':
       $block['subject'] = t('Blue Standings');
       $block['content'] = _eve_api_standings_block();
+      break;
+
+    case 'tranquility':
+      $block['subject'] = t('Tranquility Server');
+      $block['content'] = _eve_api_tranquility_block();
       break;
   }
 
@@ -336,6 +345,74 @@ function _eve_api_standings_block() {
       'type' => 'ul',
     )),
   );
+
+  return $output;
+}
+
+function _eve_api_string2hex($string) {
+  $result = '';
+
+  if (trim($string) != '') {
+    $string_length = strlen($string);
+
+    for ($i = 0; $i < $string_length; $i++) {
+      if ($i > 0) {
+        $string_bound = '-';
+      }
+      else {
+        $string_bound = '';
+      }
+
+      $result .= $string_bound . str_pad(dechex(ord($string[$i])), 2, 0, STR_PAD_LEFT);
+    }
+  }
+
+  return $result;
+}
+
+function _eve_api_get_eve_players() {
+  $cache_name = '_eve_api_get_eve_players';
+  $result = '';
+
+  if ($cached = cache_get($cache_name, 'cache')) {
+    return $cached->data;
+  }
+
+  // The IP for the Tranquility server.
+  $server_ip = '87.237.38.200';
+
+  // The server port for the Tranquility server.
+  $server_port = 26000;
+
+  $obj_tc = @fsockopen($server_ip, $server_port, $errno, $errstr, 8);
+
+  if (!$obj_tc) {
+    $result = FALSE;
+  }
+  else {
+    $result = fgets($obj_tc, 41);
+
+    fclose($obj_tc);
+
+    $result = hexdec(_eve_api_string2hex($result[21] . $result[20]));
+  }
+
+  cache_set($cache_name, $result, 'cache', time() + 20);
+  return $result;
+}
+
+/**
+ * Display our tranquility server status block.
+ */
+function _eve_api_tranquility_block() {
+  $status = _eve_api_get_eve_players();
+
+  if ($status !== FALSE) {
+    $output['#markup'] = 'Players  Online: ' . $status . '<br />' . 'Server Time: ' . date('H:i');
+  }
+  else {
+    $output['#markup'] = 'Tranquility Server Down<br />' . 'Server Time: ' . date('H:i');
+  }
 
   return $output;
 }
