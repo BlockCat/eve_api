@@ -733,9 +733,6 @@ function eve_api_get_character_info($character) {
       }
     }
   }
-  else {
-    $api_data = FALSE;
-  }
 
   return $api_data;
 }
@@ -770,9 +767,6 @@ function eve_api_get_character_skills($character_id) {
         'skillpoints' => check_plain((int) $row->skillpoints),
       );
     }
-  }
-  else {
-    $api_data = FALSE;
   }
 
   return $api_data;
@@ -1746,7 +1740,6 @@ function eve_api_create_key($account, $key_id, $v_code) {
   ))->execute();
 
   if ($error == 1) {
-
     return FALSE;
   }
 

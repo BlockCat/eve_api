@@ -264,6 +264,7 @@ function eve_api_user_list_user_view($account) {
           'bonus' => t('Bonus'),
         ),
         'rows' => $options,
+        'sticky' => FALSE,
         'attributes' => array('class' => array('table')),
       )),
     );
@@ -349,6 +350,7 @@ function eve_api_user_list_user_view($account) {
       $form['tabs'][$id_tab]['table']['#markup'] = theme('table', array(
         'header' => $header,
         'rows' => $rows,
+        'sticky' => FALSE,
         'attributes' => array('id' => $table_id, 'class' => array('table')),
       ));
     }
@@ -386,6 +388,7 @@ function eve_api_user_list_user_view($account) {
         'status' => t('Status'),
       ),
       'rows' => $options,
+      'sticky' => FALSE,
       'attributes' => array('class' => array('table')),
     )),
   );
@@ -410,6 +413,7 @@ function eve_api_user_list_user_view($account) {
         'status' => t('Status'),
       ),
       'rows' => $options,
+      'sticky' => FALSE,
       'attributes' => array('class' => array('table')),
     )),
   );

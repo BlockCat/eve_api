@@ -311,6 +311,7 @@ function eve_api_user_list_api_form($form, &$form_state, $account) {
     '#options' => $options,
     '#empty' => t('No API Keys associated with your account.'),
     '#weight' => 0,
+    '#attributes' => array('class' => array('table')),
   );
 
   $form['list_api']['page'] = array(

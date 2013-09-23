@@ -280,7 +280,7 @@ function eve_api_block_info() {
   $blocks = array();
 
   $blocks['standings'] = array(
-    'info' => t('Blue Standings'),
+    'info' => t('Standings'),
   );
 
   $blocks['tranquility'] = array(
@@ -298,7 +298,7 @@ function eve_api_block_view($delta = '') {
 
   switch ($delta) {
     case 'standings':
-      $block['subject'] = t('Blue Standings');
+      $block['subject'] = t('Standings');
       $block['content'] = _eve_api_standings_block();
       break;
 
@@ -328,18 +328,20 @@ function _eve_api_standings_block() {
       $attributes = array(
         'attributes' => array('onclick' => 'try { CCPEVE.addContact(' . $row->contactID . '); } catch(err) { }'),
         'fragment' => $row->contactID,
+        'external' => TRUE,
       );
 
       $item = $row->contactName . ' (' . $row->standing . ')';
 
       $items[] = array(
-        'data' => l($item, $_GET['q'], $attributes),
+        'data' => l($item, '', $attributes),
+        'class' => array('leaf'), 
       );
     }
   }
 
   $output['standings'] = array(
-    '#title' => t('Blue Standings'),
+    '#title' => t('Standings'),
     '#markup' => theme('item_list', array(
       'items' => $items,
       'type' => 'ul',
@@ -394,7 +396,12 @@ function _eve_api_get_eve_players() {
 
     fclose($obj_tc);
 
-    $result = hexdec(_eve_api_string2hex($result[21] . $result[20]));
+    if (isset($result[20]) && isset($result[21])) {
+      $result = hexdec(_eve_api_string2hex($result[21] . $result[20]));
+    }
+    else {
+      $result = '';
+    }
   }
 
   cache_set($cache_name, $result, 'cache', time() + 20);
