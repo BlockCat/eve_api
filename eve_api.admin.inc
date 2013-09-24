@@ -16,7 +16,7 @@ function eve_api_admin_settings_form($form, &$form_state) {
   $form['enter_api'] = array(
     '#type' => 'fieldset',
     '#title' => t('Enter API Key'),
-    '#description' => t('Enter the Alliance Executers or Corperations CEO API Key.'),
+    '#description' => t('Enter the Alliance Executor\'s or Corporation CEO\'s API Key.'),
     '#weight' => 0,
     '#collapsed' => variable_get('eve_api_enable', FALSE),
     '#collapsible' => TRUE,
@@ -71,7 +71,7 @@ function eve_api_admin_settings_form($form, &$form_state) {
     $form['settings']['enable_cron'] = array(
       '#type' => 'radios',
       '#title' => t('Enable EVE API Cron'),
-      '#description' => t('If you are experience troubles, or updateing the module, you can disable the cron related to EVE API.'),
+      '#description' => t('If you experience problems, or are updating the module, you can disable the cron related to EVE API.'),
       '#options' => array(0 => t('No'), 1 => t('Yes')),
       '#weight' => 0,
       '#default_value' => (int) variable_get('eve_api_enable_cron', TRUE),

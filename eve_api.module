@@ -806,12 +806,12 @@ function eve_api_libraries_info() {
 /**
  * Implements hook_boot().
  */
-function eve_api_boot() {
+function eve_api_init() {
   if ($GLOBALS['user']->uid == 0) {
     return;
   }
 
-  if ($GLOBALS['user']->characterID == 0 && variable_get('eve_api_nag_user', TRUE)) {
-    drupal_set_message(t('Your account is not associated with an EVE Character, you must select a <a href="@url">Main Character</a>.', array('@url' => '/user/' . $GLOBALS['user']->uid . '/edit')), 'error', FALSE);
+  if ($GLOBALS['user']->characterID == 0 && variable_get('eve_api_nag_user', TRUE) && !path_is_admin(current_path())) {
+    drupal_set_message(t('Your account is not associated with an EVE Character, you must select a <a href="@url">Main Character</a>.', array('@url' => url('user/' . $GLOBALS['user']->uid . '/edit'))), 'error', FALSE);
   }
 }
