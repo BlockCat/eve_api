@@ -5,10 +5,77 @@
  */
 
 /**
+ * Implements hook_cronapi().
+ */
+function eve_api_cronapi($op, $job = NULL) {
+  if ($op == 'list') {
+    $items['eve_api_cron_api_alliance_fetch'] = array(
+      'description' => 'Get current alliance standings.',
+      'rule' => '12 2 * * *',
+    );
+
+    $items['eve_api_cron_api_alliance_sync'] = array(
+      'description' => 'Get current corporations in the alliance.',
+      'rule' => '12 3 * * *',
+    );
+
+    $items['eve_api_cron_api_mask_sync'] = array(
+      'description' => 'Get the latest access mask from the EVE API.',
+      'rule' => '12 1 * * 0',
+    );
+
+    $items['eve_api_cron_api_user_sync'] = array(
+      'description' => 'Verify each characters API.',
+      'rule' => '18 * * * *',
+    );
+  }
+  else if ($op == 'execute') {
+    if (!variable_get('eve_api_enable_cron', TRUE)) {
+      return;
+    }
+
+    switch ($job) {
+      case 'eve_api_cron_api_alliance_fetch':
+        $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
+        $queue->createItem(1);
+        break;
+
+      case 'eve_api_cron_api_alliance_sync':
+        $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
+        $queue->createItem(1);
+        break;
+
+      case 'eve_api_cron_api_mask_sync':
+        $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
+        $queue->createItem(1);
+        break;
+
+      case 'eve_api_cron_api_user_sync':
+        if (variable_get('eve_api_enable', FALSE)) {
+          $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+          $result = db_query('SELECT DISTINCT uid FROM {users} WHERE uid != 0');
+
+          if ($result->rowCount()) {
+            foreach ($result->fetchAll() as $item) {
+              $queue->createItem(array(
+                'uid' => $item->uid,
+                'runs' => 1,
+              ));
+            }
+          }
+        }
+        break;
+    }
+  }
+
+  return $items;
+}
+
+/**
  * Implements hook_cron().
  */
 function eve_api_cron() {
-  if (!variable_get('eve_api_enable_cron', TRUE)) {
+  if (!variable_get('eve_api_enable_cron', TRUE) || function_exists('elysia_cron_run')) {
     return;
   }
 

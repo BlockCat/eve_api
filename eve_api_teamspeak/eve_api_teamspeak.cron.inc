@@ -5,10 +5,73 @@
  */
 
 /**
+ * Implements hook_cronapi().
+ */
+function eve_api_teamspeak_cronapi($op, $job = NULL) {
+  if ($op == 'list') {
+    $items['eve_api_teamspeak_cron_role_sync'] = array(
+      'description' => 'Sync TeamSpeak Permissions with Drupal roles.',
+      'rule' => '*/5 * * * *',
+    );
+
+    $items['eve_api_teamspeak_cron_user_check'] = array(
+      'description' => 'Check each user on TeamSpeak to ensure the Unique ID matches the character.',
+      'rule' => '* * * * *',
+    );
+
+    $items['eve_api_teamspeak_cron_user_sync'] = array(
+      'description' => 'Update user permissions in TeamSpeak based on roles.',
+      'rule' => '*/5 * * * *',
+    );
+  }
+  else if ($op == 'execute') {
+    if (!variable_get('eve_api_enable_cron', TRUE)) {
+      return;
+    }
+
+    switch ($job) {
+      case 'eve_api_teamspeak_cron_role_sync':
+        if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
+          $queue = DrupalQueue::get('eve_api_teamspeak_cron_role_sync');
+          $queue->createItem(1);
+        }
+        break;
+
+      case 'eve_api_teamspeak_cron_user_check':
+        if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
+          $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_check');
+          $queue->createItem(1);
+        }
+        break;
+
+      case 'eve_api_teamspeak_cron_user_sync':
+        if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
+          $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_sync');
+          $result = db_query('SELECT uid, teamspeakDBID, status FROM {users} WHERE characterID != 0 AND teamspeakUID != 0');
+
+          if ($result->rowCount()) {
+            foreach ($result->fetchAll() as $item) {
+              $queue->createItem(array(
+                'uid' => $item->uid,
+                'teamspeakDBID' => $item->teamspeakDBID,
+                'status' => $item->status,
+                'runs' => 1,
+              ));
+            }
+          }
+        }
+        break;
+    }
+  }
+
+  return $items;
+}
+
+/**
  * Implements hook_cron().
  */
 function eve_api_teamspeak_cron() {
-  if (!variable_get('eve_api_enable_cron', TRUE)) {
+  if (!variable_get('eve_api_enable_cron', TRUE) || function_exists('elysia_cron_run')) {
     return;
   }
 

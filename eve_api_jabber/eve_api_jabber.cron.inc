@@ -5,10 +5,61 @@
  */
 
 /**
+ * Implements hook_cronapi().
+ */
+function eve_api_jabber_cronapi($op, $job = NULL) {
+  if ($op == 'list') {
+    $items['eve_api_jabber_cron_role_sync'] = array(
+      'description' => 'Update user permissions in Jabber based on roles.',
+      'rule' => '*/5 * * * *',
+    );
+
+    $items['eve_api_jabber_cron_user_sync'] = array(
+      'description' => 'Sync Jabber Permissions with Drupal roles.',
+      'rule' => '*/5 * * * *',
+    );
+  }
+  else if ($op == 'execute') {
+    if (!variable_get('eve_api_enable_cron', TRUE)) {
+      return;
+    }
+
+    switch ($job) {
+      case 'eve_api_jabber_cron_role_sync':
+        if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_jabber_enable', FALSE)) {
+          $queue = DrupalQueue::get('eve_api_jabber_cron_role_sync');
+          $queue->createItem(1);
+        }
+        break;
+
+      case 'eve_api_jabber_cron_user_sync':
+        if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_jabber_enable', FALSE)) {
+          $queue = DrupalQueue::get('eve_api_jabber_cron_user_sync');
+          $result = db_query('SELECT uid, name, status FROM {users} WHERE characterID != 0');
+
+          if ($result->rowCount()) {
+            foreach ($result->fetchAll() as $item) {
+              $queue->createItem(array(
+                'uid' => $item->uid,
+                'name' => $item->name,
+                'status' => $item->status,
+                'runs' => 1,
+              ));
+            }
+          }
+        }
+        break;
+    }
+  }
+
+  return $items;
+}
+
+/**
  * Implements hook_cron().
  */
 function eve_api_jabber_cron() {
-  if (!variable_get('eve_api_enable_cron', TRUE)) {
+  if (!variable_get('eve_api_enable_cron', TRUE) || function_exists('elysia_cron_run')) {
     return;
   }
 

@@ -807,6 +807,8 @@ function eve_api_libraries_info() {
  * Implements hook_boot().
  */
 function eve_api_init() {
+  drupal_add_js('jQuery(document).ready(function () { try { CCPEVE.requestTrust(\'' . $GLOBALS['base_url'] . '\'); } catch(err) { } });', 'inline');
+
   if ($GLOBALS['user']->uid == 0) {
     return;
   }
