@@ -9,20 +9,24 @@
  */
 function eve_api_teamspeak_cronapi($op, $job = NULL) {
   if ($op == 'list') {
-    $items['eve_api_teamspeak_cron_role_sync'] = array(
+    $items = array();
+
+    $items['eve_api_teamspeak_cron_role_sync_job'] = array(
       'description' => 'Sync TeamSpeak Permissions with Drupal roles.',
       'rule' => '*/5 * * * *',
     );
 
-    $items['eve_api_teamspeak_cron_user_check'] = array(
+    $items['eve_api_teamspeak_cron_user_check_job'] = array(
       'description' => 'Check each user on TeamSpeak to ensure the Unique ID matches the character.',
       'rule' => '* * * * *',
     );
 
-    $items['eve_api_teamspeak_cron_user_sync'] = array(
+    $items['eve_api_teamspeak_cron_user_sync_job'] = array(
       'description' => 'Update user permissions in TeamSpeak based on roles.',
       'rule' => '*/5 * * * *',
     );
+
+    return $items;
   }
   else if ($op == 'execute') {
     if (!variable_get('eve_api_enable_cron', TRUE)) {
@@ -30,21 +34,21 @@ function eve_api_teamspeak_cronapi($op, $job = NULL) {
     }
 
     switch ($job) {
-      case 'eve_api_teamspeak_cron_role_sync':
+      case 'eve_api_teamspeak_cron_role_sync_job':
         if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
           $queue = DrupalQueue::get('eve_api_teamspeak_cron_role_sync');
           $queue->createItem(1);
         }
         break;
 
-      case 'eve_api_teamspeak_cron_user_check':
+      case 'eve_api_teamspeak_cron_user_check_job':
         if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
           $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_check');
           $queue->createItem(1);
         }
         break;
 
-      case 'eve_api_teamspeak_cron_user_sync':
+      case 'eve_api_teamspeak_cron_user_sync_job':
         if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
           $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_sync');
           $result = db_query('SELECT uid, teamspeakDBID, status FROM {users} WHERE characterID != 0 AND teamspeakUID != 0');
@@ -63,8 +67,6 @@ function eve_api_teamspeak_cronapi($op, $job = NULL) {
         break;
     }
   }
-
-  return $items;
 }
 
 /**

@@ -9,15 +9,19 @@
  */
 function eve_api_jabber_cronapi($op, $job = NULL) {
   if ($op == 'list') {
-    $items['eve_api_jabber_cron_role_sync'] = array(
+    $items = array();
+
+    $items['eve_api_jabber_cron_role_sync_job'] = array(
       'description' => 'Update user permissions in Jabber based on roles.',
       'rule' => '*/5 * * * *',
     );
 
-    $items['eve_api_jabber_cron_user_sync'] = array(
+    $items['eve_api_jabber_cron_user_sync_job'] = array(
       'description' => 'Sync Jabber Permissions with Drupal roles.',
       'rule' => '*/5 * * * *',
     );
+
+    return $items;
   }
   else if ($op == 'execute') {
     if (!variable_get('eve_api_enable_cron', TRUE)) {
@@ -25,14 +29,14 @@ function eve_api_jabber_cronapi($op, $job = NULL) {
     }
 
     switch ($job) {
-      case 'eve_api_jabber_cron_role_sync':
+      case 'eve_api_jabber_cron_role_sync_job':
         if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_jabber_enable', FALSE)) {
           $queue = DrupalQueue::get('eve_api_jabber_cron_role_sync');
           $queue->createItem(1);
         }
         break;
 
-      case 'eve_api_jabber_cron_user_sync':
+      case 'eve_api_jabber_cron_user_sync_job':
         if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_jabber_enable', FALSE)) {
           $queue = DrupalQueue::get('eve_api_jabber_cron_user_sync');
           $result = db_query('SELECT uid, name, status FROM {users} WHERE characterID != 0');

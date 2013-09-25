@@ -9,25 +9,29 @@
  */
 function eve_api_cronapi($op, $job = NULL) {
   if ($op == 'list') {
-    $items['eve_api_cron_api_alliance_fetch'] = array(
+    $items = array();
+
+    $items['eve_api_cron_api_alliance_fetch_job'] = array(
       'description' => 'Get current alliance standings.',
       'rule' => '12 2 * * *',
     );
 
-    $items['eve_api_cron_api_alliance_sync'] = array(
+    $items['eve_api_cron_api_alliance_sync_job'] = array(
       'description' => 'Get current corporations in the alliance.',
       'rule' => '12 3 * * *',
     );
 
-    $items['eve_api_cron_api_mask_sync'] = array(
+    $items['eve_api_cron_api_mask_sync_job'] = array(
       'description' => 'Get the latest access mask from the EVE API.',
       'rule' => '12 1 * * 0',
     );
 
-    $items['eve_api_cron_api_user_sync'] = array(
+    $items['eve_api_cron_api_user_sync_job'] = array(
       'description' => 'Verify each characters API.',
       'rule' => '18 * * * *',
     );
+
+    return $items;
   }
   else if ($op == 'execute') {
     if (!variable_get('eve_api_enable_cron', TRUE)) {
@@ -35,22 +39,22 @@ function eve_api_cronapi($op, $job = NULL) {
     }
 
     switch ($job) {
-      case 'eve_api_cron_api_alliance_fetch':
+      case 'eve_api_cron_api_alliance_fetch_job':
         $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
         $queue->createItem(1);
         break;
 
-      case 'eve_api_cron_api_alliance_sync':
+      case 'eve_api_cron_api_alliance_sync_job':
         $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
         $queue->createItem(1);
         break;
 
-      case 'eve_api_cron_api_mask_sync':
+      case 'eve_api_cron_api_mask_sync_job':
         $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
         $queue->createItem(1);
         break;
 
-      case 'eve_api_cron_api_user_sync':
+      case 'eve_api_cron_api_user_sync_job':
         if (variable_get('eve_api_enable', FALSE)) {
           $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
           $result = db_query('SELECT DISTINCT uid FROM {users} WHERE uid != 0');
@@ -67,8 +71,6 @@ function eve_api_cronapi($op, $job = NULL) {
         break;
     }
   }
-
-  return $items;
 }
 
 /**
