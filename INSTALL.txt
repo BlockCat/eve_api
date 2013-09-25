@@ -2,9 +2,12 @@ INSTALLATION
 ------------
 
  1. Configure your cron to run through your servers crontab and to run every
-    minute. For more information please open the below link. 
+    minute. For more information please open the below link.  It is recommended
+    to install elysia_cron for cron management, it is not required, but it is
+    highly recommended due to increased load of running cron every minute.
 
     https://drupal.org/node/23714
+    https://drupal.org/project/elysia_cron
 
  2. Retrieve the latest version of Omni EVE API from the project page.
 
