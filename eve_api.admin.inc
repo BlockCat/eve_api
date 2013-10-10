@@ -16,7 +16,7 @@ function eve_api_admin_settings_form($form, &$form_state) {
   $form['enter_api'] = array(
     '#type' => 'fieldset',
     '#title' => t('Enter API Key'),
-    '#description' => t('Enter the Alliance Executor\'s or Corporation CEO\'s API Key.'),
+    '#description' => t("Enter the Alliance Executor's or Corporation CEO's API Key."),
     '#weight' => 0,
     '#collapsed' => variable_get('eve_api_enable', FALSE),
     '#collapsible' => TRUE,

@@ -274,8 +274,8 @@ function eve_api_permission() {
 }
 
 /**
-* Implements hook_block_info().
-*/
+ * Implements hook_block_info().
+ */
 function eve_api_block_info() {
   $blocks = array();
 
@@ -291,8 +291,8 @@ function eve_api_block_info() {
 }
 
 /**
-* Implements hook_block_view().
-*/
+ * Implements hook_block_view().
+ */
 function eve_api_block_view($delta = '') {
   $block = array();
 
@@ -334,7 +334,7 @@ function _eve_api_standings_block() {
 
       $items[] = array(
         'data' => l($item, '', $attributes),
-        'class' => array('leaf'), 
+        'class' => array('leaf'),
       );
     }
   }
@@ -350,6 +350,9 @@ function _eve_api_standings_block() {
   return $output;
 }
 
+/**
+ * Convert a string into a hex value.
+ */
 function _eve_api_string2hex($string) {
   $result = '';
 
@@ -371,6 +374,9 @@ function _eve_api_string2hex($string) {
   return $result;
 }
 
+/**
+ * Retrieve the current number of users logged into Tranquility.
+ */
 function _eve_api_get_eve_players() {
   $cache_name = '_eve_api_get_eve_players';
   $result = '';

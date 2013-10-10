@@ -33,7 +33,7 @@ function eve_api_cronapi($op, $job = NULL) {
 
     return $items;
   }
-  else if ($op == 'execute') {
+  elseif ($op == 'execute') {
     if (!variable_get('eve_api_enable_cron', TRUE)) {
       return;
     }
