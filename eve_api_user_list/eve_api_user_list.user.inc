@@ -9,14 +9,11 @@
  */
 function eve_api_user_list_user_page($id = NULL) {
   $account = $GLOBALS['user'];
-  $character_data = eve_api_get_basic_character_info($account->name);
-  $is_director = eve_api_character_is_director($account->characterID, $character_data['corporationID']);
-  $is_good = user_access('moderate eve_api users') || user_access('administer eve_api settings');
 
   if (!isset($id)) {
     drupal_set_title(t('User List'));
     $type = 0;
-    $output = eve_api_user_list_user_general_page($id, $character_data, $is_director, $is_good, $type);
+    $output = eve_api_user_list_user_general_page($id, $type);
   }
   else {
     $result = db_query('SELECT allianceName, allianceID, corporationName, corporationID, characterName, characterID
@@ -33,37 +30,40 @@ function eve_api_user_list_user_page($id = NULL) {
       drupal_set_title(t('User List'));
       $type = 0;
       $id = NULL;
-      $output = eve_api_user_list_user_general_page($id, $character_data, $is_director, $is_good, $type);
+      $output = eve_api_user_list_user_general_page($id, $type);
     }
     else {
+      $is_director = eve_api_character_is_director($account->characterID, (int) $row['corporationID']);
+      $is_good = user_access('moderate eve_api users') || user_access('administer eve_api settings');
+
       switch ((int) $id) {
         case (int) $row['corporationID']:
           $type = 1;
           drupal_set_title(t('@name User List', array('@name' => $row['corporationName'])));
           if ($is_director || $is_good) {
-            $output = eve_api_user_list_user_private_page($id, $character_data, $is_director, $is_good);
+            $output = eve_api_user_list_user_private_page($id);
           }
           else {
-            $output = eve_api_user_list_user_general_page($id, $character_data, $is_director, $is_good, $type);
+            $output = eve_api_user_list_user_general_page($id, $type);
           }
           break;
 
         case (int) $row['allianceID']:
           $type = 2;
           drupal_set_title(t('@name User List', array('@name' => $row['allianceName'])));
-          $output = eve_api_user_list_user_general_page($id, $character_data, $is_director, $is_good, $type);
+          $output = eve_api_user_list_user_general_page($id, $type);
           break;
 
         case (int) $row['characterID']:
           drupal_set_title($row['characterName']);
-          $output = eve_api_user_list_user_character_page($id, $character_data, $is_director, $is_good);
+          $output = eve_api_user_list_user_character_page($id, $is_director, $is_good);
           break;
 
         default:
           drupal_set_title(t('User List'));
           $type = 0;
           $id = NULL;
-          $output = eve_api_user_list_user_general_page($id, $character_data, $is_director, $is_good, $type);
+          $output = eve_api_user_list_user_general_page($id, $type);
           break;
       }
     }
@@ -75,7 +75,7 @@ function eve_api_user_list_user_page($id = NULL) {
 /**
  * Create the User List page.
  */
-function eve_api_user_list_user_general_page($id, $character_data, $is_director, $is_good, $type) {
+function eve_api_user_list_user_general_page($id, $type) {
   $header = array(
     'characterName' => array(
       'data' => t('Name'),
@@ -99,7 +99,9 @@ function eve_api_user_list_user_general_page($id, $character_data, $is_director,
 
   $options = $output = array();
 
-  $query = db_select('users', 'u');
+  $query = db_select('users', 'u')
+    ->extend('PagerDefault')
+    ->extend('TableSort');
   $query_join = $query->join('eve_api_characters', 'c', 'u.uid = c.uid');
   $query->addField($query_join, 'characterID', 'cID');
   $query->fields('u', array(
@@ -128,9 +130,7 @@ function eve_api_user_list_user_general_page($id, $character_data, $is_director,
   $query->condition('c.deleted', 0, '=')
     ->condition('u.status', 1, '=')
     ->condition('u.characterID', 0, '!=')
-    ->extend('PagerDefault')
     ->limit(20)
-    ->extend('TableSort')
     ->orderByHeader($header);
   $result = $query->execute();
 
@@ -172,7 +172,6 @@ function eve_api_user_list_user_general_page($id, $character_data, $is_director,
     '#markup' => theme('table', array(
       'header' => $header,
       'rows' => $options,
-      'attributes' => array('class' => array('table')),
     )),
     '#weight' => 10,
   );
@@ -188,7 +187,7 @@ function eve_api_user_list_user_general_page($id, $character_data, $is_director,
 /**
  * Create the director User List page.
  */
-function eve_api_user_list_user_private_page($corporation_id, $character_data, $is_director, $is_good) {
+function eve_api_user_list_user_private_page($corporation_id) {
   $header = array(
     'characterName' => array(
       'data' => t('Name'),
@@ -213,11 +212,13 @@ function eve_api_user_list_user_private_page($corporation_id, $character_data, $
 
   $options = $output = array();
 
-  $query = db_select('users', 'u');
+  $query = db_select('users', 'u')
+    ->extend('PagerDefault')
+    ->extend('TableSort');
   $query_join = $query->join('eve_api_characters', 'c', 'u.uid = c.uid');
   $query->join('eve_api_keys', 'ak', 'c.apiID = ak.apiID');
   $query->addField($query_join, 'characterID', 'cID');
-  $query->fields('u', array(
+  $result = $query->fields('u', array(
       'name',
       'created',
       'access',
@@ -241,11 +242,9 @@ function eve_api_user_list_user_private_page($corporation_id, $character_data, $
     ->condition('c.deleted', 0, '=')
     ->condition('u.status', 1, '=')
     ->condition('u.characterID', 0, '!=')
-    ->extend('PagerDefault')
     ->limit(20)
-    ->extend('TableSort')
-    ->orderByHeader($header);
-  $result = $query->execute();
+    ->orderByHeader($header)
+    ->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -270,7 +269,6 @@ function eve_api_user_list_user_private_page($corporation_id, $character_data, $
     '#markup' => theme('table', array(
       'header' => $header,
       'rows' => $options,
-      'attributes' => array('class' => array('table')),
     )),
     '#weight' => 10,
   );
@@ -286,7 +284,7 @@ function eve_api_user_list_user_private_page($corporation_id, $character_data, $
 /**
  * Create the character User List page.
  */
-function eve_api_user_list_user_character_page($character_id, $character_data, $is_director, $is_good) {
+function eve_api_user_list_user_character_page($character_id, $is_director, $is_good) {
   global $user, $is_https;
 
   $output = array();
@@ -338,9 +336,6 @@ function eve_api_user_list_user_character_page($character_id, $character_data, $
   $output['profile']['eve_api_skills'] = array();
 
   $output['profile']['eve_api_private'] = array();
-
-  $is_director = eve_api_user_list_private_access($character_data['corporationID']);
-  $is_good = user_access('moderate eve_api users') || user_access('administer eve_api settings');
 
   $output['profile']['eve_api_attributes'] += array(
     '#theme_wrappers' => array('user_profile_category'),
@@ -469,8 +464,6 @@ function eve_api_user_list_user_character_page($character_id, $character_data, $
           'bonus' => t('Bonus'),
         ),
         'rows' => $options,
-        'sticky' => FALSE,
-        'attributes' => array('class' => array('table')),
       )),
     );
   }
@@ -555,8 +548,7 @@ function eve_api_user_list_user_character_page($character_id, $character_data, $
       $form['tabs'][$id_tab]['table']['#markup'] = theme('table', array(
         'header' => $header,
         'rows' => $rows,
-        'sticky' => FALSE,
-        'attributes' => array('id' => $table_id, 'class' => array('table')),
+        'attributes' => array('id' => $table_id),
       ));
     }
   }
@@ -593,8 +585,6 @@ function eve_api_user_list_user_character_page($character_id, $character_data, $
         'status' => t('Status'),
       ),
       'rows' => $options,
-      'sticky' => FALSE,
-      'attributes' => array('class' => array('table')),
     )),
   );
 
@@ -618,8 +608,6 @@ function eve_api_user_list_user_character_page($character_id, $character_data, $
         'status' => t('Status'),
       ),
       'rows' => $options,
-      'sticky' => FALSE,
-      'attributes' => array('class' => array('table')),
     )),
   );
 

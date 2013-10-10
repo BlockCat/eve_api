@@ -230,6 +230,8 @@ function eve_api_user_list_api_form($form, &$form_state, $account) {
   );
 
   $result_a = db_select('eve_api_keys', 'a')
+    ->extend('PagerDefault')
+    ->extend('TableSort')
     ->fields('a', array(
       'apiID',
       'keyID',
@@ -238,9 +240,7 @@ function eve_api_user_list_api_form($form, &$form_state, $account) {
       'updated',
       'created',
     ))
-    ->extend('PagerDefault')
-    ->limit(3)
-    ->extend('TableSort')
+    ->limit(10)
     ->orderByHeader($header)
     ->condition('uid', $uid, '=')
     ->execute();
@@ -311,7 +311,6 @@ function eve_api_user_list_api_form($form, &$form_state, $account) {
     '#options' => $options,
     '#empty' => t('No API Keys associated with your account.'),
     '#weight' => 0,
-    '#attributes' => array('class' => array('table')),
   );
 
   $form['list_api']['page'] = array(

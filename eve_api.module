@@ -320,8 +320,7 @@ function _eve_api_standings_block() {
   $items = array();
 
   $result = db_query('SELECT contactID, contactName, standing
-    FROM {eve_api_contact_list}
-    WHERE standing > 0 ORDER BY contactName');
+    FROM {eve_api_contact_list} ORDER BY standing DESC , contactName');
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
@@ -710,10 +709,14 @@ function eve_api_user_profile_form_validate($form, &$form_state) {
  */
 function eve_api_user_profile_form_submit($form, &$form_state) {
   $account = $form_state['user'];
-  $character_data = (array) $form_state['character_data'];
+  $character_data = $form_state['character_data'];
   $uid = (int) $account->uid;
 
-  if (((string) $form_state['characterName'] == (string) $form_state['values']['name'] && $account->characterID != 0) || $character_data === FALSE || $character_data['uid'] != $uid || $character_data['deleted'] == 1) {
+  if (!$character_data) {
+    return;
+  }
+
+  if (((string) $form_state['characterName'] == (string) $form_state['values']['name'] && $account->characterID != 0) || $character_data['uid'] != $uid || $character_data['deleted'] == 1) {
     return;
   }
 
@@ -804,7 +807,7 @@ function eve_api_libraries_info() {
 }
 
 /**
- * Implements hook_boot().
+ * Implements hook_init().
  */
 function eve_api_init() {
   drupal_add_js('jQuery(document).ready(function () { try { CCPEVE.requestTrust(\'' . $GLOBALS['base_url'] . '\'); } catch(err) { } });', 'inline');
@@ -814,6 +817,6 @@ function eve_api_init() {
   }
 
   if ($GLOBALS['user']->characterID == 0 && variable_get('eve_api_nag_user', TRUE) && !path_is_admin(current_path())) {
-    drupal_set_message(t('Your account is not associated with an EVE Character, you must select a <a href="@url">Main Character</a>.', array('@url' => url('user/' . $GLOBALS['user']->uid . '/edit'))), 'error', FALSE);
+    drupal_set_message(t('Your account is not associated with an EVE Character, you must select a <a href="@url">Main Character</a>.', array('@url' => url('user/' . $GLOBALS['user']->uid . '/edit'))), 'warning', FALSE);
   }
 }

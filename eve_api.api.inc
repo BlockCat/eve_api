@@ -593,70 +593,67 @@ function eve_api_get_character_info($character) {
   $query = db_select('eve_api_characters', 'c');
   $query->join('eve_api_character_sheet', 'cs', 'cs.characterID = c.characterID');
   $query->join('eve_api_character_info', 'ci', 'ci.characterID = c.characterID');
-  $query->fields('c', array(
-    'uid',
-    'deleted',
-    'errorID',
-    'apiID',
-    'characterName',
-    'characterID',
-    'corporationName',
-    'corporationID',
-    'corporationTicker',
-    'allianceID',
-    'allianceName',
-    'allianceTicker',
-    'accessMask',
-  ));
-  $query->fields('cs', array(
-    'DoB',
-    'race',
-    'bloodLine',
-    'ancestry',
-    'gender',
-    'cloneName',
-    'balance',
-    'intelligence',
-    'memory',
-    'charisma',
-    'perception',
-    'willpower',
-  ));
-  $query->fields('ci', array(
-    'skillPoints',
-    'shipName',
-    'shipTypeID',
-    'shipTypeName',
-    'corporationDate',
-    'allianceDate',
-    'lastKnownLocation',
-    'securityStatus',
-    'nextTrainingEnds',
-  ));
+  $query = $query->fields('c', array(
+      'uid',
+      'deleted',
+      'errorID',
+      'apiID',
+      'characterName',
+      'characterID',
+      'corporationName',
+      'corporationID',
+      'corporationTicker',
+      'allianceID',
+      'allianceName',
+      'allianceTicker',
+      'accessMask',
+    ))
+    ->fields('cs', array(
+      'DoB',
+      'race',
+      'bloodLine',
+      'ancestry',
+      'gender',
+      'cloneName',
+      'balance',
+      'intelligence',
+      'memory',
+      'charisma',
+      'perception',
+      'willpower',
+    ))
+    ->fields('ci', array(
+      'skillPoints',
+      'shipName',
+      'shipTypeID',
+      'shipTypeName',
+      'corporationDate',
+      'allianceDate',
+      'lastKnownLocation',
+      'securityStatus',
+      'nextTrainingEnds',
+    ));
 
   if (($access_mask & 131072) == 131072) {
     $query->join('eve_api_skill_in_training', 'st', 'st.characterID = c.characterID');
 
     if ($is_training != 0) {
       $query->join('eve_api_skill_tree', 'sts', 'sts.typeID = st.trainingTypeID');
-      $query->fields('sts', array(
-        'typeName',
-      ));
+      $query->fields('sts', array('typeName'));
     }
 
     $query->fields('st', array(
-      'trainingEndTime',
-      'trainingStartTime',
-      'trainingStartSP',
-      'trainingDestinationSP',
-      'trainingToLevel',
-      'skillInTraining',
-    ));
+        'trainingEndTime',
+        'trainingStartTime',
+        'trainingStartSP',
+        'trainingDestinationSP',
+        'trainingToLevel',
+        'skillInTraining',
+      ));
     $query->addField('st', 'trainingTypeID', 'typeID');
   }
 
-  $query->condition('c.characterID', (int) $character_id, '=');
-  $result = $query->execute();
+  $result = $query->condition('c.characterID', (int) $character_id, '=')->execute();
 
   $api_data = array();
 
@@ -1891,204 +1888,4 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
   }
 
   return FALSE;
-}
-
-/**
- * Function that verifies and updates all characters on an API Key.
- *
- * @param object $account
- *   A Drupal user object containing.
- * @param int $key_id
- *   A unique EVE API Key ID.
- * @param string $v_code
- *   A unique EVE API Verification Code.
- * @param int $api_id
- *   A unique API ID.
- *
- * @return mixed
- *   A mixed array of data regarding the success/failure.
- */
-function eve_api_update_key($account, $key_id, $v_code, $api_id) {
-  $updated = date('Y-m-d H:i:s', time());
-  $uid = (int) $account->uid;
-
-  $character_found = FALSE;
-  $error_found = FALSE;
-  $character_data = FALSE;
-
-  $query = array(
-    'keyID' => $key_id,
-    'vCode' => $v_code,
-  );
-
-  $characters = eve_api_get_api_key_info_api($query);
-
-  $error = 0;
-
-  if (isset($characters['error'])) {
-    if ($api_id == 0) {
-      return array(
-        'error' => TRUE,
-        'error_found' => $error_found,
-        'character_data' => $character_data,
-        'character_found' => $character_found,
-      );
-    }
-
-    db_merge('eve_api_keys')->key(array('apiID' => (int) $api_id))->fields(array(
-      'apiID' => (int) $api_id,
-      'errorID' => (int) $characters['error'],
-      'updated' => (string) $updated,
-    ))->execute();
-
-    if ((int) $characters['error'] == 403) {
-      db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error'], 'deleted' => 1))->condition('apiID', (int) $api_id, '=')->execute();
-    }
-    else {
-      db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error']))->condition('apiID', (int) $api_id, '=')->execute();
-      $error_found = TRUE;
-    }
-
-    return array(
-      'error' => FALSE,
-      'error_found' => $error_found,
-      'character_data' => $character_data,
-      'character_found' => $character_found,
-    );
-  }
-
-  if (!isset($characters['characters'])) {
-    watchdog('eve_api', 'Error occured, should never happen. (' . drupal_http_build_query($query) . ')<br /><pre>' . print_r($characters, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
-
-    return array(
-      'error' => TRUE,
-      'error_found' => $error_found,
-      'character_data' => $character_data,
-      'character_found' => $character_found,
-    );
-  }
-
-  if (isset($characters['errorCode'])) {
-    $error = (int) $characters['errorCode'];
-  }
-
-  $whitelist = array();
-
-  if (!empty($characters)) {
-    foreach ($characters['characters'] as $character) {
-      $whitelist[] = (int) $character['characterID'];
-    }
-  }
-
-  $result = db_query('SELECT characterID FROM {eve_api_whitelist} WHERE characterID IN (:characterIDs)', array(
-    ':characterIDs' => $whitelist,
-  ));
-
-  $allow_expires = variable_get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
-  $allow_type = variable_get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
-
-  if ($result->rowCount()) {
-    if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
-      $error = 1;
-    }
-  }
-  else {
-    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
-      $error = 1;
-    }
-  }
-
-  db_update('eve_api_characters')->fields(array('errorID' => (int) $error, 'deleted' => 1))->condition('apiID', (int) $api_id)->execute();
-  db_merge('eve_api_keys')->key(array('apiID' => (int) $api_id))->fields(array(
-    'apiID' => (int) $api_id,
-    'uid' => (int) $uid,
-    'keyID' => (int) $key_id,
-    'vCode' => (string) $v_code,
-    'updated' => (string) $updated,
-    'errorID' => (int) $error,
-  ))->execute();
-
-  if ($error == 1) {
-    return array(
-      'error' => FALSE,
-      'error_found' => $error_found,
-      'character_data' => $character_data,
-      'character_found' => $character_found,
-    );
-  }
-
-  foreach ($characters['characters'] as $character) {
-    $error = 0;
-
-    if (isset($characters['errorCode'])) {
-      $error = (int) $characters['errorCode'];
-    }
-
-    db_merge('eve_api_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
-      'characterID' => (int) $character['characterID'],
-      'uid' => (int) $uid,
-      'apiID' => (int) $api_id,
-      'characterName' => (string) $character['characterName'],
-      'corporationID' => (int) $character['corporationID'],
-      'corporationName' => (string) $character['corporationName'],
-      'corporationTicker' => (string) $character['corporationTicker'],
-      'allianceID' => (int) $character['allianceID'],
-      'allianceName' => (string) $character['allianceName'],
-      'allianceTicker' => (string) $character['allianceTicker'],
-      'accessMask' => (int) $characters['accessMask'],
-      'errorID' => (int) $error,
-      'deleted' => 0,
-    ))->execute();
-
-    if ($account->name == (string) $character['characterName']) {
-      $character_found = TRUE;
-      $character_data = $character;
-    }
-
-    $item = array(
-      'query' => $query,
-      'characterID' => (int) $character['characterID'],
-    );
-
-    $queue = DrupalQueue::get('eve_api_cron_import_character_sheet');
-    $queue->createItem($item);
-
-    $queue = DrupalQueue::get('eve_api_cron_import_character_info');
-    $queue->createItem($item);
-
-    if (($characters['accessMask'] & 131072) == 131072) {
-      $queue = DrupalQueue::get('eve_api_cron_import_skill_in_training');
-      $queue->createItem($item);
-    }
-    else {
-      db_merge('eve_api_skill_in_training')->key(array(
-        'characterID' => (int) $character['characterID'],
-      ))->fields(array(
-        'characterID' => (int) $character['characterID'],
-        'errorID' => 0,
-      ))->execute();
-    }
-
-    if (($characters['accessMask'] & 2097152) == 2097152) {
-      $queue = DrupalQueue::get('eve_api_cron_import_wallet_journal');
-      $queue->createItem($item);
-    }
-
-    if (($characters['accessMask'] & 2048) == 2048 && ($characters['accessMask'] & 512) == 512) {
-      $queue = DrupalQueue::get('eve_api_cron_import_mail');
-      $queue->createItem($item);
-    }
-
-    if (($characters['accessMask'] & 67108864) == 67108864) {
-      $queue = DrupalQueue::get('eve_api_cron_import_contracts');
-      $queue->createItem($item);
-    }
-  }
-
-  return array(
-    'error' => FALSE,
-    'error_found' => $error_found,
-    'character_data' => $character_data,
-    'character_found' => $character_found,
-  );
 }

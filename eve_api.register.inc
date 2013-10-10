@@ -425,6 +425,7 @@ function eve_api_enter_api_form($form, &$form_state) {
     '#title' => t('Key ID'),
     '#description' => t('Please enter your Key ID.'),
     '#required' => TRUE,
+    '#size' => 20,
     '#maxlength' => 15,
     '#weight' => 50,
   );
@@ -434,6 +435,7 @@ function eve_api_enter_api_form($form, &$form_state) {
     '#title' => t('Verification Code'),
     '#description' => t('Please enter your Verification Code.'),
     '#required' => TRUE,
+    '#size' => 80,
     '#maxlength' => 64,
     '#weight' => 60,
   );

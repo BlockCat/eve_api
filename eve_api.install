@@ -118,7 +118,7 @@ function eve_api_schema() {
       'keyID' => array('keyID'),
       'errorID' => array('errorID'),
     ),
-    'unique keys' => array('apiID' => array('apiID')),
+    'unique keys' => array('keyID_vCode' => array('keyID', 'vCode')),
     'primary key' => array('apiID'),
   );
 
@@ -182,7 +182,6 @@ function eve_api_schema() {
       'errorID' => array('errorID'),
       'deleted' => array('deleted'),
     ),
-    'unique keys' => array('characterID' => array('characterID')),
     'primary key' => array('characterID'),
   );
 
@@ -273,7 +272,6 @@ function eve_api_schema() {
         'not null' => TRUE,
       ) + $int,
     ),
-    'unique keys' => array('characterID' => array('characterID')),
     'primary key' => array('characterID'),
   );
 
@@ -318,7 +316,9 @@ function eve_api_schema() {
     ),
     'indexes' => array(
       'characterID' => array('characterID'),
+      'certificateID' => array('certificateID'),
     ),
+    'primary key' => array('characterID', 'certificateID'),
   );
 
   $schema['eve_api_character_sheet_titles'] = array(
@@ -340,6 +340,7 @@ function eve_api_schema() {
     'indexes' => array(
       'characterID' => array('characterID'),
     ),
+    'primary key' => array('characterID', 'titleID'),
   );
 
   $schema['eve_api_character_sheet_skills'] = array(
@@ -371,6 +372,7 @@ function eve_api_schema() {
       'typeID' => array('typeID'),
       'level' => array('level'),
     ),
+    'primary key' => array('characterID', 'typeID'),
   );
 
   $schema['eve_api_character_sheet_roles'] = array(
@@ -478,7 +480,6 @@ function eve_api_schema() {
         'not null' => TRUE,
       ) + $int,
     ),
-    'unique keys' => array('characterID' => array('characterID')),
     'primary key' => array('characterID'),
   );
 
@@ -504,7 +505,9 @@ function eve_api_schema() {
     ),
     'indexes' => array(
       'characterID' => array('characterID'),
+      'recordID' => array('recordID'),
     ),
+    'primary key' => array('characterID', 'recordID'),
   );
 
   $schema['eve_api_skill_in_training'] = array(
@@ -547,7 +550,6 @@ function eve_api_schema() {
     'indexes' => array(
       'trainingTypeID' => array('trainingTypeID'),
     ),
-    'unique keys' => array('characterID' => array('characterID')),
     'primary key' => array('characterID'),
   );
 
@@ -593,12 +595,12 @@ function eve_api_schema() {
       ) + $big_int,
     ),
     'indexes' => array(
+      'messageID' => array('messageID'),
       'characterID' => array('characterID'),
       'senderID' => array('senderID'),
       'toCorpOrAllianceID' => array('toCorpOrAllianceID'),
     ),
-    'unique keys' => array('messageID' => array('messageID')),
-    'primary key' => array('messageID'),
+    'primary key' => array('characterID', 'messageID'),
   );
 
   $schema['eve_api_mail_bodies'] = array(
@@ -620,10 +622,10 @@ function eve_api_schema() {
       ),
     ),
     'indexes' => array(
+      'messageID' => array('messageID'),
       'characterID' => array('characterID'),
     ),
-    'unique keys' => array('messageID' => array('messageID')),
-    'primary key' => array('messageID'),
+    'primary key' => array('characterID', 'messageID'),
   );
 
   $schema['eve_api_contracts'] = array(
@@ -711,9 +713,9 @@ function eve_api_schema() {
     ),
     'indexes' => array(
       'characterID' => array('characterID'),
+      'contractID' => array('contractID'),
     ),
-    'unique keys' => array('contractID' => array('contractID')),
-    'primary key' => array('contractID'),
+    'primary key' => array('characterID', 'contractID'),
   );
 
   $schema['eve_api_wallet_journal'] = array(
@@ -788,6 +790,7 @@ function eve_api_schema() {
       'refTypeID' => array('refTypeID'),
       'refID' => array('refID'),
     ),
+    'primary key' => array('characterID', 'refID'),
   );
 
   $schema['eve_api_role_ceo_director'] = array(
@@ -815,7 +818,6 @@ function eve_api_schema() {
       'isCEO' => array('isCEO'),
       'isDirector' => array('isDirector'),
     ),
-    'unique keys' => array('characterID' => array('characterID')),
     'primary key' => array('characterID'),
   );
 
@@ -836,7 +838,6 @@ function eve_api_schema() {
         'not null' => FALSE,
       ),
     ),
-    'unique keys' => array('characterID' => array('characterID')),
     'primary key' => array('characterID'),
   );
 
@@ -852,7 +853,6 @@ function eve_api_schema() {
         'not null' => TRUE,
       ) + $varchar,
     ),
-    'unique keys' => array('groupID' => array('groupID')),
     'primary key' => array('groupID'),
   );
 
@@ -875,7 +875,6 @@ function eve_api_schema() {
     'indexes' => array(
       'groupID' => array('groupID'),
     ),
-    'unique keys' => array('typeID' => array('typeID')),
     'primary key' => array('typeID'),
   );
 
@@ -896,7 +895,6 @@ function eve_api_schema() {
         'not null' => FALSE,
       ),
     ),
-    'unique keys' => array('groupID' => array('groupID')),
     'primary key' => array('groupID'),
   );
 
@@ -930,6 +928,7 @@ function eve_api_schema() {
       'groupID' => array('groupID'),
       'accessmask' => array('accessmask'),
     ),
+    'primary key' => array('accessmask', 'type'),
   );
 
   $schema['eve_api_contact_list'] = array(
@@ -969,7 +968,6 @@ function eve_api_schema() {
       'manual' => array('manual'),
       'checked' => array('checked'),
     ),
-    'unique keys' => array('contactID' => array('contactID')),
     'primary key' => array('contactID'),
   );
 
@@ -1019,7 +1017,6 @@ function eve_api_schema() {
       'manual' => array('manual'),
       'checked' => array('checked'),
     ),
-    'unique keys' => array('corporationID' => array('corporationID')),
     'primary key' => array('corporationID'),
   );
 
@@ -1039,7 +1036,6 @@ function eve_api_schema() {
         'not null' => TRUE,
       ) + $varchar,
     ),
-    'unique keys' => array('allianceID' => array('allianceID')),
     'primary key' => array('allianceID'),
   );
 

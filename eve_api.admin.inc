@@ -496,19 +496,19 @@ function eve_api_admin_registration_form($form, &$form_state) {
     '#weight' => 10,
   );
 
-  $query = db_select('eve_api_call_list', 'am');
-  $query->fields('am', array(
+  $result = db_select('eve_api_call_list', 'am')
+    ->extend('PagerDefault')
+    ->extend('TableSort')
+    ->fields('am', array(
       'accessmask',
       'name',
       'groupID',
       'description',
-    ));
-  $query->condition('am.type', 'Character', '=');
-  $query->extend('PagerDefault')
+    ))
+    ->condition('am.type', 'Character', '=')
     ->limit(30)
-    ->extend('TableSort')
-    ->orderByHeader($header);
-  $result = $query->execute();
+    ->orderByHeader($header)
+    ->execute();
 
   if ($result->rowCount()) {
     $rows = $result->fetchAll();
@@ -684,6 +684,8 @@ function eve_api_admin_list_blues_form($form, &$form_state) {
   $options = $selected = array();
 
   $result = db_select('eve_api_contact_list', 'b')
+    ->extend('PagerDefault')
+    ->extend('TableSort')
     ->fields('b', array(
       'contactID',
       'contactName',
@@ -691,9 +693,7 @@ function eve_api_admin_list_blues_form($form, &$form_state) {
       'manual',
       'memo',
     ))
-    ->extend('PagerDefault')
     ->limit(20)
-    ->extend('TableSort')
     ->orderByHeader($header)
     ->execute();
 
@@ -1083,6 +1083,8 @@ function eve_api_admin_list_corporations_form($form, &$form_state) {
   $options = $selected = array();
 
   $result = db_select('eve_api_alliance_list_corporations', 'ac')
+    ->extend('PagerDefault')
+    ->extend('TableSort')
     ->fields('ac', array(
       'corporationID',
       'rid',
@@ -1091,9 +1093,7 @@ function eve_api_admin_list_corporations_form($form, &$form_state) {
       'manual',
       'memo',
     ))
-    ->extend('PagerDefault')
     ->limit(20)
-    ->extend('TableSort')
     ->orderByHeader($header)
     ->execute();
 
@@ -1475,14 +1475,14 @@ function eve_api_admin_list_whitelist_form($form, &$form_state) {
   $options = $selected = array();
 
   $result = db_select('eve_api_whitelist', 'w')
+    ->extend('PagerDefault')
+    ->extend('TableSort')
     ->fields('w', array(
       'characterID',
       'characterName',
       'memo',
     ))
-    ->extend('PagerDefault')
     ->limit(20)
-    ->extend('TableSort')
     ->orderByHeader($header)
     ->execute();
 
@@ -1735,9 +1735,11 @@ function eve_api_admin_role_ceo_director_form($form, &$form_state) {
 
   $options = array();
 
-  $query = db_select('eve_api_role_ceo_director', 'rcd');
+  $query = db_select('eve_api_role_ceo_director', 'rcd')
+    ->extend('PagerDefault')
+    ->extend('TableSort');
   $query->join('eve_api_characters', 'c', 'rcd.characterID = c.characterID');
-  $query->fields('rcd', array(
+  $result = $query->fields('rcd', array(
         'isCEO',
         'isDirector',
         'memo',
@@ -1747,11 +1749,9 @@ function eve_api_admin_role_ceo_director_form($form, &$form_state) {
         'characterName',
         'corporationName',
       ))
-    ->extend('PagerDefault')
     ->limit(20)
-    ->extend('TableSort')
-    ->orderByHeader($header);
-  $result = $query->execute();
+    ->orderByHeader($header)
+    ->execute();
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
