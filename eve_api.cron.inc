@@ -980,9 +980,6 @@ function eve_api_cron_api_user_wallet_journal($item) {
     $max_ref_id = isset($row['maxRefID']) ? (string) $row['maxRefID'] : '0';
   }
 
-echo 'Max Ref ID: ' . $max_ref_id . '<br />';
-echo 'CharacterID: ' . $character_id . '<br />';
-
   do {
     $wallet_info = eve_api_get_wallet_journal_api($wallet_query);
 
@@ -999,10 +996,8 @@ echo 'CharacterID: ' . $character_id . '<br />';
         switch ((string) $type) {
           case 'wallet_journal':
             foreach ($data as $walletdata) {
-echo 'Ref ID: ' . $walletdata['refID'] . ' - ';
               if (eve_api_comp($max_ref_id, (string) $walletdata['refID']) != -1) {
                 $max_ref_id_found = TRUE;
-echo 'Higher or Equal<br />';
                 continue;
               }
 
@@ -1011,7 +1006,6 @@ echo 'Higher or Equal<br />';
               }
 
               if (eve_api_comp($from_id, (string) $walletdata['refID']) != -1) {
-echo $walletdata['refID'] . ' smaller than ' . $from_id;
                 $from_id = (string) $walletdata['refID'];
               }
 
@@ -1035,7 +1029,6 @@ echo $walletdata['refID'] . ' smaller than ' . $from_id;
               $query_data->execute();
 
               $count++;
-echo '<br />';
             }
             break;
 
@@ -1045,7 +1038,6 @@ echo '<br />';
       }
 
       if ($max_ref_id_found || !isset($from_id) || $count != $row_count) {
-echo ' Yes<br />';
         return TRUE;
       }
 
@@ -1095,16 +1087,11 @@ function eve_api_cron_import_contracts($item) {
       $max_contract_id = isset($row['maxContractID']) ? (string) $row['maxContractID'] : 0;
     }
 
-echo 'Max Contract ID: ' . $max_contract_id . '<br />';
-echo 'CharacterID: ' . $character_id . '<br />';
-
     foreach ($contract_info as $type => $data) {
       switch ((string) $type) {
         case 'contracts':
           foreach ($data as $contract_data) {
-echo 'Contract ID: ' . $contract_data['contractID'];
             if (eve_api_comp($max_contract_id, (string) $contract_data['contractID']) != -1) {
-echo ' - Higher or Equal<br />';
               continue;
             }
 
@@ -1126,7 +1113,6 @@ echo ' - Higher or Equal<br />';
 
             $query_data->fields($fields);
             $query_data->execute();
-echo '<br />';
           }
           break;
 
@@ -1168,9 +1154,6 @@ function eve_api_cron_import_mail($item) {
     $max_message_id = isset($row['maxMessageID']) ? (string) $row['maxMessageID'] : 0;
   }
 
-echo 'Max Message ID: ' . $max_message_id . '<br />';
-echo 'CharacterID: ' . $character_id . '<br />';
-
   $mail_info = eve_api_get_mail_messages_api($mail_query);
 
   if (isset($mail_info['error'])) {
@@ -1186,19 +1169,17 @@ echo 'CharacterID: ' . $character_id . '<br />';
       switch ((string) $type) {
         case 'mail':
           foreach ($data as $mail_data) {
-echo 'Message ID: ' . $mail_data['messageID'];
-          if (eve_api_comp($max_message_id, (string) $mail_data['messageID']) != -1) {
-            $max_message_id_found = TRUE;
-echo ' - Higher or Equal<br />';
-            continue;
-          }
+            if (eve_api_comp($max_message_id, (string) $mail_data['messageID']) != -1) {
+              $max_message_id_found = TRUE;
+              continue;
+            }
 
-          $message_ids[] = (string) $mail_data['messageID'];
+            $message_ids[] = (string) $mail_data['messageID'];
 
-          $query_data = db_insert('eve_api_mail_messages');
+            $query_data = db_insert('eve_api_mail_messages');
 
-          $fields = array(
-            'characterID' => $character_id,
+            $fields = array(
+              'characterID' => $character_id,
             );
 
             foreach ($mail_data as $infoname => $infodata) {
@@ -1213,7 +1194,6 @@ echo ' - Higher or Equal<br />';
 
             $query_data->fields($fields);
             $query_data->execute();
-echo '<br />';
           }
           break;
 
@@ -1223,49 +1203,52 @@ echo '<br />';
     }
 
     if (empty($message_ids)) {
-echo 'Nothing Found<br />';
       return TRUE;
     }
 
-    $body_query = array(
-      'ids' => implode(',', $message_ids),
-    ) + $mail_query;
+    $message_ids = array_chunk($message_ids, 25, TRUE);
 
-    $body_info = eve_api_get_mail_bodies_api($body_query);
+    foreach ($message_ids as $message_id) {
+      $body_query = array(
+        'ids' => implode(',', $message_id),
+      ) + $mail_query;
 
-    if (isset($body_info['error'])) {
-      watchdog('eve_api', 'Failed importing Mail Bodies. Data: (' . drupal_http_build_query($body_query) . ') Error: ' . (int) $body_info['error'], NULL, WATCHDOG_WARNING);
+      $body_info = eve_api_get_mail_bodies_api($body_query);
 
-      return FALSE;
-    }
-    else {
-      foreach ($body_info as $type => $data) {
-        switch ((string) $type) {
-          case 'mail_body':
-            foreach ($data as $bodydata) {
-              $query_data = db_insert('eve_api_mail_bodies');
+      if (isset($body_info['error'])) {
+        watchdog('eve_api', 'Failed importing Mail Bodies. Data: (' . drupal_http_build_query($body_query) . ') Error: ' . (int) $body_info['error'], NULL, WATCHDOG_WARNING);
 
-              $fields = array(
-                'characterID' => $character_id,
-              );
+        return FALSE;
+      }
+      else {
+        foreach ($body_info as $type => $data) {
+          switch ((string) $type) {
+            case 'mail_body':
+              foreach ($data as $bodydata) {
+                $query_data = db_insert('eve_api_mail_bodies');
 
-              foreach ($bodydata as $infoname => $infodata) {
-                if (empty($infodata)) {
-                  continue;
+                $fields = array(
+                  'characterID' => $character_id,
+                );
+
+                foreach ($bodydata as $infoname => $infodata) {
+                  if (empty($infodata)) {
+                    continue;
+                  }
+
+                  $fields += array(
+                    $infoname => (string) $infodata,
+                  );
                 }
 
-                $fields += array(
-                  $infoname => (string) $infodata,
-                );
+                $query_data->fields($fields);
+                $query_data->execute();
               }
+              break;
 
-              $query_data->fields($fields);
-              $query_data->execute();
-            }
-            break;
-
-          default:
-            break;
+            default:
+              break;
+          }
         }
       }
     }

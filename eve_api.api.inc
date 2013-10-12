@@ -109,7 +109,7 @@ function eve_api_get_xml($type, $query = array()) {
 
     if (!$has_curl || $open_basedir) {
       $options = array(
-        'method' => 'POST',
+        'method' => 'GET',
         'data' => drupal_http_build_query($query),
         'timeout' => 45,
         'headers' => array(
@@ -346,7 +346,7 @@ function eve_api_curl_http_request($url, array $options = array()) {
   // or PUT request. Some non-standard servers get confused by Content-Length in
   // at least HEAD/GET requests, and Squid always requires Content-Length in
   // POST/PUT requests.
-  $content_length = strlen(drupal_http_build_query($options['data']));
+  $content_length = strlen(str_replace('%2C', ',', drupal_http_build_query($options['data'])));
   if ($content_length > 0 || $options['method'] == 'POST' || $options['method'] == 'PUT') {
     $options['headers']['Content-Length'] = $content_length;
   }
@@ -371,7 +371,7 @@ function eve_api_curl_http_request($url, array $options = array()) {
     case 'POST':
       $curl_opt[CURLOPT_POST] = TRUE;
       if (!empty($options['data'])) {
-        $curl_opt[CURLOPT_POSTFIELDS] = drupal_http_build_query($options['data']);
+        $curl_opt[CURLOPT_POSTFIELDS] = str_replace('%2C', ',', drupal_http_build_query($options['data']));
         $options['headers'] += array(
           'Content-Type' => 'application/x-www-form-urlencoded',
         );
@@ -945,7 +945,7 @@ function eve_api_get_mail_messages_api($query) {
   $xml = eve_api_get_xml('MailMessages', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting Contracts API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
+    watchdog('eve_api', 'Failed getting Mail Messages API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
     return array('error' => (int) $xml);
   }
 
@@ -979,7 +979,7 @@ function eve_api_get_mail_bodies_api($query) {
   $xml = eve_api_get_xml('MailBodies', $query);
 
   if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting Contracts API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
+    watchdog('eve_api', 'Failed getting Mail Bodies API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
     return array('error' => (int) $xml);
   }
 
