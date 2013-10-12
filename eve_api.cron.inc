@@ -11,6 +11,11 @@ function eve_api_cronapi($op, $job = NULL) {
   if ($op == 'list') {
     $items = array();
 
+    $items['eve_api_cron_api_mask_sync_job'] = array(
+      'description' => 'Get the latest access mask from the EVE API.',
+      'rule' => '12 1 * * 0',
+    );
+
     $items['eve_api_cron_api_alliance_fetch_job'] = array(
       'description' => 'Get current alliance standings.',
       'rule' => '12 2 * * *',
@@ -21,14 +26,24 @@ function eve_api_cronapi($op, $job = NULL) {
       'rule' => '12 3 * * *',
     );
 
-    $items['eve_api_cron_api_mask_sync_job'] = array(
-      'description' => 'Get the latest access mask from the EVE API.',
-      'rule' => '12 1 * * 0',
-    );
-
     $items['eve_api_cron_api_user_sync_job'] = array(
       'description' => 'Verify each characters API.',
       'rule' => '18 * * * *',
+    );
+
+    $items['eve_api_cron_import_wallet_journal'] = array(
+      'description' => 'Import users daily wallet journal.',
+      'rule' => '34 1 * * *',
+    );
+
+    $items['eve_api_cron_import_contracts'] = array(
+      'description' => 'Import users daily contracts.',
+      'rule' => '34 2 * * *',
+    );
+
+    $items['eve_api_cron_import_mail'] = array(
+      'description' => 'Import users daily mail.',
+      'rule' => '34 3 * * *',
     );
 
     return $items;
@@ -69,6 +84,75 @@ function eve_api_cronapi($op, $job = NULL) {
           }
         }
         break;
+
+      case 'eve_api_cron_import_wallet_journal':
+        if (variable_get('eve_api_enable', FALSE)) {
+          $queue = DrupalQueue::get('eve_api_cron_import_wallet_journal');
+          $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorID != 403');
+
+          if ($result->rowCount()) {
+            foreach ($result->fetchAll() as $item) {
+              if (($row->accessMask & 2097152) != 2097152) {
+                continue;
+              }
+
+              $queue->createItem(array(
+                'query' => array(
+                  'keyID' => $row->keyID,
+                  'vCode' => $row->vCode,
+                ),
+                'characterID' => $row->characterID,
+              ));
+            }
+          }
+        }
+        break;
+
+      case 'eve_api_cron_import_contracts':
+        if (variable_get('eve_api_enable', FALSE)) {
+          $queue = DrupalQueue::get('eve_api_cron_import_contracts');
+          $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorID != 403');
+
+          if ($result->rowCount()) {
+            foreach ($result->fetchAll() as $item) {
+              if (($row->accessMask & 67108864) != 67108864) {
+                continue;
+              }
+
+              $queue->createItem(array(
+                'query' => array(
+                  'keyID' => $row->keyID,
+                  'vCode' => $row->vCode,
+                ),
+                'characterID' => $row->characterID,
+              ));
+            }
+          }
+        }
+        break;
+
+      case 'eve_api_cron_import_mail':
+        if (variable_get('eve_api_enable', FALSE)) {
+          $queue = DrupalQueue::get('eve_api_cron_import_mail');
+          $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorID != 403');
+
+          if ($result->rowCount()) {
+            foreach ($result->fetchAll() as $item) {
+              if (($row->accessMask & 2048) != 2048 || ($row->accessMask & 512) != 512) {
+                continue;
+              }
+
+              $queue->createItem(array(
+                'query' => array(
+                  'keyID' => $row->keyID,
+                  'vCode' => $row->vCode,
+                ),
+                'characterID' => $row->characterID,
+              ));
+            }
+          }
+        }
+        break;
     }
   }
 }
@@ -81,36 +165,28 @@ function eve_api_cron() {
     return;
   }
 
-  $interval = variable_get('eve_api_cron_api_alliance_fetch_time', 1439 * 60);
+  if (time() >= variable_get('eve_api_cron_api_mask_next', 0) && date('w') == 0 && date('G') == 1 && date('i') >= 12) {
+    $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
+    $queue->createItem(1);
+
+    variable_set('eve_api_cron_api_mask_next', time() + (1439 * 60));
+  }
 
   if (time() >= variable_get('eve_api_cron_api_alliance_fetch_next', 0) && date('G') == 2 && date('i') >= 12) {
     $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
     $queue->createItem(1);
 
-    variable_set('eve_api_cron_api_alliance_fetch_next', time() + $interval);
+    variable_set('eve_api_cron_api_alliance_fetch_next', time() + (1439 * 60));
   }
-
-  $interval = variable_get('eve_api_cron_api_alliance_sync_time', 1439 * 60);
 
   if (time() >= variable_get('eve_api_cron_api_alliance_sync_next', 0) && date('G') == 3 && date('i') >= 12) {
     $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
     $queue->createItem(1);
 
-    variable_set('eve_api_cron_api_alliance_sync_next', time() + $interval);
-  }
-
-  $interval = variable_get('eve_api_cron_api_mask_time', 1439 * 60);
-
-  if (time() >= variable_get('eve_api_cron_api_mask_next', 0) && date('w') == 0 && date('G') == 1 && date('i') >= 12) {
-    $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
-    $queue->createItem(1);
-
-    variable_set('eve_api_cron_api_mask_next', time() + $interval);
+    variable_set('eve_api_cron_api_alliance_sync_next', time() + (1439 * 60));
   }
 
   if (variable_get('eve_api_enable', FALSE)) {
-    $interval = variable_get('eve_api_cron_api_users_time', 59 * 60);
-
     if (time() >= variable_get('eve_api_cron_api_users_next', 0) && date('i') >= 18) {
       $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
       $result = db_query('SELECT DISTINCT uid FROM {users} WHERE uid != 0');
@@ -124,7 +200,76 @@ function eve_api_cron() {
         }
       }
 
-      variable_set('eve_api_cron_api_users_next', time() + $interval);
+      variable_set('eve_api_cron_api_users_next', time() + (59 * 60));
+    }
+
+    if (time() >= variable_get('eve_api_cron_import_wallet_journal_next', 0) && date('G') == 1 && date('i') >= 34) {
+      $queue = DrupalQueue::get('eve_api_cron_import_wallet_journal');
+      $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorID != 403');
+
+      if ($result->rowCount()) {
+        foreach ($result->fetchAll() as $item) {
+          if (($row->accessMask & 2097152) != 2097152) {
+            continue;
+          }
+
+          $queue->createItem(array(
+            'query' => array(
+              'keyID' => $row->keyID,
+              'vCode' => $row->vCode,
+            ),
+            'characterID' => $row->characterID,
+          ));
+        }
+      }
+
+      variable_set('eve_api_cron_import_wallet_journal_next', time() + (1439 * 60));
+    }
+
+    if (time() >= variable_get('eve_api_cron_import_contracts_next', 0) && date('G') == 2 && date('i') >= 34) {
+      $queue = DrupalQueue::get('eve_api_cron_import_contracts');
+      $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorID != 403');
+
+      if ($result->rowCount()) {
+        foreach ($result->fetchAll() as $item) {
+          if (($row->accessMask & 67108864) != 67108864) {
+            continue;
+          }
+
+          $queue->createItem(array(
+            'query' => array(
+              'keyID' => $row->keyID,
+              'vCode' => $row->vCode,
+            ),
+            'characterID' => $row->characterID,
+          ));
+        }
+      }
+
+      variable_set('eve_api_cron_import_contracts_next', time() + (1439 * 60));
+    }
+
+    if (time() >= variable_get('eve_api_cron_import_mail_next', 0) && date('G') == 3 && date('i') >= 34) {
+      $queue = DrupalQueue::get('eve_api_cron_import_mail');
+      $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorID != 403');
+
+      if ($result->rowCount()) {
+        foreach ($result->fetchAll() as $item) {
+          if (($row->accessMask & 2048) != 2048 || ($row->accessMask & 512) != 512) {
+            continue;
+          }
+
+          $queue->createItem(array(
+            'query' => array(
+              'keyID' => $row->keyID,
+              'vCode' => $row->vCode,
+            ),
+            'characterID' => $row->characterID,
+          ));
+        }
+      }
+
+      variable_set('eve_api_cron_import_mail_next', time() + (1439 * 60));
     }
   }
 }
@@ -935,7 +1080,7 @@ function eve_api_cron_import_wallet_journal($item) {
   $character_id = (int) $item['characterID'];
   $query = (array) $item['query'];
 
-  $row_count = '100';
+  $row_count = 250;
   $from_id = NULL;
 
   $wallet_query = $query + array(
@@ -943,19 +1088,22 @@ function eve_api_cron_import_wallet_journal($item) {
     'rowCount' => $row_count,
   );
 
-  $counter = 100;
+  $counter = 1000;
 
   $result = db_query('SELECT MAX(refID) AS maxRefID FROM {eve_api_wallet_journal} WHERE characterID = :characterID', array(
-    ':characterID' => (int) $character_id,
+    ':characterID' => $character_id,
   ));
 
   if (!$result->rowCount()) {
-    $max_ref_id = 0;
+    $max_ref_id = '0';
   }
   else {
     $row = $result->fetchAssoc();
-    $max_ref_id = isset($row['maxRefID']) ? (int) $row['maxRefID'] : 0;
+    $max_ref_id = isset($row['maxRefID']) ? (string) $row['maxRefID'] : '0';
   }
+
+echo 'Max Ref ID: ' . $max_ref_id . '<br />';
+echo 'CharacterID: ' . $character_id . '<br />';
 
   do {
     $wallet_info = eve_api_get_wallet_journal_api($wallet_query);
@@ -973,26 +1121,26 @@ function eve_api_cron_import_wallet_journal($item) {
         switch ((string) $type) {
           case 'wallet_journal':
             foreach ($data as $walletdata) {
-              if ($max_ref_id >= (float) $walletdata['refID']) {
+echo 'Ref ID: ' . $walletdata['refID'] . ' - ';
+              if (eve_api_comp($max_ref_id, (string) $walletdata['refID']) != -1) {
                 $max_ref_id_found = TRUE;
+echo 'Higher or Equal<br />';
                 continue;
               }
 
               if (!isset($from_id)) {
-                $from_id = (float) $walletdata['refID'];
+                $from_id = (string) $walletdata['refID'];
               }
 
-              if ($from_id >= (float) $walletdata['refID']) {
-                $from_id = (float) $walletdata['refID'];
+              if (eve_api_comp($from_id, (string) $walletdata['refID']) != -1) {
+echo $walletdata['refID'] . ' smaller than ' . $from_id;
+                $from_id = (string) $walletdata['refID'];
               }
 
-              $query_data = db_merge('eve_api_wallet_journal')->key(array(
-                'refID' => (int) $walletdata['refID'],
-                'characterID' => (int) $character_id,
-              ));
+              $query_data = db_insert('eve_api_wallet_journal');
 
               $fields = array(
-                'characterID' => (int) $character_id,
+                'characterID' => $character_id,
               );
 
               foreach ($walletdata as $infoname => $infodata) {
@@ -1001,7 +1149,7 @@ function eve_api_cron_import_wallet_journal($item) {
                 }
 
                 $fields += array(
-                  (string) $infoname => (string) $infodata,
+                  $infoname => (string) $infodata,
                 );
               }
 
@@ -1009,6 +1157,7 @@ function eve_api_cron_import_wallet_journal($item) {
               $query_data->execute();
 
               $count++;
+echo '<br />';
             }
             break;
 
@@ -1018,7 +1167,8 @@ function eve_api_cron_import_wallet_journal($item) {
       }
 
       if ($max_ref_id_found || !isset($from_id) || $count != $row_count) {
-        break;
+echo ' Yes<br />';
+        return TRUE;
       }
 
       $wallet_query = array(
@@ -1044,7 +1194,7 @@ function eve_api_cron_import_contracts($item) {
   $query = (array) $item['query'];
 
   $contract_query = $query + array(
-    'characterID' => (int) $character_id,
+    'characterID' => $character_id,
   );
 
   $contract_info = eve_api_get_contracts_api($contract_query);
@@ -1056,7 +1206,7 @@ function eve_api_cron_import_contracts($item) {
   }
   else {
     $result = db_query('SELECT MAX(contractID) AS maxContractID FROM {eve_api_contracts} WHERE characterID = :characterID', array(
-      ':characterID' => (int) $character_id,
+      ':characterID' => $character_id,
     ));
 
     if (!$result->rowCount()) {
@@ -1064,38 +1214,41 @@ function eve_api_cron_import_contracts($item) {
     }
     else {
       $row = $result->fetchAssoc();
-      $max_contract_id = isset($row['maxContractID']) ? (int) $row['maxContractID'] : 0;
+      $max_contract_id = isset($row['maxContractID']) ? (string) $row['maxContractID'] : 0;
     }
+
+echo 'Max Contract ID: ' . $max_contract_id . '<br />';
+echo 'CharacterID: ' . $character_id . '<br />';
 
     foreach ($contract_info as $type => $data) {
       switch ((string) $type) {
         case 'contracts':
-          foreach ($data as $contractdata) {
-            if ($max_contract_id >= (int) $contractdata['contractID']) {
+          foreach ($data as $contract_data) {
+echo 'Contract ID: ' . $contract_data['contractID'];
+            if (eve_api_comp($max_contract_id, (string) $contract_data['contractID']) != -1) {
+echo ' - Higher or Equal<br />';
               continue;
             }
 
-            $query_data = db_merge('eve_api_contracts')->key(array(
-              'contractID' => (int) $contractdata['contractID'],
-              'characterID' => (int) $character_id,
-            ));
+            $query_data = db_insert('eve_api_contracts');
 
             $fields = array(
-              'characterID' => (int) $character_id,
+              'characterID' => $character_id,
             );
 
-            foreach ($contractdata as $infoname => $infodata) {
+            foreach ($contract_data as $infoname => $infodata) {
               if (empty($infodata)) {
                 continue;
               }
 
               $fields += array(
-                (string) $infoname => (string) $infodata,
+                $infoname => (string) $infodata,
               );
             }
 
             $query_data->fields($fields);
             $query_data->execute();
+echo '<br />';
           }
           break;
 
@@ -1122,13 +1275,11 @@ function eve_api_cron_import_mail($item) {
   $query = (array) $item['query'];
 
   $mail_query = $query + array(
-    'characterID' => (int) $character_id,
+    'characterID' => $character_id,
   );
 
-  $counter = 100;
-
   $result = db_query('SELECT MAX(messageID) AS maxMessageID FROM {eve_api_mail_messages} WHERE characterID = :characterID', array(
-    ':characterID' => (int) $character_id,
+    ':characterID' => $character_id,
   ));
 
   if (!$result->rowCount()) {
@@ -1136,48 +1287,97 @@ function eve_api_cron_import_mail($item) {
   }
   else {
     $row = $result->fetchAssoc();
-    $max_message_id = isset($row['maxMessageID']) ? (int) $row['maxMessageID'] : 0;
+    $max_message_id = isset($row['maxMessageID']) ? (string) $row['maxMessageID'] : 0;
   }
 
-  do {
-    $mail_info = eve_api_get_mail_messages_api($mail_query);
+echo 'Max Message ID: ' . $max_message_id . '<br />';
+echo 'CharacterID: ' . $character_id . '<br />';
 
-    if (isset($mail_info['error'])) {
-      watchdog('eve_api', 'Failed importing Mail Headers. Data: (' . drupal_http_build_query($mail_query) . ') Error: ' . (int) $mail_info['error'], NULL, WATCHDOG_WARNING);
+  $mail_info = eve_api_get_mail_messages_api($mail_query);
+
+  if (isset($mail_info['error'])) {
+    watchdog('eve_api', 'Failed importing Mail Headers. Data: (' . drupal_http_build_query($mail_query) . ') Error: ' . (int) $mail_info['error'], NULL, WATCHDOG_WARNING);
+
+    return FALSE;
+  }
+  else {
+    $max_message_id_found = FALSE;
+    $message_ids = array();
+
+    foreach ($mail_info as $type => $data) {
+      switch ((string) $type) {
+        case 'mail':
+          foreach ($data as $mail_data) {
+echo 'Message ID: ' . $mail_data['messageID'];
+          if (eve_api_comp($max_message_id, (string) $mail_data['messageID']) != -1) {
+            $max_message_id_found = TRUE;
+echo ' - Higher or Equal<br />';
+            continue;
+          }
+
+          $message_ids[] = (string) $mail_data['messageID'];
+
+          $query_data = db_insert('eve_api_mail_messages');
+
+          $fields = array(
+            'characterID' => $character_id,
+            );
+
+            foreach ($mail_data as $infoname => $infodata) {
+              if (empty($infodata)) {
+                continue;
+              }
+
+              $fields += array(
+                $infoname => (string) $infodata,
+              );
+            }
+
+            $query_data->fields($fields);
+            $query_data->execute();
+echo '<br />';
+          }
+          break;
+
+        default:
+          break;
+      }
+    }
+
+    if (empty($message_ids)) {
+echo 'Nothing Found<br />';
+      return TRUE;
+    }
+
+    $body_query = array(
+      'ids' => implode(',', $message_ids),
+    ) + $mail_query;
+
+    $body_info = eve_api_get_mail_bodies_api($body_query);
+
+    if (isset($body_info['error'])) {
+      watchdog('eve_api', 'Failed importing Mail Bodies. Data: (' . drupal_http_build_query($body_query) . ') Error: ' . (int) $body_info['error'], NULL, WATCHDOG_WARNING);
 
       return FALSE;
     }
     else {
-      $max_message_id_found = FALSE;
-      $message_ids = array();
-
-      foreach ($mail_info as $type => $data) {
+      foreach ($body_info as $type => $data) {
         switch ((string) $type) {
-          case 'mail':
-            foreach ($data as $maildata) {
-              if ($max_message_id >= (int) $maildata['messageID']) {
-                $max_message_id_found = TRUE;
-                continue;
-              }
-
-              $message_ids[] = (int) $maildata['messageID'];
-
-              $query_data = db_merge('eve_api_mail_messages')->key(array(
-                'messageID' => (int) $maildata['messageID'],
-                'characterID' => (int) $character_id,
-              ));
+          case 'mail_body':
+            foreach ($data as $bodydata) {
+              $query_data = db_insert('eve_api_mail_bodies');
 
               $fields = array(
-                'characterID' => (int) $character_id,
+                'characterID' => $character_id,
               );
 
-              foreach ($maildata as $infoname => $infodata) {
+              foreach ($bodydata as $infoname => $infodata) {
                 if (empty($infodata)) {
                   continue;
                 }
 
                 $fields += array(
-                  (string) $infoname => (string) $infodata,
+                  $infoname => (string) $infodata,
                 );
               }
 
@@ -1190,62 +1390,8 @@ function eve_api_cron_import_mail($item) {
             break;
         }
       }
-
-      if (empty($message_ids)) {
-        break;
-      }
-
-      $body_query = array(
-        'ids' => implode(',', $message_ids),
-      ) + $mail_query;
-
-      $body_info = eve_api_get_mail_bodies_api($body_query);
-
-      if (isset($body_info['error'])) {
-        watchdog('eve_api', 'Failed importing Mail Bodies. Data: (' . drupal_http_build_query($body_query) . ') Error: ' . (int) $body_info['error'], NULL, WATCHDOG_WARNING);
-
-        return FALSE;
-      }
-      else {
-        foreach ($body_info as $type => $data) {
-          switch ((string) $type) {
-            case 'mail_body':
-              foreach ($data as $bodydata) {
-                $query_data = db_merge('eve_api_mail_bodies')->key(array(
-                  'messageID' => (int) $bodydata['messageID'],
-                  'characterID' => (int) $character_id,
-                ));
-
-                $fields = array(
-                  'characterID' => (int) $character_id,
-                );
-
-                foreach ($bodydata as $infoname => $infodata) {
-                  if (empty($infodata)) {
-                    continue;
-                  }
-
-                  $fields += array(
-                    (string) $infoname => (string) $infodata,
-                  );
-                }
-
-                $query_data->fields($fields);
-                $query_data->execute();
-              }
-              break;
-
-            default:
-              break;
-          }
-        }
-      }
-
-      if ($max_message_id_found) {
-        break;
-      }
     }
-  } while ($counter--);
+  }
 
   return TRUE;
 }
@@ -1421,18 +1567,6 @@ function eve_api_cron_update_key($account, $key_id, $v_code, $api_id) {
         'characterID' => (int) $character['characterID'],
         'errorID' => 0,
       ))->execute();
-    }
-
-    if (($characters['accessMask'] & 2097152) == 2097152) {
-      // eve_api_cron_import_wallet_journal($item);
-    }
-
-    if (($characters['accessMask'] & 2048) == 2048 && ($characters['accessMask'] & 512) == 512) {
-      // eve_api_cron_import_mail($item);
-    }
-
-    if (($characters['accessMask'] & 67108864) == 67108864) {
-      // eve_api_cron_import_contracts($item);
     }
   }
 

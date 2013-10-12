@@ -68,19 +68,15 @@ function eve_api_jabber_cron() {
   }
 
   if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_jabber_enable', FALSE)) {
-    $interval = variable_get('eve_api_jabber_cron_role_time', 5 * 60);
-
     if (time() >= variable_get('eve_api_jabber_cron_role_next', 0)) {
       $queue = DrupalQueue::get('eve_api_jabber_cron_role_sync');
       $queue->createItem(1);
 
-      variable_set('eve_api_jabber_cron_role_next', time() + $interval);
+      variable_set('eve_api_jabber_cron_role_next', time() + (5 * 60));
     }
   }
 
   if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_jabber_enable', FALSE)) {
-    $interval = variable_get('eve_api_jabber_cron_user_time', 5 * 60);
-
     if (time() >= variable_get('eve_api_jabber_cron_user_next', 0)) {
       $queue = DrupalQueue::get('eve_api_jabber_cron_user_sync');
       $result = db_query('SELECT uid, name, status FROM {users} WHERE characterID != 0');
@@ -96,7 +92,7 @@ function eve_api_jabber_cron() {
         }
       }
 
-      variable_set('eve_api_jabber_cron_user_next', time() + $interval);
+      variable_set('eve_api_jabber_cron_user_next', time() + (5 * 60));
     }
   }
 }

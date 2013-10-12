@@ -31,9 +31,7 @@ function eve_api_jabber_uninstall() {
   variable_del('eve_api_jabber_url');
   variable_del('eve_api_jabber_secret');
   variable_del('eve_api_jabber_domain');
-  variable_del('eve_api_jabber_cron_role_time');
   variable_del('eve_api_jabber_cron_role_next');
-  variable_del('eve_api_jabber_cron_user_time');
   variable_del('eve_api_jabber_cron_user_next');
 
   $queue = DrupalQueue::get('eve_api_jabber_cron_role_sync');

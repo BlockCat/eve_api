@@ -55,6 +55,7 @@ function eve_api_schema() {
     'not null' => FALSE,
     'sortable' => TRUE,
     'views' => TRUE,
+    'default' => '1970-01-01 00:00:00',
   );
 
   $numeric = array(
@@ -1093,6 +1094,15 @@ function eve_api_install() {
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
   $queue->createQueue();
 
+  $queue = DrupalQueue::get('eve_api_cron_import_wallet_journal');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_contracts');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_mail');
+  $queue->createQueue();
+
   $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
   $queue->createQueue();
 
@@ -1142,14 +1152,13 @@ function eve_api_uninstall() {
   variable_del('eve_api_required_standing');
   variable_del('eve_api_allianceID');
   variable_del('eve_api_corporationID');
-  variable_del('eve_api_cron_api_alliance_fetch_time');
   variable_del('eve_api_cron_api_alliance_fetch_next');
-  variable_del('eve_api_cron_api_alliance_sync_time');
   variable_del('eve_api_cron_api_alliance_sync_next');
-  variable_del('eve_api_cron_api_mask_time');
   variable_del('eve_api_cron_api_mask_next');
-  variable_del('eve_api_cron_api_users_time');
   variable_del('eve_api_cron_api_users_next');
+  variable_del('eve_api_cron_import_wallet_journal_next');
+  variable_del('eve_api_cron_import_contracts_next');
+  variable_del('eve_api_cron_import_mail_next');
   variable_del('eve_api_cron_error_count_limit');
   variable_del('eve_api_cron_error_time_limit');
   variable_del('eve_api_cron_error_count');
@@ -1168,6 +1177,15 @@ function eve_api_uninstall() {
   $queue->deleteQueue();
 
   $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_wallet_journal');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_contracts');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_mail');
   $queue->deleteQueue();
 
   $queue = DrupalQueue::get('eve_api_cron_import_character_sheet');
@@ -1230,4 +1248,58 @@ function eve_api_requirements($phase) {
   }
 
   return $requirements;
+}
+
+/**
+ * Implements hook_update_N().
+ */
+function eve_api_update_7200(&$sandbox) {
+  variable_del('eve_api_cron_api_alliance_fetch_time');
+  variable_del('eve_api_cron_api_alliance_sync_time');
+  variable_del('eve_api_cron_api_mask_time');
+  variable_del('eve_api_cron_api_users_time');
+  variable_del('eve_api_teamspeak_cron_role_time');
+  variable_del('eve_api_teamspeak_cron_user_time');
+  variable_del('eve_api_jabber_cron_role_time');
+  variable_del('eve_api_jabber_cron_user_time');
+
+  $queue = DrupalQueue::get('eve_api_cron_import_contracts');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_import_mail');
+  $queue->createQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
+  $queue->createQueue();
+
+  db_drop_unique_key('eve_api_keys', 'apiID');
+  db_add_unique_key('eve_api_keys', 'keyID_vCode', array('keyID', 'vCode'));
+
+  db_drop_unique_key('eve_api_characters', 'characterID');
+
+  db_drop_unique_key('eve_api_character_sheet', 'characterID');
+
+  db_add_index('eve_api_character_sheet_certificates', 'certificateID', array('certificateID'));
+  db_add_primary_key('eve_api_character_sheet_certificates', array('characterID', 'certificateID'));
+
+  db_add_primary_key('eve_api_character_sheet_titles', array('characterID', 'titleID'));
+
+  db_add_primary_key('eve_api_character_sheet_skills', array('characterID', 'typeID'));
+
+
+
+  $date = array(
+    'type' => 'datetime',
+    'mysql_type' => 'DATETIME',
+    'pgsql_type' => 'timestamp without time zone',
+    'sqlite_type' => 'VARCHAR',
+    'sqlsrv_type' => 'smalldatetime',
+    'not null' => FALSE,
+    'sortable' => TRUE,
+    'views' => TRUE,
+    'default' => '1970-01-01 00:00:00',
+  );
+
+
+
 }

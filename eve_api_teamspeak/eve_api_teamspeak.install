@@ -70,8 +70,6 @@ function eve_api_teamspeak_uninstall() {
   variable_del('eve_api_teamspeak_user_kick_enable');
   variable_del('eve_api_teamspeak_user_ban_enable');
   variable_del('eve_api_teamspeak_user_time');
-  variable_del('eve_api_teamspeak_cron_role_time');
-  variable_del('eve_api_teamspeak_cron_user_time');
   variable_del('eve_api_teamspeak_cron_role_next');
   variable_del('eve_api_teamspeak_cron_user_next');
 

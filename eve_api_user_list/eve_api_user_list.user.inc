@@ -16,14 +16,29 @@ function eve_api_user_list_user_page($id = NULL) {
     $output = eve_api_user_list_user_general_page($id, $type);
   }
   else {
-    $result = db_query('SELECT allianceName, allianceID, corporationName, corporationID, characterName, characterID
-      FROM {eve_api_characters}
-      WHERE corporationID = :corporationID OR allianceID = :allianceID OR characterID = :characterID
-      LIMIT 1', array(
-        ':corporationID' => (int) $id,
-        ':characterID' => (int) $id,
-        ':allianceID' => (int) $id,
-      ));
+    $id = trim(urldecode($id));
+
+    if (is_int($id)) {
+      $result = db_query('SELECT allianceName, allianceID, corporationName, corporationID, characterName, characterID
+        FROM {eve_api_characters}
+        WHERE corporationID = :corporationID OR allianceID = :allianceID OR characterID = :characterID
+        LIMIT 1', array(
+          ':corporationID' => (int) $id,
+          ':characterID' => (int) $id,
+          ':allianceID' => (int) $id,
+        ));
+    }
+    else {
+      $result = db_query('SELECT allianceName, allianceID, corporationName, corporationID, characterName, characterID
+        FROM {eve_api_characters}
+        WHERE corporationName = :corporationName OR allianceName = :allianceName OR characterName = :characterName
+        LIMIT 1', array(
+          ':corporationName' => (string) $id,
+          ':characterName' => (string) $id,
+          ':allianceName' => (string) $id,
+        ));
+    }
+
     $row = $result->fetchAssoc();
 
     if (empty($row)) {
@@ -36,27 +51,32 @@ function eve_api_user_list_user_page($id = NULL) {
       $is_director = eve_api_character_is_director($account->characterID, (int) $row['corporationID']);
       $is_good = user_access('moderate eve_api users') || user_access('administer eve_api settings');
 
-      switch ((int) $id) {
+      switch ($id) {
         case (int) $row['corporationID']:
           $type = 1;
           drupal_set_title(t('@name User List', array('@name' => $row['corporationName'])));
           if ($is_director || $is_good) {
-            $output = eve_api_user_list_user_private_page($id);
+            $output = eve_api_user_list_user_private_page($row['corporationID']);
           }
           else {
-            $output = eve_api_user_list_user_general_page($id, $type);
+            $output = eve_api_user_list_user_general_page($row['corporationID'], $type);
           }
           break;
 
         case (int) $row['allianceID']:
           $type = 2;
           drupal_set_title(t('@name User List', array('@name' => $row['allianceName'])));
-          $output = eve_api_user_list_user_general_page($id, $type);
+          $output = eve_api_user_list_user_general_page($row['allianceID'], $type);
           break;
 
         case (int) $row['characterID']:
           drupal_set_title($row['characterName']);
-          $output = eve_api_user_list_user_character_page($id, $is_director, $is_good);
+          $output = eve_api_user_list_user_character_page($row['characterID'], $is_director, $is_good);
+          break;
+
+        case (string) $row['characterName']:
+          drupal_set_title($row['characterName']);
+          $output = eve_api_user_list_user_character_page($row['characterID'], $is_director, $is_good);
           break;
 
         default:
@@ -290,6 +310,11 @@ function eve_api_user_list_user_character_page($character_id, $is_director, $is_
   $output = array();
 
   $character_data = eve_api_get_character_info($character_id);
+
+
+  if ($character_data == FALSE) {
+    drupal_goto('eve_api/user_list');
+  }
 
   $output['profile'] = array(
     '#theme_wrappers' => array('container'),

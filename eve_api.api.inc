@@ -112,13 +112,25 @@ function eve_api_get_xml($type, $query = array()) {
         'method' => 'POST',
         'data' => drupal_http_build_query($query),
         'timeout' => 45,
-        'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
+        'headers' => array(
+          'Content-Type' => 'application/x-www-form-urlencoded',
+          'Accept-Encoding' => 'gzip',
+        ),
       );
 
       $html = drupal_http_request($url, $options);
     }
     else {
-      $html = eve_api_curl_http_request($url, $query);
+      $options = array(
+        'method' => 'POST',
+        'data' => $query,
+        'headers' => array(
+          'Content-Type' => 'application/x-www-form-urlencoded',
+          'Accept-Encoding' => 'gzip',
+        ),
+      );
+
+      $html = eve_api_curl_http_request($url, $options);
     }
 
     if (!empty($html->error)) {
@@ -204,7 +216,7 @@ function eve_api_get_xml($type, $query = array()) {
  *     easy access the array keys are returned in lower case.
  *   - data: A string containing the response body that was received.
  */
-function eve_api_curl_http_request($url, array $query = array(), $method = 'POST') {
+function eve_api_curl_http_request($url, array $options = array()) {
   $result = new stdClass();
 
   // Parse the URL and make sure we can handle the schema.
@@ -225,10 +237,10 @@ function eve_api_curl_http_request($url, array $query = array(), $method = 'POST
   timer_start(__FUNCTION__);
 
   // Merge the default options.
-  $options = array(
-    'data' => $query,
+  $options = $options + array(
+    'data' => array(),
     'headers' => array(),
-    'method' => $method,
+    'method' => 'POST',
     'timeout' => 45,
     'http_proxy' => variable_get('http_proxy'),
     'https_proxy' => variable_get('https_proxy'),

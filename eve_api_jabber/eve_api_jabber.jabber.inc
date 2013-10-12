@@ -32,6 +32,7 @@ function eve_api_jabber_connect($check = FALSE) {
     'username' => variable_get('eve_api_jabber_username', 'Username'),
     'password' => variable_get('eve_api_jabber_password', 'Password'),
     'driver' => 'mysql',
+    'prefix' => '',
   );
 
   Database::addConnectionInfo('Jabber', 'default', $jabber_database);
@@ -250,15 +251,15 @@ function eve_api_jabber_url_send_query($url) {
   $has_curl = function_exists('curl_init');
   $open_basedir = ini_get('open_basedir');
 
-  if (!$has_curl || $open_basedir) {
-    $options = array(
-      'method' => 'GET',
-    );
+  $options = array(
+    'method' => 'GET',
+  );
 
+  if (!$has_curl || $open_basedir) {
     $html = drupal_http_request($url, $options);
   }
   else {
-    $html = eve_api_curl_http_request($url, array(), 'GET');
+    $html = eve_api_curl_http_request($url, $options);
   }
 
   if (!empty($html->error)) {
