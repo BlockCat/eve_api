@@ -1286,7 +1286,44 @@ function eve_api_update_7200(&$sandbox) {
 
   db_add_primary_key('eve_api_character_sheet_skills', array('characterID', 'typeID'));
 
+  db_drop_unique_key('eve_api_character_info', 'characterID');
 
+  db_add_index('eve_api_character_info_corporation_history', 'recordID', array('recordID'));
+  db_add_primary_key('eve_api_character_info_corporation_history', array('characterID', 'recordID'));
+
+  db_drop_unique_key('eve_api_skill_in_training', 'characterID');
+
+  db_drop_unique_key('eve_api_mail_messages', 'messageID');
+  db_drop_primary_key('eve_api_mail_messages');
+  db_add_index('eve_api_mail_messages', 'messageID', array('messageID'));
+  db_add_primary_key('eve_api_mail_messages', array('characterID', 'messageID'));
+
+  db_drop_unique_key('eve_api_contracts', 'contractID');
+  db_drop_primary_key('eve_api_contracts');
+  db_add_index('eve_api_contracts', 'contractID', array('contractID'));
+  db_add_primary_key('eve_api_contracts', array('characterID', 'contractID'));
+
+  db_add_primary_key('eve_api_wallet_journal', array('characterID', 'refID'));
+
+  db_drop_unique_key('eve_api_role_ceo_director', 'characterID');
+
+  db_drop_unique_key('eve_api_whitelist', 'characterID');
+
+  db_drop_unique_key('eve_api_skill_tree_groups', 'groupID');
+
+  db_drop_unique_key('eve_api_skill_tree', 'typeID');
+
+  db_drop_unique_key('eve_api_call_list_groups', 'groupID');
+
+  db_drop_index('eve_api_call_list', 'accessmask');
+  db_add_index('eve_api_call_list', 'accessmask', array('accessmask'));
+  db_add_primary_key('eve_api_call_list', array('accessmask', 'type'));
+
+  db_drop_unique_key('eve_api_contact_list', 'contactID');
+
+  db_drop_unique_key('eve_api_alliance_list_corporations', 'corporationID');
+
+  db_drop_unique_key('eve_api_alliance_list_tickers', 'allianceID');
 
   $date = array(
     'type' => 'datetime',
@@ -1297,9 +1334,57 @@ function eve_api_update_7200(&$sandbox) {
     'not null' => FALSE,
     'sortable' => TRUE,
     'views' => TRUE,
-    'default' => '1970-01-01 00:00:00',
   );
 
+  db_change_field('eve_api_keys', 'updated', 'updated', array(
+    'description' => 'When the API was last updated.',
+  ) + $date);
+  db_change_field('eve_api_keys', 'created', 'created', array(
+    'description' => 'When the API was created.',
+  ) + $date);
 
+  db_change_field('eve_api_character_info', 'nextTrainingEnds', 'nextTrainingEnds', array(
+    'description' => 'When the training ends.',
+  ) + $date);
+  db_change_field('eve_api_character_info', 'corporationDate', 'corporationDate', array(
+    'description' => 'When character joined the corporation.',
+  ) + $date);
+  db_change_field('eve_api_character_info', 'allianceDate', 'allianceDate', array(
+    'description' => 'When corporation joined the alliance.',
+  ) + $date);
 
+  db_change_field('eve_api_character_info_corporation_history', 'startDate', 'startDate', array(
+    'description' => 'Date the character joined the corporation.',
+  ) + $date);
+
+  db_change_field('eve_api_skill_in_training', 'currentTQTime', 'currentTQTime', array(
+    'description' => 'EVE Tranquility time.',
+  ) + $date);
+  db_change_field('eve_api_skill_in_training', 'trainingEndTime', 'trainingEndTime', array(
+    'description' => 'Time until training completes.',
+  ) + $date);
+  db_change_field('eve_api_skill_in_training', 'trainingStartTime', 'trainingStartTime', array(
+    'description' => 'Time when training started.',
+  ) + $date);
+
+  db_change_field('eve_api_mail_messages', 'sentDate', 'sentDate', array(
+    'description' => 'Date & time message sent.',
+  ) + $date);
+
+  db_change_field('eve_api_contracts', 'dateIssued', 'dateIssued', array(
+    'description' => '?reation date of the contract.',
+  ) + $date);
+  db_change_field('eve_api_contracts', 'dateExpired', 'dateExpired', array(
+    'description' => 'Expiration date of the contract.',
+  ) + $date);
+  db_change_field('eve_api_contracts', 'dateAccepted', 'dateAccepted', array(
+    'description' => 'Date of confirmation of contract.',
+  ) + $date);
+  db_change_field('eve_api_contracts', 'dateCompleted', 'dateCompleted', array(
+    'description' => 'Date contract was completed.',
+  ) + $date);
+
+  db_change_field('eve_api_wallet_journal', 'date', 'date', array(
+    'description' => 'Date & time of the transaction.',
+  ) + $date);
 }
