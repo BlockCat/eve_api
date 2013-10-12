@@ -1251,6 +1251,7 @@ function eve_api_update_7200(&$sandbox) {
   db_drop_unique_key('eve_api_character_sheet', 'characterID');
 
   db_drop_index('eve_api_character_sheet_certificates', 'certificateID');
+  db_drop_primary_key('eve_api_character_sheet_certificates');
   db_add_index('eve_api_character_sheet_certificates', 'certificateID', array('certificateID'));
   db_add_primary_key('eve_api_character_sheet_certificates', array('characterID', 'certificateID'));
 
