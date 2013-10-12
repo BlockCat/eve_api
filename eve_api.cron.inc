@@ -43,7 +43,7 @@ function eve_api_cronapi($op, $job = NULL) {
 
     $items['eve_api_cron_import_mail'] = array(
       'description' => 'Import users daily mail.',
-      'rule' => '34 3 * * *',
+      'rule' => '34 * * * *',
     );
 
     return $items;
@@ -249,7 +249,7 @@ function eve_api_cron() {
       variable_set('eve_api_cron_import_contracts_next', time() + (1439 * 60));
     }
 
-    if (time() >= variable_get('eve_api_cron_import_mail_next', 0) && date('G') == 3 && date('i') >= 34) {
+    if (time() >= variable_get('eve_api_cron_import_mail_next', 0) && date('i') >= 34) {
       $queue = DrupalQueue::get('eve_api_cron_import_mail');
       $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorID != 403');
 
@@ -269,7 +269,7 @@ function eve_api_cron() {
         }
       }
 
-      variable_set('eve_api_cron_import_mail_next', time() + (1439 * 60));
+      variable_set('eve_api_cron_import_mail_next', time() + (59 * 60));
     }
   }
 }
