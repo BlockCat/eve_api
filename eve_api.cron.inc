@@ -31,19 +31,9 @@ function eve_api_cronapi($op, $job = NULL) {
       'rule' => '18 * * * *',
     );
 
-    $items['eve_api_cron_import_wallet_journal'] = array(
+    $items['eve_api_cron_api_user_wallet_journal'] = array(
       'description' => 'Import users daily wallet journal.',
-      'rule' => '34 1 * * *',
-    );
-
-    $items['eve_api_cron_import_contracts'] = array(
-      'description' => 'Import users daily contracts.',
-      'rule' => '34 2 * * *',
-    );
-
-    $items['eve_api_cron_import_mail'] = array(
-      'description' => 'Import users daily mail.',
-      'rule' => '34 * * * *',
+      'rule' => '37 4 * * *',
     );
 
     return $items;
@@ -85,69 +75,23 @@ function eve_api_cronapi($op, $job = NULL) {
         }
         break;
 
-      case 'eve_api_cron_import_wallet_journal':
+      case 'eve_api_cron_api_user_wallet_journal':
         if (variable_get('eve_api_enable', FALSE)) {
-          $queue = DrupalQueue::get('eve_api_cron_import_wallet_journal');
+          $queue = DrupalQueue::get('eve_api_cron_api_user_wallet_journal');
           $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorID != 403');
 
           if ($result->rowCount()) {
             foreach ($result->fetchAll() as $item) {
-              if (($row->accessMask & 2097152) != 2097152) {
+              if (($item->accessMask & 2097152) != 2097152) {
                 continue;
               }
 
               $queue->createItem(array(
                 'query' => array(
-                  'keyID' => $row->keyID,
-                  'vCode' => $row->vCode,
+                  'keyID' => $item->keyID,
+                  'vCode' => $item->vCode,
                 ),
-                'characterID' => $row->characterID,
-              ));
-            }
-          }
-        }
-        break;
-
-      case 'eve_api_cron_import_contracts':
-        if (variable_get('eve_api_enable', FALSE)) {
-          $queue = DrupalQueue::get('eve_api_cron_import_contracts');
-          $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorID != 403');
-
-          if ($result->rowCount()) {
-            foreach ($result->fetchAll() as $item) {
-              if (($row->accessMask & 67108864) != 67108864) {
-                continue;
-              }
-
-              $queue->createItem(array(
-                'query' => array(
-                  'keyID' => $row->keyID,
-                  'vCode' => $row->vCode,
-                ),
-                'characterID' => $row->characterID,
-              ));
-            }
-          }
-        }
-        break;
-
-      case 'eve_api_cron_import_mail':
-        if (variable_get('eve_api_enable', FALSE)) {
-          $queue = DrupalQueue::get('eve_api_cron_import_mail');
-          $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorID != 403');
-
-          if ($result->rowCount()) {
-            foreach ($result->fetchAll() as $item) {
-              if (($row->accessMask & 2048) != 2048 || ($row->accessMask & 512) != 512) {
-                continue;
-              }
-
-              $queue->createItem(array(
-                'query' => array(
-                  'keyID' => $row->keyID,
-                  'vCode' => $row->vCode,
-                ),
-                'characterID' => $row->characterID,
+                'characterID' => $item->characterID,
               ));
             }
           }
@@ -203,73 +147,27 @@ function eve_api_cron() {
       variable_set('eve_api_cron_api_users_next', time() + (59 * 60));
     }
 
-    if (time() >= variable_get('eve_api_cron_import_wallet_journal_next', 0) && date('G') == 1 && date('i') >= 34) {
-      $queue = DrupalQueue::get('eve_api_cron_import_wallet_journal');
+    if (time() >= variable_get('eve_api_cron_api_user_wallet_journal_next', 0) && date('G') == 4 && date('i') >= 37) {
+      $queue = DrupalQueue::get('eve_api_cron_api_user_wallet_journal');
       $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorID != 403');
 
       if ($result->rowCount()) {
         foreach ($result->fetchAll() as $item) {
-          if (($row->accessMask & 2097152) != 2097152) {
+          if (($item->accessMask & 2097152) != 2097152) {
             continue;
           }
 
           $queue->createItem(array(
             'query' => array(
-              'keyID' => $row->keyID,
-              'vCode' => $row->vCode,
+              'keyID' => $item->keyID,
+              'vCode' => $item->vCode,
             ),
-            'characterID' => $row->characterID,
+            'characterID' => $item->characterID,
           ));
         }
       }
 
-      variable_set('eve_api_cron_import_wallet_journal_next', time() + (1439 * 60));
-    }
-
-    if (time() >= variable_get('eve_api_cron_import_contracts_next', 0) && date('G') == 2 && date('i') >= 34) {
-      $queue = DrupalQueue::get('eve_api_cron_import_contracts');
-      $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorID != 403');
-
-      if ($result->rowCount()) {
-        foreach ($result->fetchAll() as $item) {
-          if (($row->accessMask & 67108864) != 67108864) {
-            continue;
-          }
-
-          $queue->createItem(array(
-            'query' => array(
-              'keyID' => $row->keyID,
-              'vCode' => $row->vCode,
-            ),
-            'characterID' => $row->characterID,
-          ));
-        }
-      }
-
-      variable_set('eve_api_cron_import_contracts_next', time() + (1439 * 60));
-    }
-
-    if (time() >= variable_get('eve_api_cron_import_mail_next', 0) && date('i') >= 34) {
-      $queue = DrupalQueue::get('eve_api_cron_import_mail');
-      $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorID != 403');
-
-      if ($result->rowCount()) {
-        foreach ($result->fetchAll() as $item) {
-          if (($row->accessMask & 2048) != 2048 || ($row->accessMask & 512) != 512) {
-            continue;
-          }
-
-          $queue->createItem(array(
-            'query' => array(
-              'keyID' => $row->keyID,
-              'vCode' => $row->vCode,
-            ),
-            'characterID' => $row->characterID,
-          ));
-        }
-      }
-
-      variable_set('eve_api_cron_import_mail_next', time() + (59 * 60));
+      variable_set('eve_api_cron_api_user_wallet_journal_next', time() + (1439 * 60));
     }
   }
 }
@@ -299,28 +197,8 @@ function eve_api_cron_queue_info() {
     'worker callback' => 'eve_api_cron_api_skill_tree',
     'time' => 60,
   );
-  $queue['eve_api_cron_import_character_sheet'] = array(
-    'worker callback' => 'eve_api_cron_import_character_sheet',
-    'time' => 60,
-  );
-  $queue['eve_api_cron_import_character_info'] = array(
-    'worker callback' => 'eve_api_cron_import_character_info',
-    'time' => 60,
-  );
-  $queue['eve_api_cron_import_skill_in_training'] = array(
-    'worker callback' => 'eve_api_cron_import_skill_in_training',
-    'time' => 60,
-  );
-  $queue['eve_api_cron_import_wallet_journal'] = array(
-    'worker callback' => 'eve_api_cron_import_wallet_journal',
-    'time' => 60,
-  );
-  $queue['eve_api_cron_import_contracts'] = array(
-    'worker callback' => 'eve_api_cron_import_contracts',
-    'time' => 60,
-  );
-  $queue['eve_api_cron_import_mail'] = array(
-    'worker callback' => 'eve_api_cron_import_mail',
+  $queue['eve_api_cron_api_user_wallet_journal'] = array(
+    'worker callback' => 'eve_api_cron_api_user_wallet_journal',
     'time' => 60,
   );
   return $queue;
@@ -1076,7 +954,7 @@ function eve_api_cron_import_skill_in_training($item) {
  * @return bool
  *   TRUE or FALSE.
  */
-function eve_api_cron_import_wallet_journal($item) {
+function eve_api_cron_api_user_wallet_journal($item) {
   $character_id = (int) $item['characterID'];
   $query = (array) $item['query'];
 
@@ -1567,6 +1445,14 @@ function eve_api_cron_update_key($account, $key_id, $v_code, $api_id) {
         'characterID' => (int) $character['characterID'],
         'errorID' => 0,
       ))->execute();
+    }
+
+    if (($characters['accessMask'] & 67108864) == 67108864) {
+      eve_api_cron_import_contracts($item);
+    }
+
+    if (($characters['accessMask'] & 2048) == 2048 && ($characters['accessMask'] & 512) == 512) {
+      eve_api_cron_import_mail($item);
     }
   }
 
