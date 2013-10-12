@@ -1251,7 +1251,7 @@ function eve_api_requirements($phase) {
 }
 
 /**
- * Implements hook_update_N().
+ * Update from RC3 to RC4.
  */
 function eve_api_update_7200(&$sandbox) {
   variable_del('eve_api_cron_api_alliance_fetch_time');
