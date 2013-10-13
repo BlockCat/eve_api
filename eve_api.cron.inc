@@ -1206,7 +1206,7 @@ function eve_api_cron_import_mail($item) {
       return TRUE;
     }
 
-    $message_ids = array_chunk($message_ids, 25, TRUE);
+    $message_ids = array_chunk($message_ids, 5, TRUE);
 
     foreach ($message_ids as $message_id) {
       $body_query = array(

@@ -16,9 +16,9 @@ function eve_api_user_list_user_page($id = NULL) {
     $output = eve_api_user_list_user_general_page($id, $type);
   }
   else {
-    $id = trim(urldecode($id));
+    $temp_id = (int) $id;
 
-    if (is_int($id)) {
+    if ("$id" == "$temp_id") {
       $result = db_query('SELECT allianceName, allianceID, corporationName, corporationID, characterName, characterID
         FROM {eve_api_characters}
         WHERE corporationID = :corporationID OR allianceID = :allianceID OR characterID = :characterID
@@ -29,6 +29,8 @@ function eve_api_user_list_user_page($id = NULL) {
         ));
     }
     else {
+      $id = urldecode($id);
+
       $result = db_query('SELECT allianceName, allianceID, corporationName, corporationID, characterName, characterID
         FROM {eve_api_characters}
         WHERE corporationName = :corporationName OR allianceName = :allianceName OR characterName = :characterName
@@ -52,6 +54,7 @@ function eve_api_user_list_user_page($id = NULL) {
       $is_good = user_access('moderate eve_api users') || user_access('administer eve_api settings');
 
       switch ($id) {
+        case (string) $row['corporationName']:
         case (int) $row['corporationID']:
           $type = 1;
           drupal_set_title(t('@name User List', array('@name' => $row['corporationName'])));
@@ -63,18 +66,15 @@ function eve_api_user_list_user_page($id = NULL) {
           }
           break;
 
+        case (string) $row['allianceName']:
         case (int) $row['allianceID']:
           $type = 2;
           drupal_set_title(t('@name User List', array('@name' => $row['allianceName'])));
           $output = eve_api_user_list_user_general_page($row['allianceID'], $type);
           break;
 
-        case (int) $row['characterID']:
-          drupal_set_title($row['characterName']);
-          $output = eve_api_user_list_user_character_page($row['characterID'], $is_director, $is_good);
-          break;
-
         case (string) $row['characterName']:
+        case (int) $row['characterID']:
           drupal_set_title($row['characterName']);
           $output = eve_api_user_list_user_character_page($row['characterID'], $is_director, $is_good);
           break;

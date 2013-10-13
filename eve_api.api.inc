@@ -172,7 +172,7 @@ function eve_api_get_xml($type, $query = array()) {
     $error = $xml->errorCode;
   }
 
-  if ($error != 403) {
+  if ($error != 403 && $type != 'MailBodies') {
     variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
   }
 
