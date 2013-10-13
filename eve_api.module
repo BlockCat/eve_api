@@ -80,6 +80,7 @@ function eve_api_menu() {
     'title' => 'EVE API',
     'description' => 'Configure and setup EVE API.',
     'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('access eve_api administration pages'),
     'weight' => 0,
     'file' => 'system.admin.inc',
     'file path' => drupal_get_path('module', 'system'),
@@ -263,6 +264,11 @@ function eve_api_permission() {
   $permissions['administer eve_api settings'] = array(
     'title' => t('Admin EVE API'),
     'description' => t('Allow user to view and edit EVE API Settings.'),
+  );
+
+  $permissions['access eve_api administration pages'] = array(
+    'title' => t('Access EVE API Admin Pages'),
+    'description' => t('Allow user to view the EVE API Admin Pages.'),
   );
 
   $permissions['moderate eve_api users'] = array(
