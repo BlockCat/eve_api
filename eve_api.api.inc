@@ -164,6 +164,7 @@ function eve_api_get_xml($type, $query = array()) {
 
   if (isset($xml->cachedUntil)) {
     cache_set($cache_name, $html, 'cache', strtotime($xml->cachedUntil));
+    variable_set('eve_api_cron_error_count', 0);
     return $xml;
   }
 
