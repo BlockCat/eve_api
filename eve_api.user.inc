@@ -395,7 +395,10 @@ function eve_api_user_list_api_form_submit($form, &$form_state) {
   ));
 
   module_invoke_all('eve_api_user_delete', $account);
-  module_invoke_all('eve_api_user_update', $account);
+  module_invoke_all('eve_api_user_update', array(
+    'account' => $account,
+    'character' => $character,
+  ));
 
   drupal_set_message(t('API keys successfully deleted!'));
 }
@@ -612,7 +615,9 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
     'runs' => 1,
   ));
 
-  module_invoke_all('eve_api_user_update', $account);
+  module_invoke_all('eve_api_user_update', array(
+    'account' => $account,
+  ));
 
   if ($characters == TRUE) {
     drupal_set_message(t('There was an error updateing the API Key!'), 'error');

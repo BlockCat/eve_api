@@ -795,7 +795,12 @@ function eve_api_user_profile_form_submit($form, &$form_state) {
     'runs' => 1,
   ));
 
-  module_invoke_all('eve_api_user_update', $account, $form_state['characterName']);
+  module_invoke_all('eve_api_user_update', array(
+    'account' => $account,
+    'character' => $character_data,
+    'old_character' => $form_state['characterName'],
+    'character_is_blue' => $character_is_blue,
+  ));
 }
 
 /**

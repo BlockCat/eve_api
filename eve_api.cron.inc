@@ -31,7 +31,7 @@ function eve_api_cronapi($op, $job = NULL) {
       'rule' => '18 * * * *',
     );
 
-    $items['eve_api_cron_api_user_wallet_journal'] = array(
+    $items['eve_api_cron_api_user_wallet_journal_job'] = array(
       'description' => 'Import users daily wallet journal.',
       'rule' => '37 4 * * *',
     );
@@ -75,7 +75,7 @@ function eve_api_cronapi($op, $job = NULL) {
         }
         break;
 
-      case 'eve_api_cron_api_user_wallet_journal':
+      case 'eve_api_cron_api_user_wallet_journal_job':
         if (variable_get('eve_api_enable', FALSE)) {
           $queue = DrupalQueue::get('eve_api_cron_api_user_wallet_journal');
           $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorID != 403');
@@ -249,8 +249,9 @@ function eve_api_cron_api_user_sync($item) {
   }
 
   $character_data = eve_api_get_basic_character_info($account->name);
+  $character_is_blue = eve_api_verify_blue($character_data);
 
-  if (!eve_api_verify_blue($character_data) || !$character_found) {
+  if (!$character_is_blue || !$character_found) {
     $result = db_query('SELECT corporationID, corporationName FROM {eve_api_alliance_list_corporations}');
 
     if ($result->rowCount()) {
@@ -351,7 +352,11 @@ function eve_api_cron_api_user_sync($item) {
     }
   }
 
-  module_invoke_all('eve_api_user_update', $account);
+  module_invoke_all('eve_api_user_update', array(
+    'account' => $account,
+    'character' => $character_data,
+    'character_is_blue' => $character_is_blue,
+  ));
 
   return TRUE;
 }

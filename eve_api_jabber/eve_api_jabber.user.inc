@@ -208,7 +208,6 @@ function eve_api_jabber_user_form_submit($form, &$form_state) {
     $queue->createItem(array(
       'uid' => $account->uid,
       'name' => $account->name,
-      'status' => $account->status,
       'runs' => 1,
     ));
   }

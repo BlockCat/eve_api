@@ -97,18 +97,20 @@ function eve_api_jabber_user_delete($account) {
 /**
  * Implements hook_eve_api_user_update().
  */
-function eve_api_jabber_eve_api_user_update($account, $old_name = NULL) {
+function eve_api_jabber_eve_api_user_update($data) {
+  $account = $data['account'];
+
   if (variable_get('eve_api_jabber_enable', FALSE)) {
-    if (isset($old_name)) {
+    if (isset($data['old_character'])) {
       try {
         eve_api_jabber_connect();
 
         $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-          ':username' => (string) eve_api_jabber_format_name($old_name),
+          ':username' => (string) eve_api_jabber_format_name($data['old_character']),
         ));
 
         if ($result->rowCount()) {
-          eve_api_jabber_url_query('delete', $old_name);
+          eve_api_jabber_url_query('delete', $data['old_character']);
         }
 
         eve_api_jabber_disconnect();
@@ -122,7 +124,6 @@ function eve_api_jabber_eve_api_user_update($account, $old_name = NULL) {
     $queue->createItem(array(
       'uid' => $account->uid,
       'name' => $account->name,
-      'status' => $account->status,
       'runs' => 1,
     ));
   }

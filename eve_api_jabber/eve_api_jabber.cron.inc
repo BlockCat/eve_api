@@ -39,14 +39,13 @@ function eve_api_jabber_cronapi($op, $job = NULL) {
       case 'eve_api_jabber_cron_user_sync_job':
         if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_jabber_enable', FALSE)) {
           $queue = DrupalQueue::get('eve_api_jabber_cron_user_sync');
-          $result = db_query('SELECT uid, name, status FROM {users} WHERE characterID != 0');
+          $result = db_query('SELECT uid, name FROM {users} WHERE characterID != 0');
 
           if ($result->rowCount()) {
             foreach ($result->fetchAll() as $item) {
               $queue->createItem(array(
                 'uid' => $item->uid,
                 'name' => $item->name,
-                'status' => $item->status,
                 'runs' => 1,
               ));
             }
@@ -79,14 +78,13 @@ function eve_api_jabber_cron() {
   if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_jabber_enable', FALSE)) {
     if (time() >= variable_get('eve_api_jabber_cron_user_next', 0)) {
       $queue = DrupalQueue::get('eve_api_jabber_cron_user_sync');
-      $result = db_query('SELECT uid, name, status FROM {users} WHERE characterID != 0');
+      $result = db_query('SELECT uid, name FROM {users} WHERE characterID != 0');
 
       if ($result->rowCount()) {
         foreach ($result->fetchAll() as $item) {
           $queue->createItem(array(
             'uid' => $item->uid,
             'name' => $item->name,
-            'status' => $item->status,
             'runs' => 1,
           ));
         }

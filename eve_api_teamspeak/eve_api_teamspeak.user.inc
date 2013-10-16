@@ -118,7 +118,7 @@ function eve_api_teamspeak_user_form_submit($form, &$form_state) {
     $queue->createItem(array(
       'uid' => $uid,
       'teamspeakDBID' => $teamspeak_dbid,
-      'status' => 1,
+      'teamspeakUID' => $teamspeak_uid,
       'runs' => 1,
     ));
 

@@ -51,14 +51,14 @@ function eve_api_teamspeak_cronapi($op, $job = NULL) {
       case 'eve_api_teamspeak_cron_user_sync_job':
         if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
           $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_sync');
-          $result = db_query('SELECT uid, teamspeakDBID, status FROM {users} WHERE characterID != 0 AND teamspeakUID != 0');
+          $result = db_query('SELECT uid, teamspeakDBID, teamspeakUID FROM {users} WHERE characterID != 0 AND teamspeakDBID != 0');
 
           if ($result->rowCount()) {
             foreach ($result->fetchAll() as $item) {
               $queue->createItem(array(
                 'uid' => $item->uid,
                 'teamspeakDBID' => $item->teamspeakDBID,
-                'status' => $item->status,
+                'teamspeakUID' => $item->teamspeakUID,
                 'runs' => 1,
               ));
             }
@@ -89,14 +89,14 @@ function eve_api_teamspeak_cron() {
   if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
     if (time() >= variable_get('eve_api_teamspeak_cron_user_next', 0)) {
       $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_sync');
-      $result = db_query('SELECT uid, teamspeakDBID, status FROM {users} WHERE characterID != 0 AND teamspeakUID != 0');
+      $result = db_query('SELECT uid, teamspeakDBID, teamspeakUID FROM {users} WHERE characterID != 0 AND teamspeakDBID != 0');
 
       if ($result->rowCount()) {
         foreach ($result->fetchAll() as $item) {
           $queue->createItem(array(
             'uid' => $item->uid,
             'teamspeakDBID' => $item->teamspeakDBID,
-            'status' => $item->status,
+            'teamspeakUID' => $item->teamspeakUID,
             'runs' => 1,
           ));
         }
@@ -172,6 +172,7 @@ function eve_api_teamspeak_cron_user_sync($item) {
 
     $uid = (int) $item['uid'];
     $teamspeak_dbid = (int) $item['teamspeakDBID'];
+    $teamspeak_uid = (int) $item['teamspeakUID'];
     $ts3 = eve_api_teamspeak_connect();
 
     $result = db_query('SELECT r.rid, r.name FROM {users_roles} ur INNER JOIN {role} r ON (r.rid = ur.rid) WHERE ur.uid = :uid', array(
@@ -241,13 +242,47 @@ function eve_api_teamspeak_cron_user_check($item) {
       }
 
       $teamspeak_uid = (string) $teamspeak_user->client_unique_identifier;
-      $teamspeaknickname = (string) $teamspeak_user->client_nickname;
+      $teamspeak_nickname = (string) $teamspeak_user->client_nickname;
+      $teamspeak_dbid = (int) $teamspeak_user->client_database_id;
 
       $result = db_query('SELECT c.characterName FROM {eve_api_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.teamspeakUID = :teamspeakUID', array(
         ':teamspeakUID' => $teamspeak_uid,
       ));
 
       if (!$result->rowCount()) {
+        $roles = user_roles();
+        $valid_roles = $corp_info = array();
+
+        $result = db_query('SELECT corporationName, corporationTicker FROM {eve_api_alliance_list_corporations}');
+
+        if ($result->rowCount()) {
+          foreach ($result->fetchAll() as $row) {
+            $corp_info[$row->corporationName] = $row->corporationTicker;
+          }
+        }
+
+        foreach ($roles as $rid => $rname) {
+          if ($rid == 1 || $rid == 2) {
+            continue;
+          }
+
+          foreach ($corp_info as $key => $value) {
+            if ($key == $rname) {
+              $rname = $value;
+            }
+          }
+
+          $valid_roles[$rname] = $rid;
+        }
+
+        $roles = eve_api_teamspeak_user_get_groups($ts3, $teamspeak_dbid);
+
+        foreach ($roles as $rid => $rname) {
+          if ((string) $rname['name'] != 'Guest' && isset($valid_roles[(string) $rname['name']])) {
+            eve_api_teamspeak_user_remove_group($ts3, $rid, $teamspeak_dbid);
+          }
+        }
+
         if (variable_get('eve_api_teamspeak_reg_message_enable', FALSE)) {
           $teamspeak_user->message('[color=red]' . t('Your TeamSpeak ID is not registered on our server.') . '[/color]');
 
@@ -292,9 +327,9 @@ function eve_api_teamspeak_cron_user_check($item) {
 
       $row = $result->fetchAssoc();
 
-      $expected_teamspeaknickname = eve_api_teamspeak_format_name($row['characterName']);
+      $expected_teamspeak_nickname = eve_api_teamspeak_format_name($row['characterName']);
 
-      if ($teamspeaknickname != $expected_teamspeaknickname) {
+      if ($teamspeak_nickname != $expected_teamspeak_nickname) {
         if (variable_get('eve_api_teamspeak_user_message_enable', FALSE)) {
           $teamspeak_user->message('[color=red]' . t('Your nickname is incorrect.') . '[/color]');
 
@@ -303,7 +338,7 @@ function eve_api_teamspeak_cron_user_check($item) {
             $teamspeak_user->message('[color=red]' . t('you will be removed from the server.'));
           }
 
-          $teamspeak_user->message('[color=red]' . t('Nickname expected: !nickname', array('!nickname' => $expected_teamspeaknickname)) . '[/color]');
+          $teamspeak_user->message('[color=red]' . t('Nickname expected: !nickname', array('!nickname' => $expected_teamspeak_nickname)) . '[/color]');
         }
 
         if (variable_get('eve_api_teamspeak_user_poke_enable', FALSE)) {
@@ -316,7 +351,7 @@ function eve_api_teamspeak_cron_user_check($item) {
           $message .= '!';
 
           $teamspeak_user->poke($message);
-          $teamspeak_user->poke(t('Nickname expected: !nickname', array('!nickname' => $expected_teamspeaknickname)));
+          $teamspeak_user->poke(t('Nickname expected: !nickname', array('!nickname' => $expected_teamspeak_nickname)));
         }
 
         if (variable_get('eve_api_teamspeak_user_kick_enable', FALSE) && variable_get('eve_api_teamspeak_user_ban_enable', FALSE) == FALSE) {

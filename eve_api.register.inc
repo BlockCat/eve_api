@@ -354,6 +354,7 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
   $character_name = (string) $character['characterName'];
   $character_id = (int) $character['characterID'];
   $corporation_name = (string) $character['corporationName'];
+  $character_is_blue = FALSE;
 
   if ($corporation_role = user_role_load_by_name($corporation_name)) {
     user_multiple_role_edit(array($uid), 'add_role', (int) $corporation_role->rid);
@@ -362,9 +363,17 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
     user_multiple_role_edit(array($uid), 'add_role', (int) $alliance_role->rid);
   }
   else {
+    $character_is_blue = TRUE;
+
     $blue_role = user_role_load(variable_get('eve_api_blue_role', 2));
     user_multiple_role_edit(array($uid), 'add_role', (int) $blue_role->rid);
   }
+
+  module_invoke_all('eve_api_user_update', array(
+    'account' => $account,
+    'character' => $character,
+    'character_is_blue' => $character_is_blue,
+  ));
 
   db_update('users')->fields(array(
       'characterID' => $character_id,
