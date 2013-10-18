@@ -192,6 +192,9 @@ function eve_api_admin_settings_form_submit($form, &$form_state) {
     $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
     $queue->createItem(1);
 
+    $queue = DrupalQueue::get('eve_api_cron_api_error_list');
+    $queue->createItem(1);
+
     drupal_set_message(t('The Alliance API Info is set to be retrieved on the next cron job, it can take up to a minute for the cron task to be triggered.'));
   }
   elseif ((bool) $form_state['values']['enable']) {

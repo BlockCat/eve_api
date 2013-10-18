@@ -595,7 +595,7 @@ function eve_api_user_list_user_character_page($character_id, $is_director, $is_
       'characterName' => l($row['characterName'], 'eve_api/user_list/' . $row['characterID']),
       'corporation' => l($row['corporationName'], 'eve_api/user_list/' . $row['corporationID']) . check_plain(' [' . $row['corporationTicker'] . ']'),
       'alliance' => ($row['allianceID'] == 0) ? l(t('None'), 'eve_api/user_list/0') : l($row['allianceName'], 'eve_api/user_list/' . $row['allianceID']) . check_plain(' [' . $row['allianceTicker'] . ']'),
-      'status' => ($row['deleted'] == 1) ? t('Deleted') : eve_api_api_error_msg($row['errorID']),
+      'status' => ($row['deleted'] == 1) ? t('Deleted') : eve_api_api_error_msg($row['errorCode'], $row['errorText']),
     );
   }
 
@@ -619,7 +619,7 @@ function eve_api_user_list_user_character_page($character_id, $is_director, $is_
     $options[$row['apiID']] = array(
       'keyID' => check_plain($row['keyID']),
       'vCode' => check_plain($row['vCode']),
-      'status' => eve_api_api_error_msg($row['errorID']),
+      'status' => eve_api_api_error_msg($row['errorCode'], $row['errorText']),
     );
   }
 

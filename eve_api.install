@@ -101,10 +101,15 @@ function eve_api_schema() {
         'length' => 64,
         'not null' => TRUE,
       ) + $varchar,
-      'errorID' => array(
+      'errorCode' => array(
         'description' => 'Error code to identify status of last API pull.',
         'not null' => TRUE,
       ) + $int,
+      'errorText' => array(
+        'description' => 'Error message returned with errorCode from last API pull.',
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
       'updated' => array(
         'description' => 'When the API was last updated.',
         'not null' => TRUE,
@@ -117,7 +122,7 @@ function eve_api_schema() {
     'indexes' => array(
       'uid' => array('uid'),
       'keyID' => array('keyID'),
-      'errorID' => array('errorID'),
+      'errorCode' => array('errorCode'),
     ),
     'unique keys' => array('keyID_vCode' => array('keyID', 'vCode')),
     'primary key' => array('apiID'),
@@ -167,10 +172,15 @@ function eve_api_schema() {
         'description' => 'API key access mask retrieved from last API pull.',
         'not null' => TRUE,
       ) + $big_int,
-      'errorID' => array(
+      'errorCode' => array(
         'description' => 'Error code to identify status of last API pull.',
         'not null' => TRUE,
       ) + $int,
+      'errorText' => array(
+        'description' => 'Error message returned with errorCode from last API pull.',
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
       'deleted' => array(
         'description' => 'Indicates if character exists to an API key any longer.',
         'length' => 2,
@@ -180,7 +190,7 @@ function eve_api_schema() {
     'indexes' => array(
       'uid' => array('uid'),
       'apiID' => array('apiID'),
-      'errorID' => array('errorID'),
+      'errorCode' => array('errorCode'),
       'deleted' => array('deleted'),
     ),
     'primary key' => array('characterID'),
@@ -268,10 +278,15 @@ function eve_api_schema() {
         'length' => 2,
         'not null' => TRUE,
       ) + $tiny_int,
-      'errorID' => array(
+      'errorCode' => array(
         'description' => 'Error code to identify status of last API pull.',
         'not null' => TRUE,
       ) + $int,
+      'errorText' => array(
+        'description' => 'Error message returned with errorCode from last API pull.',
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
     ),
     'primary key' => array('characterID'),
   );
@@ -476,10 +491,15 @@ function eve_api_schema() {
         'precision' => 32,
         'scale' => 8,
       ) + $double,
-      'errorID' => array(
+      'errorCode' => array(
         'description' => 'Error code to identify status of last API pull.',
         'not null' => TRUE,
       ) + $int,
+      'errorText' => array(
+        'description' => 'Error message returned with errorCode from last API pull.',
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
     ),
     'primary key' => array('characterID'),
   );
@@ -543,10 +563,15 @@ function eve_api_schema() {
         'description' => 'Indicates if the character is training.',
         'not null' => TRUE,
       ) + $tiny_int,
-      'errorID' => array(
+      'errorCode' => array(
         'description' => 'Error code to identify status of last API pull.',
         'not null' => TRUE,
       ) + $int,
+      'errorText' => array(
+        'description' => 'Error message returned with errorCode from last API pull.',
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
     ),
     'indexes' => array(
       'trainingTypeID' => array('trainingTypeID'),
@@ -932,6 +957,22 @@ function eve_api_schema() {
     'primary key' => array('accessmask', 'type'),
   );
 
+  $schema['eve_api_error_list'] = array(
+    'description' => 'API data pulled from /api/ErrorList.xml.aspx.',
+    'fields' => array(
+      'errorCode' => array(
+        'description' => 'Error Code.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'errorText' => array(
+        'description' => 'Error Message.',
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('errorCode'),
+  );
+
   $schema['eve_api_contact_list'] = array(
     'description' => 'API data pulled from /corp/ContactList.xml.aspx.',
     'fields' => array(
@@ -1097,6 +1138,9 @@ function eve_api_install() {
   $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
   $queue->createQueue();
 
+  $queue = DrupalQueue::get('eve_api_cron_api_error_list');
+  $queue->createQueue();
+
   $queue = DrupalQueue::get('eve_api_cron_api_user_wallet_journal');
   $queue->createQueue();
 }
@@ -1153,6 +1197,9 @@ function eve_api_uninstall() {
   $queue->deleteQueue();
 
   $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
+  $queue->deleteQueue();
+
+  $queue = DrupalQueue::get('eve_api_cron_api_error_list');
   $queue->deleteQueue();
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_wallet_journal');
@@ -1367,4 +1414,90 @@ function eve_api_update_7200(&$sandbox) {
   db_change_field('eve_api_wallet_journal', 'date', 'date', array(
     'description' => 'Date & time of the transaction.',
   ) + $date);
+}
+
+/**
+ * Update from RC4 to RC5.
+ */
+function eve_api_update_7201(&$sandbox) {
+  db_create_table('eve_api_error_list', array(
+    'description' => 'API data pulled from /api/ErrorList.xml.aspx.',
+    'fields' => array(
+      'errorCode' => array(
+        'description' => 'Error Code.',
+        'not null' => TRUE,
+      ) + $big_int,
+      'errorText' => array(
+        'description' => 'Error Message.',
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('errorCode'),
+  ));
+
+  $int = array(
+    'type' => 'int',
+    'length' => 10,
+    'not null' => FALSE,
+    'default' => 0,
+  );
+
+  db_drop_index('eve_api_keys', 'errorID');
+  db_change_field('eve_api_keys', 'errorID', 'errorCode', array(
+      'description' => 'Error code to identify status of last API pull.',
+      'not null' => TRUE,
+    ) + $int,
+    array('indexes' => array('errorCode' => array('errorCode'))));
+  db_add_field('eve_api_keys', 'errorText', array(
+      'description' => 'Error message returned with errorCode from last API pull.',
+      'type' => 'text',
+      'not null' => FALSE,
+    ));
+
+  db_drop_index('eve_api_characters', 'errorID');
+  db_change_field('eve_api_characters', 'errorID', 'errorCode', array(
+      'description' => 'Error code to identify status of last API pull.',
+      'not null' => TRUE,
+    ) + $int,
+    array('indexes' => array('errorCode' => array('errorCode'))));
+  db_add_field('eve_api_characters', 'errorText', array(
+      'description' => 'Error message returned with errorCode from last API pull.',
+      'type' => 'text',
+      'not null' => FALSE,
+    ));
+
+  db_change_field('eve_api_character_sheet', 'errorID', 'errorCode', array(
+      'description' => 'Error code to identify status of last API pull.',
+      'not null' => TRUE,
+    ) + $int);
+  db_add_field('eve_api_character_sheet', 'errorText', array(
+      'description' => 'Error message returned with errorCode from last API pull.',
+      'type' => 'text',
+      'not null' => FALSE,
+    ));
+
+  db_change_field('eve_api_character_info', 'errorID', 'errorCode', array(
+      'description' => 'Error code to identify status of last API pull.',
+      'not null' => TRUE,
+    ) + $int);
+  db_add_field('eve_api_character_info', 'errorText', array(
+      'description' => 'Error message returned with errorCode from last API pull.',
+      'type' => 'text',
+      'not null' => FALSE,
+    ));
+
+  db_change_field('eve_api_skill_in_training', 'errorID', 'errorCode', array(
+      'description' => 'Error code to identify status of last API pull.',
+      'not null' => TRUE,
+    ) + $int);
+  db_add_field('eve_api_skill_in_training', 'errorText', array(
+      'description' => 'Error message returned with errorCode from last API pull.',
+      'type' => 'text',
+      'not null' => FALSE,
+    ));
+
+  $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
+  $queue->createQueue();
+  $queue->createItem(1);
 }

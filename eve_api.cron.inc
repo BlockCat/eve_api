@@ -78,7 +78,7 @@ function eve_api_cronapi($op, $job = NULL) {
       case 'eve_api_cron_api_user_wallet_journal_job':
         if (variable_get('eve_api_enable', FALSE)) {
           $queue = DrupalQueue::get('eve_api_cron_api_user_wallet_journal');
-          $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorID != 403');
+          $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorCode != 222');
 
           if ($result->rowCount()) {
             foreach ($result->fetchAll() as $item) {
@@ -149,7 +149,7 @@ function eve_api_cron() {
 
     if (time() >= variable_get('eve_api_cron_api_user_wallet_journal_next', 0) && date('G') == 4 && date('i') >= 37) {
       $queue = DrupalQueue::get('eve_api_cron_api_user_wallet_journal');
-      $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorID != 403');
+      $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorCode != 222');
 
       if ($result->rowCount()) {
         foreach ($result->fetchAll() as $item) {
@@ -197,6 +197,10 @@ function eve_api_cron_queue_info() {
     'worker callback' => 'eve_api_cron_api_skill_tree',
     'time' => 60,
   );
+  $queue['eve_api_cron_api_error_list'] = array(
+    'worker callback' => 'eve_api_cron_api_error_list',
+    'time' => 60,
+  );
   $queue['eve_api_cron_api_user_wallet_journal'] = array(
     'worker callback' => 'eve_api_cron_api_user_wallet_journal',
     'time' => 60,
@@ -226,7 +230,7 @@ function eve_api_cron_api_user_sync($item) {
     return FALSE;
   }
 
-  $result = db_query('SELECT apiID, keyID, vCode FROM {eve_api_keys} WHERE uid = :uid AND errorID != 403', array(
+  $result = db_query('SELECT apiID, keyID, vCode FROM {eve_api_keys} WHERE uid = :uid AND errorCode != 222', array(
     ':uid' => $uid,
   ));
 
@@ -632,6 +636,43 @@ function eve_api_cron_api_skill_tree($item = NULL) {
 }
 
 /**
+ * Get the latest skill tree from the EVE API.
+ * 
+ * @param mixed $item
+ *   whatever was added to the queue via queue->createItem()
+ *
+ * @return bool
+ *   TRUE or FALSE.
+ */
+function eve_api_cron_api_error_list($item = NULL) {
+  if ($item == 3) {
+    watchdog('eve_api', 'Cron Error List task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
+    return FALSE;
+  }
+
+  $api_data = eve_api_get_error_list_api();
+
+  if (isset($api_data['error'])) {
+    $item = $item + 1;
+    $queue = DrupalQueue::get('eve_api_cron_api_error_list');
+    $queue->createItem($item);
+
+    return FALSE;
+  }
+
+  db_truncate('eve_api_error_list')->execute();
+
+  foreach ($api_data['errors'] as $rows) {
+    db_insert('eve_api_error_list')->fields(array(
+      'errorCode' => (int) $rows['errorCode'],
+      'errorText' => (string) $rows['errorText'],
+    ))->execute();
+  }
+
+  return TRUE;
+}
+
+/**
  * Cron that imports the character sheet of a single character.
  *
  * @param array $item
@@ -645,10 +686,6 @@ function eve_api_cron_import_character_sheet($item) {
   $character_sheet = eve_api_get_character_sheet_api($sheet_query);
   $error = 0;
 
-  if (isset($character_sheet['errorCode'])) {
-    $error = (int) $character_sheet['errorCode'];
-  }
-
   if (isset($character_sheet['error'])) {
     $error = (int) $character_sheet['error'];
 
@@ -656,7 +693,8 @@ function eve_api_cron_import_character_sheet($item) {
       'characterID' => (int) $character_id,
     ))->fields(array(
       'characterID' => (int) $character_id,
-      'errorID' => (int) $error,
+      'errorCode' => $character_sheet['errorCode'],
+      'errorText' => $character_sheet['errorText'],
     ))->execute();
 
     watchdog('eve_api', 'Failed importing Character Sheet. Data: (' . drupal_http_build_query($sheet_query) . ') Error: ' . (int) $error, NULL, WATCHDOG_WARNING);
@@ -758,7 +796,8 @@ function eve_api_cron_import_character_sheet($item) {
 
           $fields = array(
             'characterID' => (int) $character_id,
-            'errorID' => (int) $error,
+            'errorCode' => $character_sheet['errorCode'],
+            'errorText' => $character_sheet['errorText'],
           );
 
           foreach ($data as $infoname => $infodata) {
@@ -801,10 +840,6 @@ function eve_api_cron_import_character_info($item) {
   $character_info = eve_api_get_character_info_api($info_query);
   $error = 0;
 
-  if (isset($character_info['errorCode'])) {
-    $error = (int) $character_info['errorCode'];
-  }
-
   if (isset($character_info['error'])) {
     $error = (int) $character_info['error'];
 
@@ -812,7 +847,8 @@ function eve_api_cron_import_character_info($item) {
       'characterID' => (int) $character_id,
     ))->fields(array(
       'characterID' => (int) $character_id,
-      'errorID' => (int) $error,
+      'errorCode' => $character_info['errorCode'],
+      'errorText' => $character_info['errorText'],
     ))->execute();
 
     watchdog('eve_api', 'Failed importing Character Info. Data: (' . drupal_http_build_query($info_query) . ') Error: ' . (int) $error, NULL, WATCHDOG_WARNING);
@@ -845,7 +881,8 @@ function eve_api_cron_import_character_info($item) {
 
           $fields = array(
             'characterID' => (int) $character_id,
-            'errorID' => (int) $error,
+            'errorCode' => $character_info['errorCode'],
+            'errorText' => $character_info['errorText'],
           );
 
           $ignored = array(
@@ -907,7 +944,8 @@ function eve_api_cron_import_skill_in_training($item) {
       'characterID' => (int) $character_id,
     ))->fields(array(
       'characterID' => (int) $character_id,
-      'errorID' => (int) $error,
+      'errorCode' => $training_info['errorCode'],
+      'errorText' => $training_info['errorText'],
     ))->execute();
 
     watchdog('eve_api', 'Failed importing Character Skill Training. Data: (' . drupal_http_build_query($training_query) . ') Error: ' . (int) $error, NULL, WATCHDOG_WARNING);
@@ -924,7 +962,8 @@ function eve_api_cron_import_skill_in_training($item) {
 
           $fields = array(
             'characterID' => (int) $character_id,
-            'errorID' => (int) $error,
+            'errorCode' => $training_info['errorCode'],
+            'errorText' => $training_info['errorText'],
           );
 
           foreach ($data as $infoname => $infodata) {
@@ -1306,15 +1345,23 @@ function eve_api_cron_update_key($account, $key_id, $v_code, $api_id) {
 
     db_merge('eve_api_keys')->key(array('apiID' => (int) $api_id))->fields(array(
       'apiID' => (int) $api_id,
-      'errorID' => (int) $characters['error'],
+      'errorCode' => $characters['errorCode'],
+      'errorText' => $characters['errorText'],
       'updated' => (string) $updated,
     ))->execute();
 
-    if ((int) $characters['error'] == 403) {
-      db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error'], 'deleted' => 1))->condition('apiID', (int) $api_id, '=')->execute();
+    if ((int) $characters['errorCode'] == 222) {
+      db_update('eve_api_characters')->fields(array(
+        'errorCode' => $characters['errorCode'],
+        'errorText' => $characters['errorText'],
+        'deleted' => 1,
+      ))->condition('apiID', (int) $api_id, '=')->execute();
     }
     else {
-      db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error']))->condition('apiID', (int) $api_id, '=')->execute();
+      db_update('eve_api_characters')->fields(array(
+        'errorCode' => $characters['errorCode'],
+        'errorText' => $characters['errorText'],
+      ))->condition('apiID', (int) $api_id, '=')->execute();
       $error_found = TRUE;
     }
 
@@ -1335,10 +1382,6 @@ function eve_api_cron_update_key($account, $key_id, $v_code, $api_id) {
       'character_data' => $character_data,
       'character_found' => $character_found,
     );
-  }
-
-  if (isset($characters['errorCode'])) {
-    $error = (int) $characters['errorCode'];
   }
 
   $whitelist = array();
@@ -1367,14 +1410,19 @@ function eve_api_cron_update_key($account, $key_id, $v_code, $api_id) {
     }
   }
 
-  db_update('eve_api_characters')->fields(array('errorID' => (int) $error, 'deleted' => 1))->condition('apiID', (int) $api_id)->execute();
+  db_update('eve_api_characters')->fields(array(
+    'errorCode' => $characters['errorCode'],
+    'errorText' => $characters['errorText'],
+    'deleted' => 1,
+  ))->condition('apiID', (int) $api_id)->execute();
   db_merge('eve_api_keys')->key(array('apiID' => (int) $api_id))->fields(array(
     'apiID' => (int) $api_id,
     'uid' => (int) $uid,
     'keyID' => (int) $key_id,
     'vCode' => (string) $v_code,
     'updated' => (string) $updated,
-    'errorID' => (int) $error,
+    'errorCode' => $characters['errorCode'],
+    'errorText' => $characters['errorText'],
   ))->execute();
 
   if ($error == 1) {
@@ -1389,10 +1437,6 @@ function eve_api_cron_update_key($account, $key_id, $v_code, $api_id) {
   foreach ($characters['characters'] as $character) {
     $error = 0;
 
-    if (isset($characters['errorCode'])) {
-      $error = (int) $characters['errorCode'];
-    }
-
     db_merge('eve_api_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
       'characterID' => (int) $character['characterID'],
       'uid' => (int) $uid,
@@ -1405,7 +1449,8 @@ function eve_api_cron_update_key($account, $key_id, $v_code, $api_id) {
       'allianceName' => (string) $character['allianceName'],
       'allianceTicker' => (string) $character['allianceTicker'],
       'accessMask' => (int) $characters['accessMask'],
-      'errorID' => (int) $error,
+      'errorCode' => $characters['errorCode'],
+      'errorText' => $characters['errorText'],
       'deleted' => 0,
     ))->execute();
 
@@ -1431,7 +1476,8 @@ function eve_api_cron_update_key($account, $key_id, $v_code, $api_id) {
         'characterID' => (int) $character['characterID'],
       ))->fields(array(
         'characterID' => (int) $character['characterID'],
-        'errorID' => 0,
+        'errorCode' => 0,
+        'errorText' => '',
       ))->execute();
     }
 

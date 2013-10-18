@@ -87,21 +87,29 @@ function eve_api_get_xml($type, $query = array()) {
 
   $cache_name = 'xml' . $type . str_replace('=', '', str_replace('&', '', drupal_http_build_query($query)));
   $html = '';
+  $response = array();
 
   if ($cached = cache_get($cache_name, 'cache')) {
     $html = $cached->data;
-    $error = 200;
+    $response['errorCode'] = $html->code;
+    $response['errorText'] = $html->error;
   }
 
   if (empty($html) || $type == 'SkillTree') {
     if (variable_get('eve_api_cron_error_count', 0) >= variable_get('eve_api_cron_error_count_limit', 5)) {
       variable_set('eve_api_cron_error_time', time() + variable_get('eve_api_cron_error_time_limit', 10 * 60));
       variable_set('eve_api_cron_error_count', 0);
-      watchdog('eve_api', 'EVE API has failed 5 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', time() + variable_get('eve_api_cron_error_time_limit', 10 * 60)), NULL, WATCHDOG_EMERGENCY);
-      return 2;
+      watchdog('eve_api', 'EVE API has failed 5 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', variable_get('eve_api_cron_error_time', 0)), NULL, WATCHDOG_EMERGENCY);
+      return array(
+        'errorCode' => 2,
+        'errorText' => 'EVE API has failed 5 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', variable_get('eve_api_cron_error_time', 0)),
+      );
     }
     elseif (variable_get('eve_api_cron_error_time', 0) >= time()) {
-      return 2;
+      return array(
+        'errorCode' => 2,
+        'errorText' => 'EVE API has failed 5 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', variable_get('eve_api_cron_error_time', 0)),
+      );
     }
 
     $has_curl = function_exists('curl_init');
@@ -137,47 +145,78 @@ function eve_api_get_xml($type, $query = array()) {
       watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_ERROR);
     }
 
-    $error = $html->code;
+    $response['errorCode'] = $html->code;
+    $response['errorText'] = $html->error;
   }
 
   // Fix for HTTP_REQUEST_TIMEOUT returning as -1
-  if ($error == -1) {
-    return 3;
+  if ($response['errorCode'] <= 0) {
+    return array(
+      'errorCode' => 3,
+      'errorText' => $response['errorText'],
+    );
   }
 
-  if ($error < 400) {
+  if ($response['errorCode'] < 400) {
     if (FALSE !== strpos($html->data, '<!DOCTYPE html')) {
+      variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
       watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_ERROR);
-      $error = 4;
+      $response['errorCode'] = 4;
     }
     else {
       try {
-        $xml = @new SimpleXMLElement($html->data);
+        $response['errorCode'] = 0;
+        $response['xml'] = @new SimpleXMLElement($html->data);
       }
       catch (Exception $e) {
+        variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
         watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $e->getMessage(), NULL, WATCHDOG_ERROR);
-        $error = 5;
-        $xml = NULL;
+        $response['errorCode'] = 5;
+        $response['xml'] = NULL;
       }
     }
   }
 
-  if (isset($xml->cachedUntil)) {
-    cache_set($cache_name, $html, 'cache', strtotime($xml->cachedUntil));
+  if (isset($response['xml']->error)) {
+    $error = $response['xml']->error->attributes();
+    $response['errorCode'] = $error->code;
+    $response['errorText'] = $response['xml']->error;
+
+    watchdog('eve_api', 'EVE API returned an error with the API data. (' . $type . '?' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_NOTICE);
+
+    // This needs some tweaking and work.
+    $error_codes = array(
+      203,
+      204,
+      205,
+      210,
+      212,
+      901,
+      902,
+      903,
+      904,
+      999,
+      1001,
+    );
+
+    if (in_array($response['errorCode'], $error_codes)) {
+      variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
+    }
+    else {
+      variable_set('eve_api_cron_error_count', 0);
+    }
+  }
+  else if (isset($response['xml']->cachedUntil)) {
     variable_set('eve_api_cron_error_count', 0);
-    return $xml;
   }
 
-  if (isset($xml->errorCode)) {
-    watchdog('eve_api', 'EVE API returned an error with the API data. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $xml->errorCode, NULL, WATCHDOG_NOTICE);
-    $error = $xml->errorCode;
+  if (isset($response['xml']->cachedUntil)) {
+    cache_set($cache_name, $html, 'cache', strtotime($response['xml']->cachedUntil));
   }
 
-  if ($error != 403 && $type != 'MailBodies') {
-    variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
-  }
+  unset($html);
 
-  return $error;
+  return $response;
 }
 
 /**
@@ -553,7 +592,7 @@ function eve_api_curl_http_request($url, array $options = array()) {
  *   A complex array of a single character information.
  */
 function eve_api_get_basic_character_info($character) {
-  $result = db_query('SELECT c.uid, c.deleted, c.errorID, c.apiID, c.characterName, c.characterID, c.corporationName, c.corporationID, c.corporationTicker, c.allianceID, c.allianceName, c.allianceTicker
+  $result = db_query('SELECT c.uid, c.deleted, c.errorCode, c.errorText, c.apiID, c.characterName, c.characterID, c.corporationName, c.corporationID, c.corporationTicker, c.allianceID, c.allianceName, c.allianceTicker
     FROM {eve_api_characters} c
     WHERE c.characterName = :characterName OR c.characterID = :characterID', array(
       ':characterName' => (string) $character,
@@ -609,7 +648,8 @@ function eve_api_get_character_info($character) {
   $query = $query->fields('c', array(
       'uid',
       'deleted',
-      'errorID',
+      'errorCode',
+      'errorText',
       'apiID',
       'characterName',
       'characterID',
@@ -707,7 +747,7 @@ function eve_api_get_character_info($character) {
       }
     }
 
-    $result = db_query('SELECT deleted, errorID, characterName, characterID, characterName, characterID, corporationName, corporationID, corporationTicker, allianceID, allianceName, allianceTicker
+    $result = db_query('SELECT deleted, errorCode, errorText, characterName, characterID, characterName, characterID, corporationName, corporationID, corporationTicker, allianceID, allianceName, allianceTicker
       FROM {eve_api_characters}
       WHERE uid = :uid', array(
         ':uid' => (string) $uid,
@@ -725,7 +765,7 @@ function eve_api_get_character_info($character) {
       }
     }
 
-    $result = db_query('SELECT apiID, keyID, vCode, errorID
+    $result = db_query('SELECT apiID, keyID, vCode, errorCode, errorText
       FROM {eve_api_keys}
       WHERE uid = :uid', array(
         ':uid' => (string) $uid,
@@ -792,31 +832,30 @@ function eve_api_get_character_skills($character_id) {
  *   A complex array of multiple character information.
  */
 function eve_api_get_api_key_info_api($query) {
-  $xml = eve_api_get_xml('APIKeyInfo', $query);
+  $response = eve_api_get_xml('APIKeyInfo', $query);
 
-  if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting API Key Info API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
-    return array('error' => (int) $xml);
+  if (!isset($response['xml']->result)) {
+    unset($response['xml']);
+    watchdog('eve_api', 'Failed getting API Key Info API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    return array('error' => TRUE) + $response;
   }
 
   $api_data = array();
-  $api_info = $xml->result->key->attributes();
+  $api_info = $response['xml']->result->key->attributes();
   $api_data['accessMask'] = (int) $api_info->accessMask;
   $api_data['type'] = (string) $api_info->type;
   $api_data['expires'] = ((string) $api_info->expires) ? TRUE : FALSE;
+  $api_data['errorCode'] = (int) $response['errorCode'];
+  $api_data['errorText'] = (string) $response['errorText'];
 
-  if (isset($xml->errorCode)) {
-    $api_data['errorCode'] = (int) $xml->errorCode;
-  }
-
-  foreach ($xml->result->key->rowset->children() as $rows) {
+  foreach ($response['xml']->result->key->rowset->children() as $rows) {
     $row = $rows->attributes();
 
     $query = array('corporationID' => (int) $row->corporationID);
     $corp_info = eve_api_get_corporation_sheet_api($query);
 
     if (isset($corp_info['error'])) {
-      return array('error' => $corp_info);
+      return array('error' => $corp_info['error']);
     }
     else {
       $api_data['characters'][(int) $row->characterID] = array_merge(array(
@@ -841,20 +880,19 @@ function eve_api_get_api_key_info_api($query) {
  *   A complex array of character information.
  */
 function eve_api_get_skill_in_training_api($query) {
-  $xml = eve_api_get_xml('SkillInTraining', $query);
+  $response = eve_api_get_xml('SkillInTraining', $query);
 
-  if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting Skill in Training API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
-    return array('error' => (int) $xml);
+  if (!isset($response['xml']->result)) {
+    watchdog('eve_api', 'Failed getting Skill in Training API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    unset($response['xml']);
+    return array('error' => TRUE) + $response;
   }
 
   $api_data = array();
+  $api_data['errorCode'] = (int) $response['errorCode'];
+  $api_data['errorText'] = (string) $response['errorText'];
 
-  if (isset($xml->errorCode)) {
-    $api_data['errorCode'] = (int) $xml->errorCode;
-  }
-
-  foreach ($xml->result->children() as $result) {
+  foreach ($response['xml']->result->children() as $result) {
     $api_data['info'][(string) $result->getName()] = (string) $result;
   }
 
@@ -871,22 +909,21 @@ function eve_api_get_skill_in_training_api($query) {
  *   A complex array of character information.
  */
 function eve_api_get_wallet_journal_api($query) {
-  $xml = eve_api_get_xml('WalletJournal', $query);
+  $response = eve_api_get_xml('WalletJournal', $query);
 
-  if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting Wallet Journal API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
-    return array('error' => (int) $xml);
+  if (!isset($response['xml']->result)) {
+    watchdog('eve_api', 'Failed getting Wallet Journal API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    unset($response['xml']);
+    return array('error' => TRUE) + $response;
   }
 
   $api_data = array();
-
-  if (isset($xml->errorCode)) {
-    $api_data['errorCode'] = (int) $xml->errorCode;
-  }
+  $api_data['errorCode'] = (int) $response['errorCode'];
+  $api_data['errorText'] = (string) $response['errorText'];
 
   $count = 0;
 
-  foreach ($xml->result->rowset->children() as $rows) {
+  foreach ($response['xml']->result->rowset->children() as $rows) {
     foreach ($rows->attributes() as $name => $value) {
       $api_data['wallet_journal'][(int) $count][(string) $name] = (string) $value;
     }
@@ -907,22 +944,21 @@ function eve_api_get_wallet_journal_api($query) {
  *   A complex array of character information.
  */
 function eve_api_get_contracts_api($query) {
-  $xml = eve_api_get_xml('Contracts', $query);
+  $response = eve_api_get_xml('Contracts', $query);
 
-  if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting Contracts API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
-    return array('error' => (int) $xml);
+  if (!isset($response['xml']->result)) {
+    watchdog('eve_api', 'Failed getting Contracts API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    unset($response['xml']);
+    return array('error' => TRUE) + $response;
   }
 
   $api_data = array();
-
-  if (isset($xml->errorCode)) {
-    $api_data['errorCode'] = (int) $xml->errorCode;
-  }
+  $api_data['errorCode'] = (int) $response['errorCode'];
+  $api_data['errorText'] = (string) $response['errorText'];
 
   $count = 0;
 
-  foreach ($xml->result->rowset->children() as $rows) {
+  foreach ($response['xml']->result->rowset->children() as $rows) {
     foreach ($rows->attributes() as $name => $value) {
       $api_data['contracts'][(int) $count][(string) $name] = (string) $value;
     }
@@ -943,20 +979,19 @@ function eve_api_get_contracts_api($query) {
  *   A complex array of character information.
  */
 function eve_api_get_mail_messages_api($query) {
-  $xml = eve_api_get_xml('MailMessages', $query);
+  $response = eve_api_get_xml('MailMessages', $query);
 
-  if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting Mail Messages API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
-    return array('error' => (int) $xml);
+  if (!isset($response['xml']->result)) {
+    watchdog('eve_api', 'Failed getting Mail Messages API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    unset($response['xml']);
+    return array('error' => TRUE) + $response;
   }
 
   $api_data = array();
+  $api_data['errorCode'] = (int) $response['errorCode'];
+  $api_data['errorText'] = (string) $response['errorText'];
 
-  if (isset($xml->errorCode)) {
-    $api_data['errorCode'] = (int) $xml->errorCode;
-  }
-
-  foreach ($xml->result->rowset->children() as $rows) {
+  foreach ($response['xml']->result->rowset->children() as $rows) {
     $row = $rows->attributes();
 
     foreach ($rows->attributes() as $name => $value) {
@@ -977,24 +1012,23 @@ function eve_api_get_mail_messages_api($query) {
  *   A complex array of character information.
  */
 function eve_api_get_mail_bodies_api($query) {
-  $xml = eve_api_get_xml('MailBodies', $query);
+  $response = eve_api_get_xml('MailBodies', $query);
 
-  if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting Mail Bodies API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
-    return array('error' => (int) $xml);
+  if (!isset($response['xml']->result) && !isset($response['xml']->result->missingMessageIDs)) {
+    watchdog('eve_api', 'Failed getting Mail Bodies API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    unset($response['xml']);
+    return array('error' => TRUE) + $response;
   }
 
   $api_data = array();
+  $api_data['errorCode'] = (int) $response['errorCode'];
+  $api_data['errorText'] = (string) $response['errorText'];
 
-  if (isset($xml->errorCode)) {
-    $api_data['errorCode'] = (int) $xml->errorCode;
+  if (isset($response['xml']->result->missingMessageIDs)) {
+    $api_data['missingMessageIDs'] = (string) $response['xml']->result->missingMessageIDs;
   }
 
-  if (isset($xml->result->missingMessageIDs)) {
-    $api_data['missingMessageIDs'] = (string) $xml->result->missingMessageIDs;
-  }
-
-  foreach ($xml->result->rowset->children() as $rows) {
+  foreach ($response['xml']->result->rowset->children() as $rows) {
     $row = $rows->attributes();
 
     $api_data['mail_body'][(int) $row->messageID]['message'] = (string) $rows;
@@ -1017,20 +1051,19 @@ function eve_api_get_mail_bodies_api($query) {
  *   A complex array of character information.
  */
 function eve_api_get_character_info_api($query) {
-  $xml = eve_api_get_xml('CharacterInfo', $query);
+  $response = eve_api_get_xml('CharacterInfo', $query);
 
-  if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting Character Sheet API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
-    return array('error' => (int) $xml);
+  if (!isset($response['xml']->result)) {
+    watchdog('eve_api', 'Failed getting Character Sheet API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    unset($response['xml']);
+    return array('error' => TRUE) + $response;
   }
 
   $api_data = array();
+  $api_data['errorCode'] = (int) $response['errorCode'];
+  $api_data['errorText'] = (string) $response['errorText'];
 
-  if (isset($xml->errorCode)) {
-    $api_data['errorCode'] = (int) $xml->errorCode;
-  }
-
-  foreach ($xml->result->children() as $results) {
+  foreach ($response['xml']->result->children() as $results) {
     switch ((string) $results->getName()) {
       case 'rowset':
         foreach ($results->children() as $rows) {
@@ -1063,20 +1096,19 @@ function eve_api_get_character_info_api($query) {
  *   A complex array of character sheet information.
  */
 function eve_api_get_character_sheet_api($query) {
-  $xml = eve_api_get_xml('CharacterSheet', $query);
+  $response = eve_api_get_xml('CharacterSheet', $query);
 
-  if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting Character Sheet API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
-    return array('error' => (int) $xml);
+  if (!isset($response['xml']->result)) {
+    watchdog('eve_api', 'Failed getting Character Sheet API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    unset($response['xml']);
+    return array('error' => TRUE) + $response;
   }
 
   $api_data = array();
+  $api_data['errorCode'] = (int) $response['errorCode'];
+  $api_data['errorText'] = (string) $response['errorText'];
 
-  if (isset($xml->errorCode)) {
-    $api_data['errorCode'] = (int) $xml->errorCode;
-  }
-
-  foreach ($xml->result->children() as $results) {
+  foreach ($response['xml']->result->children() as $results) {
     switch ((string) $results->getName()) {
       case 'rowset':
         $rowset = $results->attributes();
@@ -1145,20 +1177,19 @@ function eve_api_get_character_sheet_api($query) {
  *   A complex array of skill definitions.
  */
 function eve_api_get_skill_tree_api() {
-  $xml = eve_api_get_xml('SkillTree');
+  $response = eve_api_get_xml('SkillTree');
 
-  if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting Skill Tree API Data. Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
-    return array('error' => (int) $xml);
+  if (!isset($response['xml']->result)) {
+    watchdog('eve_api', 'Failed getting Skill Tree API Data. Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    unset($response['xml']);
+    return array('error' => TRUE) + $response;
   }
 
   $api_data = array();
+  $api_data['errorCode'] = (int) $response['errorCode'];
+  $api_data['errorText'] = (string) $response['errorText'];
 
-  if (isset($xml->errorCode)) {
-    $api_data['errorCode'] = (int) $xml->errorCode;
-  }
-
-  foreach ($xml->result->rowset->children() as $rowsets) {
+  foreach ($response['xml']->result->rowset->children() as $rowsets) {
     $rowset = $rowsets->attributes();
 
     $api_data['group'][(int) $rowset->groupID] = array(
@@ -1208,27 +1239,27 @@ function eve_api_get_alliance_ticker($alliance_id) {
  *   A complex array of corporate information.
  */
 function eve_api_get_corporation_sheet_api($query) {
-  $xml = eve_api_get_xml('CorporationSheet', $query);
+  $response = eve_api_get_xml('CorporationSheet', $query);
 
-  if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting Corporation Sheet API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
-    return array('error' => $xml);
+  if (!isset($response['xml']->result)) {
+    watchdog('eve_api', 'Failed getting Corporation Sheet API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    unset($response['xml']);
+    return array('error' => TRUE) + $response;
   }
 
   $api_data = array(
-    'corporationID' => (int) $xml->result->corporationID,
-    'corporationName' => (string) $xml->result->corporationName,
-    'corporationTicker' => (string) $xml->result->ticker,
-    'allianceID' => (int) $xml->result->allianceID,
-    'allianceName' => (string) $xml->result->allianceName,
-    'allianceTicker' => (string) eve_api_get_alliance_ticker((int) $xml->result->allianceID),
-    'ceoName' => (string) $xml->result->ceoName,
-    'ceoID' => (int) $xml->result->ceoID,
+    'corporationID' => (int) $response['xml']->result->corporationID,
+    'corporationName' => (string) $response['xml']->result->corporationName,
+    'corporationTicker' => (string) $response['xml']->result->ticker,
+    'allianceID' => (int) $response['xml']->result->allianceID,
+    'allianceName' => (string) $response['xml']->result->allianceName,
+    'allianceTicker' => (string) eve_api_get_alliance_ticker((int) $response['xml']->result->allianceID),
+    'ceoName' => (string) $response['xml']->result->ceoName,
+    'ceoID' => (int) $response['xml']->result->ceoID,
   );
 
-  if (isset($xml->errorCode)) {
-    $api_data = $api_data + array('errorCode' => (string) $xml->errorCode);
-  }
+  $api_data['errorCode'] = (int) $response['errorCode'];
+  $api_data['errorText'] = (string) $response['errorText'];
 
   return $api_data;
 }
@@ -1243,16 +1274,19 @@ function eve_api_get_corporation_sheet_api($query) {
  *   A simple array containing unique name and ID information.
  */
 function eve_api_get_character_id_api($query) {
-  $xml = eve_api_get_xml('CharacterID', $query);
+  $response = eve_api_get_xml('CharacterID', $query);
 
-  if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting Character ID API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
-    return array('error' => $xml);
+  if (!isset($response['xml']->result)) {
+    watchdog('eve_api', 'Failed getting Character ID API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    unset($response['xml']);
+    return array('error' => TRUE) + $response;
   }
 
   $api_data = array();
+  $api_data['errorCode'] = (int) $response['errorCode'];
+  $api_data['errorText'] = (string) $response['errorText'];
 
-  foreach ($xml->result->rowset->children() as $rows) {
+  foreach ($response['xml']->result->rowset->children() as $rows) {
     $row = $rows->attributes();
     $name = strtoupper((string) $row->name);
 
@@ -1260,10 +1294,6 @@ function eve_api_get_character_id_api($query) {
       'name' => (string) $row->name,
       'characterID' => (int) $row->characterID,
     );
-  }
-
-  if (isset($xml->errorCode)) {
-    $api_data['errorCode'] = (int) $xml->errorCode;
   }
 
   return $api_data;
@@ -1279,23 +1309,22 @@ function eve_api_get_character_id_api($query) {
  *   A simple array containing unique name and ID information.
  */
 function eve_api_get_character_name_api($query) {
-  $xml = eve_api_get_xml('CharacterName', $query);
+  $response = eve_api_get_xml('CharacterName', $query);
 
-  if (!isset($xml->cachedUntil)) {
-    watchdog('eve_api', 'Failed getting Character Name API Data. (' . drupal_http_build_query($query) . ') Error: ' . (int) $xml, NULL, WATCHDOG_WARNING);
-    return array('error' => $xml);
+  if (!isset($response['xml']->result)) {
+    watchdog('eve_api', 'Failed getting Character Name API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    unset($response['xml']);
+    return array('error' => TRUE) + $response;
   }
 
   $api_data = array();
+  $api_data['errorCode'] = (int) $response['errorCode'];
+  $api_data['errorText'] = (string) $response['errorText'];
 
   foreach ($xml->result->rowset->children() as $rows) {
     $row = $rows->attributes();
 
     $api_data[(int) $row->characterID] = (string) $row->name;
-  }
-
-  if (isset($xml->errorCode)) {
-    $api_data['errorCode'] = (int) $xml->errorCode;
   }
 
   return $api_data;
@@ -1582,7 +1611,7 @@ function eve_api_character_is_ceo($character_id, $corporation_id = NULL) {
  * @return string
  *   An error message.
  */
-function eve_api_api_error_msg($error_id) {
+function eve_api_api_error_msg($error_id, $error_text) {
   switch ($error_id) {
     case 0:
       $message = t('OK');
@@ -1617,7 +1646,20 @@ function eve_api_api_error_msg($error_id) {
       break;
 
     default:
-      $message = t('API Temporarily Down');
+      $result = db_query('SELECT errorCode, errorText
+        FROM {eve_api_error_list}
+        WHERE errorCode = :errorCode', array(
+          ':errorCode' => (int) $error_id,
+        ));
+
+      $row = $result->fetchAssoc();
+
+      if (empty($row)) {
+        $message = t('API Temporarily Down');
+      }
+      else {
+        $message = check_plain($error_text);
+      }
       break;
   }
 
@@ -1637,13 +1679,13 @@ function eve_api_list_api_simple($uid) {
   $uid = (int) $uid;
   $api_list = array();
 
-  $result_a = db_query('SELECT apiID, keyID, vCode, errorID, updated, created FROM {eve_api_keys} WHERE uid = :uid', array(
+  $result_a = db_query('SELECT apiID, keyID, vCode, errorCode, updated, created FROM {eve_api_keys} WHERE uid = :uid', array(
     ':uid' => $uid,
   ));
 
   if ($result_a->rowCount()) {
     foreach ($result_a->fetchAll() as $row_a) {
-      if ($row_a->errorID == 403) {
+      if ($row_a->errorCode == 222) {
         continue;
       }
 
@@ -1710,10 +1752,6 @@ function eve_api_create_key($account, $key_id, $v_code) {
     return FALSE;
   }
 
-  if (isset($characters['errorCode'])) {
-    $error = (int) $characters['errorCode'];
-  }
-
   $whitelist = array();
 
   if (!empty($characters)) {
@@ -1731,12 +1769,14 @@ function eve_api_create_key($account, $key_id, $v_code) {
 
   if ($result->rowCount()) {
     if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
-      $error = 1;
+      $characters['errorCode'] = 1;
+      $characters['errorText'] = 'Invalid API Mask/Type/Expiry';
     }
   }
   else {
     if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
-      $error = 1;
+      $characters['errorCode'] = 1;
+      $characters['errorText'] = 'Invalid API Mask/Type/Expiry';
     }
   }
 
@@ -1746,10 +1786,11 @@ function eve_api_create_key($account, $key_id, $v_code) {
     'vCode' => (string) $v_code,
     'updated' => (string) $created,
     'created' => (string) $created,
-    'errorID' => (int) $error,
+    'errorCode' => $characters['errorCode'],
+    'errorText' => $characters['errorText'],
   ))->execute();
 
-  if ($error == 1) {
+  if ($characters['errorCode'] == 1) {
     return FALSE;
   }
 
@@ -1766,7 +1807,8 @@ function eve_api_create_key($account, $key_id, $v_code) {
       'allianceName' => (string) $character['allianceName'],
       'allianceTicker' => (string) $character['allianceTicker'],
       'accessMask' => (int) $characters['accessMask'],
-      'errorID' => (int) $error,
+      'errorCode' => $characters['errorCode'],
+      'errorText' => $characters['errorText'],
       'deleted' => 0,
     ))->execute();
 
@@ -1804,8 +1846,6 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
 
   $characters = eve_api_get_api_key_info_api($query);
 
-  $error = 0;
-
   if ($api_id == 0) {
     return TRUE;
   }
@@ -1813,16 +1853,24 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
   if (isset($characters['error'])) {
     db_merge('eve_api_keys')->key(array('apiID' => (int) $api_id))->fields(array(
       'apiID' => (int) $api_id,
-      'errorID' => (int) $characters['error'],
+      'errorCode' => $characters['errorCode'],
+      'errorText' => $characters['errorText'],
       'updated' => (string) $updated,
     ))->execute();
 
-    if ((int) $characters['error'] == 403) {
-      db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error'], 'deleted' => 1))->condition('apiID', (int) $api_id, '=')->execute();
+    if ($characters['errorCode'] == 222) {
+      db_update('eve_api_characters')->fields(array(
+        'errorCode' => $characters['errorCode'],
+        'errorText' => $characters['errorText'],
+        'deleted' => 1,
+      ))->condition('apiID', (int) $api_id, '=')->execute();
       return TRUE;
     }
     else {
-      db_update('eve_api_characters')->fields(array('errorID' => (int) $characters['error']))->condition('apiID', (int) $api_id, '=')->execute();
+      db_update('eve_api_characters')->fields(array(
+        'errorCode' => $characters['errorCode'],
+        'errorText' => $characters['errorText'],
+      ))->condition('apiID', (int) $api_id, '=')->execute();
       return FALSE;
     }
   }
@@ -1830,10 +1878,6 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
   if (!isset($characters['characters'])) {
     watchdog('eve_api', 'Error occured, should never happen. (' . drupal_http_build_query($query) . ')<br /><pre>' . print_r($characters, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
     return TRUE;
-  }
-
-  if (isset($characters['errorCode'])) {
-    $error = (int) $characters['errorCode'];
   }
 
   $whitelist = array();
@@ -1853,36 +1897,37 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
 
   if ($result->rowCount()) {
     if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
-      $error = 1;
+      $characters['errorCode'] = 1;
+      $characters['errorText'] = 'Invalid API Mask/Type/Expiry';
     }
   }
   else {
     if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
-      $error = 1;
+      $characters['errorCode'] = 1;
+      $characters['errorText'] = 'Invalid API Mask/Type/Expiry';
     }
   }
 
-  db_update('eve_api_characters')->fields(array('errorID' => (int) $error, 'deleted' => 1))->condition('apiID', (int) $api_id)->execute();
+  db_update('eve_api_characters')->fields(array(
+    'errorCode' => $characters['errorCode'],
+    'errorText' => $characters['errorText'],
+    'deleted' => 1,
+  ))->condition('apiID', (int) $api_id)->execute();
   db_merge('eve_api_keys')->key(array('apiID' => (int) $api_id))->fields(array(
     'apiID' => (int) $api_id,
     'uid' => (int) $uid,
     'keyID' => (int) $key_id,
     'vCode' => (string) $v_code,
     'updated' => (string) $updated,
-    'errorID' => (int) $error,
+    'errorCode' => $characters['errorCode'],
+    'errorText' => $characters['errorText'],
   ))->execute();
 
-  if ($error == 1) {
+  if ($characters['errorCode'] == 1) {
     return TRUE;
   }
 
   foreach ($characters['characters'] as $character) {
-    $error = 0;
-
-    if (isset($characters['errorCode'])) {
-      $error = (int) $characters['errorCode'];
-    }
-
     db_merge('eve_api_characters')->key(array('characterID' => (int) $character['characterID']))->fields(array(
       'characterID' => (int) $character['characterID'],
       'uid' => (int) $uid,
@@ -1895,7 +1940,8 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
       'allianceName' => (string) $character['allianceName'],
       'allianceTicker' => (string) $character['allianceTicker'],
       'accessMask' => (int) $characters['accessMask'],
-      'errorID' => (int) $error,
+      'errorCode' => $characters['errorCode'],
+      'errorText' => $characters['errorText'],
       'deleted' => 0,
     ))->execute();
   }

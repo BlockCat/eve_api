@@ -223,9 +223,9 @@ function eve_api_user_list_api_form($form, &$form_state, $account) {
     'characters' => array(
       'data' => t('Characters'),
     ),
-    'errorID' => array(
+    'errorCode' => array(
       'data' => t('Status'),
-      'field' => 'a.errorID',
+      'field' => 'a.errorCode',
     ),
   );
 
@@ -236,7 +236,8 @@ function eve_api_user_list_api_form($form, &$form_state, $account) {
       'apiID',
       'keyID',
       'vCode',
-      'errorID',
+      'errorCode',
+      'errorText',
       'updated',
       'created',
     ))
@@ -251,7 +252,8 @@ function eve_api_user_list_api_form($form, &$form_state, $account) {
         'apiID' => check_plain($row_a->apiID),
         'keyID' => check_plain($row_a->keyID),
         'vCode' => check_plain($row_a->vCode),
-        'errorID' => check_plain($row_a->errorID),
+        'errorCode' => check_plain($row_a->errorCode),
+        'errorText' => check_plain($row_a->errorText),
         'updated' => check_plain($row_a->updated),
         'created' => check_plain($row_a->created),
       );
@@ -301,7 +303,7 @@ function eve_api_user_list_api_form($form, &$form_state, $account) {
       ),
       'keyID' => check_plain($api_single['keyID']),
       'characters' => $list_characters,
-      'errorID' => check_plain(eve_api_api_error_msg($api_single['errorID'])),
+      'errorCode' => eve_api_api_error_msg($api_single['errorCode'], $api_single['errorText']),
     );
   }
 
