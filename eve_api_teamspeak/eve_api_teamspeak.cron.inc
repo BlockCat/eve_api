@@ -245,7 +245,7 @@ function eve_api_teamspeak_cron_user_check($item) {
       $teamspeak_nickname = (string) $teamspeak_user->client_nickname;
       $teamspeak_dbid = (int) $teamspeak_user->client_database_id;
 
-      $result = db_query('SELECT c.characterName FROM {eve_api_characters} c INNER JOIN {users} u ON (c.characterName = u.name) WHERE c.deleted = 0 AND u.teamspeakUID = :teamspeakUID', array(
+      $result = db_query('SELECT u.name FROM {users} u WHERE u.characterID != 0 AND u.teamspeakUID = :teamspeakUID', array(
         ':teamspeakUID' => $teamspeak_uid,
       ));
 
@@ -327,7 +327,7 @@ function eve_api_teamspeak_cron_user_check($item) {
 
       $row = $result->fetchAssoc();
 
-      $expected_teamspeak_nickname = eve_api_teamspeak_format_name($row['characterName']);
+      $expected_teamspeak_nickname = eve_api_teamspeak_format_name($row['name']);
 
       if ($teamspeak_nickname != $expected_teamspeak_nickname) {
         if (variable_get('eve_api_teamspeak_user_message_enable', FALSE)) {

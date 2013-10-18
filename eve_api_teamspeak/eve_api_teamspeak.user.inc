@@ -48,7 +48,7 @@ function eve_api_teamspeak_user_form($form, &$form_state, $account) {
 
   $form['teamspeak']['teamspeak_uid'] = array(
     '#type' => 'item',
-    '#title' => t('Your TeampSpeak Unique ID:'),
+    '#title' => t('Your TeamSpeak Unique ID:'),
     '#description' => !empty($account->teamspeakUID) ? $account->teamspeakUID : t('You are not registered.'),
     '#weight' => 20,
   );

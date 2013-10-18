@@ -54,8 +54,6 @@ function eve_api_jabber_cronapi($op, $job = NULL) {
         break;
     }
   }
-
-  return $items;
 }
 
 /**
