@@ -78,11 +78,15 @@ function eve_api_cronapi($op, $job = NULL) {
       case 'eve_api_cron_api_user_wallet_journal_job':
         if (variable_get('eve_api_enable', FALSE)) {
           $queue = DrupalQueue::get('eve_api_cron_api_user_wallet_journal');
-          $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorCode != 222');
+          $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode, k.errorCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID');
 
           if ($result->rowCount()) {
             foreach ($result->fetchAll() as $item) {
               if (($item->accessMask & 2097152) != 2097152) {
+                continue;
+              }
+
+              if (eve_api_error_code_deleted($item->errorCode)) {
                 continue;
               }
 
@@ -149,11 +153,15 @@ function eve_api_cron() {
 
     if (time() >= variable_get('eve_api_cron_api_user_wallet_journal_next', 0) && date('G') == 4 && date('i') >= 37) {
       $queue = DrupalQueue::get('eve_api_cron_api_user_wallet_journal');
-      $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.errorCode != 222');
+      $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode, k.errorCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID');
 
       if ($result->rowCount()) {
         foreach ($result->fetchAll() as $item) {
           if (($item->accessMask & 2097152) != 2097152) {
+            continue;
+          }
+
+          if (eve_api_error_code_deleted($item->errorCode)) {
             continue;
           }
 
@@ -230,7 +238,7 @@ function eve_api_cron_api_user_sync($item) {
     return FALSE;
   }
 
-  $result = db_query('SELECT apiID, keyID, vCode FROM {eve_api_keys} WHERE uid = :uid AND errorCode != 222', array(
+  $result = db_query('SELECT apiID, keyID, vCode, errorCode FROM {eve_api_keys} WHERE uid = :uid', array(
     ':uid' => $uid,
   ));
 
@@ -239,6 +247,10 @@ function eve_api_cron_api_user_sync($item) {
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
+      if (eve_api_error_code_deleted($row->errorCode)) {
+        continue;
+      }
+
       $characters = eve_api_cron_update_key($account, $row->keyID, $row->vCode, $row->apiID);
       $error_found = ($error_found == TRUE) ? $error_found : $characters['error_found'];
       $character_found = ($character_found == TRUE) ? $character_found : $characters['character_found'];
@@ -1350,7 +1362,7 @@ function eve_api_cron_update_key($account, $key_id, $v_code, $api_id) {
       'updated' => (string) $updated,
     ))->execute();
 
-    if ((int) $characters['errorCode'] == 222) {
+    if (eve_api_error_code_deleted($characters['errorCode'])) {
       db_update('eve_api_characters')->fields(array(
         'errorCode' => $characters['errorCode'],
         'errorText' => $characters['errorText'],

@@ -157,23 +157,21 @@ function eve_api_get_xml($type, $query = array()) {
     );
   }
 
-  if ($response['errorCode'] < 400) {
-    if (FALSE !== strpos($html->data, '<!DOCTYPE html')) {
-      variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
-      watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_ERROR);
-      $response['errorCode'] = 4;
+  if (FALSE !== strpos($html->data, '<!DOCTYPE html')) {
+    variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
+    watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_ERROR);
+    $response['errorCode'] = 4;
+  }
+  else {
+    try {
+      $response['errorCode'] = 0;
+      $response['xml'] = @new SimpleXMLElement($html->data);
     }
-    else {
-      try {
-        $response['errorCode'] = 0;
-        $response['xml'] = @new SimpleXMLElement($html->data);
-      }
-      catch (Exception $e) {
-        variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
-        watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $e->getMessage(), NULL, WATCHDOG_ERROR);
-        $response['errorCode'] = 5;
-        $response['xml'] = NULL;
-      }
+    catch (Exception $e) {
+      variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
+      watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $e->getMessage(), NULL, WATCHDOG_ERROR);
+      $response['errorCode'] = 5;
+      $response['xml'] = NULL;
     }
   }
 
@@ -184,22 +182,7 @@ function eve_api_get_xml($type, $query = array()) {
 
     watchdog('eve_api', 'EVE API returned an error with the API data. (' . $type . '?' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_NOTICE);
 
-    // This needs some tweaking and work.
-    $error_codes = array(
-      203,
-      204,
-      205,
-      210,
-      212,
-      901,
-      902,
-      903,
-      904,
-      999,
-      1001,
-    );
-
-    if (in_array($response['errorCode'], $error_codes)) {
+    if (eve_api_error_code($response['errorCode'])) {
       variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
     }
     else {
@@ -1685,7 +1668,7 @@ function eve_api_list_api_simple($uid) {
 
   if ($result_a->rowCount()) {
     foreach ($result_a->fetchAll() as $row_a) {
-      if ($row_a->errorCode == 222) {
+      if (eve_api_error_code_deleted($row_a->errorCode)) {
         continue;
       }
 
@@ -1821,7 +1804,7 @@ function eve_api_create_key($account, $key_id, $v_code) {
 }
 
 /**
- * Function that modifys an existing API Key.
+ * Function that modifies an existing API Key.
  *
  * @param object $account
  *   A Drupal user object containing.
@@ -1858,7 +1841,7 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
       'updated' => (string) $updated,
     ))->execute();
 
-    if ($characters['errorCode'] == 222) {
+    if (eve_api_error_code_deleted($characters['errorCode'])) {
       db_update('eve_api_characters')->fields(array(
         'errorCode' => $characters['errorCode'],
         'errorText' => $characters['errorText'],
@@ -1947,4 +1930,79 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
   }
 
   return FALSE;
+}
+
+/**
+ * Function that checks if a specific Error Code means we need to stop.
+ *
+ * @param int $code
+ *   An EVE API Error Code.
+ *
+ * @return bool
+ *   TRUE or FALSE if the code means to stop.
+ */
+function eve_api_error_code($code) {
+  $error_codes = array(
+    200,
+    201,
+    202,
+    203,
+    204,
+    205,
+    206,
+    207,
+    208,
+    209,
+    210,
+    211,
+    212,
+    213,
+    220,
+    221,
+    222,
+    223,
+    901,
+    902,
+    903,
+    904,
+    999,
+    1001,
+  );
+
+  if (in_array($code, $error_codes)) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Function that checks if a specific Error Code is Deleted/Invalid.
+ *
+ * @param int $code
+ *   An EVE API Error Code.
+ *
+ * @return bool
+ *   TRUE or FALSE if the code means to stop.
+ */
+function eve_api_error_code_deleted($code) {
+  $error_codes = array(
+    202,
+    203,
+    204,
+    205,
+    210,
+    211,
+    212,
+    222,
+    521,
+  );
+
+  if (in_array($code, $error_codes)) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
 }
