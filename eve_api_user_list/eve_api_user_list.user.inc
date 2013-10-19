@@ -293,7 +293,7 @@ function eve_api_user_list_user_private_page($corporation_id) {
     '#weight' => 10,
   );
 
-  $output['corporation_user_list']['page'] = array(
+  $output['page'] = array(
     '#theme' => 'pager',
     '#weight' => 20,
   );
