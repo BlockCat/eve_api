@@ -166,6 +166,7 @@ function eve_api_get_xml($type, $query = array()) {
     try {
       $response['errorCode'] = 0;
       $response['xml'] = @new SimpleXMLElement($html->data);
+      variable_set('eve_api_cron_error_count', 0);
     }
     catch (Exception $e) {
       variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
@@ -183,7 +184,7 @@ function eve_api_get_xml($type, $query = array()) {
     watchdog('eve_api', 'EVE API returned an error with the API data. (' . $type . '?' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_NOTICE);
 
     if (eve_api_error_code($response['errorCode'])) {
-      variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
+      //variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
     }
     else {
       variable_set('eve_api_cron_error_count', 0);
