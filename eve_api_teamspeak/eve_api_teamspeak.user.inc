@@ -127,6 +127,6 @@ function eve_api_teamspeak_user_form_submit($form, &$form_state) {
     eve_api_teamspeak_disconnect($ts3);
   }
   catch (EveApiException $e) {
-    drupal_set_message(t('TeamSpeak connection failed, please try again later. Error: @error', array('@error' => check_plain($e->getMessage()))), 'error');
+    drupal_set_message(t('TeamSpeak connection failed, please try again later. Error: @error', array('@error' => $e->getMessage())), 'error');
   }
 }

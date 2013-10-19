@@ -163,7 +163,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
       $form['teamspeak_settings']['bypass_group'] = array(
         '#type' => 'markup',
         '#prefix' => '<p>',
-        '#markup' => t('TeamSpeak 3 Connection failed, check settings and try again. Error: @error', array('@error' => check_plain($e->getMessage()))),
+        '#markup' => t('TeamSpeak 3 Connection failed, check settings and try again. Error: @error', array('@error' => $e->getMessage())),
         '#suffix' => '</p>',
         '#weight' => 10,
       );

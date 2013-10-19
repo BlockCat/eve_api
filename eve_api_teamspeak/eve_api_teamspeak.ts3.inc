@@ -109,7 +109,7 @@ function eve_api_teamspeak_connect($check = FALSE) {
     $ts3->setPredefinedQueryName($nickname);
   }
   catch (TeamSpeak3_Exception $e) {
-    throw new EveApiException(t('TeamSpeak 3 Connection failed. Error: @error', array('@error' => check_plain($e->getMessage()))));
+    throw new EveApiException(t('TeamSpeak 3 Connection failed. Error: @error', array('@error' => $e->getMessage())));
   }
 
   return $ts3;
@@ -130,7 +130,7 @@ function eve_api_teamspeak_disconnect(&$ts3, $check = FALSE) {
     unset($ts3);
   }
   catch (TeamSpeak3_Exception $e) {
-    throw new EveApiException(t('TeamSpeak 3 Connection failed. Error: @error', array('@error' => check_plain($e->getMessage()))));
+    throw new EveApiException(t('TeamSpeak 3 Connection failed. Error: @error', array('@error' => $e->getMessage())));
   }
 }
 
@@ -220,7 +220,7 @@ function eve_api_teamspeak_user_list(&$ts3) {
     $teamspeak_user_list = $ts3->clientList();
   }
   catch (TeamSpeak3_Exception $e) {
-    throw new EveApiException(t('Unable to get list of active users. Error: @error', array('@error' => check_plain($e->getMessage()))));
+    throw new EveApiException(t('Unable to get list of active users. Error: @error', array('@error' => $e->getMessage())));
   }
 
   return $teamspeak_user_list;
@@ -242,7 +242,7 @@ function eve_api_teamspeak_user_info(&$ts3, $teamspeak_dbid) {
     $teamspeak_user_info = $ts3->clientInfoDb($teamspeak_dbid);
   }
   catch (TeamSpeak3_Exception $e) {
-    throw new EveApiException(t('Unable to get user info. Error: @error', array('@error' => check_plain($e->getMessage()))));
+    throw new EveApiException(t('Unable to get user info. Error: @error', array('@error' => $e->getMessage())));
   }
 
   return $teamspeak_user_info;

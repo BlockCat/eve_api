@@ -311,7 +311,6 @@ function eve_api_user_list_user_character_page($character_id, $is_director, $is_
 
   $character_data = eve_api_get_character_info($character_id);
 
-
   if ($character_data == FALSE) {
     drupal_goto('eve_api/user_list');
   }
@@ -512,9 +511,9 @@ function eve_api_user_list_user_character_page($character_id, $is_director, $is_
         '#theme' => 'user_profile_item',
         '#title' => t('Currently Training'),
         '#markup' => t('Currently Training @typeName to Level @level. Training will end on @finish UTC EVE Time.', array(
-        '@typeName' => check_plain($character_data['typeName']),
-        '@level' => check_plain($character_data['trainingToLevel']),
-        '@finish' => check_plain($character_data['trainingEndTime']),
+        '@typeName' => $character_data['typeName'],
+        '@level' => $character_data['trainingToLevel'],
+        '@finish' => $character_data['trainingEndTime'],
         )),
       );
     }

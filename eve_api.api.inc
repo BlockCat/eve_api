@@ -189,7 +189,7 @@ function eve_api_get_xml($type, $query = array()) {
       variable_set('eve_api_cron_error_count', 0);
     }
   }
-  else if (isset($response['xml']->cachedUntil)) {
+  elseif (isset($response['xml']->cachedUntil)) {
     variable_set('eve_api_cron_error_count', 0);
   }
 
@@ -214,10 +214,8 @@ function eve_api_get_xml($type, $query = array()) {
  *
  * @param string $url
  *   A string containing a fully qualified URI.
- * @param array $query
- *   (optional) An array composed of the url variable elements.
- * @param string $method
- *   (optional) POST, GET, PULL.
+ * @param array $options
+ *   (optional) An array composed of various options.
  *
  * @return object
  *   An object that can have one or more of the following components:
@@ -1304,7 +1302,7 @@ function eve_api_get_character_name_api($query) {
   $api_data['errorCode'] = (int) $response['errorCode'];
   $api_data['errorText'] = (string) $response['errorText'];
 
-  foreach ($xml->result->rowset->children() as $rows) {
+  foreach ($response['xml']->result->rowset->children() as $rows) {
     $row = $rows->attributes();
 
     $api_data[(int) $row->characterID] = (string) $row->name;
@@ -1720,8 +1718,6 @@ function eve_api_create_key($account, $key_id, $v_code) {
   );
 
   $characters = eve_api_get_api_key_info_api($query);
-
-  $error = 0;
 
   if (isset($characters['error'])) {
     watchdog('eve_api', 'Error occured during registration. (' . drupal_http_build_query($query) . ')<br /><pre>' . print_r($characters, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);

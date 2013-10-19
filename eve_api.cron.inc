@@ -404,9 +404,9 @@ function eve_api_cron_api_alliance_fetch($item = NULL) {
     'vCode' => $v_code,
   );
 
-  $xml = eve_api_get_xml('ContactList', $query);
+  $response = eve_api_get_xml('ContactList', $query);
 
-  if (!isset($xml->cachedUntil)) {
+  if (!isset($response['xml']->result)) {
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
     $queue->createItem($item);
@@ -416,7 +416,7 @@ function eve_api_cron_api_alliance_fetch($item = NULL) {
 
   db_update('eve_api_contact_list')->fields(array('checked' => 1))->condition('manual', 0, '=')->execute();
 
-  foreach ($xml->result->children() as $rowset) {
+  foreach ($response['xml']->result->children() as $rowset) {
     foreach ($rowset->children() as $rows) {
       $row = $rows->attributes();
 
@@ -450,9 +450,9 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
     return FALSE;
   }
 
-  $xml = eve_api_get_xml('AllianceList');
+  $response = eve_api_get_xml('AllianceList');
 
-  if (!isset($xml->cachedUntil)) {
+  if (!isset($response['xml']->result)) {
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
     $queue->createItem($item);
@@ -463,7 +463,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
   db_update('eve_api_alliance_list_corporations')->fields(array('checked' => 1))->condition('manual', 0, '=')->execute();
   db_truncate('eve_api_alliance_list_tickers')->execute();
 
-  foreach ($xml->result->rowset->children() as $rows_a) {
+  foreach ($response['xml']->result->rowset->children() as $rows_a) {
     $row_a = $rows_a->attributes();
 
     db_insert('eve_api_alliance_list_tickers')->fields(array(
@@ -553,9 +553,9 @@ function eve_api_cron_api_mask_sync($item = NULL) {
     return FALSE;
   }
 
-  $xml = eve_api_get_xml('callList');
+  $response = eve_api_get_xml('callList');
 
-  if (!isset($xml->cachedUntil)) {
+  if (!isset($response['xml']->result)) {
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
     $queue->createItem($item);
@@ -566,7 +566,7 @@ function eve_api_cron_api_mask_sync($item = NULL) {
   db_truncate('eve_api_call_list')->execute();
   db_truncate('eve_api_call_list_groups')->execute();
 
-  foreach ($xml->result->children() as $rowset) {
+  foreach ($response['xml']->result->children() as $rowset) {
     $row_a = $rowset->attributes();
 
     switch ((string) $row_a->name) {
@@ -1218,7 +1218,6 @@ function eve_api_cron_import_mail($item) {
     return FALSE;
   }
   else {
-    $max_message_id_found = FALSE;
     $message_ids = array();
 
     foreach ($mail_info as $type => $data) {
@@ -1226,7 +1225,6 @@ function eve_api_cron_import_mail($item) {
         case 'mail':
           foreach ($data as $mail_data) {
             if (eve_api_comp($max_message_id, (string) $mail_data['messageID']) != -1) {
-              $max_message_id_found = TRUE;
               continue;
             }
 

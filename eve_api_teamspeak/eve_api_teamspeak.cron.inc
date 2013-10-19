@@ -172,7 +172,6 @@ function eve_api_teamspeak_cron_user_sync($item) {
 
     $uid = (int) $item['uid'];
     $teamspeak_dbid = (int) $item['teamspeakDBID'];
-    $teamspeak_uid = (int) $item['teamspeakUID'];
     $ts3 = eve_api_teamspeak_connect();
 
     $result = db_query('SELECT r.rid, r.name FROM {users_roles} ur INNER JOIN {role} r ON (r.rid = ur.rid) WHERE ur.uid = :uid', array(

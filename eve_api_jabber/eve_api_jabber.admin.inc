@@ -142,7 +142,7 @@ function eve_api_jabber_admin_form_validate($form, &$form_state) {
     }
     catch (EveApiException $e) {
       eve_api_jabber_disconnect();
-      form_set_error('enable', t('Please check database settings and try again. Error: @error', array('@error' => check_plain($e->getMessage()))));
+      form_set_error('enable', t('Please check database settings and try again. Error: @error', array('@error' => $e->getMessage())));
       variable_set('eve_api_jabber_enable', FALSE);
     }
 

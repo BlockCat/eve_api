@@ -399,7 +399,6 @@ function eve_api_user_list_api_form_submit($form, &$form_state) {
   module_invoke_all('eve_api_user_delete', $account);
   module_invoke_all('eve_api_user_update', array(
     'account' => $account,
-    'character' => $character,
   ));
 
   drupal_set_message(t('API keys successfully deleted!'));
