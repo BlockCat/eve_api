@@ -92,7 +92,13 @@ function eve_api_get_xml($type, $query = array()) {
   if ($cached = cache_get($cache_name, 'cache')) {
     $html = $cached->data;
     $response['errorCode'] = $html->code;
-    $response['errorText'] = $html->error;
+
+    if (isset($html->error)) {
+      $response['errorText'] = $html->error;
+    }
+    else {
+      $response['errorText'] = 'OK';
+    }
   }
 
   if (empty($html) || $type == 'SkillTree') {
@@ -141,12 +147,15 @@ function eve_api_get_xml($type, $query = array()) {
       $html = eve_api_curl_http_request($url, $options);
     }
 
-    if (!empty($html->error)) {
+    if (isset($html->error) && !empty($html->error)) {
+      $response['errorText'] = $html->error;
       watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_ERROR);
+    }
+    else {
+      $response['errorText'] = 'OK';
     }
 
     $response['errorCode'] = $html->code;
-    $response['errorText'] = $html->error;
   }
 
   // Fix for HTTP_REQUEST_TIMEOUT returning as -1
