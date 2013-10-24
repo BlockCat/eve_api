@@ -50,7 +50,7 @@ function eve_api_user_list_user_page($id = NULL) {
       $output = eve_api_user_list_user_general_page($id, $type);
     }
     else {
-      $is_director = eve_api_character_is_director($account->characterID, (int) $row['corporationID']);
+      $is_director = eve_api_character_is_director($account->uid, (int) $row['corporationID']);
       $is_good = user_access('moderate eve_api users') || user_access('administer eve_api settings');
 
       switch ($id) {

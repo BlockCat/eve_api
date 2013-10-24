@@ -78,7 +78,7 @@ function eve_api_cronapi($op, $job = NULL) {
       case 'eve_api_cron_api_user_wallet_journal_job':
         if (variable_get('eve_api_enable', FALSE)) {
           $queue = DrupalQueue::get('eve_api_cron_api_user_wallet_journal');
-          $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode, k.errorCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID');
+          $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode, k.errorCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.deleted = 0');
 
           if ($result->rowCount()) {
             foreach ($result->fetchAll() as $item) {
@@ -153,7 +153,7 @@ function eve_api_cron() {
 
     if (time() >= variable_get('eve_api_cron_api_user_wallet_journal_next', 0) && date('G') == 4 && date('i') >= 37) {
       $queue = DrupalQueue::get('eve_api_cron_api_user_wallet_journal');
-      $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode, k.errorCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID');
+      $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode, k.errorCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.deleted = 0');
 
       if ($result->rowCount()) {
         foreach ($result->fetchAll() as $item) {
@@ -1012,7 +1012,7 @@ function eve_api_cron_import_skill_in_training($item) {
  */
 function eve_api_cron_api_user_wallet_journal($item) {
   $character_id = (int) $item['characterID'];
-  $query = (array) $item['query'];
+  $query = $item['query'];
 
   $row_count = 250;
   $from_id = NULL;

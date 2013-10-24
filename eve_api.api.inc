@@ -1471,19 +1471,14 @@ function eve_api_characters_exist($characters) {
  * @return bool
  *   TRUE or FALSE.
  */
-function eve_api_character_is_in_corp($character_id, $corporation_id = NULL) {
-  $query = db_select('eve_api_character_sheet_roles', 'cr');
+function eve_api_character_is_in_corp($character_id, $corporation_id) {
+  $query = db_select('eve_api_characters', 'c');
 
-  if (isset($corporation_id)) {
-    $query->join('eve_api_characters', 'c', 'cr.characterID = c.characterID');
-    $query->condition('c.corporationID', $corporation_id, '=');
-  }
-
-  $result = $query->fields('cr', array(
+  $result = $query->fields('c', array(
       'characterID',
     ))
-    ->condition('cr.roleID', 1, '=')
-    ->condition('cr.characterID', (int) $character_id, '=')
+    ->condition('c.corporationID', $corporation_id, '=')
+    ->condition('c.characterID', (int) $character_id, '=')
     ->execute();
 
   if ($result->rowCount()) {
@@ -1584,6 +1579,139 @@ function eve_api_character_is_ceo($character_id, $corporation_id = NULL) {
     ))
     ->condition('crw.isCEO', 1, '=')
     ->condition('crw.characterID', (int) $character_id, '=')
+    ->execute();
+
+  if ($result->rowCount()) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+/**
+ * Function to check if the Characters is in a corp.
+ *
+ * @param int $uid
+ *   A unique drupal id.
+ * @param int $corporation_id
+ *   A unique corporation id.
+ *
+ * @return bool
+ *   TRUE or FALSE.
+ */
+function eve_api_user_is_in_corp($uid, $corporation_id) {
+  $query = db_select('eve_api_characters', 'c');
+  $query->join('users', 'u', 'c.characterID = u.characterID');
+
+  $result = $query->fields('c', array(
+      'characterID',
+    ))
+    ->condition('c.corporationID', $corporation_id, '=')
+    ->condition('u.uid', (int) $uid, '=')
+    ->execute();
+
+  if ($result->rowCount()) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+/**
+ * Function to check if the Characters is a Director.
+ *
+ * @param int $uid
+ *   A unique drupal id.
+ * @param int $corporation_id
+ *   A unique corporation id.
+ *
+ * @return bool
+ *   TRUE or FALSE.
+ */
+function eve_api_user_is_director($uid, $corporation_id = NULL) {
+  $query = db_select('eve_api_character_sheet_roles', 'cr');
+  $query->join('users', 'u', 'cr.characterID = u.characterID');
+
+  if (isset($corporation_id)) {
+    $query->join('eve_api_characters', 'c', 'cr.characterID = c.characterID');
+    $query->condition('c.corporationID', $corporation_id, '=');
+  }
+
+  $result = $query->fields('cr', array(
+      'characterID',
+    ))
+    ->condition('cr.roleID', 1, '=')
+    ->condition('u.uid', (int) $uid, '=')
+    ->execute();
+
+  if ($result->rowCount()) {
+    return TRUE;
+  }
+
+  $query = db_select('eve_api_role_ceo_director', 'crw');
+  $query->join('users', 'u', 'crw.characterID = u.characterID');
+
+  if (isset($corporation_id)) {
+    $query->join('eve_api_characters', 'c', 'crw.characterID = c.characterID');
+    $query->condition('c.corporationID', $corporation_id, '=');
+  }
+
+  $result = $query->fields('crw', array(
+      'characterID',
+    ))
+    ->condition('crw.isDirector', 1, '=')
+    ->condition('u.uid', (int) $uid, '=')
+    ->execute();
+
+  if ($result->rowCount()) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+/**
+ * Function to check if the Characters is a CEO.
+ *
+ * @param int $uid
+ *   A unique drupal id.
+ * @param int $corporation_id
+ *   A unique corporation id.
+ *
+ * @return bool
+ *   TRUE or FALSE.
+ */
+function eve_api_user_is_ceo($uid, $corporation_id = NULL) {
+  $query = db_select('eve_api_alliance_list_corporations', 'ac');
+  $query->join('users', 'u', 'ac.ceoID = u.characterID');
+
+  if (isset($corporation_id)) {
+    $query->condition('ac.corporationID', $corporation_id, '=');
+  }
+
+  $result = $query->fields('ac', array(
+      'ceoID',
+    ))
+    ->condition('u.uid', (int) $uid, '=')
+    ->execute();
+
+  if ($result->rowCount()) {
+    return TRUE;
+  }
+
+  $query = db_select('eve_api_role_ceo_director', 'crw');
+  $query->join('users', 'u', 'crw.characterID = u.characterID');
+
+  if (isset($corporation_id)) {
+    $query->join('eve_api_characters', 'c', 'crw.characterID = c.characterID');
+    $query->condition('c.corporationID', $corporation_id, '=');
+  }
+
+  $result = $query->fields('crw', array(
+      'characterID',
+    ))
+    ->condition('crw.isCEO', 1, '=')
+    ->condition('u.uid', (int) $uid, '=')
     ->execute();
 
   if ($result->rowCount()) {
