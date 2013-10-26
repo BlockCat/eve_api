@@ -116,11 +116,6 @@ function eve_api_jabber_cron_queue_info() {
  *   whatever was added to the queue via queue->createItem()
  */
 function eve_api_jabber_cron_user_sync($item) {
-  if ($item['runs'] == 3) {
-    watchdog('eve_api_jabber', 'Cron Update Jabber User Roles task has failed 2 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_ERROR);
-    return FALSE;
-  }
-
   try {
     $user_roles = $corp_info = array();
 
@@ -168,6 +163,13 @@ function eve_api_jabber_cron_user_sync($item) {
     }
   }
   catch (EveApiException $e) {
+    if ($item['runs'] == 2) {
+      watchdog('eve_api_jabber', 'Cron Update Jabber User Roles task has failed 2 times in a row, task was removed. Data: ' . drupal_http_build_query($item) . ' Message: ' . $e->getMessage(), NULL, WATCHDOG_ERROR);
+      return FALSE;
+    }
+
+    watchdog('eve_api_jabber', 'Cron Update Jabber User Roles task has failed. Data: ' . drupal_http_build_query($item) . ' Message: ' . $e->getMessage(), NULL, WATCHDOG_ERROR);
+
     $item['runs'] = $item['runs'] + 1;
     $queue = DrupalQueue::get('eve_api_jabber_cron_user_sync');
     $queue->createItem($item);
@@ -185,11 +187,6 @@ function eve_api_jabber_cron_user_sync($item) {
  *   whatever was added to the queue via queue->createItem()
  */
 function eve_api_jabber_cron_role_sync($item) {
-  if ($item == 3) {
-    watchdog('eve_api_jabber', 'Cron Sync Jabber Roles task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
-    return FALSE;
-  }
-
   try {
     $roles = user_roles();
     $corp_info = array();
@@ -219,6 +216,13 @@ function eve_api_jabber_cron_role_sync($item) {
     }
   }
   catch (EveApiException $e) {
+    if ($item == 2) {
+      watchdog('eve_api_jabber', 'Cron Sync Jabber Roles task has failed 2 times in a row, task was removed. Message: ' . $e->getMessage(), NULL, WATCHDOG_ERROR);
+      return FALSE;
+    }
+
+    watchdog('eve_api_jabber', 'Cron Sync Jabber Roles task has failed. Message: ' . $e->getMessage(), NULL, WATCHDOG_ERROR);
+
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_jabber_cron_role_sync');
     $queue->createItem($item);

@@ -226,11 +226,6 @@ function eve_api_cron_queue_info() {
  *   TRUE or FALSE.
  */
 function eve_api_cron_api_user_sync($item) {
-  if ($item['runs'] == 3) {
-    watchdog('eve_api', 'Cron update User API task has failed 2 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_ERROR);
-    return FALSE;
-  }
-
   $uid = (int) $item['uid'];
   $account = user_load($uid);
 
@@ -258,6 +253,11 @@ function eve_api_cron_api_user_sync($item) {
   }
 
   if ($error_found) {
+    if ($item['runs'] == 2) {
+      watchdog('eve_api', 'Cron update User API task has failed 2 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_ERROR);
+      return FALSE;
+    }
+
     $item['runs'] = $item['runs'] + 1;
     $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
     $queue->createItem($item);
@@ -387,11 +387,6 @@ function eve_api_cron_api_user_sync($item) {
  *   TRUE or FALSE.
  */
 function eve_api_cron_api_alliance_fetch($item = NULL) {
-  if ($item == 3) {
-    watchdog('eve_api', 'Cron Standings task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
-    return FALSE;
-  }
-
   $key_id = variable_get('eve_api_corp_keyid', '');
   $v_code = variable_get('eve_api_corp_vcode', '');
 
@@ -407,6 +402,11 @@ function eve_api_cron_api_alliance_fetch($item = NULL) {
   $response = eve_api_get_xml('ContactList', $query);
 
   if (!isset($response['xml']->result)) {
+    if ($item == 2) {
+      watchdog('eve_api', 'Cron Standings task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
+      return FALSE;
+    }
+
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
     $queue->createItem($item);
@@ -445,14 +445,14 @@ function eve_api_cron_api_alliance_fetch($item = NULL) {
  *   TRUE or FALSE.
  */
 function eve_api_cron_api_alliance_sync($item = NULL) {
-  if ($item == 3) {
-    watchdog('eve_api', 'Cron Import Alliance API task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
-    return FALSE;
-  }
-
   $response = eve_api_get_xml('AllianceList');
 
   if (!isset($response['xml']->result)) {
+    if ($item == 2) {
+      watchdog('eve_api', 'Cron Import Alliance API task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
+      return FALSE;
+    }
+
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
     $queue->createItem($item);
@@ -548,14 +548,14 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
  *   TRUE or FALSE.
  */
 function eve_api_cron_api_mask_sync($item = NULL) {
-  if ($item == 3) {
-    watchdog('eve_api', 'Cron Access Mask task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
-    return FALSE;
-  }
-
   $response = eve_api_get_xml('callList');
 
   if (!isset($response['xml']->result)) {
+    if ($item == 2) {
+      watchdog('eve_api', 'Cron Access Mask task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
+      return FALSE;
+    }
+
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
     $queue->createItem($item);
@@ -611,14 +611,14 @@ function eve_api_cron_api_mask_sync($item = NULL) {
  *   TRUE or FALSE.
  */
 function eve_api_cron_api_skill_tree($item = NULL) {
-  if ($item == 3) {
-    watchdog('eve_api', 'Cron Skill Tree task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
-    return FALSE;
-  }
-
   $api_data = eve_api_get_skill_tree_api();
 
   if (isset($api_data['error'])) {
+    if ($item == 2) {
+      watchdog('eve_api', 'Cron Skill Tree task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
+      return FALSE;
+    }
+
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
     $queue->createItem($item);
@@ -657,14 +657,14 @@ function eve_api_cron_api_skill_tree($item = NULL) {
  *   TRUE or FALSE.
  */
 function eve_api_cron_api_error_list($item = NULL) {
-  if ($item == 3) {
-    watchdog('eve_api', 'Cron Error List task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
-    return FALSE;
-  }
-
   $api_data = eve_api_get_error_list_api();
 
   if (isset($api_data['error'])) {
+    if ($item == 2) {
+      watchdog('eve_api', 'Cron Error List task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
+      return FALSE;
+    }
+
     $item = $item + 1;
     $queue = DrupalQueue::get('eve_api_cron_api_error_list');
     $queue->createItem($item);
