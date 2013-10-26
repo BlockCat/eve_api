@@ -221,7 +221,12 @@ function eve_api_form_user_register_form_alter(&$form, &$form_state) {
     drupal_goto('user/register');
   }
 
-  $valid_characters_list = eve_api_list_valid_characters($characters);
+  if (!variable_get('eve_api_require_blue', FALSE)) {
+    $valid_characters_list = eve_api_list_valid_characters($characters);
+  }
+  else {
+    $valid_characters_list = eve_api_list_valid_characters($characters, FALSE);
+  }
 
   $form['account']['name'] = array(
     '#type' => 'select',
@@ -297,7 +302,7 @@ function eve_api_user_register_form_validate(&$form, &$form_state) {
     }
   }
 
-  if (!eve_api_verify_blue($characters)) {
+  if (!eve_api_verify_blue($characters) && !variable_get('eve_api_require_blue', FALSE)) {
     form_set_error('keyID', t('No characters associated with your key are currently blue.'));
     form_set_error('vCode');
   }
@@ -362,11 +367,15 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
     $alliance_role = user_role_load(variable_get('eve_api_alliance_role', 2));
     user_multiple_role_edit(array($uid), 'add_role', (int) $alliance_role->rid);
   }
-  else {
+  elseif (eve_api_verify_blue($character)) {
     $character_is_blue = TRUE;
 
     $blue_role = user_role_load(variable_get('eve_api_blue_role', 2));
     user_multiple_role_edit(array($uid), 'add_role', (int) $blue_role->rid);
+  }
+  else {
+    $default_role = user_role_load(variable_get('eve_api_unverified_role', 2));
+    user_multiple_role_edit(array($uid), 'add_role', $default_role->rid);
   }
 
   module_invoke_all('eve_api_user_update', array(
@@ -525,7 +534,7 @@ function eve_api_enter_api_form_validate($form, &$form_state) {
       }
     }
 
-    if (!eve_api_verify_blue($characters)) {
+    if (!eve_api_verify_blue($characters) && !variable_get('eve_api_require_blue', FALSE)) {
       form_set_error('keyID', t('No characters associated with your key are currently blue to this alliance.'));
       form_set_error('vCode');
     }

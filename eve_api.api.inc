@@ -1398,11 +1398,16 @@ function eve_api_verify_blue($characters) {
  * @return array
  *   A simple array of characters blue to the alliance.
  */
-function eve_api_list_valid_characters($characters) {
+function eve_api_list_valid_characters($characters, $blue_only = TRUE) {
   $chars = array();
 
   if (!empty($characters)) {
     foreach ($characters['characters'] as $character) {
+      if (!$blue_only) {
+        $chars[] = $character['characterName'];
+        continue;
+      }
+
       $result = db_query('SELECT contactID FROM {eve_api_contact_list} WHERE standing > 0 AND contactID IN (:contactIDs)', array(
         ':contactIDs' => array(
           (int) $character['characterID'],

@@ -459,12 +459,21 @@ function eve_api_admin_registration_form($form, &$form_state) {
     '#default_value' => round((float) variable_get('eve_api_required_standing', 0.1), 1),
   );
 
+  $form['registration']['blue'] = array(
+    '#type' => 'radios',
+    '#title' => t('Allow Anyone to Register'),
+    '#description' => t('By Default, only characters who are blue to the alliance/corporation may register, you can disable this requirment so non blue characters can be used to register.'),
+    '#options' => array(0 => t('No'), 1 => t('Yes')),
+    '#weight' => 20,
+    '#default_value' => (int) variable_get('eve_api_require_blue', FALSE),
+  );
+
   $form['registration']['expires'] = array(
     '#type' => 'radios',
     '#title' => t('Allow Keys to Expire'),
     '#description' => t('API keys can be set to expire at a certain date and time. You can allow users to register with API Keys that will expire, but this may cause issues if the user forgets that the API Key has/will expire.'),
     '#options' => array(0 => t('No'), 1 => t('Yes')),
-    '#weight' => 20,
+    '#weight' => 30,
     '#default_value' => (int) variable_get('eve_api_require_expires', FALSE),
   );
 
@@ -473,7 +482,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
     '#title' => t('Require All Characters'),
     '#description' => t('The API Key can list all characters on the account, or only show a single character.'),
     '#options' => array(0 => t('No'), 1 => t('Yes')),
-    '#weight' => 30,
+    '#weight' => 40,
     '#default_value' => (int) variable_get('eve_api_require_type', TRUE),
   );
 
@@ -627,6 +636,7 @@ function eve_api_admin_registration_form_submit($form, &$form_state) {
   $access_mask = variable_get('eve_api_access_mask', 268435455);
 
   variable_set('eve_api_access_mask', $new_access_mask);
+  variable_get('eve_api_require_blue', (bool) $form_state['values']['blue']);
 
   if ($access_mask != $new_access_mask || round((float) variable_get('eve_api_required_standing', 0.1), 1) != round((float) $form_state['values']['standing'], 1) || (int) variable_get('eve_api_require_expires', FALSE) != (int) $form_state['values']['expires'] || (int) variable_get('eve_api_require_type', TRUE) != (int) $form_state['values']['type']) {
     variable_set('eve_api_required_standing', round((float) $form_state['values']['standing'], 1));
