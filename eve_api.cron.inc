@@ -254,7 +254,10 @@ function eve_api_cron_api_user_sync($item) {
 
   if ($error_found) {
     if ($item['runs'] == 2) {
-      watchdog('eve_api', 'Cron update User API task has failed 2 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_ERROR);
+      if (variable_get('eve_api_debug', FALSE)) {
+        watchdog('eve_api', 'Cron update User API task has failed 2 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_ERROR);
+      }
+
       return FALSE;
     }
 
@@ -403,7 +406,10 @@ function eve_api_cron_api_alliance_fetch($item = NULL) {
 
   if (!isset($response['xml']->result)) {
     if ($item == 2) {
-      watchdog('eve_api', 'Cron Standings task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
+      if (variable_get('eve_api_debug', FALSE)) {
+        watchdog('eve_api', 'Cron Standings task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
+      }
+
       return FALSE;
     }
 
@@ -449,7 +455,10 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
 
   if (!isset($response['xml']->result)) {
     if ($item == 2) {
-      watchdog('eve_api', 'Cron Import Alliance API task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
+      if (variable_get('eve_api_debug', FALSE)) {
+        watchdog('eve_api', 'Cron Import Alliance API task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
+      }
+
       return FALSE;
     }
 
@@ -552,7 +561,10 @@ function eve_api_cron_api_mask_sync($item = NULL) {
 
   if (!isset($response['xml']->result)) {
     if ($item == 2) {
-      watchdog('eve_api', 'Cron Access Mask task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
+      if (variable_get('eve_api_debug', FALSE)) {
+        watchdog('eve_api', 'Cron Access Mask task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
+      }
+
       return FALSE;
     }
 
@@ -615,7 +627,10 @@ function eve_api_cron_api_skill_tree($item = NULL) {
 
   if (isset($api_data['error'])) {
     if ($item == 2) {
-      watchdog('eve_api', 'Cron Skill Tree task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
+      if (variable_get('eve_api_debug', FALSE)) {
+        watchdog('eve_api', 'Cron Skill Tree task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
+      }
+
       return FALSE;
     }
 
@@ -661,7 +676,10 @@ function eve_api_cron_api_error_list($item = NULL) {
 
   if (isset($api_data['error'])) {
     if ($item == 2) {
-      watchdog('eve_api', 'Cron Error List task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
+      if (variable_get('eve_api_debug', FALSE)) {
+        watchdog('eve_api', 'Cron Error List task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
+      }
+
       return FALSE;
     }
 
@@ -709,7 +727,9 @@ function eve_api_cron_import_character_sheet($item) {
       'errorText' => $character_sheet['errorText'],
     ))->execute();
 
-    watchdog('eve_api', 'Failed importing Character Sheet. Data: (' . drupal_http_build_query($sheet_query) . ') Error: ' . (int) $error, NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed importing Character Sheet. Data: (' . drupal_http_build_query($sheet_query) . ') Error: ' . (int) $error, NULL, WATCHDOG_WARNING);
+    }
 
     return FALSE;
   }
@@ -863,7 +883,9 @@ function eve_api_cron_import_character_info($item) {
       'errorText' => $character_info['errorText'],
     ))->execute();
 
-    watchdog('eve_api', 'Failed importing Character Info. Data: (' . drupal_http_build_query($info_query) . ') Error: ' . (int) $error, NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed importing Character Info. Data: (' . drupal_http_build_query($info_query) . ') Error: ' . (int) $error, NULL, WATCHDOG_WARNING);
+    }
 
     return FALSE;
   }
@@ -960,7 +982,9 @@ function eve_api_cron_import_skill_in_training($item) {
       'errorText' => $training_info['errorText'],
     ))->execute();
 
-    watchdog('eve_api', 'Failed importing Character Skill Training. Data: (' . drupal_http_build_query($training_query) . ') Error: ' . (int) $error, NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed importing Character Skill Training. Data: (' . drupal_http_build_query($training_query) . ') Error: ' . (int) $error, NULL, WATCHDOG_WARNING);
+    }
 
     return FALSE;
   }
@@ -1040,7 +1064,9 @@ function eve_api_cron_api_user_wallet_journal($item) {
     $wallet_info = eve_api_get_wallet_journal_api($wallet_query);
 
     if (isset($wallet_info['error'])) {
-      watchdog('eve_api', 'Failed importing Character Wallet Journal. Data: (' . drupal_http_build_query($wallet_query) . ') Error: ' . (int) $wallet_info['error'], NULL, WATCHDOG_WARNING);
+      if (variable_get('eve_api_debug', FALSE)) {
+        watchdog('eve_api', 'Failed importing Character Wallet Journal. Data: (' . drupal_http_build_query($wallet_query) . ') Error: ' . (int) $wallet_info['error'], NULL, WATCHDOG_WARNING);
+      }
 
       return FALSE;
     }
@@ -1126,7 +1152,9 @@ function eve_api_cron_import_contracts($item) {
   $contract_info = eve_api_get_contracts_api($contract_query);
 
   if (isset($contract_info['error'])) {
-    watchdog('eve_api', 'Failed importing Character Contracts. Data: (' . drupal_http_build_query($contract_query) . ') Error: ' . (int) $contract_info['error'], NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed importing Character Contracts. Data: (' . drupal_http_build_query($contract_query) . ') Error: ' . (int) $contract_info['error'], NULL, WATCHDOG_WARNING);
+    }
 
     return FALSE;
   }
@@ -1213,7 +1241,9 @@ function eve_api_cron_import_mail($item) {
   $mail_info = eve_api_get_mail_messages_api($mail_query);
 
   if (isset($mail_info['error'])) {
-    watchdog('eve_api', 'Failed importing Mail Headers. Data: (' . drupal_http_build_query($mail_query) . ') Error: ' . (int) $mail_info['error'], NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed importing Mail Headers. Data: (' . drupal_http_build_query($mail_query) . ') Error: ' . (int) $mail_info['error'], NULL, WATCHDOG_WARNING);
+    }
 
     return FALSE;
   }
@@ -1270,7 +1300,9 @@ function eve_api_cron_import_mail($item) {
       $body_info = eve_api_get_mail_bodies_api($body_query);
 
       if (isset($body_info['error'])) {
-        watchdog('eve_api', 'Failed importing Mail Bodies. Data: (' . drupal_http_build_query($body_query) . ') Error: ' . (int) $body_info['error'], NULL, WATCHDOG_WARNING);
+        if (variable_get('eve_api_debug', FALSE)) {
+          watchdog('eve_api', 'Failed importing Mail Bodies. Data: (' . drupal_http_build_query($body_query) . ') Error: ' . (int) $body_info['error'], NULL, WATCHDOG_WARNING);
+        }
 
         return FALSE;
       }
@@ -1384,7 +1416,9 @@ function eve_api_cron_update_key($account, $key_id, $v_code, $api_id) {
   }
 
   if (!isset($characters['characters'])) {
-    watchdog('eve_api', 'Error occured, should never happen. (' . drupal_http_build_query($query) . ')<br /><pre>' . print_r($characters, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Error occured, should never happen. (' . drupal_http_build_query($query) . ')<br /><pre>' . print_r($characters, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
+    }
 
     return array(
       'error' => TRUE,

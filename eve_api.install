@@ -1157,6 +1157,7 @@ function eve_api_uninstall() {
   variable_del('eve_api_avatar_http');
   variable_del('eve_api_enable');
   variable_del('eve_api_enable_cron');
+  variable_del('eve_api_debug');
   variable_del('eve_api_first_run');
   variable_del('eve_api_nag_user');
   variable_del('eve_api_alliance_role');

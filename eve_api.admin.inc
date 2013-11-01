@@ -77,12 +77,21 @@ function eve_api_admin_settings_form($form, &$form_state) {
       '#default_value' => (int) variable_get('eve_api_enable_cron', TRUE),
     );
 
+    $form['settings']['debug'] = array(
+      '#type' => 'radios',
+      '#title' => t('Enable EVE API Debug'),
+      '#description' => t('If you experience problems with EVE API, you can enable the verbose logging.'),
+      '#options' => array(0 => t('No'), 1 => t('Yes')),
+      '#weight' => 10,
+      '#default_value' => (int) variable_get('eve_api_debug', FALSE),
+    );
+
     $form['settings']['nag_user'] = array(
       '#type' => 'radios',
       '#title' => t('Nag User to Select Character'),
       '#description' => t('Display a message on every page telling the user to select a main character if they have not selected a main character.'),
       '#options' => array(0 => t('No'), 1 => t('Yes')),
-      '#weight' => 10,
+      '#weight' => 20,
       '#default_value' => (int) variable_get('eve_api_nag_user', TRUE),
     );
   }
@@ -97,9 +106,14 @@ function eve_api_admin_settings_form($form, &$form_state) {
       '#value' => TRUE,
     );
 
+    $form['enter_api']['debug'] = array(
+      '#type' => 'hidden',
+      '#value' => (int) variable_get('eve_api_debug', FALSE),
+    );
+
     $form['enter_api']['nag_user'] = array(
       '#type' => 'hidden',
-      '#value' => TRUE,
+      '#value' => (int) variable_get('eve_api_nag_user', TRUE),
     );
   }
 
@@ -169,6 +183,7 @@ function eve_api_admin_settings_form_submit($form, &$form_state) {
   variable_set('eve_api_corp_keyid', (int) $form_state['values']['keyID']);
   variable_set('eve_api_corp_vcode', (string) $form_state['values']['vCode']);
   variable_set('eve_api_enable_cron', (bool) $form_state['values']['enable_cron']);
+  variable_set('eve_api_debug', (bool) $form_state['values']['debug']);
   variable_set('eve_api_nag_user', (bool) $form_state['values']['nag_user']);
 
   // It's not pretty but it works.

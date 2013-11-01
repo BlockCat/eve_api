@@ -149,7 +149,10 @@ function eve_api_get_xml($type, $query = array()) {
 
     if (isset($html->error) && !empty($html->error)) {
       $response['errorText'] = $html->error;
-      watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_ERROR);
+
+      if (variable_get('eve_api_debug', FALSE)) {
+        watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_ERROR);
+      }
     }
     else {
       $response['errorText'] = 'OK';
@@ -190,7 +193,9 @@ function eve_api_get_xml($type, $query = array()) {
     $response['errorCode'] = $error->code;
     $response['errorText'] = $response['xml']->error;
 
-    watchdog('eve_api', 'EVE API returned an error with the API data. (' . $type . '?' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_NOTICE);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'EVE API returned an error with the API data. (' . $type . '?' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_NOTICE);
+    }
 
     if (eve_api_error_code($response['errorCode'])) {
       //variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
@@ -826,8 +831,11 @@ function eve_api_get_api_key_info_api($query) {
   $response = eve_api_get_xml('APIKeyInfo', $query);
 
   if (!isset($response['xml']->result)) {
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed getting API Key Info API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    }
+
     unset($response['xml']);
-    watchdog('eve_api', 'Failed getting API Key Info API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
     return array('error' => TRUE) + $response;
   }
 
@@ -874,7 +882,10 @@ function eve_api_get_skill_in_training_api($query) {
   $response = eve_api_get_xml('SkillInTraining', $query);
 
   if (!isset($response['xml']->result)) {
-    watchdog('eve_api', 'Failed getting Skill in Training API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed getting Skill in Training API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    }
+
     unset($response['xml']);
     return array('error' => TRUE) + $response;
   }
@@ -903,7 +914,10 @@ function eve_api_get_wallet_journal_api($query) {
   $response = eve_api_get_xml('WalletJournal', $query);
 
   if (!isset($response['xml']->result)) {
-    watchdog('eve_api', 'Failed getting Wallet Journal API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed getting Wallet Journal API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    }
+
     unset($response['xml']);
     return array('error' => TRUE) + $response;
   }
@@ -938,7 +952,10 @@ function eve_api_get_contracts_api($query) {
   $response = eve_api_get_xml('Contracts', $query);
 
   if (!isset($response['xml']->result)) {
-    watchdog('eve_api', 'Failed getting Contracts API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed getting Contracts API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    }
+
     unset($response['xml']);
     return array('error' => TRUE) + $response;
   }
@@ -973,7 +990,10 @@ function eve_api_get_mail_messages_api($query) {
   $response = eve_api_get_xml('MailMessages', $query);
 
   if (!isset($response['xml']->result)) {
-    watchdog('eve_api', 'Failed getting Mail Messages API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed getting Mail Messages API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    }
+
     unset($response['xml']);
     return array('error' => TRUE) + $response;
   }
@@ -1006,7 +1026,10 @@ function eve_api_get_mail_bodies_api($query) {
   $response = eve_api_get_xml('MailBodies', $query);
 
   if (!isset($response['xml']->result) && !isset($response['xml']->result->missingMessageIDs)) {
-    watchdog('eve_api', 'Failed getting Mail Bodies API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed getting Mail Bodies API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    }
+
     unset($response['xml']);
     return array('error' => TRUE) + $response;
   }
@@ -1045,7 +1068,10 @@ function eve_api_get_character_info_api($query) {
   $response = eve_api_get_xml('CharacterInfo', $query);
 
   if (!isset($response['xml']->result)) {
-    watchdog('eve_api', 'Failed getting Character Sheet API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed getting Character Sheet API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    }
+
     unset($response['xml']);
     return array('error' => TRUE) + $response;
   }
@@ -1090,7 +1116,10 @@ function eve_api_get_character_sheet_api($query) {
   $response = eve_api_get_xml('CharacterSheet', $query);
 
   if (!isset($response['xml']->result)) {
-    watchdog('eve_api', 'Failed getting Character Sheet API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed getting Character Sheet API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    }
+
     unset($response['xml']);
     return array('error' => TRUE) + $response;
   }
@@ -1171,7 +1200,10 @@ function eve_api_get_skill_tree_api() {
   $response = eve_api_get_xml('SkillTree');
 
   if (!isset($response['xml']->result)) {
-    watchdog('eve_api', 'Failed getting Skill Tree API Data. Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed getting Skill Tree API Data. Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    }
+
     unset($response['xml']);
     return array('error' => TRUE) + $response;
   }
@@ -1233,7 +1265,10 @@ function eve_api_get_corporation_sheet_api($query) {
   $response = eve_api_get_xml('CorporationSheet', $query);
 
   if (!isset($response['xml']->result)) {
-    watchdog('eve_api', 'Failed getting Corporation Sheet API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed getting Corporation Sheet API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    }
+
     unset($response['xml']);
     return array('error' => TRUE) + $response;
   }
@@ -1268,7 +1303,10 @@ function eve_api_get_character_id_api($query) {
   $response = eve_api_get_xml('CharacterID', $query);
 
   if (!isset($response['xml']->result)) {
-    watchdog('eve_api', 'Failed getting Character ID API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed getting Character ID API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    }
+
     unset($response['xml']);
     return array('error' => TRUE) + $response;
   }
@@ -1303,7 +1341,10 @@ function eve_api_get_character_name_api($query) {
   $response = eve_api_get_xml('CharacterName', $query);
 
   if (!isset($response['xml']->result)) {
-    watchdog('eve_api', 'Failed getting Character Name API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed getting Character Name API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    }
+
     unset($response['xml']);
     return array('error' => TRUE) + $response;
   }
