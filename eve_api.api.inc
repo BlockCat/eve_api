@@ -79,6 +79,10 @@ function eve_api_get_xml($type, $query = array()) {
       $url .= '/char/MailBodies.xml.aspx';
       break;
 
+    case 'ErrorList':
+      $url .= '/eve/ErrorList.xml.aspx';
+      break;
+
     default:
     case 'APIKeyInfo':
       $url .= '/account/APIKeyInfo.xml.aspx';
@@ -1357,6 +1361,41 @@ function eve_api_get_character_name_api($query) {
     $row = $rows->attributes();
 
     $api_data[(int) $row->characterID] = (string) $row->name;
+  }
+
+  return $api_data;
+}
+
+/**
+ * Function to retrieve updated list of EVE API Error Codes.
+ *
+ * @param array $query
+ *   The URL variables to pass through the URL.
+ *
+ * @return array
+ *   A simple array containing unique error code and text messages.
+ */
+function eve_api_get_error_list_api() {
+  $response = eve_api_get_xml('ErrorList');
+
+  if (!isset($response['xml']->result)) {
+    if (variable_get('eve_api_debug', FALSE)) {
+      watchdog('eve_api', 'Failed getting Error List API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
+    }
+
+    unset($response['xml']);
+    return array('error' => TRUE) + $response;
+  }
+
+  $api_data = array();
+  $api_data['errorCode'] = (int) $response['errorCode'];
+  $api_data['errorText'] = (string) $response['errorText'];
+  $api_data['errors'] = array();
+
+  foreach ($response['xml']->result->rowset->children() as $rows) {
+    $row = $rows->attributes();
+
+    $api_data['errors'][(int) $row->errorCode] = (string) $row->errorText;
   }
 
   return $api_data;

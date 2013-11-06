@@ -692,10 +692,10 @@ function eve_api_cron_api_error_list($item = NULL) {
 
   db_truncate('eve_api_error_list')->execute();
 
-  foreach ($api_data['errors'] as $rows) {
+  foreach ($api_data['errors'] as $error_code => $error_text) {
     db_insert('eve_api_error_list')->fields(array(
-      'errorCode' => (int) $rows['errorCode'],
-      'errorText' => (string) $rows['errorText'],
+      'errorCode' => (int) $error_code,
+      'errorText' => (string) $error_text,
     ))->execute();
   }
 
