@@ -50,15 +50,14 @@ function eve_api_user_list_user_page($id = NULL) {
       $output = eve_api_user_list_user_general_page($id, $type);
     }
     else {
-      $is_director = eve_api_character_is_director($account->characterID, (int) $row['corporationID']);
-      $is_good = user_access('moderate eve_api users') || user_access('administer eve_api settings');
+      $is_good = eve_api_user_list_private_access((int) $row['corporationID']);
 
       switch ($id) {
         case (string) $row['corporationName']:
         case (int) $row['corporationID']:
           $type = 1;
           drupal_set_title(t('@name User List', array('@name' => $row['corporationName'])));
-          if ($is_director || $is_good) {
+          if ($is_good) {
             $output = eve_api_user_list_user_private_page($row['corporationID']);
           }
           else {
@@ -76,7 +75,7 @@ function eve_api_user_list_user_page($id = NULL) {
         case (string) $row['characterName']:
         case (int) $row['characterID']:
           drupal_set_title($row['characterName']);
-          $output = eve_api_user_list_user_character_page($row['characterID'], $is_director, $is_good);
+          $output = eve_api_user_list_user_character_page($row['characterID'], $is_good);
           break;
 
         default:
@@ -304,7 +303,7 @@ function eve_api_user_list_user_private_page($corporation_id) {
 /**
  * Create the character User List page.
  */
-function eve_api_user_list_user_character_page($character_id, $is_director, $is_good) {
+function eve_api_user_list_user_character_page($character_id, $is_good) {
   global $user, $is_https;
 
   $output = array();
@@ -395,7 +394,7 @@ function eve_api_user_list_user_character_page($character_id, $is_director, $is_
   $output['profile']['eve_api_attributes']['corporation'] = array(
     '#theme' => 'user_profile_item',
     '#title' => t('Corporation'),
-    '#markup' => (($is_director || $is_good) ? l($character_data['corporationName'], 'eve_api/user_list/' . $character_data['corporationID']) : l($character_data['corporationName'], 'eve_api/user_list/' . $character_data['corporationID'])) . ' (' . $character_data['corporationTicker'] . ')',
+    '#markup' => (($is_good) ? l($character_data['corporationName'], 'eve_api/user_list/' . $character_data['corporationID']) : l($character_data['corporationName'], 'eve_api/user_list/' . $character_data['corporationID'])) . ' (' . $character_data['corporationTicker'] . ')',
   );
 
   $output['profile']['eve_api_attributes']['corporationDate'] = array(
@@ -412,7 +411,7 @@ function eve_api_user_list_user_character_page($character_id, $is_director, $is_
     );
   }
 
-  if (!$is_director && $user->uid != $character_data['uid'] && !$is_good) {
+  if ($user->uid != $character_data['uid'] && !$is_good) {
     return $output;
   }
 
@@ -583,7 +582,7 @@ function eve_api_user_list_user_character_page($character_id, $is_director, $is_
     '#markup' => drupal_render_children($form),
   );
 
-  if (!$is_director && !$is_good) {
+  if (!$is_good) {
     return $output;
   }
 
