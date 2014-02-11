@@ -775,7 +775,7 @@ function eve_api_cron_import_character_sheet($item) {
             ))->fields(array(
               'characterID' => (int) $character_id,
               'titleID' => (int) $titlesdata['titleID'],
-              'titleName' => (int) $titlesdata['titleName'],
+              'titleName' => (string) $titlesdata['titleName'],
             ))->execute();
           }
           break;
