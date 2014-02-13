@@ -47,7 +47,7 @@ function eve_api_teamspeak_cronapi($op, $job = NULL) {
           $queue->createItem(1);
         }
         break;
-
+/*
       case 'eve_api_teamspeak_cron_user_sync_job':
         if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
           $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_sync');
@@ -65,6 +65,7 @@ function eve_api_teamspeak_cronapi($op, $job = NULL) {
           }
         }
         break;
+*/
     }
   }
 }
@@ -258,12 +259,14 @@ function eve_api_teamspeak_cron_user_check($item) {
     }
 
     foreach ($teamspeak_user_list as $teamspeak_user) {
+      $skip_check = FALSE;
+
       if ($teamspeak_user->client_type == 1) {
         continue;
       }
 
       if (in_array(variable_get('eve_api_teamspeak_bypass_group', 0), explode(',', (string) $teamspeak_user->client_servergroups))) {
-        continue;
+        $skip_check = TRUE;
       }
 
       $teamspeak_uid = (string) $teamspeak_user->client_unique_identifier;
@@ -281,6 +284,10 @@ function eve_api_teamspeak_cron_user_check($item) {
           if ((string) $rname['name'] != 'Guest' && isset($valid_roles[(string) $rname['name']])) {
             eve_api_teamspeak_user_remove_group($ts3, $rid, $teamspeak_dbid);
           }
+        }
+
+        if ($skip_check) {
+          continue;
         }
 
         if (variable_get('eve_api_teamspeak_reg_message_enable', FALSE)) {
@@ -359,7 +366,7 @@ function eve_api_teamspeak_cron_user_check($item) {
         }
       }
 
-      if ($teamspeak_nickname != $expected_teamspeak_nickname) {
+      if ($teamspeak_nickname != $expected_teamspeak_nickname && !$skip_check) {
         if (variable_get('eve_api_teamspeak_user_message_enable', FALSE)) {
           $teamspeak_user->message('[color=red]' . t('Your nickname is incorrect.') . '[/color]');
 
