@@ -79,6 +79,14 @@ function eve_api_get_xml($type, $query = array()) {
       $url .= '/char/MailBodies.xml.aspx';
       break;
 
+    case 'Notifications':
+      $url .= '/char/Notification.xml.aspx';
+      break;
+
+    case 'NotificationTexts':
+      $url .= '/char/NotificationTexts.xml.aspx';
+      break;
+
     case 'ErrorList':
       $url .= '/eve/ErrorList.xml.aspx';
       break;
