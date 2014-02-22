@@ -80,7 +80,7 @@ function eve_api_get_xml($type, $query = array()) {
       break;
 
     case 'Notifications':
-      $url .= '/char/Notification.xml.aspx';
+      $url .= '/char/Notifications.xml.aspx';
       break;
 
     case 'NotificationTexts':
