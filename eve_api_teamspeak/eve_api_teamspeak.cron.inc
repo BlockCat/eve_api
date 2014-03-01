@@ -120,15 +120,15 @@ function eve_api_teamspeak_cron_queue_info() {
   $queue = array();
   $queue['eve_api_teamspeak_cron_user_sync'] = array(
     'worker callback' => 'eve_api_teamspeak_cron_user_sync',
-    'time' => 15,
+    'time' => 60,
   );
   $queue['eve_api_teamspeak_cron_user_check'] = array(
     'worker callback' => 'eve_api_teamspeak_cron_user_check',
-    'time' => 15,
+    'time' => 60,
   );
   $queue['eve_api_teamspeak_cron_role_sync'] = array(
     'worker callback' => 'eve_api_teamspeak_cron_role_sync',
-    'time' => 15,
+    'time' => 60,
   );
   return $queue;
 }
@@ -140,6 +140,8 @@ function eve_api_teamspeak_cron_queue_info() {
  *   whatever was added to the queue via queue->createItem()
  */
 function eve_api_teamspeak_cron_user_sync($item) {
+  return FALSE;
+
   try {
     $roles = user_roles();
     $valid_roles = $user_roles = $corp_info = array();

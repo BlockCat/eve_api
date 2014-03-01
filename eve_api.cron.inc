@@ -187,31 +187,31 @@ function eve_api_cron_queue_info() {
   $queue = array();
   $queue['eve_api_cron_api_user_sync'] = array(
     'worker callback' => 'eve_api_cron_api_user_sync',
-    'time' => 60,
+    'time' => 3600,
   );
   $queue['eve_api_cron_api_alliance_fetch'] = array(
     'worker callback' => 'eve_api_cron_api_alliance_fetch',
-    'time' => 60,
+    'time' => 3600,
   );
   $queue['eve_api_cron_api_mask_sync'] = array(
     'worker callback' => 'eve_api_cron_api_mask_sync',
-    'time' => 60,
+    'time' => 3600,
   );
   $queue['eve_api_cron_api_alliance_sync'] = array(
     'worker callback' => 'eve_api_cron_api_alliance_sync',
-    'time' => 60,
+    'time' => 3600,
   );
   $queue['eve_api_cron_api_skill_tree'] = array(
     'worker callback' => 'eve_api_cron_api_skill_tree',
-    'time' => 60,
+    'time' => 3600,
   );
   $queue['eve_api_cron_api_error_list'] = array(
     'worker callback' => 'eve_api_cron_api_error_list',
-    'time' => 60,
+    'time' => 3600,
   );
   $queue['eve_api_cron_api_user_wallet_journal'] = array(
     'worker callback' => 'eve_api_cron_api_user_wallet_journal',
-    'time' => 60,
+    'time' => 3600,
   );
   return $queue;
 }

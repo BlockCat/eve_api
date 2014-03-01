@@ -104,6 +104,20 @@ function eve_api_teamspeak_eve_api_user_update($data) {
 }
 
 /**
+ * Implements hook_eve_api_user_delete().
+ */
+function eve_api_teamspeak_eve_api_user_delete($account) {
+  $account = $data['account'];
+
+  db_update('users')->fields(array(
+      'teamspeakUID' => 0,
+      'teamspeakDBID' => 0,
+    ))
+    ->condition('uid', $account->uid, '=')
+    ->execute();
+}
+
+/**
  * Implements hook_schema_alter().
  */
 function eve_api_teamspeak_schema_alter(&$schema) {

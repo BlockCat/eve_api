@@ -5,55 +5,6 @@
  */
 
 /**
- * Test the connection to the Jabber Server.
- */
-function eve_api_jabber_test_connection() {
-  try {
-    $result = db_query('SELECT username FROM {ofUser} LIMIT 1');
-    unset($result);
-  }
-  catch (PDOException $e) {
-    throw new EveApiException(check_plain($e->getMessage()));
-  }
-}
-
-/**
- * Connect to the Jabber Database.
- */
-function eve_api_jabber_connect($check = FALSE) {
-  if (!variable_get('eve_api_jabber_enable', FALSE) && !$check) {
-    throw new EveApiException(t('Jabber Connection disabled.'));
-  }
-
-  // Set the Jabber Database for access on the fly.
-  $jabber_database = array(
-    'host' => variable_get('eve_api_jabber_hostname', '127.0.0.1'),
-    'database' => variable_get('eve_api_jabber_database', 'Jabber'),
-    'username' => variable_get('eve_api_jabber_username', 'Username'),
-    'password' => variable_get('eve_api_jabber_password', 'Password'),
-    'driver' => 'mysql',
-    'prefix' => '',
-  );
-
-  Database::addConnectionInfo('Jabber', 'default', $jabber_database);
-
-  try {
-    db_set_active('Jabber');
-  }
-  catch (PDOException $e) {
-    db_set_active();
-    throw new EveApiException(check_plain($e->getMessage()));
-  }
-}
-
-/**
- * Disconnect from the Jabber Database.
- */
-function eve_api_jabber_disconnect() {
-  db_set_active();
-}
-
-/**
  * Format the Jabber group or login name.
  *
  * @param string $name
@@ -91,70 +42,6 @@ function eve_api_jabber_format_display_name($name) {
   }
 
   return $name;
-}
-
-/**
- * Checks to see if exists and Inserts a new Group if it does not exist.
- *
- * @param string $name
- *   The group name to add.
- * @param string $description
- *   The description of the group.
- *
- * @return bool
- *   Returns a true on success.
- */
-function eve_api_jabber_group_add($name, $description = '') {
-  if (!variable_get('eve_api_jabber_enable', FALSE)) {
-    throw new EveApiException(t('Jabber Connection disabled.'));
-  }
-
-  try {
-    eve_api_jabber_connect();
-
-    $clean_name = (string) eve_api_jabber_format_name($name);
-
-    $result = db_query('SELECT groupName FROM {ofGroup} WHERE groupName = :groupName', array(
-      ':groupName' => $clean_name,
-    ));
-
-    if ($result->rowCount()) {
-      eve_api_jabber_disconnect();
-
-      return TRUE;
-    }
-
-    db_merge('ofGroup')->key(array('groupName' => $clean_name))->fields(array(
-      'groupName' => $clean_name,
-      'description' => (string) $description,
-    ))->execute();
-
-    db_insert('ofGroupProp')->fields(array(
-      'groupName' => $clean_name,
-      'name' => 'sharedRoster.showInRoster',
-      'propValue' => 'everybody',
-    ))->execute();
-
-    db_insert('ofGroupProp')->fields(array(
-      'groupName' => $clean_name,
-      'name' => 'sharedRoster.displayName',
-      'propValue' => (string) $name,
-    ))->execute();
-
-    db_insert('ofGroupProp')->fields(array(
-      'groupName' => $clean_name,
-      'name' => 'sharedRoster.groupList',
-      'propValue' => '',
-    ))->execute();
-
-    eve_api_jabber_disconnect();
-  }
-  catch (PDOException $e) {
-    eve_api_jabber_disconnect();
-    throw new EveApiException(check_plain($e->getMessage()));
-  }
-
-  return TRUE;
 }
 
 /**

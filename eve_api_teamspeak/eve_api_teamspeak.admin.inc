@@ -13,6 +13,10 @@
  * @ingroup forms
  */
 function eve_api_teamspeak_admin_form($form, &$form_state) {
+  if (($library = libraries_load('TeamSpeak3')) && !empty($library['loaded'])) {
+    variable_set('eve_api_teamspeak_framework_installed', TRUE);
+  }
+
   $form['teamspeak'] = array(
     '#type' => 'fieldset',
     '#title' => t('Configure TeamSpeak 3 Connection'),

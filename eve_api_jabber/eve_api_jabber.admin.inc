@@ -20,50 +20,6 @@ function eve_api_jabber_admin_form($form, &$form_state) {
     '#weight' => 0,
   );
 
-  $form['jabber']['hostname'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Hostname'),
-    '#description' => t('The Jabber Database IP address or hostname. This can be 127.0.0.1 if the Database is hosted on the same server as the webhost.'),
-    '#required' => TRUE,
-    '#size' => 20,
-    '#maxlength' => 15,
-    '#weight' => 0,
-    '#default_value' => variable_get('eve_api_jabber_hostname', '127.0.0.1'),
-  );
-
-  $form['jabber']['database'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Database Name'),
-    '#description' => t('The name of the Jabber database on the MySQL Server.'),
-    '#required' => TRUE,
-    '#size' => 60,
-    '#maxlength' => 50,
-    '#weight' => 10,
-    '#default_value' => variable_get('eve_api_jabber_database', 'Jabber'),
-  );
-
-  $form['jabber']['username'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Username'),
-    '#description' => t('The username required to connect to the Jabber Database.'),
-    '#required' => TRUE,
-    '#size' => 60,
-    '#maxlength' => 50,
-    '#weight' => 20,
-    '#default_value' => variable_get('eve_api_jabber_username', 'Username'),
-  );
-
-  $form['jabber']['password'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Password'),
-    '#description' => t('The password required to connect to the Jabber Database.'),
-    '#required' => TRUE,
-    '#size' => 60,
-    '#maxlength' => 50,
-    '#weight' => 30,
-    '#default_value' => variable_get('eve_api_jabber_password', 'Password'),
-  );
-
   $form['jabber']['url'] = array(
     '#type' => 'textfield',
     '#title' => t('Openfire Admin URL'),
@@ -126,26 +82,11 @@ function eve_api_jabber_admin_form($form, &$form_state) {
  * @see eve_api_jabber_admin_form_submit()
  */
 function eve_api_jabber_admin_form_validate($form, &$form_state) {
-  variable_set('eve_api_jabber_hostname', (string) $form_state['values']['hostname']);
-  variable_set('eve_api_jabber_database', (string) $form_state['values']['database']);
-  variable_set('eve_api_jabber_username', (string) $form_state['values']['username']);
-  variable_set('eve_api_jabber_password', (string) $form_state['values']['password']);
   variable_set('eve_api_jabber_url', (string) $form_state['values']['url']);
   variable_set('eve_api_jabber_secret', (string) $form_state['values']['secret']);
   variable_set('eve_api_jabber_domain', (string) $form_state['values']['domain']);
 
   if ((bool) $form_state['values']['enable']) {
-    try {
-      eve_api_jabber_connect(TRUE);
-      eve_api_jabber_test_connection();
-      eve_api_jabber_disconnect();
-    }
-    catch (EveApiException $e) {
-      eve_api_jabber_disconnect();
-      form_set_error('enable', t('Please check database settings and try again. Error: @error', array('@error' => $e->getMessage())));
-      variable_set('eve_api_jabber_enable', FALSE);
-    }
-
     try {
       $result = eve_api_jabber_url_query('check');
 
@@ -169,9 +110,6 @@ function eve_api_jabber_admin_form_validate($form, &$form_state) {
 function eve_api_jabber_admin_form_submit($form, &$form_state) {
   if ((bool) $form_state['values']['enable']) {
     variable_set('eve_api_jabber_enable', TRUE);
-
-    $queue = DrupalQueue::get('eve_api_jabber_cron_role_sync');
-    $queue->createItem(1);
   }
   else {
     variable_set('eve_api_jabber_enable', FALSE);

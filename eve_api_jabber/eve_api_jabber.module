@@ -76,17 +76,7 @@ function eve_api_jabber_menu() {
 function eve_api_jabber_user_delete($account) {
   if (variable_get('eve_api_jabber_enable', FALSE)) {
     try {
-      eve_api_jabber_connect();
-
-      $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-        ':username' => (string) eve_api_jabber_format_name($account->name),
-      ));
-
-      if ($result->rowCount()) {
-        eve_api_jabber_url_query('delete', $account->name);
-      }
-
-      eve_api_jabber_disconnect();
+      eve_api_jabber_url_query('delete', $account->name);
     }
     catch (EveApiException $e) {
       // Log Error ?
@@ -103,17 +93,7 @@ function eve_api_jabber_eve_api_user_update($data) {
   if (variable_get('eve_api_jabber_enable', FALSE)) {
     if (isset($data['old_character'])) {
       try {
-        eve_api_jabber_connect();
-
-        $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-          ':username' => (string) eve_api_jabber_format_name($data['old_character']),
-        ));
-
-        if ($result->rowCount()) {
-          eve_api_jabber_url_query('delete', $data['old_character']);
-        }
-
-        eve_api_jabber_disconnect();
+        eve_api_jabber_url_query('delete', $data['old_character']);
       }
       catch (EveApiException $e) {
         // Log Error ?
@@ -135,17 +115,7 @@ function eve_api_jabber_eve_api_user_update($data) {
 function eve_api_jabber_eve_api_user_delete($account) {
   if (variable_get('eve_api_jabber_enable', FALSE)) {
     try {
-      eve_api_jabber_connect();
-
-      $result = db_query('SELECT username FROM {ofUser} WHERE username = :username', array(
-        ':username' => (string) eve_api_jabber_format_name($account->name),
-      ));
-
-      if ($result->rowCount()) {
-        eve_api_jabber_url_query('delete', $account->name);
-      }
-
-      eve_api_jabber_disconnect();
+      eve_api_jabber_url_query('delete', $account->name);
     }
     catch (EveApiException $e) {
       // Log Error ?
