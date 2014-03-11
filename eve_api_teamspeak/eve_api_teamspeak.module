@@ -74,6 +74,10 @@ function eve_api_teamspeak_menu() {
  * Implements hook_user_delete().
  */
 function eve_api_teamspeak_user_delete($account) {
+  if (!isset($account->teamspeakDBID)) {
+    return;
+  }
+
   if (variable_get('eve_api_teamspeak_enable', FALSE)) {
     try {
       $ts3 = eve_api_teamspeak_connect();
@@ -89,8 +93,10 @@ function eve_api_teamspeak_user_delete($account) {
 /**
  * Implements hook_eve_api_user_update().
  */
-function eve_api_teamspeak_eve_api_user_update($data) {
-  $account = $data['account'];
+function eve_api_teamspeak_eve_api_user_update($account) {
+  if (!isset($account->teamspeakDBID) || !isset($account->teamspeakUID)) {
+    return;
+  }
 
   if (variable_get('eve_api_teamspeak_enable', FALSE) && $account->teamspeakDBID != 0) {
     $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_sync');
@@ -107,8 +113,6 @@ function eve_api_teamspeak_eve_api_user_update($data) {
  * Implements hook_eve_api_user_delete().
  */
 function eve_api_teamspeak_eve_api_user_delete($account) {
-  $account = $data['account'];
-
   db_update('users')->fields(array(
       'teamspeakUID' => 0,
       'teamspeakDBID' => 0,
