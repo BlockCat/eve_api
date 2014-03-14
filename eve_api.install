@@ -241,6 +241,12 @@ function eve_api_schema() {
         'description' => 'Gender of the character.',
         'not null' => TRUE,
       ) + $varchar,
+      'factionID' => array(
+        'description' => 'Faction id character belongs to.',
+      ) + $big_int,
+      'factionName' => array(
+        'description' => 'Faction name character belongs to.',
+      ) + $varchar,
       'cloneName' => array(
         'description' => 'Clone name of the character.',
         'not null' => TRUE,
@@ -594,6 +600,10 @@ function eve_api_schema() {
         'description' => 'Character ID or mailing list ID of the message originator.',
         'not null' => TRUE,
       ) + $big_int,
+      'senderName' => array(
+        'description' => 'The Senders Name.',
+        'not null' => TRUE,
+      ) + $varchar,
       'sentDate' => array(
         'description' => 'Date & time message sent.',
         'not null' => TRUE,
@@ -1510,4 +1520,35 @@ function eve_api_update_7201(&$sandbox) {
   $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
   $queue->createQueue();
   $queue->createItem(1);
+}
+
+/**
+ * Update from RC7 to RC8.
+ */
+function eve_api_update_7202(&$sandbox) {
+  $big_int = array(
+    'type' => 'int',
+    'size' => 'big',
+    'length' => 20,
+    'not null' => FALSE,
+    'default' => 0,
+  );
+
+  $varchar = array(
+    'type' => 'varchar',
+    'length' => 255,
+    'not null' => FALSE,
+    'default' => '',
+  );
+
+  db_add_field('eve_api_mail_messages', 'senderName', array(
+      'description' => 'The Senders Name.',
+    )+ $varchar);
+
+  db_add_field('eve_api_character_sheet', 'factionID', array(
+      'description' => 'Faction id character belongs to.',
+    )+ $big_int);
+  db_add_field('eve_api_character_sheet', 'factionName', array(
+      'description' => 'Faction name character belongs to.',
+    ) + $varchar);
 }

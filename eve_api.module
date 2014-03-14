@@ -23,7 +23,7 @@ require_once dirname(__FILE__) . '/eve_api.cron.inc';
  * `-------- Major Version Change.
  */
 function eve_api_version() {
-  return '2.0.2.7';
+  return '2.0.2.8';
 }
 
 /**
