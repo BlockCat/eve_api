@@ -574,7 +574,7 @@ function eve_api_curl_http_request($url, array $options = array()) {
       elseif ($options['max_redirects']) {
         // Redirect to the new location.
         $options['max_redirects']--;
-        $result = curl_http_request($location, $options);
+        $result = eve_api_curl_http_request($location, $options);
         $result->redirect_code = $code;
       }
       if (!isset($result->redirect_url)) {

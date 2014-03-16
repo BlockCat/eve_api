@@ -162,7 +162,7 @@ function eve_api_admin_settings_form_validate($form, &$form_state) {
     variable_set('eve_api_enable', FALSE);
   }
   else {
-    if ($characters['expires'] || $characters['type'] != 'Corporation' || $characters['accessMask'] != 67108863) {
+    if ($characters['expires'] || $characters['type'] != 'Corporation' || ($characters['accessMask'] & 270680) != 270680) {
       form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to your Alliance Executor or Corporation CEO, the "Type" drop down box is set to "Corporation", and that the "No Expiry" checkbox is ticked.'));
       form_set_error('vCode');
       variable_set('eve_api_enable', FALSE);
