@@ -31,9 +31,6 @@ function eve_api_teamspeak_install() {
   $queue = DrupalQueue::get('eve_api_teamspeak_cron_role_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_sync');
-  $queue->createQueue();
-
   $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_check');
   $queue->createQueue();
 }
@@ -74,9 +71,6 @@ function eve_api_teamspeak_uninstall() {
   variable_del('eve_api_teamspeak_cron_user_next');
 
   $queue = DrupalQueue::get('eve_api_teamspeak_cron_role_sync');
-  $queue->deleteQueue();
-
-  $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_sync');
   $queue->deleteQueue();
 
   $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_check');

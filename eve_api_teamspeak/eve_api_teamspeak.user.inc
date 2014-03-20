@@ -114,14 +114,6 @@ function eve_api_teamspeak_user_form_submit($form, &$form_state) {
         'teamspeakDBID' => $teamspeak_dbid,
       ))->condition('uid', $uid, '=')->execute();
 
-    $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_sync');
-    $queue->createItem(array(
-      'uid' => $uid,
-      'teamspeakDBID' => $teamspeak_dbid,
-      'teamspeakUID' => $teamspeak_uid,
-      'runs' => 1,
-    ));
-
     // Need to assign roles.
     drupal_set_message(t('TeamSpeak access granted.'));
     eve_api_teamspeak_disconnect($ts3);
