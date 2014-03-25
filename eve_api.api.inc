@@ -2214,6 +2214,8 @@ function eve_api_error_code($code) {
  *   TRUE or FALSE if the code means to stop.
  */
 function eve_api_error_code_deleted($code) {
+  $code = (int) $code;
+
   $error_codes = array(
     202,
     203,

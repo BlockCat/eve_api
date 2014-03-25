@@ -101,6 +101,14 @@ function eve_api_teamspeak_cron_user_check($item) {
     $valid_roles = $corp_info = array();
     $roles = user_roles();
 
+    $result = db_query('SELECT corporationName, corporationTicker FROM {eve_api_alliance_list_corporations}');
+
+    if ($result->rowCount()) {
+      foreach ($result->fetchAll() as $row) {
+        $corp_info[(string) $row->corporationName] = (string) $row->corporationTicker;
+      }
+    }
+
     foreach ($roles as $rid => $rname) {
       if ($rid == 1 || $rid == 2) {
         continue;
@@ -113,14 +121,6 @@ function eve_api_teamspeak_cron_user_check($item) {
       }
 
       $valid_roles[$rname] = $rid;
-    }
-
-    $result = db_query('SELECT corporationName, corporationTicker FROM {eve_api_alliance_list_corporations}');
-
-    if ($result->rowCount()) {
-      foreach ($result->fetchAll() as $row) {
-        $corp_info[$row->corporationName] = $row->corporationTicker;
-      }
     }
 
     foreach ($teamspeak_user_list as $teamspeak_user) {
