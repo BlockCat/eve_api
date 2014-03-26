@@ -430,6 +430,7 @@ function eve_api_cron_api_alliance_fetch($item = NULL) {
         'contactID' => (int) $row->contactID,
         'contactName' => (string) $row->contactName,
         'standing' => (float) $row->standing,
+        'contactTypeID' => (int) $row->contactTypeID,
         'manual' => 0,
         'checked' => 0,
       ))->execute();

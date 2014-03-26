@@ -1001,6 +1001,10 @@ function eve_api_schema() {
         'precision' => 3,
         'scale' => 1,
       ) + $double,
+      'contactTypeID' => array(
+        'description' => 'The TypeID of the contact.',
+        'not null' => TRUE,
+      ) + $big_int,
       'manual' => array(
         'description' => 'Indicate if manually added.',
         'not null' => TRUE,
@@ -1551,4 +1555,27 @@ function eve_api_update_7202(&$sandbox) {
   db_add_field('eve_api_character_sheet', 'factionName', array(
       'description' => 'Faction name character belongs to.',
     ) + $varchar);
+}
+
+/**
+ * Update from RC8 to RC9.
+ */
+function eve_api_update_7203(&$sandbox) {
+  $big_int = array(
+    'type' => 'int',
+    'size' => 'big',
+    'length' => 20,
+    'not null' => FALSE,
+    'default' => 0,
+  );
+
+  db_add_field('eve_api_contact_list', 'contactTypeID', array(
+      'description' => 'The TypeID of the contact.',
+      'not null' => TRUE,
+    )+ $big_int);
+
+  db_update('eve_api_contact_list')->fields(array('contactTypeID' => 1377))->execute();
+
+  $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
+  $queue->createItem(1);
 }

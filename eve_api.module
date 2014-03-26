@@ -325,13 +325,13 @@ function _eve_api_standings_block() {
 
   $items = array();
 
-  $result = db_query('SELECT contactID, contactName, standing
+  $result = db_query('SELECT contactID, contactName, standing, contactTypeID
     FROM {eve_api_contact_list} ORDER BY standing DESC , contactName');
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
       $attributes = array(
-        'attributes' => array('onclick' => 'try { CCPEVE.addContact(' . $row->contactID . '); } catch(err) { }'),
+        'attributes' => array('onclick' => 'try { CCPEVE.showInfo(' . $row->contactTypeID . ', ' . $row->contactID . '); } catch(err) { }'),
         'fragment' => $row->contactID,
         'external' => TRUE,
       );
