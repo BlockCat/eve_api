@@ -1578,4 +1578,6 @@ function eve_api_update_7203(&$sandbox) {
 
   $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
   $queue->createItem(1);
+
+  variable_set('eve_api_cron_error_count_limit', 10);
 }

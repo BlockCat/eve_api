@@ -112,21 +112,21 @@ function eve_api_get_xml($type, $query = array()) {
       $response['errorText'] = 'OK';
     }
   }
-
+variable_set('eve_api_cron_error_count_limit', 10);
   if (empty($html) || $type == 'SkillTree') {
-    if (variable_get('eve_api_cron_error_count', 0) >= variable_get('eve_api_cron_error_count_limit', 5)) {
+    if (variable_get('eve_api_cron_error_count', 0) >= variable_get('eve_api_cron_error_count_limit', 10)) {
       variable_set('eve_api_cron_error_time', time() + variable_get('eve_api_cron_error_time_limit', 10 * 60));
       variable_set('eve_api_cron_error_count', 0);
-      watchdog('eve_api', 'EVE API has failed 5 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', variable_get('eve_api_cron_error_time', 0)), NULL, WATCHDOG_EMERGENCY);
+      watchdog('eve_api', 'EVE API has failed 10 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', variable_get('eve_api_cron_error_time', 0)), NULL, WATCHDOG_EMERGENCY);
       return array(
         'errorCode' => 2,
-        'errorText' => 'EVE API has failed 5 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', variable_get('eve_api_cron_error_time', 0)),
+        'errorText' => 'EVE API has failed 10 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', variable_get('eve_api_cron_error_time', 0)),
       );
     }
     elseif (variable_get('eve_api_cron_error_time', 0) >= time()) {
       return array(
         'errorCode' => 2,
-        'errorText' => 'EVE API has failed 5 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', variable_get('eve_api_cron_error_time', 0)),
+        'errorText' => 'EVE API has failed 10 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', variable_get('eve_api_cron_error_time', 0)),
       );
     }
 
@@ -135,7 +135,7 @@ function eve_api_get_xml($type, $query = array()) {
 
     if (!$has_curl || $open_basedir) {
       $options = array(
-        'method' => 'GET',
+        'method' => 'POST',
         'data' => drupal_http_build_query($query),
         'timeout' => 45,
         'headers' => array(
@@ -210,7 +210,7 @@ function eve_api_get_xml($type, $query = array()) {
     }
 
     if (eve_api_error_code($response['errorCode'])) {
-      //variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
+      variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
     }
     else {
       variable_set('eve_api_cron_error_count', 0);
