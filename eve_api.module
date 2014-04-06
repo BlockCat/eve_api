@@ -424,13 +424,16 @@ function _eve_api_get_eve_players() {
  */
 function _eve_api_tranquility_block() {
   $status = _eve_api_get_eve_players();
+  $output = array();
 
   if ($status !== FALSE) {
-    $output['#markup'] = 'Players  Online: ' . $status . '<br />' . 'Server Time: ' . date('H:i');
+    $output['#markup'] = t('Players Online: !status', array('!status' => $status));
   }
   else {
-    $output['#markup'] = 'Tranquility Server Down<br />' . 'Server Time: ' . date('H:i');
+    $output['#markup'] = t('Tranquility Server Down');
   }
+
+  $output['#markup'] .= '<br />' . t('Server Time: !time', array('!time' => format_date(time(), 'custom', 'H:i', 'UTC')));
 
   return $output;
 }
