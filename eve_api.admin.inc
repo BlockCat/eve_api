@@ -143,7 +143,7 @@ function eve_api_admin_settings_form_validate($form, &$form_state) {
   $key_id = (int) $form_state['values']['keyID'];
   $v_code = (string) $form_state['values']['vCode'];
 
-  if (empty($key_id) || empty($v_code) || preg_match('/[^a-z0-9]/i', $v_code) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($v_code) > 64 || strlen($v_code) < 20) {
+  if (empty($key_id) || empty($v_code) || preg_match('/[^a-z0-9]/i', $v_code) || preg_match('/[^0-9]/', $key_id) || strlen($key_id) > 15 || strlen($v_code) > 64 || strlen($v_code) < 20) {
     form_set_error('keyID', t('Invalid input, please try again.'));
     form_set_error('vCode');
     return;
@@ -660,7 +660,7 @@ function eve_api_admin_registration_form_submit($form, &$form_state) {
 
     $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
 
-    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters}');
+    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE deleted = 0');
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
@@ -811,7 +811,7 @@ function eve_api_admin_list_blues_form_submit($form, &$form_state) {
     db_delete('eve_api_contact_list')->condition('contactID', $deleted_blues, 'IN')->execute();
 
     $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
-    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE corporationID = :corporationID OR characterID = :characterID OR allianceID = :allianceID', array(
+    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE deleted = 0 AND (corporationID = :corporationID OR characterID = :characterID OR allianceID = :allianceID)', array(
       ':corporationID' => $deleted_blues,
       ':characterID' => $deleted_blues,
       ':allianceID' => $deleted_blues,
@@ -959,7 +959,7 @@ function eve_api_admin_add_blue_form_submit($form, &$form_state) {
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
 
-  $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE corporationID = :corporationID OR characterID = :characterID OR allianceID = :allianceID', array(
+  $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE deleted = 0 AND (corporationID = :corporationID OR characterID = :characterID OR allianceID = :allianceID)', array(
     ':corporationID' => (int) $form_state['contactID'],
     ':characterID' => (int) $form_state['contactID'],
     ':allianceID' => (int) $form_state['contactID'],
@@ -1221,7 +1221,7 @@ function eve_api_admin_list_corporations_form_submit($form, &$form_state) {
     db_delete('eve_api_alliance_list_corporations')->condition('corporationID', $deleted_corporations, 'IN')->execute();
 
     $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
-    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE corporationID IN (:corporationIDs)', array(
+    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE deleted = 0 AND corporationID IN (:corporationIDs)', array(
       ':corporationIDs' => $deleted_corporations,
     ));
 
@@ -1376,7 +1376,7 @@ function eve_api_admin_add_corporation_form_submit($form, &$form_state) {
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
 
-  $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE corporationID = :corporationID', array(
+  $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE deleted = 0 AND corporationID = :corporationID', array(
     ':corporationID' => (int) $corp_info['corporationID'],
   ));
 
@@ -1589,7 +1589,7 @@ function eve_api_admin_list_whitelist_form_submit($form, &$form_state) {
     db_delete('eve_api_whitelist')->condition('characterID', $deleted_whitelist, 'IN')->execute();
 
     $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
-    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE characterID IN (:characterIDs)', array(':characterIDs' => $deleted_whitelist));
+    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(':characterIDs' => $deleted_whitelist));
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
@@ -1677,7 +1677,7 @@ function eve_api_admin_add_whitelist_form_validate($form, &$form_state) {
   $key_id = (int) $form_state['values']['keyID'];
   $v_code = (string) $form_state['values']['vCode'];
 
-  if (empty($key_id) || empty($v_code) || preg_match('/[^a-z0-9]/i', $v_code) || preg_match('/[^0-9]/', $form_state['values']['keyID']) || strlen($v_code) > 64 || strlen($v_code) < 20) {
+  if (empty($key_id) || empty($v_code) || preg_match('/[^a-z0-9]/i', $v_code) || preg_match('/[^0-9]/', $key_id) || strlen($key_id) > 15 || strlen($v_code) > 64 || strlen($v_code) < 20) {
     form_set_error('keyID', t('Invalid input, please try again.'));
     form_set_error('vCode');
     return;
@@ -1857,7 +1857,7 @@ function eve_api_admin_role_ceo_director_form_submit($form, &$form_state) {
     db_delete('eve_api_role_ceo_director')->condition('characterID', $deleted_ceo_director, 'IN')->execute();
 
     $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
-    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE characterID IN (:characterIDs)', array(':characterIDs' => $deleted_ceo_director));
+    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(':characterIDs' => $deleted_ceo_director));
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $item) {
