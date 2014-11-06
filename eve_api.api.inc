@@ -330,7 +330,7 @@ function eve_api_curl_http_request($url, array $options = array()) {
     CURLOPT_USERAGENT => $user_agent,
     CURLOPT_SSL_VERIFYPEER => TRUE,
     CURLOPT_SSL_VERIFYHOST => 2,
-    CURLOPT_CAINFO => drupal_get_path('module', 'eve_api') . '/eveonline.crt',
+    // CURLOPT_CAINFO => drupal_get_path('module', 'eve_api') . '/eveonline.crt',
     CURLOPT_COOKIEJAR => drupal_get_path('module', 'eve_api') . '/cookies.txt',
   );
 

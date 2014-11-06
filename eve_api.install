@@ -293,7 +293,7 @@ function eve_api_schema() {
         'type' => 'text',
         'not null' => FALSE,
       ),
-    ),
+    ) + _eve_api_phoebe_fields($small_int, $big_int, $date),
     'primary key' => array('characterID'),
   );
 
@@ -1580,4 +1580,119 @@ function eve_api_update_7203(&$sandbox) {
   $queue->createItem(1);
 
   variable_set('eve_api_cron_error_count_limit', 10);
+}
+
+/**
+ * Define Phoebe fields.
+ *
+ * @param array $small_int field data type
+ * @param array $big_int   field data type
+ * @param array $date      field data type
+ *
+ * @return array fields
+ *
+ * @see http://community.eveonline.com/news/patch-notes/patch-notes-for-phoebe/
+ *
+ */
+function _eve_api_phoebe_fields($small_int, $big_int, $date) {
+
+  return array(
+    // See http://goo.gl/10C7Kg
+    'homeStationID' => array(
+      'description' => 'Home Station.',
+    ) + $big_int,
+    'lastRespecDate' => array(
+      'description' => 'Is the date of the last respec including free.',
+      'not null' => TRUE,
+    ) + $date,
+    'lastTimedRespec' => array(
+      'description' => 'Is the date of the last timed respec.',
+      'not null' => TRUE,
+    ) + $date,
+    'freeRespecs' => array(
+      'description' => 'The number of free respecs.',
+    ) + $small_int,
+    'freeSkillPoints' => array(
+      'description' => 'The number of unallocated skillpoints that a character has.',
+    ) + $big_int,
+    'cloneJumpDate' => array(
+      'description' => 'This is the time the last jump was made.',
+      'not null' => TRUE,
+    ) + $date,
+    'cloneTypeID' => array(
+      'description' => 'The identifier of clone type.',
+    ) + $big_int,
+    // See http://goo.gl/YgDazn
+    'remoteStationDate' => array(
+      // Maybe the description is incorrect
+      'description' => 'The time of free move clone.',
+      'not null' => TRUE,
+    ) + $date,
+    'jumpActivation' => array(
+      'description' => 'The time of next available jump.',
+      'not null' => TRUE,
+    ) + $date,
+    'jumpFatigue' => array(
+      'description' => 'The time of fatigue expire.',
+      'not null' => TRUE,
+    ) + $date,
+    'jumpLastUpdate' => array(
+      'description' => 'Is when the last jump occurred by that character.',
+      'not null' => TRUE,
+    ) + $date,
+  );
+
+}
+
+/**
+ * Update RC9 to RC9p1. Update 'eve_api_character_sheet' table.
+ */
+function eve_api_update_7204(&$sandbox) {
+
+  $small_int = array(
+    'type' => 'int',
+    'size' => 'small',
+    'length' => 3,
+    'not null' => FALSE,
+    'default' => 0,
+  );
+
+  $big_int = array(
+    'type' => 'int',
+    'size' => 'big',
+    'length' => 20,
+    'not null' => FALSE,
+    'default' => 0,
+  );
+
+  $date = array(
+    'type' => 'datetime',
+    'mysql_type' => 'DATETIME',
+    'pgsql_type' => 'timestamp without time zone',
+    'sqlite_type' => 'VARCHAR',
+    'sqlsrv_type' => 'smalldatetime',
+    'not null' => FALSE,
+    'sortable' => TRUE,
+    'views' => TRUE,
+    'default' => '1970-01-01 00:00:00',
+  );
+
+  $new_fields = _eve_api_phoebe_fields($small_int, $big_int, $date);
+
+  foreach ($new_fields as $field => $spec) {
+    db_add_field('eve_api_character_sheet', $field, $spec);
+  }
+
+  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $result = db_select('users', 'u')
+    ->fields('u', array('uid'))
+    ->condition('uid', 0, '<>')
+    ->execute();
+  while ($record = $result->fetchAssoc()) {
+    $queue->createItem(array(
+      'uid' => $record['uid'],
+      'runs' => 1,
+    ));
+  }
+  variable_set('eve_api_cron_api_users_next', time() + (59 * 60));
 }
