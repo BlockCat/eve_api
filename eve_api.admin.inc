@@ -811,7 +811,7 @@ function eve_api_admin_list_blues_form_submit($form, &$form_state) {
     db_delete('eve_api_contact_list')->condition('contactID', $deleted_blues, 'IN')->execute();
 
     $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
-    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE deleted = 0 AND (corporationID = :corporationID OR characterID = :characterID OR allianceID = :allianceID)', array(
+    $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE deleted = 0 AND (corporationID IN(:corporationID) OR characterID IN(:characterID) OR allianceID IN(:allianceID))', array(
       ':corporationID' => $deleted_blues,
       ':characterID' => $deleted_blues,
       ':allianceID' => $deleted_blues,
