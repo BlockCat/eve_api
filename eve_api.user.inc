@@ -608,16 +608,29 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
     $form_state['redirect'] = 'user/' . $uid . '/edit';
 
     drupal_set_message(t('Please select a new Main Character'));
+
+    module_invoke_all('eve_api_user_update', array(
+      'account' => $account,
+      'character' => $character_data,
+      'character_is_blue' => FALSE,
+    ));
+  }
+  else
+  {
+    $character_data = eve_api_get_basic_character_info($account->name);
+    $character_is_blue = eve_api_verify_blue($character_data);
+
+    module_invoke_all('eve_api_user_update', array(
+      'account' => $account,
+      'character' => $character_data,
+      'character_is_blue' => $character_is_blue,
+    ));
   }
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
   $queue->createItem(array(
     'uid' => $uid,
     'runs' => 1,
-  ));
-
-  module_invoke_all('eve_api_user_update', array(
-    'account' => $account,
   ));
 
   if ($characters == TRUE) {
