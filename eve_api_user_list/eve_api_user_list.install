@@ -8,7 +8,7 @@
  * Implements hook_uninstall().
  */
 function eve_api_user_list_uninstall() {
-  variable_del('eve_api_user_list_private_access');
+  //variable_del('eve_api_user_list_private_access');
 }
 
 /**

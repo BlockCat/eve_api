@@ -197,19 +197,19 @@ function eve_api_admin_settings_form_submit($form, &$form_state) {
   if (((bool) $form_state['values']['enable'] && (bool) $form_state['values']['force']) || ((bool) $form_state['values']['enable'] && !variable_get('eve_api_enable', FALSE))) {
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_first_run', TRUE)->save();
 
-    $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
+    $queue = Drupal::queue('eve_api_cron_api_alliance_fetch');
     $queue->createItem(1);
 
-    $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
+    $queue = Drupal::queue('eve_api_cron_api_alliance_sync');
     $queue->createItem(1);
 
-    $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
+    $queue = Drupal::queue('eve_api_cron_api_mask_sync');
     $queue->createItem(1);
 
-    $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
+    $queue = Drupal::queue('eve_api_cron_api_skill_tree');
     $queue->createItem(1);
 
-    $queue = DrupalQueue::get('eve_api_cron_api_error_list');
+    $queue = Drupal::queue('eve_api_cron_api_error_list');
     $queue->createItem(1);
 
     drupal_set_message(t('The Alliance API Info is set to be retrieved on the next cron job, it can take up to a minute for the cron task to be triggered.'));
@@ -660,7 +660,7 @@ function eve_api_admin_registration_form_submit($form, &$form_state) {
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_require_expires', (bool) $form_state['values']['expires'])->save();
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_require_type', (bool) $form_state['values']['type'])->save();
 
-    $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+    $queue = Drupal::queue('eve_api_cron_api_user_sync');
 
     $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE deleted = 0');
 
@@ -812,7 +812,7 @@ function eve_api_admin_list_blues_form_submit($form, &$form_state) {
 
     db_delete('eve_api_contact_list')->condition('contactID', $deleted_blues, 'IN')->execute();
 
-    $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+    $queue = Drupal::queue('eve_api_cron_api_user_sync');
     $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE deleted = 0 AND (corporationID IN(:corporationID) OR characterID IN(:characterID) OR allianceID IN(:allianceID))', array(
       ':corporationID' => $deleted_blues,
       ':characterID' => $deleted_blues,
@@ -959,7 +959,7 @@ function eve_api_admin_add_blue_form_submit($form, &$form_state) {
     'memo' => (string) $form_state['values']['memo'],
   ))->execute();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue = Drupal::queue('eve_api_cron_api_user_sync');
 
   $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE deleted = 0 AND (corporationID = :corporationID OR characterID = :characterID OR allianceID = :allianceID)', array(
     ':corporationID' => (int) $form_state['contactID'],
@@ -1214,7 +1214,7 @@ function eve_api_admin_list_corporations_form_submit($form, &$form_state) {
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $corp_data) {
-        if (user_role_load_by_name($corp_data->corporationName) == TRUE) {
+        if (user_role_load($corp_data->corporationName) == TRUE) {
           user_role_delete($corp_data->corporationName);
         }
       }
@@ -1222,7 +1222,7 @@ function eve_api_admin_list_corporations_form_submit($form, &$form_state) {
 
     db_delete('eve_api_alliance_list_corporations')->condition('corporationID', $deleted_corporations, 'IN')->execute();
 
-    $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+    $queue = Drupal::queue('eve_api_cron_api_user_sync');
     $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE deleted = 0 AND corporationID IN (:corporationIDs)', array(
       ':corporationIDs' => $deleted_corporations,
     ));
@@ -1353,7 +1353,7 @@ function eve_api_admin_add_corporation_form_submit($form, &$form_state) {
   $corp_info = $form_state['corp_info'];
   $memo = (string) $form_state['values']['memo'];
 
-  if (!($role = user_role_load_by_name($corp_info['corporationName']))) {
+  if (!($role = user_role_load($corp_info['corporationName']))) {
     $user_role = new stdClass();
     $user_role->name = $corp_info['corporationName'];
 
@@ -1361,7 +1361,7 @@ function eve_api_admin_add_corporation_form_submit($form, &$form_state) {
       user_role_save($user_role);
     }
 
-    $role = user_role_load_by_name($corp_info['corporationName']);
+    $role = user_role_load($corp_info['corporationName']);
   }
 
   db_insert('eve_api_alliance_list_corporations')->fields(array(
@@ -1376,7 +1376,7 @@ function eve_api_admin_add_corporation_form_submit($form, &$form_state) {
     'memo' => $memo,
   ))->execute();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue = Drupal::queue('eve_api_cron_api_user_sync');
 
   $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE deleted = 0 AND corporationID = :corporationID', array(
     ':corporationID' => (int) $corp_info['corporationID'],
@@ -1590,7 +1590,7 @@ function eve_api_admin_list_whitelist_form_submit($form, &$form_state) {
   if (!empty($deleted_whitelist)) {
     db_delete('eve_api_whitelist')->condition('characterID', $deleted_whitelist, 'IN')->execute();
 
-    $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+    $queue = Drupal::queue('eve_api_cron_api_user_sync');
     $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(':characterIDs' => $deleted_whitelist));
 
     if ($result->rowCount()) {
@@ -1858,7 +1858,7 @@ function eve_api_admin_role_ceo_director_form_submit($form, &$form_state) {
   if (!empty($deleted_ceo_director)) {
     db_delete('eve_api_role_ceo_director')->condition('characterID', $deleted_ceo_director, 'IN')->execute();
 
-    $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+    $queue = Drupal::queue('eve_api_cron_api_user_sync');
     $result = db_query('SELECT DISTINCT uid FROM {eve_api_characters} WHERE deleted = 0 AND characterID IN (:characterIDs)', array(':characterIDs' => $deleted_ceo_director));
 
     if ($result->rowCount()) {
@@ -1978,7 +1978,7 @@ function eve_api_admin_add_role_ceo_director_form_submit($form, &$form_state) {
 
   $character = eve_api_get_basic_character_info($character_name);
 
-  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue = Drupal::queue('eve_api_cron_api_user_sync');
   $queue->createItem(array(
     'uid' => $character['uid'],
     'runs' => 1,

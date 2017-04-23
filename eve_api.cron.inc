@@ -45,23 +45,23 @@ function eve_api_cronapi($op, $job = NULL) {
 
     switch ($job) {
       case 'eve_api_cron_api_alliance_fetch_job':
-        $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
+        $queue = Drupal::queue('eve_api_cron_api_alliance_fetch');
         $queue->createItem(1);
         break;
 
       case 'eve_api_cron_api_alliance_sync_job':
-        $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
+        $queue = Drupal::queue('eve_api_cron_api_alliance_sync');
         $queue->createItem(1);
         break;
 
       case 'eve_api_cron_api_mask_sync_job':
-        $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
+        $queue = Drupal::queue('eve_api_cron_api_mask_sync');
         $queue->createItem(1);
         break;
 
       case 'eve_api_cron_api_user_sync_job':
         if (variable_get('eve_api_enable', FALSE)) {
-          $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+          $queue = Drupal::queue('eve_api_cron_api_user_sync');
           $result = db_query('SELECT DISTINCT uid FROM {users} WHERE uid != 0');
 
           if ($result->rowCount()) {
@@ -77,7 +77,7 @@ function eve_api_cronapi($op, $job = NULL) {
 
       case 'eve_api_cron_api_user_wallet_journal_job':
         if (variable_get('eve_api_enable', FALSE)) {
-          $queue = DrupalQueue::get('eve_api_cron_api_user_wallet_journal');
+          $queue = Drupal::queue('eve_api_cron_api_user_wallet_journal');
           $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode, k.errorCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.deleted = 0');
 
           if ($result->rowCount()) {
@@ -114,21 +114,21 @@ function eve_api_cron() {
   }
 
   if (time() >= variable_get('eve_api_cron_api_mask_next', 0) && date('w') == 0 && date('G') == 1 && date('i') >= 12) {
-    $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
+    $queue = Drupal::queue('eve_api_cron_api_mask_sync');
     $queue->createItem(1);
 
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_api_mask_next', time() + (1439 * 60))->save();
   }
 
   if (time() >= variable_get('eve_api_cron_api_alliance_fetch_next', 0) && date('G') == 2 && date('i') >= 12) {
-    $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
+    $queue = Drupal::queue('eve_api_cron_api_alliance_fetch');
     $queue->createItem(1);
 
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_api_alliance_fetch_next', time() + (1439 * 60))->save();
   }
 
   if (time() >= variable_get('eve_api_cron_api_alliance_sync_next', 0) && date('G') == 3 && date('i') >= 12) {
-    $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
+    $queue = Drupal::queue('eve_api_cron_api_alliance_sync');
     $queue->createItem(1);
 
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_api_alliance_sync_next', time() + (1439 * 60))->save();
@@ -136,7 +136,7 @@ function eve_api_cron() {
 
   if (variable_get('eve_api_enable', FALSE)) {
     if (time() >= variable_get('eve_api_cron_api_users_next', 0) && date('i') >= 18) {
-      $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+      $queue = Drupal::queue('eve_api_cron_api_user_sync');
       $result = db_query('SELECT DISTINCT uid FROM {users} WHERE uid != 0');
 
       if ($result->rowCount()) {
@@ -152,7 +152,7 @@ function eve_api_cron() {
     }
 
     if (time() >= variable_get('eve_api_cron_api_user_wallet_journal_next', 0) && date('G') == 4 && date('i') >= 37) {
-      $queue = DrupalQueue::get('eve_api_cron_api_user_wallet_journal');
+      $queue = Drupal::queue('eve_api_cron_api_user_wallet_journal');
       $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode, k.errorCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.deleted = 0');
 
       if ($result->rowCount()) {
@@ -262,7 +262,7 @@ function eve_api_cron_api_user_sync($item) {
     }
 
     $item['runs'] = $item['runs'] + 1;
-    $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+    $queue = Drupal::queue('eve_api_cron_api_user_sync');
     $queue->createItem($item);
     return FALSE;
   }
@@ -275,7 +275,7 @@ function eve_api_cron_api_user_sync($item) {
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
-        if ($corporation_role = user_role_load_by_name($row->corporationName)) {
+        if ($corporation_role = user_role_load($row->corporationName)) {
           user_multiple_role_edit(array($uid), 'remove_role', (int) $corporation_role->rid);
         }
       }
@@ -307,10 +307,10 @@ function eve_api_cron_api_user_sync($item) {
   else {
     $result = db_query('SELECT corporationID, corporationName FROM {eve_api_alliance_list_corporations}');
 
-    if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
+    if ($corporation_role = user_role_load($character_data['corporationName'])) {
       if ($result->rowCount()) {
         foreach ($result->fetchAll() as $row) {
-          if (($corporation_role_2 = user_role_load_by_name($row->corporationName)) && $row->corporationID != $character_data['corporationID']) {
+          if (($corporation_role_2 = user_role_load($row->corporationName)) && $row->corporationID != $character_data['corporationID']) {
             user_multiple_role_edit(array($uid), 'remove_role', $corporation_role_2->rid);
           }
         }
@@ -348,7 +348,7 @@ function eve_api_cron_api_user_sync($item) {
     else {
       if ($result->rowCount()) {
         foreach ($result->fetchAll() as $row) {
-          if ($corporation_role = user_role_load_by_name($row->corporationName)) {
+          if ($corporation_role = user_role_load($row->corporationName)) {
             user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
           }
         }
@@ -414,7 +414,7 @@ function eve_api_cron_api_alliance_fetch($item = NULL) {
     }
 
     $item = $item + 1;
-    $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
+    $queue = Drupal::queue('eve_api_cron_api_alliance_fetch');
     $queue->createItem($item);
 
     return FALSE;
@@ -464,7 +464,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
     }
 
     $item = $item + 1;
-    $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
+    $queue = Drupal::queue('eve_api_cron_api_alliance_sync');
     $queue->createItem($item);
 
     return FALSE;
@@ -503,7 +503,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
           continue;
         }
 
-        if (!($role = user_role_load_by_name($corp_info['corporationName']))) {
+        if (!($role = user_role_load($corp_info['corporationName']))) {
           $user_role = new stdClass();
           $user_role->name = $corp_info['corporationName'];
 
@@ -511,7 +511,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
             user_role_save($user_role);
           }
 
-          $role = user_role_load_by_name($corp_info['corporationName']);
+          $role = user_role_load($corp_info['corporationName']);
         }
 
         db_merge('eve_api_alliance_list_corporations')->key(array('corporationID' => (int) $row_b->corporationID))->fields(array(
@@ -532,7 +532,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
 
   if ($result->rowCount()) {
     foreach ($result->fetchAll() as $row) {
-      if (user_role_load_by_name($row->corporationName) == TRUE) {
+      if (user_role_load($row->corporationName) == TRUE) {
         user_role_delete($row->corporationName);
       }
     }
@@ -570,7 +570,7 @@ function eve_api_cron_api_mask_sync($item = NULL) {
     }
 
     $item = $item + 1;
-    $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
+    $queue = Drupal::queue('eve_api_cron_api_mask_sync');
     $queue->createItem($item);
 
     return FALSE;
@@ -636,7 +636,7 @@ function eve_api_cron_api_skill_tree($item = NULL) {
     }
 
     $item = $item + 1;
-    $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
+    $queue = Drupal::queue('eve_api_cron_api_skill_tree');
     $queue->createItem($item);
 
     return FALSE;
@@ -685,7 +685,7 @@ function eve_api_cron_api_error_list($item = NULL) {
     }
 
     $item = $item + 1;
-    $queue = DrupalQueue::get('eve_api_cron_api_error_list');
+    $queue = Drupal::queue('eve_api_cron_api_error_list');
     $queue->createItem($item);
 
     return FALSE;

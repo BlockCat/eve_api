@@ -1,0 +1,7 @@
+name: 'User List'
+description: 'Display EVE Character information for each user.'
+core: '8.x'
+package: 'Omni EVE API'
+dependencies:
+    - eve_api
+configure: 'admin/eve_api/user_list'

@@ -1119,14 +1119,14 @@ function eve_api_install() {
   );
 
   foreach ($roles as $variable => $role) {
-    if ($role_data = user_role_load_by_name($role)) {
+    if ($role_data = user_role_load($role)) {
       \Drupal::configFactory()->getEditable('eve_api.config')->set($variable, (int) $role_data->rid)->save();
     }
     else {
       $user_role = new stdClass();
       $user_role->name = $role;
       user_role_save($user_role);
-      $role_data = user_role_load_by_name($role);
+      $role_data = user_role_load($role);
       \Drupal::configFactory()->getEditable('eve_api.config')->set($variable, (int) $role_data->rid)->save();
     }
   }
@@ -1137,25 +1137,25 @@ function eve_api_install() {
   // We set this because we use 128x128 for EVE avatar's.
   \Drupal::configFactory()->getEditable('eve_api.config')->set('user_picture_dimensions', '128x128')->save();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue = Drupal::queue('eve_api_cron_api_user_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
+  $queue = Drupal::queue('eve_api_cron_api_alliance_fetch');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
+  $queue = Drupal::queue('eve_api_cron_api_mask_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
+  $queue = Drupal::queue('eve_api_cron_api_alliance_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
+  $queue = Drupal::queue('eve_api_cron_api_skill_tree');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_error_list');
+  $queue = Drupal::queue('eve_api_cron_api_error_list');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_user_wallet_journal');
+  $queue = Drupal::queue('eve_api_cron_api_user_wallet_journal');
   $queue->createQueue();
 }
 
@@ -1165,7 +1165,7 @@ function eve_api_install() {
 function eve_api_uninstall() {
   db_drop_field('users', 'characterID');
 
-  variable_del('eve_api_version');
+  /*variable_del('eve_api_version');
   variable_del('eve_api_user_picture_dimensions');
   variable_del('eve_api_avatar_https');
   variable_del('eve_api_avatar_http');
@@ -1198,27 +1198,27 @@ function eve_api_uninstall() {
   variable_del('eve_api_cron_error_count_limit');
   variable_del('eve_api_cron_error_time_limit');
   variable_del('eve_api_cron_error_count');
-  variable_del('eve_api_cron_error_time');
+  variable_del('eve_api_cron_error_time');*/
 
-  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue = Drupal::queue('eve_api_cron_api_user_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
+  $queue = Drupal::queue('eve_api_cron_api_alliance_fetch');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
+  $queue = Drupal::queue('eve_api_cron_api_mask_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
+  $queue = Drupal::queue('eve_api_cron_api_alliance_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
+  $queue = Drupal::queue('eve_api_cron_api_skill_tree');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_error_list');
+  $queue = Drupal::queue('eve_api_cron_api_error_list');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_user_wallet_journal');
+  $queue = Drupal::queue('eve_api_cron_api_user_wallet_journal');
   $queue->deleteQueue();
 }
 
@@ -1269,40 +1269,40 @@ function eve_api_requirements($phase) {
  * Update from RC3 to RC4.
  */
 function eve_api_update_7200(&$sandbox) {
-  variable_del('eve_api_cron_api_alliance_fetch_time');
+  /*variable_del('eve_api_cron_api_alliance_fetch_time');
   variable_del('eve_api_cron_api_alliance_sync_time');
   variable_del('eve_api_cron_api_mask_time');
   variable_del('eve_api_cron_api_users_time');
   variable_del('eve_api_teamspeak_cron_role_time');
   variable_del('eve_api_teamspeak_cron_user_time');
   variable_del('eve_api_jabber_cron_role_time');
-  variable_del('eve_api_jabber_cron_user_time');
+  variable_del('eve_api_jabber_cron_user_time');*/
 
-  $queue = DrupalQueue::get('eve_api_cron_import_contracts');
+  $queue = Drupal::queue('eve_api_cron_import_contracts');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_import_mail');
+  $queue = Drupal::queue('eve_api_cron_import_mail');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_import_character_sheet');
+  $queue = Drupal::queue('eve_api_cron_import_character_sheet');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_import_character_info');
+  $queue = Drupal::queue('eve_api_cron_import_character_info');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_import_skill_in_training');
+  $queue = Drupal::queue('eve_api_cron_import_skill_in_training');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_import_wallet_journal');
+  $queue = Drupal::queue('eve_api_cron_import_wallet_journal');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_import_mail');
+  $queue = Drupal::queue('eve_api_cron_import_mail');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_import_contracts');
+  $queue = Drupal::queue('eve_api_cron_import_contracts');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_user_wallet_journal');
+  $queue = Drupal::queue('eve_api_cron_api_user_wallet_journal');
   $queue->createQueue();
 
   db_drop_unique_key('eve_api_keys', 'apiID');
@@ -1521,7 +1521,7 @@ function eve_api_update_7201(&$sandbox) {
       'not null' => FALSE,
     ));
 
-  $queue = DrupalQueue::get('eve_api_cron_api_skill_tree');
+  $queue = Drupal::queue('eve_api_cron_api_skill_tree');
   $queue->createQueue();
   $queue->createItem(1);
 }
@@ -1576,7 +1576,7 @@ function eve_api_update_7203(&$sandbox) {
 
   db_update('eve_api_contact_list')->fields(array('contactTypeID' => 1377))->execute();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
+  $queue = Drupal::queue('eve_api_cron_api_alliance_fetch');
   $queue->createItem(1);
 
   \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count_limit', 10)->save();
@@ -1683,7 +1683,7 @@ function eve_api_update_7204(&$sandbox) {
     db_add_field('eve_api_character_sheet', $field, $spec);
   }
 
-  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue = Drupal::queue('eve_api_cron_api_user_sync');
   $result = db_select('users', 'u')
     ->fields('u', array('uid'))
     ->condition('uid', 0, '<>')

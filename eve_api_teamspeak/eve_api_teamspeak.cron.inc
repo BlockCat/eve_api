@@ -31,14 +31,14 @@ function eve_api_teamspeak_cronapi($op, $job = NULL) {
     switch ($job) {
       case 'eve_api_teamspeak_cron_role_sync_job':
         if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
-          $queue = DrupalQueue::get('eve_api_teamspeak_cron_role_sync');
+          $queue = Drupal::queue('eve_api_teamspeak_cron_role_sync');
           $queue->createItem(1);
         }
         break;
 
       case 'eve_api_teamspeak_cron_user_check_job':
         if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
-          $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_check');
+          $queue = Drupal::queue('eve_api_teamspeak_cron_user_check');
           $queue->createItem(1);
         }
         break;
@@ -56,7 +56,7 @@ function eve_api_teamspeak_cron() {
 
   if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
     if (time() >= variable_get('eve_api_teamspeak_cron_role_next', 0)) {
-      $queue = DrupalQueue::get('eve_api_teamspeak_cron_role_sync');
+      $queue = Drupal::queue('eve_api_teamspeak_cron_role_sync');
       $queue->createItem(1);
 
       \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_cron_role_next', time() + (5 * 60))->save();
@@ -64,7 +64,7 @@ function eve_api_teamspeak_cron() {
   }
 
   if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
-    $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_check');
+    $queue = Drupal::queue('eve_api_teamspeak_cron_user_check');
     $queue->createItem(1);
   }
 }
@@ -288,7 +288,7 @@ function eve_api_teamspeak_cron_user_check($item) {
     }
 
     $item = $item + 1;
-    $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_check');
+    $queue = Drupal::queue('eve_api_teamspeak_cron_user_check');
     $queue->createItem($item);
 
     return FALSE;
@@ -351,7 +351,7 @@ function eve_api_teamspeak_cron_role_sync($item) {
     }
 
     $item = $item + 1;
-    $queue = DrupalQueue::get('eve_api_teamspeak_cron_role_sync');
+    $queue = Drupal::queue('eve_api_teamspeak_cron_role_sync');
     $queue->createItem($item);
 
     return FALSE;

@@ -350,7 +350,7 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
     return;
   }
 
-  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue = Drupal::queue('eve_api_cron_api_user_sync');
   $queue->createItem(array(
     'uid' => $uid,
     'runs' => 1,
@@ -361,7 +361,7 @@ function eve_api_user_register_form_submit(&$form, &$form_state) {
   $corporation_name = (string) $character['corporationName'];
   $character_is_blue = FALSE;
 
-  if ($corporation_role = user_role_load_by_name($corporation_name)) {
+  if ($corporation_role = user_role_load($corporation_name)) {
     user_multiple_role_edit(array($uid), 'add_role', (int) $corporation_role->rid);
 
     $alliance_role = user_role_load(variable_get('eve_api_alliance_role', 2));

@@ -100,7 +100,7 @@ function eve_api_jabber_eve_api_user_update($data) {
       }
     }
 
-    $queue = DrupalQueue::get('eve_api_jabber_cron_user_sync');
+    $queue = Drupal::queue('eve_api_jabber_cron_user_sync');
     $queue->createItem(array(
       'uid' => $account->uid,
       'name' => $account->name,

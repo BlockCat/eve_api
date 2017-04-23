@@ -742,7 +742,7 @@ function eve_api_user_profile_form_submit($form, &$form_state) {
   $old_character_name = (string) $form_state['characterName'];
   $old_character_data = eve_api_get_basic_character_info($old_character_name);
 
-  if ($corporation_role = user_role_load_by_name($old_character_data['corporationName'])) {
+  if ($corporation_role = user_role_load($old_character_data['corporationName'])) {
     user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
 
     $alliance_role = user_role_load(variable_get('eve_api_alliance_role', 2));
@@ -766,7 +766,7 @@ function eve_api_user_profile_form_submit($form, &$form_state) {
 
   $character_is_blue = eve_api_verify_blue($character_data);
 
-  if ($corporation_role = user_role_load_by_name($character_data['corporationName'])) {
+  if ($corporation_role = user_role_load($character_data['corporationName'])) {
     user_multiple_role_edit(array($uid), 'add_role', $corporation_role->rid);
 
     $alliance_role = user_role_load(variable_get('eve_api_alliance_role', 2));
@@ -792,7 +792,7 @@ function eve_api_user_profile_form_submit($form, &$form_state) {
 
   db_update('users')->fields(array('characterID' => (int) $character_data['characterID'], 'name' => (string) $character_data['characterName']))->condition('uid', $uid, '=')->execute();
 
-  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue = Drupal::queue('eve_api_cron_api_user_sync');
   $queue->createItem(array(
     'uid' => $uid,
     'runs' => 1,

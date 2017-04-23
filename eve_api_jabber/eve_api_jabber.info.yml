@@ -1,6 +1,6 @@
 name: Jabber
 description: "Interface for Omni EVE API and Jabber."
-core: "7.x"
+core: "8.x"
 package: "Omni EVE API"
 dependencies:
     -drupal:eve_api

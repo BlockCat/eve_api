@@ -11,7 +11,7 @@ function eve_api_jabber_install() {
   \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_jabber_installed', TRUE)->save();
   \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_jabber_enable', FALSE)->save();
 
-  $queue = DrupalQueue::get('eve_api_jabber_cron_user_sync');
+  $queue = Drupal::queue('eve_api_jabber_cron_user_sync');
   $queue->createQueue();
 }
 
@@ -19,15 +19,15 @@ function eve_api_jabber_install() {
  * Implements hook_uninstall().
  */
 function eve_api_jabber_uninstall() {
-  variable_del('eve_api_jabber_installed');
+  /*variable_del('eve_api_jabber_installed');
   variable_del('eve_api_jabber_enable');
   variable_del('eve_api_jabber_url');
   variable_del('eve_api_jabber_secret');
   variable_del('eve_api_jabber_domain');
   variable_del('eve_api_jabber_cron_role_next');
-  variable_del('eve_api_jabber_cron_user_next');
+  variable_del('eve_api_jabber_cron_user_next');*/
 
-  $queue = DrupalQueue::get('eve_api_jabber_cron_user_sync');
+  $queue = Drupal::queue('eve_api_jabber_cron_user_sync');
   $queue->deleteQueue();
 }
 

@@ -28,10 +28,10 @@ function eve_api_teamspeak_install() {
   \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_framework_installed', FALSE)->save();
   \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_enable', FALSE)->save();
 
-  $queue = DrupalQueue::get('eve_api_teamspeak_cron_role_sync');
+  $queue = Drupal::queue('eve_api_teamspeak_cron_role_sync');
   $queue->createQueue();
 
-  $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_check');
+  $queue = Drupal::queue('eve_api_teamspeak_cron_user_check');
   $queue->createQueue();
 }
 
@@ -42,7 +42,7 @@ function eve_api_teamspeak_uninstall() {
   db_drop_field('users', 'teamspeakUID');
   db_drop_field('users', 'teamspeakDBID');
 
-  variable_del('eve_api_teamspeak_installed');
+  /*variable_del('eve_api_teamspeak_installed');
   variable_del('eve_api_teamspeak_framework_installed');
   variable_del('eve_api_teamspeak_enable');
   variable_del('eve_api_teamspeak_hostname');
@@ -68,12 +68,12 @@ function eve_api_teamspeak_uninstall() {
   variable_del('eve_api_teamspeak_user_ban_enable');
   variable_del('eve_api_teamspeak_user_time');
   variable_del('eve_api_teamspeak_cron_role_next');
-  variable_del('eve_api_teamspeak_cron_user_next');
+  variable_del('eve_api_teamspeak_cron_user_next');*/
 
-  $queue = DrupalQueue::get('eve_api_teamspeak_cron_role_sync');
+  $queue = Drupal::queue('eve_api_teamspeak_cron_role_sync');
   $queue->deleteQueue();
 
-  $queue = DrupalQueue::get('eve_api_teamspeak_cron_user_check');
+  $queue = Drupal::queue('eve_api_teamspeak_cron_user_check');
   $queue->deleteQueue();
 }
 

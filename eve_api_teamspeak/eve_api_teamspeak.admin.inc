@@ -419,7 +419,7 @@ function eve_api_teamspeak_admin_form_submit($form, &$form_state) {
 
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_enable', TRUE)->save();
 
-    $queue = DrupalQueue::get('eve_api_teamspeak_cron_role_sync');
+    $queue = Drupal::queue('eve_api_teamspeak_cron_role_sync');
     $queue->createItem(1);
   }
   else {

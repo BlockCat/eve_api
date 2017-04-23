@@ -176,7 +176,7 @@ function eve_api_user_add_api_form_submit($form, &$form_state) {
 
   $character = eve_api_create_key($account, $key_id, $v_code);
 
-  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue = Drupal::queue('eve_api_cron_api_user_sync');
   $queue->createItem(array(
     'uid' => $uid,
     'runs' => 1,
@@ -366,7 +366,7 @@ function eve_api_user_list_api_form_submit($form, &$form_state) {
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
-        if ($corporation_role = user_role_load_by_name($row->corporationName)) {
+        if ($corporation_role = user_role_load($row->corporationName)) {
           user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
         }
       }
@@ -412,7 +412,7 @@ function eve_api_user_list_api_form_submit($form, &$form_state) {
     ));
   }
 
-  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue = Drupal::queue('eve_api_cron_api_user_sync');
   $queue->createItem(array(
     'uid' => $uid,
     'runs' => 1,
@@ -644,7 +644,7 @@ function eve_api_user_update_api_form_submit($form, &$form_state) {
     ));
   }
 
-  $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
+  $queue = Drupal::queue('eve_api_cron_api_user_sync');
   $queue->createItem(array(
     'uid' => $uid,
     'runs' => 1,
