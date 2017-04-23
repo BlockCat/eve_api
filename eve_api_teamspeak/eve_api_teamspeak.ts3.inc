@@ -86,7 +86,7 @@ function eve_api_teamspeak_connect($check = FALSE) {
   }
 
   if (($library = libraries_load('TeamSpeak3')) && !empty($library['loaded'])) {
-    variable_set('eve_api_teamspeak_framework_installed', TRUE);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_framework_installed', TRUE)->save();
   }
 
   try {
@@ -104,11 +104,11 @@ function eve_api_teamspeak_connect($check = FALSE) {
   catch (TeamSpeak3_Exception $e) {
     // Load the TeamSpeak 3 PHP Framework Library.
     if (($library = libraries_load('TeamSpeak3')) && !empty($library['loaded'])) {
-      variable_set('eve_api_teamspeak_framework_installed', TRUE);
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_framework_installed', TRUE)->save();
     }
     else {
-      variable_set('eve_api_teamspeak_framework_installed', FALSE);
-      variable_set('eve_api_teamspeak_enable', FALSE);
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_framework_installed', FALSE)->save();
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_enable', FALSE)->save();
     }
 
     throw new EveApiException(t('TeamSpeak 3 Connection failed. Error: @error', array('@error' => $e->getMessage())));

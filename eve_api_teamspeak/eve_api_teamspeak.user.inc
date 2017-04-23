@@ -33,8 +33,8 @@ function eve_api_teamspeak_user_form($form, &$form_state, $account) {
     '#title' => t('Register your TeamSpeak Identity to your User Account'),
     '#description' => t('In order to register with TeamSpeak, you must first connect to our TeamSpeak.<br />If you do not have TeamSpeak already installed, please download and install TeamSpeak 3 from <a href="@teamspeak_url" target="_blank">here</a>.<br />Please use the following settings to connect:<br /><br />Address - @teamspeak_address<br />@teamspeak_password', array(
       '@teamspeak_url' => 'http://www.teamspeak.com/?page=downloads',
-      '@teamspeak_address' => empty($teamspeak_port_check) ? variable_get('eve_api_teamspeak_server_address', 'teamspeak.com') : variable_get('eve_api_teamspeak_server_address', 'teamspeak.com') . ':' . variable_get('eve_api_teamspeak_server_port', 9987),
-      '@teamspeak_password' => empty($teamspeak_password_check) ? '' : t('Password') . ' - ' . variable_get('eve_api_teamspeak_server_password', ''),
+      '@teamspeak_address' => empty($teamspeak_port_check) ? \Drupal::config('eve_api.config')->get('eve_api_teamspeak_server_address', 'teamspeak.com') : variable_get('eve_api_teamspeak_server_address', 'teamspeak.com') . ':' . variable_get('eve_api_teamspeak_server_port', 9987),
+      '@teamspeak_password' => empty($teamspeak_password_check) ? '' : t('Password') . ' - ' . \Drupal::config('eve_api.config')->get('eve_api_teamspeak_server_password', ''),
     )),
     '#weight' => 0,
   );

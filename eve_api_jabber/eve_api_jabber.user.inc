@@ -38,7 +38,7 @@ function eve_api_jabber_user_form($form, &$form_state, $account) {
   $form['jabber']['username'] = array(
     '#type' => 'item',
     '#title' => t('Username:'),
-    '#description' => ($account->characterID != 0) ? eve_api_jabber_format_name($account->name) . '@' . variable_get('eve_api_jabber_domain', 'yourdomain.com') : t('<a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/edit'))),
+    '#description' => ($account->characterID != 0) ? eve_api_jabber_format_name($account->name) . '@' . \Drupal::config('eve_api.config')->get('eve_api_jabber_domain', 'yourdomain.com') : t('<a href="@url">Please select a main character.</a>', array('@url' => url('user/' . $uid . '/edit'))),
     '#weight' => 10,
   );
 

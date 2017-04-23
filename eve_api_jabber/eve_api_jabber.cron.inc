@@ -67,7 +67,7 @@ function eve_api_jabber_cron() {
         }
       }
 
-      variable_set('eve_api_jabber_cron_user_next', time() + (5 * 60));
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_jabber_cron_user_next', time() + (5 * 60))->save();
     }
   }
 }

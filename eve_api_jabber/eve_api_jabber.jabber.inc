@@ -74,7 +74,7 @@ function eve_api_jabber_url_query($type, $character_name = '', array $query = ar
         $query = array();
         $default_query = array(
           'type' => $type,
-          'secret' => variable_get('eve_api_jabber_secret', 'Password'),
+          'secret' => \Drupal::config('eve_api.config')->get('eve_api_jabber_secret', 'Password'),
           'username' => eve_api_jabber_format_name($character_name),
         );
         break;
@@ -90,7 +90,7 @@ function eve_api_jabber_url_query($type, $character_name = '', array $query = ar
 
         $default_query = array(
           'type' => $type,
-          'secret' => variable_get('eve_api_jabber_secret', 'Password'),
+          'secret' => \Drupal::config('eve_api.config')->get('eve_api_jabber_secret', 'Password'),
           'username' => eve_api_jabber_format_name($character_name),
         );
         break;
@@ -98,7 +98,7 @@ function eve_api_jabber_url_query($type, $character_name = '', array $query = ar
       case 'check':
         $query = array();
         $default_query = array(
-          'secret' => variable_get('eve_api_jabber_secret', 'Password'),
+          'secret' => \Drupal::config('eve_api.config')->get('eve_api_jabber_secret', 'Password'),
         );
         break;
 

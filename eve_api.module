@@ -465,23 +465,23 @@ function eve_api_role_list() {
  */
 function eve_api_user_role_delete($role) {
   if ($role->rid == variable_get('eve_api_blue_role', 2)) {
-    variable_set('eve_api_blue_role', 2);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_blue_role', 2)->save();
   }
 
   if ($role->rid == variable_get('eve_api_alliance_role', 2)) {
-    variable_set('eve_api_alliance_role', 2);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_alliance_role', 2)->save();
   }
 
   if ($role->rid == variable_get('eve_api_unverified_role', 2)) {
-    variable_set('eve_api_unverified_role', 2);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_unverified_role', 2)->save();
   }
 
   if ($role->rid == variable_get('eve_api_ceo_role', 2)) {
-    variable_set('eve_api_ceo_role', 2);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_ceo_role', 2)->save();
   }
 
   if ($role->rid == variable_get('eve_api_director_role', 2)) {
-    variable_set('eve_api_director_role', 2);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_director_role', 2)->save();
   }
 }
 

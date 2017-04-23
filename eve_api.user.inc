@@ -54,7 +54,7 @@ function eve_api_user_add_api_form($form, &$form_state, $account) {
   $form['add_api']['help_mask'] = array(
     '#type' => 'item',
     '#title' => t('Access Mask:'),
-    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the correct access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('eve_api_access_mask', 268435455))),
+    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the correct access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . \Drupal::config('eve_api.config')->get('eve_api_access_mask', 268435455))),
     '#weight' => 40,
   );
 
@@ -488,7 +488,7 @@ function eve_api_user_update_api_form($form, &$form_state, $account, $api_id) {
   $form['update_api']['help_mask'] = array(
     '#type' => 'item',
     '#title' => t('Access Mask:'),
-    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the correct access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('eve_api_access_mask', 268435455))),
+    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the correct access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . \Drupal::config('eve_api.config')->get('eve_api_access_mask', 268435455))),
     '#weight' => 40,
   );
 

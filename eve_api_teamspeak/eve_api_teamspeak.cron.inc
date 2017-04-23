@@ -59,7 +59,7 @@ function eve_api_teamspeak_cron() {
       $queue = DrupalQueue::get('eve_api_teamspeak_cron_role_sync');
       $queue->createItem(1);
 
-      variable_set('eve_api_teamspeak_cron_role_next', time() + (5 * 60));
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_cron_role_next', time() + (5 * 60))->save();
     }
   }
 
@@ -130,7 +130,7 @@ function eve_api_teamspeak_cron_user_check($item) {
         continue;
       }
 
-      if (in_array(variable_get('eve_api_teamspeak_bypass_group', 0), explode(',', (string) $teamspeak_user->client_servergroups))) {
+      if (in_array(\Drupal::config('eve_api.config')->get('eve_api_teamspeak_bypass_group', 0), explode(',', (string) $teamspeak_user->client_servergroups))) {
         $skip_check = TRUE;
       }
 
@@ -187,9 +187,9 @@ function eve_api_teamspeak_cron_user_check($item) {
 
         if (variable_get('eve_api_teamspeak_reg_ban_enable', FALSE)) {
           if (time() >= ($teamspeak_user->client_lastconnected + (60 * variable_get('eve_api_teamspeak_reg_time', 10)))) {
-            $teamspeak_user->ban((60 * variable_get('eve_api_teamspeak_reg_ban_time', 10)), t('You should have registered at @homepage  You are banned for @time minutes.', array(
+            $teamspeak_user->ban((60 * \Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_ban_time', 10)), t('You should have registered at @homepage  You are banned for @time minutes.', array(
               '@homepage' => url('user/register', array('absolute' => TRUE)),
-              '@time' => (variable_get('eve_api_teamspeak_reg_ban_time', 10)),
+              '@time' => (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_ban_time', 10)),
             )));
           }
         }
@@ -264,8 +264,8 @@ function eve_api_teamspeak_cron_user_check($item) {
 
         if (variable_get('eve_api_teamspeak_user_ban_enable', FALSE)) {
           if (time() >= ($teamspeak_user->client_lastconnected + (60 * variable_get('eve_api_teamspeak_user_time', 10)))) {
-            $teamspeak_user->ban((60 * variable_get('eve_api_teamspeak_user_ban_time', 10)), t('You should have fixed your nickname, you are banned for @time minutes.', array(
-              '@time' => (variable_get('eve_api_teamspeak_user_ban_time', 10)),
+            $teamspeak_user->ban((60 * \Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_ban_time', 10)), t('You should have fixed your nickname, you are banned for @time minutes.', array(
+              '@time' => (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_ban_time', 10)),
             )));
           }
         }

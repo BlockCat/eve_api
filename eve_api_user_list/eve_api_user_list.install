@@ -17,12 +17,12 @@ function eve_api_user_list_uninstall() {
 function eve_api_user_list_requirements($phase) {
   $requirements = array();
   // Ensure translations don't break during installation.
-  $t = get_t();
+  
 
   if ($phase == 'runtime') {
     // Report Omni EVE API version.
     $requirements['eve_api_user_list'] = array(
-      'title' => $t('Omni EVE API (User List)'),
+      'title' => t('Omni EVE API (User List)'),
       'value' => eve_api_user_list_version(),
       'severity' => REQUIREMENT_INFO,
     );

@@ -8,8 +8,8 @@
  * Implements hook_install().
  */
 function eve_api_jabber_install() {
-  variable_set('eve_api_jabber_installed', TRUE);
-  variable_set('eve_api_jabber_enable', FALSE);
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_jabber_installed', TRUE)->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_jabber_enable', FALSE)->save();
 
   $queue = DrupalQueue::get('eve_api_jabber_cron_user_sync');
   $queue->createQueue();
@@ -37,12 +37,12 @@ function eve_api_jabber_uninstall() {
 function eve_api_jabber_requirements($phase) {
   $requirements = array();
   // Ensure translations don't break during installation.
-  $t = get_t();
+  
 
   if ($phase == 'runtime') {
     // Report Omni EVE API version.
     $requirements['eve_api_jabber'] = array(
-      'title' => $t('Omni EVE API (Jabber)'),
+      'title' => t('Omni EVE API (Jabber)'),
       'value' => eve_api_jabber_version(),
       'severity' => REQUIREMENT_INFO,
     );

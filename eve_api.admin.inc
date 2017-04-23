@@ -18,8 +18,9 @@ function eve_api_admin_settings_form($form, &$form_state) {
     '#title' => t('Enter API Key'),
     '#description' => t("Enter the Alliance Executor's or Corporation CEO's API Key."),
     '#weight' => 0,
-    '#collapsed' => variable_get('eve_api_enable', FALSE),
+    '#collapsed' => \Drupal::config('eve_api.config')->get('eve_api_enable', FALSE),
     '#collapsible' => TRUE,
+	
   );
 
   $form['enter_api']['keyID'] = array(
@@ -30,7 +31,7 @@ function eve_api_admin_settings_form($form, &$form_state) {
     '#size' => 20,
     '#maxlength' => 15,
     '#weight' => 0,
-    '#default_value' => variable_get('eve_api_corp_keyid', ''),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_corp_keyid', ''),
   );
 
   $form['enter_api']['vCode'] = array(
@@ -41,13 +42,13 @@ function eve_api_admin_settings_form($form, &$form_state) {
     '#size' => 80,
     '#maxlength' => 64,
     '#weight' => 10,
-    '#default_value' => variable_get('eve_api_corp_vcode', ''),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_corp_vcode', ''),
   );
 
   $form['enter_api']['enable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable EVE API'),
-    '#default_value' => variable_get('eve_api_enable', FALSE),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_enable', FALSE),
     '#weight' => 20,
   );
 
@@ -64,7 +65,7 @@ function eve_api_admin_settings_form($form, &$form_state) {
       '#title' => t('Settings'),
       '#description' => t('General configurable settings.'),
       '#weight' => 10,
-      '#collapsed' => !variable_get('eve_api_enable', FALSE),
+      '#collapsed' => !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE),
       '#collapsible' => TRUE,
     );
 
@@ -74,7 +75,7 @@ function eve_api_admin_settings_form($form, &$form_state) {
       '#description' => t('If you experience problems, or are updating the module, you can disable the cron related to EVE API.'),
       '#options' => array(0 => t('No'), 1 => t('Yes')),
       '#weight' => 0,
-      '#default_value' => (int) variable_get('eve_api_enable_cron', TRUE),
+      '#default_value' => (int) \Drupal::config('eve_api.config')->get('eve_api_enable_cron', TRUE),
     );
 
     $form['settings']['debug'] = array(
@@ -83,7 +84,7 @@ function eve_api_admin_settings_form($form, &$form_state) {
       '#description' => t('If you experience problems with EVE API, you can enable the verbose logging.'),
       '#options' => array(0 => t('No'), 1 => t('Yes')),
       '#weight' => 10,
-      '#default_value' => (int) variable_get('eve_api_debug', FALSE),
+      '#default_value' => (int) \Drupal::config('eve_api.config')->get('eve_api_debug', FALSE),
     );
 
     $form['settings']['nag_user'] = array(
@@ -92,7 +93,7 @@ function eve_api_admin_settings_form($form, &$form_state) {
       '#description' => t('Display a message on every page telling the user to select a main character if they have not selected a main character.'),
       '#options' => array(0 => t('No'), 1 => t('Yes')),
       '#weight' => 20,
-      '#default_value' => (int) variable_get('eve_api_nag_user', TRUE),
+      '#default_value' => (int) \Drupal::config('eve_api.config')->get('eve_api_nag_user', TRUE),
     );
   }
   else {
@@ -108,12 +109,12 @@ function eve_api_admin_settings_form($form, &$form_state) {
 
     $form['enter_api']['debug'] = array(
       '#type' => 'hidden',
-      '#value' => (int) variable_get('eve_api_debug', FALSE),
+      '#value' => (int) \Drupal::config('eve_api.config')->get('eve_api_debug', FALSE),
     );
 
     $form['enter_api']['nag_user'] = array(
       '#type' => 'hidden',
-      '#value' => (int) variable_get('eve_api_nag_user', TRUE),
+      '#value' => (int) \Drupal::config('eve_api.config')->get('eve_api_nag_user', TRUE),
     );
   }
 
@@ -159,13 +160,14 @@ function eve_api_admin_settings_form_validate($form, &$form_state) {
   if (isset($characters['error'])) {
     form_set_error('keyID', t('There was an error with the API.'));
     form_set_error('vCode');
-    variable_set('eve_api_enable', FALSE);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_enable', FALSE)->save();
   }
   else {
     if ($characters['expires'] || $characters['type'] != 'Corporation' || ($characters['accessMask'] & 270680) != 270680) {
       form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to your Alliance Executor or Corporation CEO, the "Type" drop down box is set to "Corporation", and that the "No Expiry" checkbox is ticked.'));
       form_set_error('vCode');
-      variable_set('eve_api_enable', FALSE);
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_enable', FALSE)->save();
+	  
     }
 
     $form_state['values']['characters'] = $characters;
@@ -180,20 +182,20 @@ function eve_api_admin_settings_form_validate($form, &$form_state) {
 function eve_api_admin_settings_form_submit($form, &$form_state) {
   $characters = (array) $form_state['values']['characters'];
 
-  variable_set('eve_api_corp_keyid', (int) $form_state['values']['keyID']);
-  variable_set('eve_api_corp_vcode', (string) $form_state['values']['vCode']);
-  variable_set('eve_api_enable_cron', (bool) $form_state['values']['enable_cron']);
-  variable_set('eve_api_debug', (bool) $form_state['values']['debug']);
-  variable_set('eve_api_nag_user', (bool) $form_state['values']['nag_user']);
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_corp_keyid', (int) $form_state['values']['keyID'])->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_corp_vcode', (string) $form_state['values']['vCode'])->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_enable_cron', (bool) $form_state['values']['enable_cron'])->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_debug', (bool) $form_state['values']['debug'])->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_nag_user', (bool) $form_state['values']['nag_user'])->save();
 
   // It's not pretty but it works.
   foreach ($characters['characters'] as $character) {
-    variable_set('eve_api_allianceID', (int) $character['allianceID']);
-    variable_set('eve_api_corporationID', (int) $character['corporationID']);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_allianceID', (int) $character['allianceID'])->save();
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_corporationID', (int) $character['corporationID'])->save();
   }
 
   if (((bool) $form_state['values']['enable'] && (bool) $form_state['values']['force']) || ((bool) $form_state['values']['enable'] && !variable_get('eve_api_enable', FALSE))) {
-    variable_set('eve_api_first_run', TRUE);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_first_run', TRUE)->save();
 
     $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
     $queue->createItem(1);
@@ -216,8 +218,8 @@ function eve_api_admin_settings_form_submit($form, &$form_state) {
     drupal_set_message(t('Settings Updated.'));
   }
   else {
-    variable_set('eve_api_first_run', FALSE);
-    variable_set('eve_api_enable', FALSE);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_first_run', FALSE)->save();
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_enable', FALSE)->save();
     drupal_set_message(t('Registrations have been disabled, EVE API cron tasks have been disabled, and all user menus have been disabled.'));
   }
 
@@ -246,7 +248,7 @@ function eve_api_admin_roles_form($form, &$form_state) {
     '#title' => t('Select Role for Blue Standings'),
     '#description' => t('Please select the default role for blues.'),
     '#options' => $role_list,
-    '#default_value' => variable_get('eve_api_blue_role', 2),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_blue_role', 2),
     '#weight' => 0,
   );
 
@@ -255,7 +257,7 @@ function eve_api_admin_roles_form($form, &$form_state) {
     '#title' => t('Select Role for Alliance Members'),
     '#description' => t('Please select an additional role assigned to all members of the Alliance.'),
     '#options' => $role_list,
-    '#default_value' => variable_get('eve_api_alliance_role', 2),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_alliance_role', 2),
     '#weight' => 10,
   );
 
@@ -264,7 +266,7 @@ function eve_api_admin_roles_form($form, &$form_state) {
     '#title' => t('Select Role for Unverified'),
     '#description' => t('Please select the default role for Unverified members.'),
     '#options' => $role_list,
-    '#default_value' => variable_get('eve_api_unverified_role', 2),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_unverified_role', 2),
     '#weight' => 20,
   );
 
@@ -273,7 +275,7 @@ function eve_api_admin_roles_form($form, &$form_state) {
     '#title' => t('Select Role for CEOs'),
     '#description' => t('Please select the default role for CEOs.'),
     '#options' => $role_list,
-    '#default_value' => variable_get('eve_api_ceo_role', 2),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_ceo_role', 2),
     '#weight' => 30,
   );
 
@@ -282,7 +284,7 @@ function eve_api_admin_roles_form($form, &$form_state) {
     '#title' => t('Select Role for Directors'),
     '#description' => t('Please select the default role for directors.'),
     '#options' => $role_list,
-    '#default_value' => variable_get('eve_api_director_role', 2),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_director_role', 2),
     '#weight' => 40,
   );
 
@@ -338,7 +340,7 @@ function eve_api_admin_roles_form_submit($form, &$form_state) {
   if ((int) variable_get('eve_api_blue_role', 2) != 2) {
     $uids = array();
     $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
-      ':rid' => (int) variable_get('eve_api_blue_role', 2),
+      ':rid' => (int) \Drupal::config('eve_api.config')->get('eve_api_blue_role', 2),
     ));
 
     if ($result->rowCount()) {
@@ -356,7 +358,7 @@ function eve_api_admin_roles_form_submit($form, &$form_state) {
   if ((int) variable_get('eve_api_alliance_role', 2) != 2) {
     $uids = array();
     $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
-      ':rid' => (int) variable_get('eve_api_alliance_role', 2),
+      ':rid' => (int) \Drupal::config('eve_api.config')->get('eve_api_alliance_role', 2),
     ));
 
     if ($result->rowCount()) {
@@ -374,7 +376,7 @@ function eve_api_admin_roles_form_submit($form, &$form_state) {
   if ((int) variable_get('eve_api_unverified_role', 2) != 2) {
     $uids = array();
     $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
-      ':rid' => (int) variable_get('eve_api_unverified_role', 2),
+      ':rid' => (int) \Drupal::config('eve_api.config')->get('eve_api_unverified_role', 2),
     ));
 
     if ($result->rowCount()) {
@@ -392,7 +394,7 @@ function eve_api_admin_roles_form_submit($form, &$form_state) {
   if ((int) variable_get('eve_api_ceo_role', 2) != 2) {
     $uids = array();
     $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
-      ':rid' => (int) variable_get('eve_api_ceo_role', 2),
+      ':rid' => (int) \Drupal::config('eve_api.config')->get('eve_api_ceo_role', 2),
     ));
 
     if ($result->rowCount()) {
@@ -410,7 +412,7 @@ function eve_api_admin_roles_form_submit($form, &$form_state) {
   if ((int) variable_get('eve_api_director_role', 2) != 2) {
     $uids = array();
     $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
-      ':rid' => (int) variable_get('eve_api_director_role', 2),
+      ':rid' => (int) \Drupal::config('eve_api.config')->get('eve_api_director_role', 2),
     ));
 
     if ($result->rowCount()) {
@@ -425,11 +427,11 @@ function eve_api_admin_roles_form_submit($form, &$form_state) {
     }
   }
 
-  variable_set('eve_api_blue_role', (int) $form_state['values']['blue_role']);
-  variable_set('eve_api_alliance_role', (int) $form_state['values']['alliance_role']);
-  variable_set('eve_api_unverified_role', (int) $form_state['values']['unverified_role']);
-  variable_set('eve_api_ceo_role', (int) $form_state['values']['ceo_role']);
-  variable_set('eve_api_director_role', (int) $form_state['values']['director_role']);
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_blue_role', (int) $form_state['values']['blue_role'])->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_alliance_role', (int) $form_state['values']['alliance_role'])->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_unverified_role', (int) $form_state['values']['unverified_role'])->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_ceo_role', (int) $form_state['values']['ceo_role'])->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_director_role', (int) $form_state['values']['director_role'])->save();
 
   drupal_set_message(t('The roles have been updated and will be updated with the next scheduled cron tasks.'));
 }
@@ -471,7 +473,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
     '#size' => 10,
     '#weight' => 10,
     '#required' => TRUE,
-    '#default_value' => round((float) variable_get('eve_api_required_standing', 0.1), 1),
+    '#default_value' => round((float) \Drupal::config('eve_api.config')->get('eve_api_required_standing', 0.1), 1),
   );
 
   $form['registration']['blue'] = array(
@@ -480,7 +482,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
     '#description' => t('By Default, only characters who are blue to the alliance/corporation may register, you can disable this requirment so non blue characters can be used to register.'),
     '#options' => array(0 => t('No'), 1 => t('Yes')),
     '#weight' => 20,
-    '#default_value' => (int) variable_get('eve_api_require_blue', FALSE),
+    '#default_value' => (int) \Drupal::config('eve_api.config')->get('eve_api_require_blue', FALSE),
   );
 
   $form['registration']['expires'] = array(
@@ -489,7 +491,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
     '#description' => t('API keys can be set to expire at a certain date and time. You can allow users to register with API Keys that will expire, but this may cause issues if the user forgets that the API Key has/will expire.'),
     '#options' => array(0 => t('No'), 1 => t('Yes')),
     '#weight' => 30,
-    '#default_value' => (int) variable_get('eve_api_require_expires', FALSE),
+    '#default_value' => (int) \Drupal::config('eve_api.config')->get('eve_api_require_expires', FALSE),
   );
 
   $form['registration']['type'] = array(
@@ -498,7 +500,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
     '#description' => t('The API Key can list all characters on the account, or only show a single character.'),
     '#options' => array(0 => t('No'), 1 => t('Yes')),
     '#weight' => 40,
-    '#default_value' => (int) variable_get('eve_api_require_type', TRUE),
+    '#default_value' => (int) \Drupal::config('eve_api.config')->get('eve_api_require_type', TRUE),
   );
 
   $form['mask'] = array(
@@ -650,13 +652,13 @@ function eve_api_admin_registration_form_submit($form, &$form_state) {
 
   $access_mask = variable_get('eve_api_access_mask', 268435455);
 
-  variable_set('eve_api_access_mask', $new_access_mask);
-  variable_set('eve_api_require_blue', (bool) $form_state['values']['blue']);
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_access_mask', $new_access_mask)->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_require_blue', (bool) $form_state['values']['blue'])->save();
 
-  if ($access_mask != $new_access_mask || round((float) variable_get('eve_api_required_standing', 0.1), 1) != round((float) $form_state['values']['standing'], 1) || (int) variable_get('eve_api_require_expires', FALSE) != (int) $form_state['values']['expires'] || (int) variable_get('eve_api_require_type', TRUE) != (int) $form_state['values']['type']) {
-    variable_set('eve_api_required_standing', round((float) $form_state['values']['standing'], 1));
-    variable_set('eve_api_require_expires', (bool) $form_state['values']['expires']);
-    variable_set('eve_api_require_type', (bool) $form_state['values']['type']);
+  if ($access_mask != $new_access_mask || round((float) \Drupal::config('eve_api.config')->get('eve_api_required_standing', 0.1), 1) != round((float) $form_state['values']['standing'], 1) || (int) variable_get('eve_api_require_expires', FALSE) != (int) $form_state['values']['expires'] || (int) variable_get('eve_api_require_type', TRUE) != (int) $form_state['values']['type']) {
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_required_standing', round((float) $form_state['values']['standing'], 1))->save();
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_require_expires', (bool) $form_state['values']['expires'])->save();
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_require_type', (bool) $form_state['values']['type'])->save();
 
     $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
 

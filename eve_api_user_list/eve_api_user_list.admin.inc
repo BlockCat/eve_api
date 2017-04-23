@@ -29,7 +29,7 @@ function eve_api_user_list_admin_form($form, &$form_state) {
       2 => t('By Permission Only'),
     ),
     '#weight' => 0,
-    '#default_value' => (int) variable_get('eve_api_user_list_private_access', 0),
+    '#default_value' => (int) \Drupal::config('eve_api.config')->get('eve_api_user_list_private_access', 0),
   );
 
   $form['submit_button'] = array(
@@ -63,7 +63,7 @@ function eve_api_user_list_admin_form_validate($form, &$form_state) {
  * @see eve_api_user_list_admin_form_validate()
  */
 function eve_api_user_list_admin_form_submit($form, &$form_state) {
-  variable_set('eve_api_user_list_private_access', (int) $form_state['values']['private_access']);
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_user_list_private_access', (int) $form_state['values']['private_access'])->save();
 
   drupal_set_message(t('User List Settings Updated.'));
 }

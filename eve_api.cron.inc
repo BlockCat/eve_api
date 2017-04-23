@@ -117,21 +117,21 @@ function eve_api_cron() {
     $queue = DrupalQueue::get('eve_api_cron_api_mask_sync');
     $queue->createItem(1);
 
-    variable_set('eve_api_cron_api_mask_next', time() + (1439 * 60));
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_api_mask_next', time() + (1439 * 60))->save();
   }
 
   if (time() >= variable_get('eve_api_cron_api_alliance_fetch_next', 0) && date('G') == 2 && date('i') >= 12) {
     $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
     $queue->createItem(1);
 
-    variable_set('eve_api_cron_api_alliance_fetch_next', time() + (1439 * 60));
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_api_alliance_fetch_next', time() + (1439 * 60))->save();
   }
 
   if (time() >= variable_get('eve_api_cron_api_alliance_sync_next', 0) && date('G') == 3 && date('i') >= 12) {
     $queue = DrupalQueue::get('eve_api_cron_api_alliance_sync');
     $queue->createItem(1);
 
-    variable_set('eve_api_cron_api_alliance_sync_next', time() + (1439 * 60));
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_api_alliance_sync_next', time() + (1439 * 60))->save();
   }
 
   if (variable_get('eve_api_enable', FALSE)) {
@@ -148,7 +148,7 @@ function eve_api_cron() {
         }
       }
 
-      variable_set('eve_api_cron_api_users_next', time() + (59 * 60));
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_api_users_next', time() + (59 * 60))->save();
     }
 
     if (time() >= variable_get('eve_api_cron_api_user_wallet_journal_next', 0) && date('G') == 4 && date('i') >= 37) {
@@ -175,7 +175,7 @@ function eve_api_cron() {
         }
       }
 
-      variable_set('eve_api_cron_api_user_wallet_journal_next', time() + (1439 * 60));
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_api_user_wallet_journal_next', time() + (1439 * 60))->save();
     }
   }
 }
@@ -541,7 +541,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
   db_delete('eve_api_alliance_list_corporations')->condition('checked', 1, '=')->execute();
 
   if (!variable_get('eve_api_enable', FALSE)) {
-    variable_set('eve_api_enable', TRUE);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_enable', TRUE)->save();
     menu_rebuild();
   }
 

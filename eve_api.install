@@ -1120,22 +1120,22 @@ function eve_api_install() {
 
   foreach ($roles as $variable => $role) {
     if ($role_data = user_role_load_by_name($role)) {
-      variable_set($variable, (int) $role_data->rid);
+      \Drupal::configFactory()->getEditable('eve_api.config')->set($variable, (int) $role_data->rid)->save();
     }
     else {
       $user_role = new stdClass();
       $user_role->name = $role;
       user_role_save($user_role);
       $role_data = user_role_load_by_name($role);
-      variable_set($variable, (int) $role_data->rid);
+      \Drupal::configFactory()->getEditable('eve_api.config')->set($variable, (int) $role_data->rid)->save();
     }
   }
 
-  variable_set('eve_api_enable', FALSE);
-  variable_set('eve_api_first_run', FALSE);
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_enable', FALSE)->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_first_run', FALSE)->save();
 
   // We set this because we use 128x128 for EVE avatar's.
-  variable_set('user_picture_dimensions', '128x128');
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('user_picture_dimensions', '128x128')->save();
 
   $queue = DrupalQueue::get('eve_api_cron_api_user_sync');
   $queue->createQueue();
@@ -1228,35 +1228,35 @@ function eve_api_uninstall() {
 function eve_api_requirements($phase) {
   $requirements = array();
   // Ensure translations don't break during installation.
-  $t = get_t();
+  
 
   if ($phase == 'runtime') {
     $has_curl = function_exists('curl_init');
     $open_basedir = ini_get('open_basedir');
 
     $requirements['curl'] = array(
-      'title' => $t('cURL'),
-      'value' => $has_curl ? $t('Enabled') : $t('Not found'),
+      'title' => t('cURL'),
+      'value' => $has_curl ? t('Enabled') : t('Not found'),
     );
 
     if (!$has_curl) {
       $requirements['curl']['severity'] = REQUIREMENT_WARNING;
-      $requirements['curl']['description'] = $t('EVE API prefers cURL, please install the PHP <a href="@curl_url">cURL</a> library.', array('@curl_url' => 'http://php.net/manual/en/curl.setup.php'));
+      $requirements['curl']['description'] = t('EVE API prefers cURL, please install the PHP <a href="@curl_url">cURL</a> library.', array('@curl_url' => 'http://php.net/manual/en/curl.setup.php'));
     }
 
     $requirements['php_open_basedir'] = array(
-      'title' => $t('PHP open_basedir restriction'),
-      'value' => $open_basedir ? $t('Enabled') : $t('Disabled'),
+      'title' => t('PHP open_basedir restriction'),
+      'value' => $open_basedir ? t('Enabled') : t('Disabled'),
     );
 
     if ($open_basedir) {
       $requirements['php_open_basedir']['severity'] = REQUIREMENT_WARNING;
-      $requirements['php_open_basedir']['description'] = $t('EVE API prefers cURL, cURL requires the PHP <a href="@open_basedir-url">open_basedir</a> restriction to be disabled. Check your webserver configuration or contact your web host.', array('@open_basedir-url' => 'http://php.net/manual/en/ini.core.php#ini.open-basedir'));
+      $requirements['php_open_basedir']['description'] = t('EVE API prefers cURL, cURL requires the PHP <a href="@open_basedir-url">open_basedir</a> restriction to be disabled. Check your webserver configuration or contact your web host.', array('@open_basedir-url' => 'http://php.net/manual/en/ini.core.php#ini.open-basedir'));
     }
 
     // Report Omni EVE API version.
     $requirements['eve_api'] = array(
-      'title' => $t('Omni EVE API'),
+      'title' => t('Omni EVE API'),
       'value' => eve_api_version(),
       'severity' => REQUIREMENT_INFO,
     );
@@ -1579,7 +1579,7 @@ function eve_api_update_7203(&$sandbox) {
   $queue = DrupalQueue::get('eve_api_cron_api_alliance_fetch');
   $queue->createItem(1);
 
-  variable_set('eve_api_cron_error_count_limit', 10);
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count_limit', 10)->save();
 }
 
 /**
@@ -1694,5 +1694,5 @@ function eve_api_update_7204(&$sandbox) {
       'runs' => 1,
     ));
   }
-  variable_set('eve_api_cron_api_users_next', time() + (59 * 60));
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_api_users_next', time() + (59 * 60))->save();
 }

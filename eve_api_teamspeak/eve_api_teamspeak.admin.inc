@@ -14,14 +14,14 @@
  */
 function eve_api_teamspeak_admin_form($form, &$form_state) {
   if (($library = libraries_load('TeamSpeak3')) && !empty($library['loaded'])) {
-    variable_set('eve_api_teamspeak_framework_installed', TRUE);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_framework_installed', TRUE)->save();
   }
 
   $form['teamspeak'] = array(
     '#type' => 'fieldset',
     '#title' => t('Configure TeamSpeak 3 Connection'),
     '#description' => t('Configure TeamSpeak 3 connection settings.'),
-    '#collapsed' => variable_get('eve_api_teamspeak_enable', FALSE),
+    '#collapsed' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_enable', FALSE),
     '#collapsible' => TRUE,
     '#weight' => 0,
   );
@@ -34,7 +34,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     '#size' => 20,
     '#maxlength' => 15,
     '#weight' => 0,
-    '#default_value' => variable_get('eve_api_teamspeak_hostname', '127.0.0.1'),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_hostname', '127.0.0.1'),
   );
 
   $form['teamspeak']['server_address'] = array(
@@ -45,7 +45,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     '#size' => 60,
     '#maxlength' => 50,
     '#weight' => 0,
-    '#default_value' => variable_get('eve_api_teamspeak_server_address', 'teamspeak.com'),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_server_address', 'teamspeak.com'),
   );
 
   $form['teamspeak']['server_port'] = array(
@@ -56,7 +56,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     '#size' => 10,
     '#maxlength' => 6,
     '#weight' => 10,
-    '#default_value' => variable_get('eve_api_teamspeak_server_port', 9987),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_server_port', 9987),
   );
 
   $form['teamspeak']['server_password'] = array(
@@ -66,7 +66,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     '#maxlength' => 50,
     '#size' => 60,
     '#weight' => 20,
-    '#default_value' => variable_get('eve_api_teamspeak_server_password', ''),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_server_password', ''),
   );
 
   $form['teamspeak']['query_port'] = array(
@@ -77,7 +77,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     '#size' => 10,
     '#maxlength' => 6,
     '#weight' => 30,
-    '#default_value' => variable_get('eve_api_teamspeak_query_port', 10011),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_query_port', 10011),
   );
 
   $form['teamspeak']['query_username'] = array(
@@ -88,7 +88,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     '#size' => 60,
     '#maxlength' => 50,
     '#weight' => 40,
-    '#default_value' => variable_get('eve_api_teamspeak_query_username', 'Username'),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_query_username', 'Username'),
   );
 
   $form['teamspeak']['query_password'] = array(
@@ -99,7 +99,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     '#size' => 60,
     '#maxlength' => 50,
     '#weight' => 50,
-    '#default_value' => variable_get('eve_api_teamspeak_query_password', 'Password'),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_query_password', 'Password'),
   );
 
   $form['teamspeak']['query_nickname'] = array(
@@ -110,13 +110,13 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     '#size' => 60,
     '#maxlength' => 25,
     '#weight' => 60,
-    '#default_value' => variable_get('eve_api_teamspeak_query_nickname', 'Teamspeak_Bot'),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_query_nickname', 'Teamspeak_Bot'),
   );
 
   $form['teamspeak']['enable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable TeamSpeak 3 Connection'),
-    '#default_value' => variable_get('eve_api_teamspeak_enable', FALSE),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_enable', FALSE),
     '#weight' => 70,
   );
 
@@ -125,7 +125,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
       '#type' => 'fieldset',
       '#title' => t('TeamSpeak 3 Settings'),
       '#description' => t('TeamSpeak 3 settings and options.'),
-      '#collapsed' => !variable_get('eve_api_teamspeak_enable', FALSE),
+      '#collapsed' => !\Drupal::config('eve_api.config')->get('eve_api_teamspeak_enable', FALSE),
       '#collapsible' => TRUE,
       '#weight' => 10,
     );
@@ -138,7 +138,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
       '#size' => 60,
       '#maxlength' => 50,
       '#weight' => 0,
-      '#default_value' => variable_get('eve_api_teamspeak_nickname', '[@corp] @name'),
+      '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_nickname', '[@corp] @name'),
     );
 
     try {
@@ -159,7 +159,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
         '#title' => t('Select TeamSpeak Bypass Group'),
         '#description' => t('Please select a TeamSpeak Group for users to bypass the username and registration checks.'),
         '#options' => $teamspeakgroups,
-        '#default_value' => variable_get('eve_api_teamspeak_bypass_group', 0) == 0 ? '' : variable_get('eve_api_teamspeak_bypass_group', 0),
+        '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_bypass_group', 0) == 0 ? '' : variable_get('eve_api_teamspeak_bypass_group', 0),
         '#weight' => 10,
       );
     }
@@ -240,7 +240,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
       '#description' => t('How long until the registration options are enforced.'),
       '#weight' => 0,
       '#options' => $selectable_options,
-      '#default_value' => variable_get('eve_api_teamspeak_reg_time', 10),
+      '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_time', 10),
     );
 
     $form['registration_notification']['reg_ban_time'] = array(
@@ -249,7 +249,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
       '#description' => t('How long to ban the user once the Time Limit as expired.'),
       '#weight' => 10,
       '#options' => ($selectable_options + $long_selectable_options),
-      '#default_value' => variable_get('eve_api_teamspeak_reg_ban_time', 10),
+      '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_ban_time', 10),
     );
 
     $options = $selected = array();
@@ -293,7 +293,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
       '#description' => t('How long until the incorrect nickname options are enforced.'),
       '#weight' => 0,
       '#options' => $selectable_options,
-      '#default_value' => variable_get('eve_api_teamspeak_user_time', 10),
+      '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_time', 10),
     );
 
     $form['user_notification']['user_ban_time'] = array(
@@ -302,7 +302,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
       '#description' => t('How long to Ban the user once the Time Limit has expired.'),
       '#weight' => 10,
       '#options' => ($selectable_options + $long_selectable_options),
-      '#default_value' => variable_get('eve_api_teamspeak_user_ban_time', 10),
+      '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_ban_time', 10),
     );
 
     $options = $selected = array();
@@ -360,13 +360,13 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
  * @see eve_api_teamspeak_admin_form_submit()
  */
 function eve_api_teamspeak_admin_form_validate($form, &$form_state) {
-  variable_set('eve_api_teamspeak_hostname', (string) $form_state['values']['hostname']);
-  variable_set('eve_api_teamspeak_server_address', (string) $form_state['values']['server_address']);
-  variable_set('eve_api_teamspeak_server_port', (int) $form_state['values']['server_port']);
-  variable_set('eve_api_teamspeak_server_password', (string) $form_state['values']['server_password']);
-  variable_set('eve_api_teamspeak_query_port', (int) $form_state['values']['query_port']);
-  variable_set('eve_api_teamspeak_query_username', (string) $form_state['values']['query_username']);
-  variable_set('eve_api_teamspeak_query_password', (string) $form_state['values']['query_password']);
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_hostname', (string) $form_state['values']['hostname'])->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_server_address', (string) $form_state['values']['server_address'])->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_server_port', (int) $form_state['values']['server_port'])->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_server_password', (string) $form_state['values']['server_password'])->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_query_port', (int) $form_state['values']['query_port'])->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_query_username', (string) $form_state['values']['query_username'])->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_query_password', (string) $form_state['values']['query_password'])->save();
 
   if (preg_match('/^[a-zA-Z0-9-_]+$/', (string) $form_state['values']['query_nickname']) != 1) {
     form_set_error('query_nickname', t('TeamSpeak 3 Query Nickname only supports numbers, letters and spaces.'));
@@ -380,7 +380,7 @@ function eve_api_teamspeak_admin_form_validate($form, &$form_state) {
       }
       catch (EveApiException $e) {
         form_set_error('enable', check_plain($e->getMessage()));
-        variable_set('eve_api_teamspeak_enable', FALSE);
+        \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_enable', FALSE)->save();
       }
     }
   }
@@ -395,35 +395,35 @@ function eve_api_teamspeak_admin_form_validate($form, &$form_state) {
  * @see eve_api_teamspeak_admin_form_validate()
  */
 function eve_api_teamspeak_admin_form_submit($form, &$form_state) {
-  variable_set('eve_api_teamspeak_query_nickname', (string) $form_state['values']['query_nickname']);
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_query_nickname', (string) $form_state['values']['query_nickname'])->save();
 
   if ((bool) $form_state['values']['enable']) {
     if (variable_get('eve_api_teamspeak_enable', FALSE)) {
-      variable_set('eve_api_teamspeak_bypass_group', (int) $form_state['values']['bypass_group']);
-      variable_set('eve_api_teamspeak_nickname', (string) $form_state['values']['nickname']);
-      variable_set('eve_api_teamspeak_reg_time', (int) $form_state['values']['reg_time']);
-      variable_set('eve_api_teamspeak_user_time', (int) $form_state['values']['user_time']);
-      variable_set('eve_api_teamspeak_reg_ban_time', (int) $form_state['values']['reg_ban_time']);
-      variable_set('eve_api_teamspeak_user_ban_time', (int) $form_state['values']['user_ban_time']);
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_bypass_group', (int) $form_state['values']['bypass_group'])->save();
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_nickname', (string) $form_state['values']['nickname'])->save();
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_reg_time', (int) $form_state['values']['reg_time'])->save();
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_user_time', (int) $form_state['values']['user_time'])->save();
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_reg_ban_time', (int) $form_state['values']['reg_ban_time'])->save();
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_user_ban_time', (int) $form_state['values']['user_ban_time'])->save();
 
       foreach ((array) $form_state['values']['reg_options'] as $field => $value) {
         $field = 'eve_api_teamspeak_' . (string) $field;
-        variable_set($field, (bool) $value);
+        \Drupal::configFactory()->getEditable('eve_api.config')->set($field, (bool) $value)->save();
       }
 
       foreach ((array) $form_state['values']['user_options'] as $field => $value) {
         $field = 'eve_api_teamspeak_' . (string) $field;
-        variable_set($field, (bool) $value);
+        \Drupal::configFactory()->getEditable('eve_api.config')->set($field, (bool) $value)->save();
       }
     }
 
-    variable_set('eve_api_teamspeak_enable', TRUE);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_enable', TRUE)->save();
 
     $queue = DrupalQueue::get('eve_api_teamspeak_cron_role_sync');
     $queue->createItem(1);
   }
   else {
-    variable_set('eve_api_teamspeak_enable', FALSE);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_enable', FALSE)->save();
   }
 
   menu_rebuild();

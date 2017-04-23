@@ -1,0 +1,9 @@
+configure: admin/eve_api/settings
+core: 8.x
+dependencies: 
+  - "drupal:ctools"
+  - "drupal:libraries"
+description: "An EVE API interface that will integrate EVE and Drupal into an all in one user management solution for EVE Alliances and Corporations."
+name: "Omni EVE API"
+package: "Omni EVE API"
+type: module

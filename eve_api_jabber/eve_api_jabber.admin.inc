@@ -28,7 +28,7 @@ function eve_api_jabber_admin_form($form, &$form_state) {
     '#size' => 60,
     '#maxlength' => 50,
     '#weight' => 40,
-    '#default_value' => variable_get('eve_api_jabber_url', 'http://localhost:9090'),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_jabber_url', 'http://localhost:9090'),
   );
 
   $form['jabber']['secret'] = array(
@@ -39,7 +39,7 @@ function eve_api_jabber_admin_form($form, &$form_state) {
     '#size' => 60,
     '#maxlength' => 50,
     '#weight' => 50,
-    '#default_value' => variable_get('eve_api_jabber_secret', 'Password'),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_jabber_secret', 'Password'),
   );
 
   $form['jabber']['domain'] = array(
@@ -50,13 +50,13 @@ function eve_api_jabber_admin_form($form, &$form_state) {
     '#size' => 60,
     '#maxlength' => 50,
     '#weight' => 60,
-    '#default_value' => variable_get('eve_api_jabber_domain', 'yourdomain.com'),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_jabber_domain', 'yourdomain.com'),
   );
 
   $form['jabber']['enable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable Jabber Connection'),
-    '#default_value' => variable_get('eve_api_jabber_enable', FALSE),
+    '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_jabber_enable', FALSE),
     '#weight' => 70,
   );
 
@@ -82,9 +82,9 @@ function eve_api_jabber_admin_form($form, &$form_state) {
  * @see eve_api_jabber_admin_form_submit()
  */
 function eve_api_jabber_admin_form_validate($form, &$form_state) {
-  variable_set('eve_api_jabber_url', (string) $form_state['values']['url']);
-  variable_set('eve_api_jabber_secret', (string) $form_state['values']['secret']);
-  variable_set('eve_api_jabber_domain', (string) $form_state['values']['domain']);
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_jabber_url', (string) $form_state['values']['url'])->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_jabber_secret', (string) $form_state['values']['secret'])->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_jabber_domain', (string) $form_state['values']['domain'])->save();
 
   if ((bool) $form_state['values']['enable']) {
     try {
@@ -92,12 +92,12 @@ function eve_api_jabber_admin_form_validate($form, &$form_state) {
 
       if ($result != 'IllegalArgumentException') {
         form_set_error('enable', t('Please check your Openfire URL settings and try again.'));
-        variable_set('eve_api_jabber_enable', FALSE);
+        \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_jabber_enable', FALSE)->save();
       }
     }
     catch (EveApiException $e) {
       form_set_error('enable', t('Please check your Openfire URL settings and try again.'));
-      variable_set('eve_api_jabber_enable', FALSE);
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_jabber_enable', FALSE)->save();
     }
   }
 }
@@ -109,10 +109,10 @@ function eve_api_jabber_admin_form_validate($form, &$form_state) {
  */
 function eve_api_jabber_admin_form_submit($form, &$form_state) {
   if ((bool) $form_state['values']['enable']) {
-    variable_set('eve_api_jabber_enable', TRUE);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_jabber_enable', TRUE)->save();
   }
   else {
-    variable_set('eve_api_jabber_enable', FALSE);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_jabber_enable', FALSE)->save();
   }
 
   menu_rebuild();

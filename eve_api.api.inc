@@ -112,21 +112,21 @@ function eve_api_get_xml($type, $query = array()) {
       $response['errorText'] = 'OK';
     }
   }
-variable_set('eve_api_cron_error_count_limit', 10);
+\Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count_limit', 10)->save();
   if (empty($html) || $type == 'SkillTree') {
     if (variable_get('eve_api_cron_error_count', 0) >= variable_get('eve_api_cron_error_count_limit', 10)) {
-      variable_set('eve_api_cron_error_time', time() + variable_get('eve_api_cron_error_time_limit', 10 * 60));
-      variable_set('eve_api_cron_error_count', 0);
-      watchdog('eve_api', 'EVE API has failed 10 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', variable_get('eve_api_cron_error_time', 0)), NULL, WATCHDOG_EMERGENCY);
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_time', time() + variable_get('eve_api_cron_error_time_limit', 10 * 60))->save();
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count', 0)->save();
+      watchdog('eve_api', 'EVE API has failed 10 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', \Drupal::config('eve_api.config')->get('eve_api_cron_error_time', 0)), NULL, WATCHDOG_EMERGENCY);
       return array(
         'errorCode' => 2,
-        'errorText' => 'EVE API has failed 10 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', variable_get('eve_api_cron_error_time', 0)),
+        'errorText' => 'EVE API has failed 10 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', \Drupal::config('eve_api.config')->get('eve_api_cron_error_time', 0)),
       );
     }
     elseif (variable_get('eve_api_cron_error_time', 0) >= time()) {
       return array(
         'errorCode' => 2,
-        'errorText' => 'EVE API has failed 10 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', variable_get('eve_api_cron_error_time', 0)),
+        'errorText' => 'EVE API has failed 10 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', \Drupal::config('eve_api.config')->get('eve_api_cron_error_time', 0)),
       );
     }
 
@@ -182,7 +182,7 @@ variable_set('eve_api_cron_error_count_limit', 10);
   }
 
   if (FALSE !== strpos($html->data, '<!DOCTYPE html')) {
-    variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0))->save();
     watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_ERROR);
     $response['errorCode'] = 4;
   }
@@ -190,10 +190,10 @@ variable_set('eve_api_cron_error_count_limit', 10);
     try {
       $response['errorCode'] = 0;
       $response['xml'] = @new SimpleXMLElement($html->data);
-      variable_set('eve_api_cron_error_count', 0);
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count', 0)->save();
     }
     catch (Exception $e) {
-      variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0))->save();
       watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $e->getMessage(), NULL, WATCHDOG_ERROR);
       $response['errorCode'] = 5;
       $response['xml'] = NULL;
@@ -210,14 +210,14 @@ variable_set('eve_api_cron_error_count_limit', 10);
     }
 
     if (eve_api_error_code($response['errorCode'])) {
-      variable_set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0));
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0))->save();
     }
     else {
-      variable_set('eve_api_cron_error_count', 0);
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count', 0)->save();
     }
   }
   elseif (isset($response['xml']->cachedUntil)) {
-    variable_set('eve_api_cron_error_count', 0);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count', 0)->save();
   }
 
   if (isset($response['xml']->cachedUntil)) {
@@ -1433,7 +1433,7 @@ function eve_api_verify_blue($characters) {
     }
 
     $result = db_query('SELECT contactID FROM {eve_api_contact_list} WHERE standing >= :standing AND contactID IN (:contactIDs)', array(
-      ':standing' => (float) variable_get('eve_api_required_standing', 0.1),
+      ':standing' => (float) \Drupal::config('eve_api.config')->get('eve_api_required_standing', 0.1),
       ':contactIDs' => array(
         (int) $characters['characterID'],
         (int) $characters['corporationID'],
@@ -1460,7 +1460,7 @@ function eve_api_verify_blue($characters) {
       }
 
       $result = db_query('SELECT contactID FROM {eve_api_contact_list} WHERE standing >= :standing AND contactID IN (:contactIDs)', array(
-        ':standing' => (float) variable_get('eve_api_required_standing', 0.1),
+        ':standing' => (float) \Drupal::config('eve_api.config')->get('eve_api_required_standing', 0.1),
         ':contactIDs' => array(
           (int) $character['characterID'],
           (int) $character['corporationID'],

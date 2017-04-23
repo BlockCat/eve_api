@@ -434,7 +434,7 @@ function eve_api_enter_api_form($form, &$form_state) {
   $form['verify']['help_mask'] = array(
     '#type' => 'item',
     '#title' => t('Access Mask:'),
-    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the correct access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . variable_get('eve_api_access_mask', 268435455))),
+    '#description' => t('Click <a href="@mask" target="_blank">here</a> to create a new key with the correct access mask pre-selected.', array('@mask' => 'http://community.eveonline.com/support/api-key/CreatePredefined?accessMask=' . \Drupal::config('eve_api.config')->get('eve_api_access_mask', 268435455))),
     '#weight' => 40,
   );
 

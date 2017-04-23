@@ -24,9 +24,9 @@ function eve_api_teamspeak_install() {
     'description' => 'TeamSpeak 3 Database ID',
   ));
 
-  variable_set('eve_api_teamspeak_installed', TRUE);
-  variable_set('eve_api_teamspeak_framework_installed', FALSE);
-  variable_set('eve_api_teamspeak_enable', FALSE);
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_installed', TRUE)->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_framework_installed', FALSE)->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_enable', FALSE)->save();
 
   $queue = DrupalQueue::get('eve_api_teamspeak_cron_role_sync');
   $queue->createQueue();
@@ -83,26 +83,26 @@ function eve_api_teamspeak_uninstall() {
 function eve_api_teamspeak_requirements($phase) {
   $requirements = array();
   // Ensure translations don't break during installation.
-  $t = get_t();
+  
 
   if ($phase == 'runtime') {
     // Report Omni EVE API version.
     $requirements['eve_api_teamspeak'] = array(
-      'title' => $t('Omni EVE API (TeamSpeak)'),
+      'title' => t('Omni EVE API (TeamSpeak)'),
       'value' => eve_api_teamspeak_version(),
       'severity' => REQUIREMENT_INFO,
     );
 
     // Load the TeamSpeak 3 Library if possible.
     $requirements['teamspeak3'] = array(
-      'title' => $t('TeamSpeak 3 PHP Framework Library'),
+      'title' => t('TeamSpeak 3 PHP Framework Library'),
     );
 
     $libraries = libraries_get_libraries();
 
     if (isset($libraries['TeamSpeak3'])) {
       if (($library = libraries_load('TeamSpeak3')) && !empty($library['loaded'])) {
-        variable_set('eve_api_teamspeak_framework_installed', TRUE);
+        \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_framework_installed', TRUE)->save();
 
         $requirements['teamspeak3']['value'] = 'Found (' . TeamSpeak3::LIB_VERSION . ')';
         $requirements['teamspeak3']['severity'] = REQUIREMENT_OK;
@@ -110,20 +110,20 @@ function eve_api_teamspeak_requirements($phase) {
         return $requirements;
       }
       else {
-        $requirements['teamspeak3']['value'] = $t('Not Found');
+        $requirements['teamspeak3']['value'] = t('Not Found');
         $requirements['teamspeak3']['severity'] = REQUIREMENT_WARNING;
-        $requirements['teamspeak3']['description'] = $t('The TeamSpeak3.php was not found within the uploaded TeamSpeak 3 PHP Framework library. Please verify all files were uploaded correctly.');
+        $requirements['teamspeak3']['description'] = t('The TeamSpeak3.php was not found within the uploaded TeamSpeak 3 PHP Framework library. Please verify all files were uploaded correctly.');
       }
     }
     else {
-      $requirements['teamspeak3']['value'] = $t('Not Installed');
+      $requirements['teamspeak3']['value'] = t('Not Installed');
       $requirements['teamspeak3']['severity'] = REQUIREMENT_WARNING;
-      $requirements['teamspeak3']['description'] = $t('Please install the TeamSpeak 3 PHP Framework library %url.', array('%url' => 'http://addons.teamspeak.com/directory/tools/integration/TeamSpeak-3-PHP-Framework.html'));
+      $requirements['teamspeak3']['description'] = t('Please install the TeamSpeak 3 PHP Framework library %url.', array('%url' => 'http://addons.teamspeak.com/directory/tools/integration/TeamSpeak-3-PHP-Framework.html'));
     }
   }
 
-  variable_set('eve_api_teamspeak_framework_installed', FALSE);
-  variable_set('eve_api_teamspeak_enable', FALSE);
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_framework_installed', FALSE)->save();
+  \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_enable', FALSE)->save();
 
   return $requirements;
 }
