@@ -52,7 +52,7 @@ function eve_api_admin_settings_form($form, &$form_state) {
     '#weight' => 20,
   );
 
-  if (variable_get('eve_api_first_run', FALSE) && variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_first_run', FALSE) && \Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     $form['enter_api']['force'] = array(
       '#type' => 'checkbox',
       '#title' => t('Force Update API Information via a cron task.'),
@@ -124,7 +124,7 @@ function eve_api_admin_settings_form($form, &$form_state) {
     '#weight' => 20,
   );
 
-  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_first_run', FALSE) && !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['enter_api']['enable']['#default_value'] = TRUE;
   }
@@ -194,7 +194,7 @@ function eve_api_admin_settings_form_submit($form, &$form_state) {
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_corporationID', (int) $character['corporationID'])->save();
   }
 
-  if (((bool) $form_state['values']['enable'] && (bool) $form_state['values']['force']) || ((bool) $form_state['values']['enable'] && !variable_get('eve_api_enable', FALSE))) {
+  if (((bool) $form_state['values']['enable'] && (bool) $form_state['values']['force']) || ((bool) $form_state['values']['enable'] && !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE))) {
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_first_run', TRUE)->save();
 
     $queue = Drupal::queue('eve_api_cron_api_alliance_fetch');
@@ -293,7 +293,7 @@ function eve_api_admin_roles_form($form, &$form_state) {
     '#value' => t('Submit'),
   );
 
-  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_first_run', FALSE) && !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
@@ -337,7 +337,7 @@ function eve_api_admin_roles_form_validate($form, &$form_state) {
  * @see eve_api_admin_roles_form_validate()
  */
 function eve_api_admin_roles_form_submit($form, &$form_state) {
-  if ((int) variable_get('eve_api_blue_role', 2) != 2) {
+  if ((int) \Drupal::config('eve_api.config')->get('eve_api_blue_role', 2) != 2) {
     $uids = array();
     $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
       ':rid' => (int) \Drupal::config('eve_api.config')->get('eve_api_blue_role', 2),
@@ -350,12 +350,12 @@ function eve_api_admin_roles_form_submit($form, &$form_state) {
     }
 
     if (!empty($uids)) {
-      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('eve_api_blue_role', 2));
+      user_multiple_role_edit($uids, 'remove_role', (int) \Drupal::config('eve_api.config')->get('eve_api_blue_role', 2));
       user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['blue_role']);
     }
   }
 
-  if ((int) variable_get('eve_api_alliance_role', 2) != 2) {
+  if ((int) \Drupal::config('eve_api.config')->get('eve_api_alliance_role', 2) != 2) {
     $uids = array();
     $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
       ':rid' => (int) \Drupal::config('eve_api.config')->get('eve_api_alliance_role', 2),
@@ -368,12 +368,12 @@ function eve_api_admin_roles_form_submit($form, &$form_state) {
     }
 
     if (!empty($uids)) {
-      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('eve_api_alliance_role', 2));
+      user_multiple_role_edit($uids, 'remove_role', (int) \Drupal::config('eve_api.config')->get('eve_api_alliance_role', 2));
       user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['alliance_role']);
     }
   }
 
-  if ((int) variable_get('eve_api_unverified_role', 2) != 2) {
+  if ((int) \Drupal::config('eve_api.config')->get('eve_api_unverified_role', 2) != 2) {
     $uids = array();
     $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
       ':rid' => (int) \Drupal::config('eve_api.config')->get('eve_api_unverified_role', 2),
@@ -386,12 +386,12 @@ function eve_api_admin_roles_form_submit($form, &$form_state) {
     }
 
     if (!empty($uids)) {
-      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('eve_api_unverified_role', 2));
+      user_multiple_role_edit($uids, 'remove_role', (int) \Drupal::config('eve_api.config')->get('eve_api_unverified_role', 2));
       user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['unverified_role']);
     }
   }
 
-  if ((int) variable_get('eve_api_ceo_role', 2) != 2) {
+  if ((int) \Drupal::config('eve_api.config')->get('eve_api_ceo_role', 2) != 2) {
     $uids = array();
     $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
       ':rid' => (int) \Drupal::config('eve_api.config')->get('eve_api_ceo_role', 2),
@@ -404,12 +404,12 @@ function eve_api_admin_roles_form_submit($form, &$form_state) {
     }
 
     if (!empty($uids)) {
-      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('eve_api_ceo_role', 2));
+      user_multiple_role_edit($uids, 'remove_role', (int) \Drupal::config('eve_api.config')->get('eve_api_ceo_role', 2));
       user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['ceo_role']);
     }
   }
 
-  if ((int) variable_get('eve_api_director_role', 2) != 2) {
+  if ((int) \Drupal::config('eve_api.config')->get('eve_api_director_role', 2) != 2) {
     $uids = array();
     $result = db_query('SELECT uid FROM {users_roles} WHERE rid = :rid', array(
       ':rid' => (int) \Drupal::config('eve_api.config')->get('eve_api_director_role', 2),
@@ -422,7 +422,7 @@ function eve_api_admin_roles_form_submit($form, &$form_state) {
     }
 
     if (!empty($uids)) {
-      user_multiple_role_edit($uids, 'remove_role', (int) variable_get('eve_api_director_role', 2));
+      user_multiple_role_edit($uids, 'remove_role', (int) \Drupal::config('eve_api.config')->get('eve_api_director_role', 2));
       user_multiple_role_edit($uids, 'add_role', (int) $form_state['values']['director_role']);
     }
   }
@@ -454,7 +454,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
     ),
   );
 
-  $access_mask = variable_get('eve_api_access_mask', 268435455);
+  $access_mask = \Drupal::config('eve_api.config')->get('eve_api_access_mask', 268435455);
 
   $form['registration'] = array(
     '#type' => 'fieldset',
@@ -604,7 +604,7 @@ function eve_api_admin_registration_form($form, &$form_state) {
     '#weight' => 20,
   );
 
-  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_first_run', FALSE) && !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
@@ -650,12 +650,12 @@ function eve_api_admin_registration_form_submit($form, &$form_state) {
     }
   }
 
-  $access_mask = variable_get('eve_api_access_mask', 268435455);
+  $access_mask = \Drupal::config('eve_api.config')->get('eve_api_access_mask', 268435455);
 
   \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_access_mask', $new_access_mask)->save();
   \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_require_blue', (bool) $form_state['values']['blue'])->save();
 
-  if ($access_mask != $new_access_mask || round((float) \Drupal::config('eve_api.config')->get('eve_api_required_standing', 0.1), 1) != round((float) $form_state['values']['standing'], 1) || (int) variable_get('eve_api_require_expires', FALSE) != (int) $form_state['values']['expires'] || (int) variable_get('eve_api_require_type', TRUE) != (int) $form_state['values']['type']) {
+  if ($access_mask != $new_access_mask || round((float) \Drupal::config('eve_api.config')->get('eve_api_required_standing', 0.1), 1) != round((float) $form_state['values']['standing'], 1) || (int) \Drupal::config('eve_api.config')->get('eve_api_require_expires', FALSE) != (int) $form_state['values']['expires'] || (int) \Drupal::config('eve_api.config')->get('eve_api_require_type', TRUE) != (int) $form_state['values']['type']) {
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_required_standing', round((float) $form_state['values']['standing'], 1))->save();
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_require_expires', (bool) $form_state['values']['expires'])->save();
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_require_type', (bool) $form_state['values']['type'])->save();
@@ -766,7 +766,7 @@ function eve_api_admin_list_blues_form($form, &$form_state) {
     '#value' => t('Update Blue Standings'),
   );
 
-  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_first_run', FALSE) && !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
@@ -885,7 +885,7 @@ function eve_api_admin_add_blue_form($form, &$form_state) {
     '#value' => t('Add Blue Standing'),
   );
 
-  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_first_run', FALSE) && !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
@@ -1032,7 +1032,7 @@ function eve_api_admin_edit_blue_form($form, &$form_state, $contact_id) {
     '#value' => t('Edit Blue Standing'),
   );
 
-  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_first_run', FALSE) && !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
@@ -1164,7 +1164,7 @@ function eve_api_admin_list_corporations_form($form, &$form_state) {
     '#value' => t('Update Alliance Corporations'),
   );
 
-  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_first_run', FALSE) && !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
@@ -1283,7 +1283,7 @@ function eve_api_admin_add_corporation_form($form, &$form_state) {
     '#value' => t('Add Corporation'),
   );
 
-  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_first_run', FALSE) && !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
@@ -1354,11 +1354,14 @@ function eve_api_admin_add_corporation_form_submit($form, &$form_state) {
   $memo = (string) $form_state['values']['memo'];
 
   if (!($role = user_role_load($corp_info['corporationName']))) {
-    $user_role = new stdClass();
-    $user_role->name = $corp_info['corporationName'];
+	  
+    
+	
+    //$user_role->name = $corp_info['corporationName'];
 
     if (!empty($corp_info['corporationName'])) {
-      user_role_save($user_role);
+		$user_role = \Drupal\user\Entity\Role::create(array('id'=>'eve_api_corporation_'.$corp_info['corporationName'], 'name'=> $corp_info['corporationName'], 'weight'=> 4));
+		$user_role->save();      
     }
 
     $role = user_role_load($corp_info['corporationName']);
@@ -1435,7 +1438,7 @@ function eve_api_admin_edit_corporation_form($form, &$form_state, $corporation_i
     '#value' => t('Edit Corporation'),
   );
 
-  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_first_run', FALSE) && !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
@@ -1552,7 +1555,7 @@ function eve_api_admin_list_whitelist_form($form, &$form_state) {
     '#value' => t('Update Whitelist'),
   );
 
-  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_first_run', FALSE) && !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
@@ -1659,7 +1662,7 @@ function eve_api_admin_add_whitelist_form($form, &$form_state) {
     '#value' => t('Add Whitelist'),
   );
 
-  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_first_run', FALSE) && !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
@@ -1820,7 +1823,7 @@ function eve_api_admin_role_ceo_director_form($form, &$form_state) {
     '#value' => t('Update Roles'),
   );
 
-  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_first_run', FALSE) && !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
@@ -1931,7 +1934,7 @@ function eve_api_admin_add_role_ceo_director_form($form, &$form_state) {
     '#value' => t('Add CEO/Director Roles'),
   );
 
-  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_first_run', FALSE) && !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }

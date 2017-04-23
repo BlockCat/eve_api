@@ -39,7 +39,7 @@ function eve_api_cronapi($op, $job = NULL) {
     return $items;
   }
   elseif ($op == 'execute') {
-    if (!variable_get('eve_api_enable_cron', TRUE)) {
+    if (!\Drupal::config('eve_api.config')->get('eve_api_enable_cron', TRUE)) {
       return;
     }
 
@@ -60,7 +60,7 @@ function eve_api_cronapi($op, $job = NULL) {
         break;
 
       case 'eve_api_cron_api_user_sync_job':
-        if (variable_get('eve_api_enable', FALSE)) {
+        if (\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
           $queue = Drupal::queue('eve_api_cron_api_user_sync');
           $result = db_query('SELECT DISTINCT uid FROM {users} WHERE uid != 0');
 
@@ -76,7 +76,7 @@ function eve_api_cronapi($op, $job = NULL) {
         break;
 
       case 'eve_api_cron_api_user_wallet_journal_job':
-        if (variable_get('eve_api_enable', FALSE)) {
+        if (\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
           $queue = Drupal::queue('eve_api_cron_api_user_wallet_journal');
           $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode, k.errorCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.deleted = 0');
 
@@ -109,33 +109,33 @@ function eve_api_cronapi($op, $job = NULL) {
  * Implements hook_cron().
  */
 function eve_api_cron() {
-  if (!variable_get('eve_api_enable_cron', TRUE) || function_exists('elysia_cron_run')) {
+  if (!\Drupal::config('eve_api.config')->get('eve_api_enable_cron', TRUE) || function_exists('elysia_cron_run')) {
     return;
   }
 
-  if (time() >= variable_get('eve_api_cron_api_mask_next', 0) && date('w') == 0 && date('G') == 1 && date('i') >= 12) {
+  if (time() >= \Drupal::config('eve_api.config')->get('eve_api_cron_api_mask_next', 0) && date('w') == 0 && date('G') == 1 && date('i') >= 12) {
     $queue = Drupal::queue('eve_api_cron_api_mask_sync');
     $queue->createItem(1);
 
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_api_mask_next', time() + (1439 * 60))->save();
   }
 
-  if (time() >= variable_get('eve_api_cron_api_alliance_fetch_next', 0) && date('G') == 2 && date('i') >= 12) {
+  if (time() >= \Drupal::config('eve_api.config')->get('eve_api_cron_api_alliance_fetch_next', 0) && date('G') == 2 && date('i') >= 12) {
     $queue = Drupal::queue('eve_api_cron_api_alliance_fetch');
     $queue->createItem(1);
 
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_api_alliance_fetch_next', time() + (1439 * 60))->save();
   }
 
-  if (time() >= variable_get('eve_api_cron_api_alliance_sync_next', 0) && date('G') == 3 && date('i') >= 12) {
+  if (time() >= \Drupal::config('eve_api.config')->get('eve_api_cron_api_alliance_sync_next', 0) && date('G') == 3 && date('i') >= 12) {
     $queue = Drupal::queue('eve_api_cron_api_alliance_sync');
     $queue->createItem(1);
 
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_api_alliance_sync_next', time() + (1439 * 60))->save();
   }
 
-  if (variable_get('eve_api_enable', FALSE)) {
-    if (time() >= variable_get('eve_api_cron_api_users_next', 0) && date('i') >= 18) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
+    if (time() >= \Drupal::config('eve_api.config')->get('eve_api_cron_api_users_next', 0) && date('i') >= 18) {
       $queue = Drupal::queue('eve_api_cron_api_user_sync');
       $result = db_query('SELECT DISTINCT uid FROM {users} WHERE uid != 0');
 
@@ -151,7 +151,7 @@ function eve_api_cron() {
       \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_api_users_next', time() + (59 * 60))->save();
     }
 
-    if (time() >= variable_get('eve_api_cron_api_user_wallet_journal_next', 0) && date('G') == 4 && date('i') >= 37) {
+    if (time() >= \Drupal::config('eve_api.config')->get('eve_api_cron_api_user_wallet_journal_next', 0) && date('G') == 4 && date('i') >= 37) {
       $queue = Drupal::queue('eve_api_cron_api_user_wallet_journal');
       $result = db_query('SELECT c.accessMask, c.characterID, k.keyID, k.vCode, k.errorCode FROM {eve_api_characters} c LEFT JOIN {eve_api_keys} k ON k.apiID = c.apiID WHERE c.deleted = 0');
 
@@ -254,7 +254,7 @@ function eve_api_cron_api_user_sync($item) {
 
   if ($error_found) {
     if ($item['runs'] == 2) {
-      if (variable_get('eve_api_debug', FALSE)) {
+      if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
         watchdog('eve_api', 'Cron update User API task has failed 2 times in a row, task was removed. Data: ' . drupal_http_build_query($item), NULL, WATCHDOG_ERROR);
       }
 
@@ -281,19 +281,19 @@ function eve_api_cron_api_user_sync($item) {
       }
     }
 
-    $blue_role = user_role_load(variable_get('eve_api_blue_role', 2));
+    $blue_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_blue_role', 2));
     user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
 
-    $alliance_role = user_role_load(variable_get('eve_api_alliance_role', 2));
+    $alliance_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_alliance_role', 2));
     user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
 
-    $director_role = user_role_load(variable_get('eve_api_director_role', 2));
+    $director_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_director_role', 2));
     user_multiple_role_edit(array($uid), 'remove_role', $director_role->rid);
 
-    $ceo_role = user_role_load(variable_get('eve_api_ceo_role', 2));
+    $ceo_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_ceo_role', 2));
     user_multiple_role_edit(array($uid), 'remove_role', $ceo_role->rid);
 
-    $default_role = user_role_load(variable_get('eve_api_unverified_role', 2));
+    $default_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_unverified_role', 2));
     user_multiple_role_edit(array($uid), 'add_role', $default_role->rid);
 
     module_invoke_all('eve_api_user_delete', $account);
@@ -319,30 +319,30 @@ function eve_api_cron_api_user_sync($item) {
       user_multiple_role_edit(array($uid), 'add_role', $corporation_role->rid);
 
       if (eve_api_character_is_director($character_data['characterID'])) {
-        $director_role = user_role_load(variable_get('eve_api_director_role', 2));
+        $director_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_director_role', 2));
         user_multiple_role_edit(array($uid), 'add_role', $director_role->rid);
       }
       else {
-        $director_role = user_role_load(variable_get('eve_api_director_role', 2));
+        $director_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_director_role', 2));
         user_multiple_role_edit(array($uid), 'remove_role', $director_role->rid);
       }
 
       if (eve_api_character_is_ceo($character_data['characterID'])) {
-        $ceo_role = user_role_load(variable_get('eve_api_ceo_role', 2));
+        $ceo_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_ceo_role', 2));
         user_multiple_role_edit(array($uid), 'add_role', $ceo_role->rid);
       }
       else {
-        $ceo_role = user_role_load(variable_get('eve_api_ceo_role', 2));
+        $ceo_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_ceo_role', 2));
         user_multiple_role_edit(array($uid), 'remove_role', $ceo_role->rid);
       }
 
-      $default_role = user_role_load(variable_get('eve_api_unverified_role', 2));
+      $default_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_unverified_role', 2));
       user_multiple_role_edit(array($uid), 'remove_role', $default_role->rid);
 
-      $blue_role = user_role_load(variable_get('eve_api_blue_role', 2));
+      $blue_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_blue_role', 2));
       user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
 
-      $alliance_role = user_role_load(variable_get('eve_api_alliance_role', 2));
+      $alliance_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_alliance_role', 2));
       user_multiple_role_edit(array($uid), 'add_role', $alliance_role->rid);
     }
     else {
@@ -354,19 +354,19 @@ function eve_api_cron_api_user_sync($item) {
         }
       }
 
-      $default_role = user_role_load(variable_get('eve_api_unverified_role', 2));
+      $default_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_unverified_role', 2));
       user_multiple_role_edit(array($uid), 'remove_role', $default_role->rid);
 
-      $alliance_role = user_role_load(variable_get('eve_api_alliance_role', 2));
+      $alliance_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_alliance_role', 2));
       user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
 
-      $director_role = user_role_load(variable_get('eve_api_director_role', 2));
+      $director_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_director_role', 2));
       user_multiple_role_edit(array($uid), 'remove_role', $director_role->rid);
 
-      $ceo_role = user_role_load(variable_get('eve_api_ceo_role', 2));
+      $ceo_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_ceo_role', 2));
       user_multiple_role_edit(array($uid), 'remove_role', $ceo_role->rid);
 
-      $blue_role = user_role_load(variable_get('eve_api_blue_role', 2));
+      $blue_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_blue_role', 2));
       user_multiple_role_edit(array($uid), 'add_role', $blue_role->rid);
     }
   }
@@ -390,8 +390,8 @@ function eve_api_cron_api_user_sync($item) {
  *   TRUE or FALSE.
  */
 function eve_api_cron_api_alliance_fetch($item = NULL) {
-  $key_id = variable_get('eve_api_corp_keyid', '');
-  $v_code = variable_get('eve_api_corp_vcode', '');
+  $key_id = \Drupal::config('eve_api.config')->get('eve_api_corp_keyid', '');
+  $v_code = \Drupal::config('eve_api.config')->get('eve_api_corp_vcode', '');
 
   if (empty($key_id) || empty($v_code)) {
     return FALSE;
@@ -406,7 +406,7 @@ function eve_api_cron_api_alliance_fetch($item = NULL) {
 
   if (!isset($response['xml']->result)) {
     if ($item == 2) {
-      if (variable_get('eve_api_debug', FALSE)) {
+      if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
         watchdog('eve_api', 'Cron Standings task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
       }
 
@@ -456,7 +456,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
 
   if (!isset($response['xml']->result)) {
     if ($item == 2) {
-      if (variable_get('eve_api_debug', FALSE)) {
+      if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
         watchdog('eve_api', 'Cron Import Alliance API task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
       }
 
@@ -482,7 +482,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
       'allianceName' => (string) $row_a->name,
     ))->execute();
 
-    if ((int) $row_a->allianceID == variable_get('eve_api_allianceID', 0)) {
+    if ((int) $row_a->allianceID == \Drupal::config('eve_api.config')->get('eve_api_allianceID', 0)) {
       foreach ($rows_a->rowset->children() as $rows_b) {
         $row_b = $rows_b->attributes();
 
@@ -503,12 +503,10 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
           continue;
         }
 
-        if (!($role = user_role_load($corp_info['corporationName']))) {
-          $user_role = new stdClass();
-          $user_role->name = $corp_info['corporationName'];
-
+        if (!($role = user_role_load($corp_info['corporationName']))) {          
           if (!empty($corp_info['corporationName'])) {
-            user_role_save($user_role);
+            $user_role = \Drupal\user\Entity\Role::create(array('id'=>'eve_api_corporation_'.$corp_info['corporationName'], 'name'=> $corp_info['corporationName'], 'weight'=> 4));
+			$user_role->save();      
           }
 
           $role = user_role_load($corp_info['corporationName']);
@@ -540,7 +538,7 @@ function eve_api_cron_api_alliance_sync($item = NULL) {
 
   db_delete('eve_api_alliance_list_corporations')->condition('checked', 1, '=')->execute();
 
-  if (!variable_get('eve_api_enable', FALSE)) {
+  if (!\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_enable', TRUE)->save();
     menu_rebuild();
   }
@@ -562,7 +560,7 @@ function eve_api_cron_api_mask_sync($item = NULL) {
 
   if (!isset($response['xml']->result)) {
     if ($item == 2) {
-      if (variable_get('eve_api_debug', FALSE)) {
+      if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
         watchdog('eve_api', 'Cron Access Mask task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
       }
 
@@ -628,7 +626,7 @@ function eve_api_cron_api_skill_tree($item = NULL) {
 
   if (isset($api_data['error'])) {
     if ($item == 2) {
-      if (variable_get('eve_api_debug', FALSE)) {
+      if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
         watchdog('eve_api', 'Cron Skill Tree task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
       }
 
@@ -677,7 +675,7 @@ function eve_api_cron_api_error_list($item = NULL) {
 
   if (isset($api_data['error'])) {
     if ($item == 2) {
-      if (variable_get('eve_api_debug', FALSE)) {
+      if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
         watchdog('eve_api', 'Cron Error List task has failed 2 times in a row, task was removed.', NULL, WATCHDOG_ERROR);
       }
 
@@ -728,7 +726,7 @@ function eve_api_cron_import_character_sheet($item) {
       'errorText' => $character_sheet['errorText'],
     ))->execute();
 
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed importing Character Sheet. Data: (' . drupal_http_build_query($sheet_query) . ') Error: ' . (int) $error, NULL, WATCHDOG_WARNING);
     }
 
@@ -884,7 +882,7 @@ function eve_api_cron_import_character_info($item) {
       'errorText' => $character_info['errorText'],
     ))->execute();
 
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed importing Character Info. Data: (' . drupal_http_build_query($info_query) . ') Error: ' . (int) $error, NULL, WATCHDOG_WARNING);
     }
 
@@ -983,7 +981,7 @@ function eve_api_cron_import_skill_in_training($item) {
       'errorText' => $training_info['errorText'],
     ))->execute();
 
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed importing Character Skill Training. Data: (' . drupal_http_build_query($training_query) . ') Error: ' . (int) $error, NULL, WATCHDOG_WARNING);
     }
 
@@ -1065,7 +1063,7 @@ function eve_api_cron_api_user_wallet_journal($item) {
     $wallet_info = eve_api_get_wallet_journal_api($wallet_query);
 
     if (isset($wallet_info['error'])) {
-      if (variable_get('eve_api_debug', FALSE)) {
+      if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
         watchdog('eve_api', 'Failed importing Character Wallet Journal. Data: (' . drupal_http_build_query($wallet_query) . ') Error: ' . (int) $wallet_info['error'], NULL, WATCHDOG_WARNING);
       }
 
@@ -1153,7 +1151,7 @@ function eve_api_cron_import_contracts($item) {
   $contract_info = eve_api_get_contracts_api($contract_query);
 
   if (isset($contract_info['error'])) {
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed importing Character Contracts. Data: (' . drupal_http_build_query($contract_query) . ') Error: ' . (int) $contract_info['error'], NULL, WATCHDOG_WARNING);
     }
 
@@ -1242,7 +1240,7 @@ function eve_api_cron_import_mail($item) {
   $mail_info = eve_api_get_mail_messages_api($mail_query);
 
   if (isset($mail_info['error'])) {
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed importing Mail Headers. Data: (' . drupal_http_build_query($mail_query) . ') Error: ' . (int) $mail_info['error'], NULL, WATCHDOG_WARNING);
     }
 
@@ -1301,7 +1299,7 @@ function eve_api_cron_import_mail($item) {
       $body_info = eve_api_get_mail_bodies_api($body_query);
 
       if (isset($body_info['error'])) {
-        if (variable_get('eve_api_debug', FALSE)) {
+        if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
           watchdog('eve_api', 'Failed importing Mail Bodies. Data: (' . drupal_http_build_query($body_query) . ') Error: ' . (int) $body_info['error'], NULL, WATCHDOG_WARNING);
         }
 
@@ -1417,7 +1415,7 @@ function eve_api_cron_update_key($account, $key_id, $v_code, $api_id) {
   }
 
   if (!isset($characters['characters'])) {
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Error occured, should never happen. (' . drupal_http_build_query($query) . ')<br /><pre>' . print_r($characters, TRUE) . '</pre>', NULL, WATCHDOG_WARNING);
     }
 
@@ -1441,8 +1439,8 @@ function eve_api_cron_update_key($account, $key_id, $v_code, $api_id) {
     ':characterIDs' => $whitelist,
   ));
 
-  $allow_expires = variable_get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
-  $allow_type = variable_get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
+  $allow_expires = \Drupal::config('eve_api.config')->get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
+  $allow_type = \Drupal::config('eve_api.config')->get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
 
   if ($result->rowCount()) {
     if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
@@ -1450,7 +1448,7 @@ function eve_api_cron_update_key($account, $key_id, $v_code, $api_id) {
     }
   }
   else {
-    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
+    if ($allow_expires || $allow_type || ($characters['accessMask'] & \Drupal::config('eve_api.config')->get('eve_api_access_mask', 268435455)) != \Drupal::config('eve_api.config')->get('eve_api_access_mask', 268435455)) {
       $error = 1;
     }
   }

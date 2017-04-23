@@ -24,20 +24,20 @@ function eve_api_teamspeak_cronapi($op, $job = NULL) {
     return $items;
   }
   elseif ($op == 'execute') {
-    if (!variable_get('eve_api_enable_cron', TRUE)) {
+    if (!\Drupal::config('eve_api.config')->get('eve_api_enable_cron', TRUE)) {
       return;
     }
 
     switch ($job) {
       case 'eve_api_teamspeak_cron_role_sync_job':
-        if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
+        if (\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE) && \Drupal::config('eve_api.config')->get('eve_api_teamspeak_enable', FALSE)) {
           $queue = Drupal::queue('eve_api_teamspeak_cron_role_sync');
           $queue->createItem(1);
         }
         break;
 
       case 'eve_api_teamspeak_cron_user_check_job':
-        if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
+        if (\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE) && \Drupal::config('eve_api.config')->get('eve_api_teamspeak_enable', FALSE)) {
           $queue = Drupal::queue('eve_api_teamspeak_cron_user_check');
           $queue->createItem(1);
         }
@@ -50,12 +50,12 @@ function eve_api_teamspeak_cronapi($op, $job = NULL) {
  * Implements hook_cron().
  */
 function eve_api_teamspeak_cron() {
-  if (!variable_get('eve_api_enable_cron', TRUE) || function_exists('elysia_cron_run')) {
+  if (!\Drupal::config('eve_api.config')->get('eve_api_enable_cron', TRUE) || function_exists('elysia_cron_run')) {
     return;
   }
 
-  if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
-    if (time() >= variable_get('eve_api_teamspeak_cron_role_next', 0)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE) && \Drupal::config('eve_api.config')->get('eve_api_teamspeak_enable', FALSE)) {
+    if (time() >= \Drupal::config('eve_api.config')->get('eve_api_teamspeak_cron_role_next', 0)) {
       $queue = Drupal::queue('eve_api_teamspeak_cron_role_sync');
       $queue->createItem(1);
 
@@ -63,7 +63,7 @@ function eve_api_teamspeak_cron() {
     }
   }
 
-  if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_teamspeak_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE) && \Drupal::config('eve_api.config')->get('eve_api_teamspeak_enable', FALSE)) {
     $queue = Drupal::queue('eve_api_teamspeak_cron_user_check');
     $queue->createItem(1);
   }
@@ -155,22 +155,22 @@ function eve_api_teamspeak_cron_user_check($item) {
           continue;
         }
 
-        if (variable_get('eve_api_teamspeak_reg_message_enable', FALSE)) {
+        if (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_message_enable', FALSE)) {
           $teamspeak_user->message('[color=red]' . t('Your TeamSpeak ID is not registered on our server.') . '[/color]');
 
-          if (variable_get('eve_api_teamspeak_reg_kick_enable', FALSE) || variable_get('eve_api_teamspeak_reg_ban_enable', FALSE)) {
-            $teamspeak_user->message('[color=red]' . t('If you do not register within @time minutes', array('@time' => variable_get('eve_api_teamspeak_reg_time', 10))) . '[/color]');
+          if (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_kick_enable', FALSE) || \Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_ban_enable', FALSE)) {
+            $teamspeak_user->message('[color=red]' . t('If you do not register within @time minutes', array('@time' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_time', 10))) . '[/color]');
             $teamspeak_user->message('[color=red]' . t('you will be removed from the server.'));
           }
 
           $teamspeak_user->message('[color=red]' . t('To register, go to [url]@homepage[/url]', array('@homepage' => url('user/register', array('absolute' => TRUE)))) . '[/color]');
         }
 
-        if (variable_get('eve_api_teamspeak_reg_poke_enable', FALSE)) {
+        if (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_poke_enable', FALSE)) {
           $message = t('Please register');
 
-          if (variable_get('eve_api_teamspeak_reg_kick_enable', FALSE) || variable_get('eve_api_teamspeak_reg_ban_enable', FALSE)) {
-            $message .= t(' within @time minutes or you will be removed from the server', array('@time' => variable_get('eve_api_teamspeak_reg_time', 10)));
+          if (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_kick_enable', FALSE) || \Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_ban_enable', FALSE)) {
+            $message .= t(' within @time minutes or you will be removed from the server', array('@time' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_time', 10)));
           }
 
           $message .= '!';
@@ -179,14 +179,14 @@ function eve_api_teamspeak_cron_user_check($item) {
           $teamspeak_user->poke(t('To register, go to @homepage', array('@homepage' => url('user/register', array('absolute' => TRUE)))));
         }
 
-        if (variable_get('eve_api_teamspeak_reg_kick_enable', FALSE) && variable_get('eve_api_teamspeak_reg_ban_enable', FALSE) == FALSE) {
-          if (time() >= ($teamspeak_user->client_lastconnected + (60 * variable_get('eve_api_teamspeak_reg_time', 10)))) {
+        if (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_kick_enable', FALSE) && \Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_ban_enable', FALSE) == FALSE) {
+          if (time() >= ($teamspeak_user->client_lastconnected + (60 * \Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_time', 10)))) {
             $teamspeak_user->kick(TeamSpeak3::KICK_SERVER, t('To register, go to @homepage', array('@homepage' => url('user/register', array('absolute' => TRUE)))));
           }
         }
 
-        if (variable_get('eve_api_teamspeak_reg_ban_enable', FALSE)) {
-          if (time() >= ($teamspeak_user->client_lastconnected + (60 * variable_get('eve_api_teamspeak_reg_time', 10)))) {
+        if (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_ban_enable', FALSE)) {
+          if (time() >= ($teamspeak_user->client_lastconnected + (60 * \Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_time', 10)))) {
             $teamspeak_user->ban((60 * \Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_ban_time', 10)), t('You should have registered at @homepage  You are banned for @time minutes.', array(
               '@homepage' => url('user/register', array('absolute' => TRUE)),
               '@time' => (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_ban_time', 10)),
@@ -232,22 +232,22 @@ function eve_api_teamspeak_cron_user_check($item) {
       }
 
       if ($teamspeak_nickname != $expected_teamspeak_nickname && !$skip_check) {
-        if (variable_get('eve_api_teamspeak_user_message_enable', FALSE)) {
+        if (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_message_enable', FALSE)) {
           $teamspeak_user->message('[color=red]' . t('Your nickname is incorrect.') . '[/color]');
 
-          if (variable_get('eve_api_teamspeak_user_kick_enable', FALSE) || variable_get('eve_api_teamspeak_user_ban_enable', FALSE)) {
-            $teamspeak_user->message('[color=red]' . t('If you do not fix your nickname within @time minutes', array('@time' => variable_get('eve_api_teamspeak_user_time', 10))) . '[/color]');
+          if (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_kick_enable', FALSE) || \Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_ban_enable', FALSE)) {
+            $teamspeak_user->message('[color=red]' . t('If you do not fix your nickname within @time minutes', array('@time' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_time', 10))) . '[/color]');
             $teamspeak_user->message('[color=red]' . t('you will be removed from the server.'));
           }
 
           $teamspeak_user->message('[color=red]' . t('Nickname expected: !nickname', array('!nickname' => $expected_teamspeak_nickname)) . '[/color]');
         }
 
-        if (variable_get('eve_api_teamspeak_user_poke_enable', FALSE)) {
+        if (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_poke_enable', FALSE)) {
           $message = t('Your nickname is incorrect');
 
-          if (variable_get('eve_api_teamspeak_user_kick_enable', FALSE) || variable_get('eve_api_teamspeak_user_ban_enable', FALSE)) {
-            $message .= t(', within @time minutes or you will be removed from the server', array('@time' => variable_get('eve_api_teamspeak_user_time', 10)));
+          if (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_kick_enable', FALSE) || \Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_ban_enable', FALSE)) {
+            $message .= t(', within @time minutes or you will be removed from the server', array('@time' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_time', 10)));
           }
 
           $message .= '!';
@@ -256,14 +256,14 @@ function eve_api_teamspeak_cron_user_check($item) {
           $teamspeak_user->poke(t('Nickname expected: !nickname', array('!nickname' => $expected_teamspeak_nickname)));
         }
 
-        if (variable_get('eve_api_teamspeak_user_kick_enable', FALSE) && variable_get('eve_api_teamspeak_user_ban_enable', FALSE) == FALSE) {
-          if (time() >= ($teamspeak_user->client_lastconnected + (60 * variable_get('eve_api_teamspeak_user_time', 10)))) {
+        if (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_kick_enable', FALSE) && \Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_ban_enable', FALSE) == FALSE) {
+          if (time() >= ($teamspeak_user->client_lastconnected + (60 * \Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_time', 10)))) {
             $teamspeak_user->kick(TeamSpeak3::KICK_SERVER, t('You should have fixed your nickname!'));
           }
         }
 
-        if (variable_get('eve_api_teamspeak_user_ban_enable', FALSE)) {
-          if (time() >= ($teamspeak_user->client_lastconnected + (60 * variable_get('eve_api_teamspeak_user_time', 10)))) {
+        if (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_ban_enable', FALSE)) {
+          if (time() >= ($teamspeak_user->client_lastconnected + (60 * \Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_time', 10)))) {
             $teamspeak_user->ban((60 * \Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_ban_time', 10)), t('You should have fixed your nickname, you are banned for @time minutes.', array(
               '@time' => (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_ban_time', 10)),
             )));
@@ -276,14 +276,14 @@ function eve_api_teamspeak_cron_user_check($item) {
   }
   catch (EveApiException $e) {
     if ($item == 2) {
-      if (variable_get('eve_api_debug', FALSE)) {
+      if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
         watchdog('eve_api_teamspeak', 'Cron Check TeamSpeak Names task has failed 2 times in a row, task was removed. Message: ' . $e->getMessage(), NULL, WATCHDOG_ERROR);
       }
 
       return FALSE;
     }
 
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api_teamspeak', 'Cron Check TeamSpeak Names task has failed. Message: ' . $e->getMessage(), NULL, WATCHDOG_ERROR);
     }
 
@@ -339,14 +339,14 @@ function eve_api_teamspeak_cron_role_sync($item) {
   }
   catch (EveApiException $e) {
     if ($item == 2) {
-      if (variable_get('eve_api_debug', FALSE)) {
+      if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
         watchdog('eve_api_teamspeak', 'Cron Sync TeamSpeak Roles task has failed 2 times in a row, task was removed. Message: ' . $e->getMessage(), NULL, WATCHDOG_ERROR);
       }
 
       return FALSE;
     }
 
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api_teamspeak', 'Cron Sync TeamSpeak Roles task has failed. Message: ' . $e->getMessage(), NULL, WATCHDOG_ERROR);
     }
 

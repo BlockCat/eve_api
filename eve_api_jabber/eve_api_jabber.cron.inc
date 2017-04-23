@@ -19,13 +19,13 @@ function eve_api_jabber_cronapi($op, $job = NULL) {
     return $items;
   }
   elseif ($op == 'execute') {
-    if (!variable_get('eve_api_enable_cron', TRUE)) {
+    if (!\Drupal::config('eve_api.config')->get('eve_api_enable_cron', TRUE)) {
       return;
     }
 
     switch ($job) {
       case 'eve_api_jabber_cron_user_sync_job':
-        if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_jabber_enable', FALSE)) {
+        if (\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE) && \Drupal::config('eve_api.config')->get('eve_api_jabber_enable', FALSE)) {
           $queue = Drupal::queue('eve_api_jabber_cron_user_sync');
           $result = db_query('SELECT uid, name FROM {users} WHERE characterID != 0');
 
@@ -48,12 +48,12 @@ function eve_api_jabber_cronapi($op, $job = NULL) {
  * Implements hook_cron().
  */
 function eve_api_jabber_cron() {
-  if (!variable_get('eve_api_enable_cron', TRUE) || function_exists('elysia_cron_run')) {
+  if (!\Drupal::config('eve_api.config')->get('eve_api_enable_cron', TRUE) || function_exists('elysia_cron_run')) {
     return;
   }
 
-  if (variable_get('eve_api_enable', FALSE) && variable_get('eve_api_jabber_enable', FALSE)) {
-    if (time() >= variable_get('eve_api_jabber_cron_user_next', 0)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE) && \Drupal::config('eve_api.config')->get('eve_api_jabber_enable', FALSE)) {
+    if (time() >= \Drupal::config('eve_api.config')->get('eve_api_jabber_cron_user_next', 0)) {
       $queue = Drupal::queue('eve_api_jabber_cron_user_sync');
       $result = db_query('SELECT uid, name FROM {users} WHERE characterID != 0');
 
@@ -101,7 +101,7 @@ function eve_api_jabber_cron_user_sync($item) {
 
     if ($result->rowCount()) {
       foreach ($result->fetchAll() as $row) {
-        if ($row->rid == variable_get('eve_api_unverified_role', 2)) {
+        if ($row->rid == \Drupal::config('eve_api.config')->get('eve_api_unverified_role', 2)) {
           $result = eve_api_jabber_url_query('delete', $character_name);
           return TRUE;
         }
@@ -113,14 +113,14 @@ function eve_api_jabber_cron_user_sync($item) {
   }
   catch (EveApiException $e) {
     if ($item['runs'] == 2) {
-      if (variable_get('eve_api_debug', FALSE)) {
+      if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
         watchdog('eve_api_jabber', 'Cron Update Jabber User Roles task has failed 2 times in a row, task was removed. Data: ' . drupal_http_build_query($item) . ' Message: ' . $e->getMessage(), NULL, WATCHDOG_ERROR);
       }
 
       return FALSE;
     }
 
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api_jabber', 'Cron Update Jabber User Roles task has failed. Data: ' . drupal_http_build_query($item) . ' Message: ' . $e->getMessage(), NULL, WATCHDOG_ERROR);
     }
 

@@ -41,7 +41,7 @@ function eve_api_user_list_menu() {
     'file' => 'eve_api_user_list.admin.inc',
   );
 
-  if (variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     $items['admin/eve_api/user_list'] = array(
       'title' => 'User List',
       'description' => 'Configure and edit User List settings.',
@@ -74,7 +74,7 @@ function eve_api_user_list_menu() {
  * Access callback for user omni eve api director/ceo check.
  */
 function eve_api_user_list_private_access($corporation_id) {
-  switch (variable_get('eve_api_user_list_private_access', 0)) {
+  switch (\Drupal::config('eve_api.config')->get('eve_api_user_list_private_access', 0)) {
     case 0:
       return (eve_api_user_is_director($GLOBALS['user']->uid, $corporation_id) || (eve_api_user_is_in_corp($GLOBALS['user']->characterID, $corporation_id) && user_access('view eve_api_user_list private')) || user_access('moderate eve_api users') || user_access('administer eve_api settings'));
 

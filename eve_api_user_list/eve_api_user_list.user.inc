@@ -329,11 +329,11 @@ function eve_api_user_list_user_character_page($character_id, $is_good) {
     'html' => TRUE,
   );
 
-  $eve_avatar = $is_https ? variable_get('eve_api_avatar_https', 'https://image.eveonline.com/Character/') : variable_get('eve_api_avatar_http', 'http://image.eveonline.com/Character/');
-  $eve_avatar .= (int) $character_data['characterID'] . '_' . variable_get('eve_api_user_picture_dimensions', '128') . '.jpg';
+  $eve_avatar = $is_https ? \Drupal::config('eve_api.config')->get('eve_api_avatar_https', 'https://image.eveonline.com/Character/') : \Drupal::config('eve_api.config')->get('eve_api_avatar_http', 'http://image.eveonline.com/Character/');
+  $eve_avatar .= (int) $character_data['characterID'] . '_' . \Drupal::config('eve_api.config')->get('eve_api_user_picture_dimensions', '128') . '.jpg';
   $alt = t("@user's picture", array('@user' => $character_data['characterName']));
 
-  if (module_exists('image') && file_valid_uri($eve_avatar) && $style = variable_get('user_picture_style', '')) {
+  if (module_exists('image') && file_valid_uri($eve_avatar) && $style = \Drupal::config('eve_api.config')->get('user_picture_style', '')) {
     $character_picture = theme('image_style', array(
       'style_name' => $style,
       'path' => $eve_avatar,

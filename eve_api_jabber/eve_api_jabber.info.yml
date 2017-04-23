@@ -5,3 +5,4 @@ package: "Omni EVE API"
 dependencies:
     -drupal:eve_api
 configure: 'admin/eve_api/jabber'
+type: module

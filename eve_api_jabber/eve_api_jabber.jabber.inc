@@ -58,7 +58,7 @@ function eve_api_jabber_format_display_name($name) {
  *   Returns a true on success, false on failure or message.
  */
 function eve_api_jabber_url_query($type, $character_name = '', array $query = array()) {
-  if (!variable_get('eve_api_jabber_enable', FALSE) && $type != 'check') {
+  if (!\Drupal::config('eve_api.config')->get('eve_api_jabber_enable', FALSE) && $type != 'check') {
     throw new EveApiException(t('Jabber Connection disabled.'));
   }
 
@@ -109,7 +109,7 @@ function eve_api_jabber_url_query($type, $character_name = '', array $query = ar
     $query = array_merge($query, $default_query);
     $query = drupal_http_build_query($query);
 
-    $url = variable_get('eve_api_jabber_url', 'http://localhost:9090') . '/plugins/userService/userservice?' . $query;
+    $url = \Drupal::config('eve_api.config')->get('eve_api_jabber_url', 'http://localhost:9090') . '/plugins/userService/userservice?' . $query;
     $result = eve_api_jabber_url_send_query($url);
 
     if ($result == 'ok') {

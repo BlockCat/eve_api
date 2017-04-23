@@ -114,8 +114,8 @@ function eve_api_get_xml($type, $query = array()) {
   }
 \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count_limit', 10)->save();
   if (empty($html) || $type == 'SkillTree') {
-    if (variable_get('eve_api_cron_error_count', 0) >= variable_get('eve_api_cron_error_count_limit', 10)) {
-      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_time', time() + variable_get('eve_api_cron_error_time_limit', 10 * 60))->save();
+    if (\Drupal::config('eve_api.config')->get('eve_api_cron_error_count', 0) >= \Drupal::config('eve_api.config')->get('eve_api_cron_error_count_limit', 10)) {
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_time', time() + \Drupal::config('eve_api.config')->get('eve_api_cron_error_time_limit', 10 * 60))->save();
       \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count', 0)->save();
       watchdog('eve_api', 'EVE API has failed 10 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', \Drupal::config('eve_api.config')->get('eve_api_cron_error_time', 0)), NULL, WATCHDOG_EMERGENCY);
       return array(
@@ -123,7 +123,7 @@ function eve_api_get_xml($type, $query = array()) {
         'errorText' => 'EVE API has failed 10 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', \Drupal::config('eve_api.config')->get('eve_api_cron_error_time', 0)),
       );
     }
-    elseif (variable_get('eve_api_cron_error_time', 0) >= time()) {
+    elseif (\Drupal::config('eve_api.config')->get('eve_api_cron_error_time', 0) >= time()) {
       return array(
         'errorCode' => 2,
         'errorText' => 'EVE API has failed 10 times to pull cron data, API cron resumes at ' . date('Y-m-d H:i:s', \Drupal::config('eve_api.config')->get('eve_api_cron_error_time', 0)),
@@ -162,7 +162,7 @@ function eve_api_get_xml($type, $query = array()) {
     if (isset($html->error) && !empty($html->error)) {
       $response['errorText'] = $html->error;
 
-      if (variable_get('eve_api_debug', FALSE)) {
+      if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
         watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_ERROR);
       }
     }
@@ -182,7 +182,7 @@ function eve_api_get_xml($type, $query = array()) {
   }
 
   if (FALSE !== strpos($html->data, '<!DOCTYPE html')) {
-    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0))->save();
+    \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count', 1 + \Drupal::config('eve_api.config')->get('eve_api_cron_error_count', 0))->save();
     watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $html->error . ' Code: ' . $html->code, NULL, WATCHDOG_ERROR);
     $response['errorCode'] = 4;
   }
@@ -193,7 +193,7 @@ function eve_api_get_xml($type, $query = array()) {
       \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count', 0)->save();
     }
     catch (Exception $e) {
-      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0))->save();
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count', 1 + \Drupal::config('eve_api.config')->get('eve_api_cron_error_count', 0))->save();
       watchdog('eve_api', 'EVE API returned an error with the HTTP request. (' . $type . '?' . drupal_http_build_query($query) . ') Error: ' . $e->getMessage(), NULL, WATCHDOG_ERROR);
       $response['errorCode'] = 5;
       $response['xml'] = NULL;
@@ -205,12 +205,12 @@ function eve_api_get_xml($type, $query = array()) {
     $response['errorCode'] = $error->code;
     $response['errorText'] = $response['xml']->error;
 
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'EVE API returned an error with the API data. (' . $type . '?' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_NOTICE);
     }
 
     if (eve_api_error_code($response['errorCode'])) {
-      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count', 1 + variable_get('eve_api_cron_error_count', 0))->save();
+      \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count', 1 + \Drupal::config('eve_api.config')->get('eve_api_cron_error_count', 0))->save();
     }
     else {
       \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_cron_error_count', 0)->save();
@@ -843,7 +843,7 @@ function eve_api_get_api_key_info_api($query) {
   $response = eve_api_get_xml('APIKeyInfo', $query);
 
   if (!isset($response['xml']->result)) {
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed getting API Key Info API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
     }
 
@@ -894,7 +894,7 @@ function eve_api_get_skill_in_training_api($query) {
   $response = eve_api_get_xml('SkillInTraining', $query);
 
   if (!isset($response['xml']->result)) {
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed getting Skill in Training API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
     }
 
@@ -926,7 +926,7 @@ function eve_api_get_wallet_journal_api($query) {
   $response = eve_api_get_xml('WalletJournal', $query);
 
   if (!isset($response['xml']->result)) {
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed getting Wallet Journal API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
     }
 
@@ -964,7 +964,7 @@ function eve_api_get_contracts_api($query) {
   $response = eve_api_get_xml('Contracts', $query);
 
   if (!isset($response['xml']->result)) {
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed getting Contracts API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
     }
 
@@ -1002,7 +1002,7 @@ function eve_api_get_mail_messages_api($query) {
   $response = eve_api_get_xml('MailMessages', $query);
 
   if (!isset($response['xml']->result)) {
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed getting Mail Messages API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
     }
 
@@ -1038,7 +1038,7 @@ function eve_api_get_mail_bodies_api($query) {
   $response = eve_api_get_xml('MailBodies', $query);
 
   if (!isset($response['xml']->result) && !isset($response['xml']->result->missingMessageIDs)) {
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed getting Mail Bodies API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
     }
 
@@ -1080,7 +1080,7 @@ function eve_api_get_character_info_api($query) {
   $response = eve_api_get_xml('CharacterInfo', $query);
 
   if (!isset($response['xml']->result)) {
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed getting Character Sheet API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
     }
 
@@ -1128,7 +1128,7 @@ function eve_api_get_character_sheet_api($query) {
   $response = eve_api_get_xml('CharacterSheet', $query);
 
   if (!isset($response['xml']->result)) {
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed getting Character Sheet API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
     }
 
@@ -1212,7 +1212,7 @@ function eve_api_get_skill_tree_api() {
   $response = eve_api_get_xml('SkillTree');
 
   if (!isset($response['xml']->result)) {
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed getting Skill Tree API Data. Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
     }
 
@@ -1277,7 +1277,7 @@ function eve_api_get_corporation_sheet_api($query) {
   $response = eve_api_get_xml('CorporationSheet', $query);
 
   if (!isset($response['xml']->result)) {
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed getting Corporation Sheet API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
     }
 
@@ -1315,7 +1315,7 @@ function eve_api_get_character_id_api($query) {
   $response = eve_api_get_xml('CharacterID', $query);
 
   if (!isset($response['xml']->result)) {
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed getting Character ID API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
     }
 
@@ -1353,7 +1353,7 @@ function eve_api_get_character_name_api($query) {
   $response = eve_api_get_xml('CharacterName', $query);
 
   if (!isset($response['xml']->result)) {
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed getting Character Name API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
     }
 
@@ -1387,7 +1387,7 @@ function eve_api_get_error_list_api() {
   $response = eve_api_get_xml('ErrorList');
 
   if (!isset($response['xml']->result)) {
-    if (variable_get('eve_api_debug', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_debug', FALSE)) {
       watchdog('eve_api', 'Failed getting Error List API Data. (' . drupal_http_build_query($query) . ') Error Code: ' . $response['errorCode'] . ' Error Message: ' . $response['errorText'], NULL, WATCHDOG_WARNING);
     }
 
@@ -1420,7 +1420,7 @@ function eve_api_get_error_list_api() {
  */
 function eve_api_verify_blue($characters) {
   if (isset($characters['characterID'])) {
-    if (($characters['allianceID'] == variable_get('eve_api_allianceID', 0) && variable_get('eve_api_allianceID', 0) != 0) || $characters['corporationID'] == variable_get('eve_api_corporationID', 0)) {
+    if (($characters['allianceID'] == \Drupal::config('eve_api.config')->get('eve_api_allianceID', 0) && \Drupal::config('eve_api.config')->get('eve_api_allianceID', 0) != 0) || $characters['corporationID'] == \Drupal::config('eve_api.config')->get('eve_api_corporationID', 0)) {
       return TRUE;
     }
 
@@ -1447,7 +1447,7 @@ function eve_api_verify_blue($characters) {
   }
   elseif (isset($characters['characters'])) {
     foreach ($characters['characters'] as $character) {
-      if (($character['allianceID'] == variable_get('eve_api_allianceID', 0) && variable_get('eve_api_allianceID', 0) != 0) || $character['corporationID'] == variable_get('eve_api_corporationID', 0)) {
+      if (($character['allianceID'] == \Drupal::config('eve_api.config')->get('eve_api_allianceID', 0) && \Drupal::config('eve_api.config')->get('eve_api_allianceID', 0) != 0) || $character['corporationID'] == \Drupal::config('eve_api.config')->get('eve_api_corporationID', 0)) {
         return TRUE;
       }
 
@@ -1974,8 +1974,8 @@ function eve_api_create_key($account, $key_id, $v_code) {
     ':characterIDs' => $whitelist,
   ));
 
-  $allow_expires = variable_get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
-  $allow_type = variable_get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
+  $allow_expires = \Drupal::config('eve_api.config')->get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
+  $allow_type = \Drupal::config('eve_api.config')->get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
 
   if ($result->rowCount()) {
     if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
@@ -1984,7 +1984,7 @@ function eve_api_create_key($account, $key_id, $v_code) {
     }
   }
   else {
-    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
+    if ($allow_expires || $allow_type || ($characters['accessMask'] & \Drupal::config('eve_api.config')->get('eve_api_access_mask', 268435455)) != \Drupal::config('eve_api.config')->get('eve_api_access_mask', 268435455)) {
       $characters['errorCode'] = 1;
       $characters['errorText'] = 'Invalid API Mask/Type/Expiry';
     }
@@ -2102,8 +2102,8 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
     ':characterIDs' => $whitelist,
   ));
 
-  $allow_expires = variable_get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
-  $allow_type = variable_get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
+  $allow_expires = \Drupal::config('eve_api.config')->get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
+  $allow_type = \Drupal::config('eve_api.config')->get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
 
   if ($result->rowCount()) {
     if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
@@ -2112,7 +2112,7 @@ function eve_api_modify_key($account, $key_id, $v_code, $api_id) {
     }
   }
   else {
-    if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
+    if ($allow_expires || $allow_type || ($characters['accessMask'] & \Drupal::config('eve_api.config')->get('eve_api_access_mask', 268435455)) != \Drupal::config('eve_api.config')->get('eve_api_access_mask', 268435455)) {
       $characters['errorCode'] = 1;
       $characters['errorText'] = 'Invalid API Mask/Type/Expiry';
     }

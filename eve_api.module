@@ -93,7 +93,7 @@ function eve_api_menu() {
     'weight' => 0,
   ) + $admin_base;
 
-  if (variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     $items['admin/eve_api/registration'] = array(
       'title' => 'Registration',
       'description' => 'Modify the requirements to register.',
@@ -464,23 +464,23 @@ function eve_api_role_list() {
  * Implements hook_user_role_delete().
  */
 function eve_api_user_role_delete($role) {
-  if ($role->rid == variable_get('eve_api_blue_role', 2)) {
+  if ($role->rid == \Drupal::config('eve_api.config')->get('eve_api_blue_role', 2)) {
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_blue_role', 2)->save();
   }
 
-  if ($role->rid == variable_get('eve_api_alliance_role', 2)) {
+  if ($role->rid == \Drupal::config('eve_api.config')->get('eve_api_alliance_role', 2)) {
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_alliance_role', 2)->save();
   }
 
-  if ($role->rid == variable_get('eve_api_unverified_role', 2)) {
+  if ($role->rid == \Drupal::config('eve_api.config')->get('eve_api_unverified_role', 2)) {
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_unverified_role', 2)->save();
   }
 
-  if ($role->rid == variable_get('eve_api_ceo_role', 2)) {
+  if ($role->rid == \Drupal::config('eve_api.config')->get('eve_api_ceo_role', 2)) {
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_ceo_role', 2)->save();
   }
 
-  if ($role->rid == variable_get('eve_api_director_role', 2)) {
+  if ($role->rid == \Drupal::config('eve_api.config')->get('eve_api_director_role', 2)) {
     \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_director_role', 2)->save();
   }
 }
@@ -508,7 +508,7 @@ function eve_api_user_delete($account) {
 function eve_api_preprocess_user_picture(&$variables) {
   $variables['user_picture'] = '';
 
-  if (variable_get('user_pictures', 0)) {
+  if (\Drupal::config('eve_api.config')->get('user_pictures', 0)) {
     // Load the full user object since it is not provided with nodes, comments,
     // or views displays.
     $account = eve_api_load_account($variables['account']);
@@ -516,7 +516,7 @@ function eve_api_preprocess_user_picture(&$variables) {
 
     if (!empty($filepath)) {
       $alt = t("@user's picture", array('@user' => format_username($account)));
-      if (module_exists('image') && file_valid_uri($filepath) && $style = variable_get('user_picture_style', '')) {
+      if (module_exists('image') && file_valid_uri($filepath) && $style = \Drupal::config('eve_api.config')->get('user_picture_style', '')) {
         $variables['user_picture'] = theme('image_style', array(
           'style_name' => $style,
           'path' => $filepath,
@@ -642,8 +642,8 @@ function eve_api_get_account_user_picture($account) {
 function eve_api_get_eve_avatar($character_id) {
   global $is_https;
 
-  $eve_avatar = $is_https ? variable_get('eve_api_avatar_https', 'https://image.eveonline.com/Character/') : variable_get('eve_api_avatar_http', 'http://image.eveonline.com/Character/');
-  $eve_avatar .= (int) $character_id . '_' . variable_get('eve_api_user_picture_dimensions', '128') . '.jpg';
+  $eve_avatar = $is_https ? \Drupal::config('eve_api.config')->get('eve_api_avatar_https', 'https://image.eveonline.com/Character/') : \Drupal::config('eve_api.config')->get('eve_api_avatar_http', 'http://image.eveonline.com/Character/');
+  $eve_avatar .= (int) $character_id . '_' . \Drupal::config('eve_api.config')->get('eve_api_user_picture_dimensions', '128') . '.jpg';
 
   return url($eve_avatar);
 }
@@ -745,20 +745,20 @@ function eve_api_user_profile_form_submit($form, &$form_state) {
   if ($corporation_role = user_role_load($old_character_data['corporationName'])) {
     user_multiple_role_edit(array($uid), 'remove_role', $corporation_role->rid);
 
-    $alliance_role = user_role_load(variable_get('eve_api_alliance_role', 2));
+    $alliance_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_alliance_role', 2));
     user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
 
-    $director_role = user_role_load(variable_get('eve_api_director_role', 2));
+    $director_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_director_role', 2));
     user_multiple_role_edit(array($uid), 'remove_role', $director_role->rid);
 
-    $ceo_role = user_role_load(variable_get('eve_api_ceo_role', 2));
+    $ceo_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_ceo_role', 2));
     user_multiple_role_edit(array($uid), 'remove_role', $ceo_role->rid);
   }
-  elseif ($blue_role = user_role_load(variable_get('eve_api_blue_role', 2))) {
+  elseif ($blue_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_blue_role', 2))) {
     user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
   }
 
-  $default_role = user_role_load(variable_get('eve_api_unverified_role', 2));
+  $default_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_unverified_role', 2));
   user_multiple_role_edit(array($uid), 'remove_role', $default_role->rid);
 
   $character_name = (string) $form_state['values']['name'];
@@ -769,24 +769,24 @@ function eve_api_user_profile_form_submit($form, &$form_state) {
   if ($corporation_role = user_role_load($character_data['corporationName'])) {
     user_multiple_role_edit(array($uid), 'add_role', $corporation_role->rid);
 
-    $alliance_role = user_role_load(variable_get('eve_api_alliance_role', 2));
+    $alliance_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_alliance_role', 2));
     user_multiple_role_edit(array($uid), 'add_role', $alliance_role->rid);
 
     if (eve_api_character_is_director($character_data['characterID'])) {
-      $director_role = user_role_load(variable_get('eve_api_director_role', 2));
+      $director_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_director_role', 2));
       user_multiple_role_edit(array($uid), 'add_role', $director_role->rid);
     }
 
     if (eve_api_character_is_ceo($character_data['characterID'])) {
-      $ceo_role = user_role_load(variable_get('eve_api_ceo_role', 2));
+      $ceo_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_ceo_role', 2));
       user_multiple_role_edit(array($uid), 'add_role', $ceo_role->rid);
     }
   }
-  elseif (($blue_role = user_role_load(variable_get('eve_api_blue_role', 2))) && $character_is_blue) {
+  elseif (($blue_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_blue_role', 2))) && $character_is_blue) {
     user_multiple_role_edit(array($uid), 'add_role', $blue_role->rid);
   }
   else {
-    $default_role = user_role_load(variable_get('eve_api_unverified_role', 2));
+    $default_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_unverified_role', 2));
     user_multiple_role_edit(array($uid), 'add_role', $default_role->rid);
   }
 
@@ -840,7 +840,7 @@ function eve_api_init() {
     return;
   }
 
-  if ($GLOBALS['user']->characterID == 0 && variable_get('eve_api_nag_user', TRUE) && !path_is_admin(current_path())) {
+  if ($GLOBALS['user']->characterID == 0 && \Drupal::config('eve_api.config')->get('eve_api_nag_user', TRUE) && !path_is_admin(current_path())) {
     drupal_set_message(t('Your account is not associated with an EVE Character, you must select a <a href="@url">Main Character</a>.', array('@url' => url('user/' . $GLOBALS['user']->uid . '/edit'))), 'warning', FALSE);
   }
 }

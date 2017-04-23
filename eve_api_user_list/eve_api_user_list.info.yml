@@ -5,3 +5,4 @@ package: 'Omni EVE API'
 dependencies:
     - eve_api
 configure: 'admin/eve_api/user_list'
+type: module

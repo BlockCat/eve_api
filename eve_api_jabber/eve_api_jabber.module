@@ -45,7 +45,7 @@ function eve_api_jabber_menu() {
     'file' => 'eve_api_jabber.user.inc',
   );
 
-  if (variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     $items['admin/eve_api/jabber'] = array(
       'title' => 'Jabber',
       'description' => 'Configure and edit Jabber connection settings.',
@@ -53,7 +53,7 @@ function eve_api_jabber_menu() {
       'weight' => 80,
     ) + $admin_base;
 
-    if (variable_get('eve_api_jabber_enable', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_jabber_enable', FALSE)) {
       $items['user/%user/jabber'] = array(
         'title' => 'Jabber',
         'description' => 'Register on the Jabber server.',
@@ -74,7 +74,7 @@ function eve_api_jabber_menu() {
  * Implements hook_user_delete().
  */
 function eve_api_jabber_user_delete($account) {
-  if (variable_get('eve_api_jabber_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_jabber_enable', FALSE)) {
     try {
       eve_api_jabber_url_query('delete', $account->name);
     }
@@ -90,7 +90,7 @@ function eve_api_jabber_user_delete($account) {
 function eve_api_jabber_eve_api_user_update($data) {
   $account = $data['account'];
 
-  if (variable_get('eve_api_jabber_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_jabber_enable', FALSE)) {
     if (isset($data['old_character'])) {
       try {
         eve_api_jabber_url_query('delete', $data['old_character']);
@@ -113,7 +113,7 @@ function eve_api_jabber_eve_api_user_update($data) {
  * Implements hook_eve_api_user_delete().
  */
 function eve_api_jabber_eve_api_user_delete($account) {
-  if (variable_get('eve_api_jabber_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_jabber_enable', FALSE)) {
     try {
       eve_api_jabber_url_query('delete', $account->name);
     }

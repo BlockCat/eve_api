@@ -120,7 +120,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     '#weight' => 70,
   );
 
-  if (variable_get('eve_api_teamspeak_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_enable', FALSE)) {
     $form['teamspeak_settings'] = array(
       '#type' => 'fieldset',
       '#title' => t('TeamSpeak 3 Settings'),
@@ -159,7 +159,7 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
         '#title' => t('Select TeamSpeak Bypass Group'),
         '#description' => t('Please select a TeamSpeak Group for users to bypass the username and registration checks.'),
         '#options' => $teamspeakgroups,
-        '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_bypass_group', 0) == 0 ? '' : variable_get('eve_api_teamspeak_bypass_group', 0),
+        '#default_value' => \Drupal::config('eve_api.config')->get('eve_api_teamspeak_bypass_group', 0) == 0 ? '' : \Drupal::config('eve_api.config')->get('eve_api_teamspeak_bypass_group', 0),
         '#weight' => 10,
       );
     }
@@ -259,10 +259,10 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     $options['reg_kick_enable'] = t('Kick - (Only when User Register Time Limit has expired.)');
     $options['reg_ban_enable'] = t('Ban - (Only when User Register Time Limit has expired.)');
 
-    $selected['reg_message_enable'] = variable_get('eve_api_teamspeak_reg_message_enable', FALSE);
-    $selected['reg_poke_enable'] = variable_get('eve_api_teamspeak_reg_poke_enable', FALSE);
-    $selected['reg_kick_enable'] = variable_get('eve_api_teamspeak_reg_kick_enable', FALSE);
-    $selected['reg_ban_enable'] = variable_get('eve_api_teamspeak_reg_ban_enable', FALSE);
+    $selected['reg_message_enable'] = \Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_message_enable', FALSE);
+    $selected['reg_poke_enable'] = \Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_poke_enable', FALSE);
+    $selected['reg_kick_enable'] = \Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_kick_enable', FALSE);
+    $selected['reg_ban_enable'] = \Drupal::config('eve_api.config')->get('eve_api_teamspeak_reg_ban_enable', FALSE);
 
     $form['registration_notification']['reg_options_description'] = array(
       '#title' => t('Notification Options'),
@@ -312,10 +312,10 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     $options['user_kick_enable'] = t('Kick - (Only when Correct Name Time Limit has expired.)');
     $options['user_ban_enable'] = t('Ban - (Only when Correct Name Time Limit has expired.)');
 
-    $selected['user_message_enable'] = variable_get('eve_api_teamspeak_user_message_enable', FALSE);
-    $selected['user_poke_enable'] = variable_get('eve_api_teamspeak_user_poke_enable', FALSE);
-    $selected['user_kick_enable'] = variable_get('eve_api_teamspeak_user_kick_enable', FALSE);
-    $selected['user_ban_enable'] = variable_get('eve_api_teamspeak_user_ban_enable', FALSE);
+    $selected['user_message_enable'] = \Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_message_enable', FALSE);
+    $selected['user_poke_enable'] = \Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_poke_enable', FALSE);
+    $selected['user_kick_enable'] = \Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_kick_enable', FALSE);
+    $selected['user_ban_enable'] = \Drupal::config('eve_api.config')->get('eve_api_teamspeak_user_ban_enable', FALSE);
 
     $form['user_notification']['user_options_description'] = array(
       '#title' => t('Notification Options'),
@@ -338,12 +338,12 @@ function eve_api_teamspeak_admin_form($form, &$form_state) {
     '#weight' => 50,
   );
 
-  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_first_run', FALSE) && !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
 
-  if (!variable_get('eve_api_teamspeak_framework_installed', FALSE)) {
+  if (!\Drupal::config('eve_api.config')->get('eve_api_teamspeak_framework_installed', FALSE)) {
     drupal_set_message(t('TeamSpeak 3 PHP Framework Library is not installed, please read the README.txt for instructions on how to install the library.'));
     $form['submit_button']['#disabled'] = TRUE;
   }
@@ -372,8 +372,8 @@ function eve_api_teamspeak_admin_form_validate($form, &$form_state) {
     form_set_error('query_nickname', t('TeamSpeak 3 Query Nickname only supports numbers, letters and spaces.'));
   }
 
-  if (variable_get('eve_api_teamspeak_framework_installed', FALSE)) {
-    if ((bool) $form_state['values']['enable'] && variable_get('eve_api_teamspeak_enable', FALSE) == FALSE) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_framework_installed', FALSE)) {
+    if ((bool) $form_state['values']['enable'] && \Drupal::config('eve_api.config')->get('eve_api_teamspeak_enable', FALSE) == FALSE) {
       try {
         $ts3 = eve_api_teamspeak_connect(TRUE);
         eve_api_teamspeak_disconnect($ts3, TRUE);
@@ -398,7 +398,7 @@ function eve_api_teamspeak_admin_form_submit($form, &$form_state) {
   \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_query_nickname', (string) $form_state['values']['query_nickname'])->save();
 
   if ((bool) $form_state['values']['enable']) {
-    if (variable_get('eve_api_teamspeak_enable', FALSE)) {
+    if (\Drupal::config('eve_api.config')->get('eve_api_teamspeak_enable', FALSE)) {
       \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_bypass_group', (int) $form_state['values']['bypass_group'])->save();
       \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_nickname', (string) $form_state['values']['nickname'])->save();
       \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_teamspeak_reg_time', (int) $form_state['values']['reg_time'])->save();

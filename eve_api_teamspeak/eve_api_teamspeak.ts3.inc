@@ -59,7 +59,7 @@ function eve_api_teamspeak_format_name($character_name) {
   // @name = Character Name.
   // @corp = Corp Ticker.
   // @alliance = Alliance Ticker.
-  $teamspeak_name = variable_get('eve_api_teamspeak_nickname', '[@corp] @name');
+  $teamspeak_name = \Drupal::config('eve_api.config')->get('eve_api_teamspeak_nickname', '[@corp] @name');
 
   $character_data = eve_api_get_basic_character_info($character_name);
 
@@ -81,7 +81,7 @@ function eve_api_teamspeak_format_name($character_name) {
  *   The TeamSpeak connection object.
  */
 function eve_api_teamspeak_connect($check = FALSE) {
-  if ((!variable_get('eve_api_teamspeak_enable', FALSE) || !variable_get('eve_api_teamspeak_framework_installed', FALSE)) && !$check) {
+  if ((!\Drupal::config('eve_api.config')->get('eve_api_teamspeak_enable', FALSE) || !\Drupal::config('eve_api.config')->get('eve_api_teamspeak_framework_installed', FALSE)) && !$check) {
     throw new EveApiException(t('TeamSpeak 3 Connection disabled.'));
   }
 
@@ -92,11 +92,11 @@ function eve_api_teamspeak_connect($check = FALSE) {
   try {
     $chars = array('\s','\p','\/');
     $replacements = array(' ', '|', '/');
-    $nickname = str_replace($chars, $replacements, variable_get('eve_api_teamspeak_query_nickname', 'Teamspeak_Bot'));
+    $nickname = str_replace($chars, $replacements, \Drupal::config('eve_api.config')->get('eve_api_teamspeak_query_nickname', 'Teamspeak_Bot'));
     $nickname = str_replace(array("\t", "\v", "\r", "\n", "\f"), '', $nickname);
     $nickname = $nickname . '_' . rand(1, 1000);
 
-    $query = 'serverquery://' . variable_get('eve_api_teamspeak_query_username', 'Username') . ':' . variable_get('eve_api_teamspeak_query_password', 'Password') . '@' . variable_get('eve_api_teamspeak_hostname', '127.0.0.1') . ':' . variable_get('eve_api_teamspeak_query_port', 10011) . '/?server_port=' . variable_get('eve_api_teamspeak_server_port', 9987);
+    $query = 'serverquery://' . \Drupal::config('eve_api.config')->get('eve_api_teamspeak_query_username', 'Username') . ':' . \Drupal::config('eve_api.config')->get('eve_api_teamspeak_query_password', 'Password') . '@' . \Drupal::config('eve_api.config')->get('eve_api_teamspeak_hostname', '127.0.0.1') . ':' . \Drupal::config('eve_api.config')->get('eve_api_teamspeak_query_port', 10011) . '/?server_port=' . \Drupal::config('eve_api.config')->get('eve_api_teamspeak_server_port', 9987);
     $ts3 = TeamSpeak3::factory($query);
 
     $ts3->setPredefinedQueryName($nickname);
@@ -124,7 +124,7 @@ function eve_api_teamspeak_connect($check = FALSE) {
  *   The TeamSpeak connection object.
  */
 function eve_api_teamspeak_disconnect(&$ts3, $check = FALSE) {
-  if ((!variable_get('eve_api_teamspeak_enable', FALSE) || !variable_get('eve_api_teamspeak_framework_installed', FALSE)) && !$check) {
+  if ((!\Drupal::config('eve_api.config')->get('eve_api_teamspeak_enable', FALSE) || !\Drupal::config('eve_api.config')->get('eve_api_teamspeak_framework_installed', FALSE)) && !$check) {
     throw new EveApiException(t('TeamSpeak 3 Connection disabled.'));
   }
 

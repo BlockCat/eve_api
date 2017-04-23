@@ -27,8 +27,8 @@ function eve_api_user_add_api_form($form, &$form_state, $account) {
     '#weight' => 0,
   );
 
-  $allow_expires = variable_get('eve_api_require_expires', FALSE) ? t('You may set an expiry, but the preferred method is to tick the box "No Expiry".') : t('Please tick the box "No Expiry".');
-  $allow_type = variable_get('eve_api_require_type', TRUE) ? t('Please set this to "All".') : t('You may select your main character or "All".');
+  $allow_expires = \Drupal::config('eve_api.config')->get('eve_api_require_expires', FALSE) ? t('You may set an expiry, but the preferred method is to tick the box "No Expiry".') : t('Please tick the box "No Expiry".');
+  $allow_type = \Drupal::config('eve_api.config')->get('eve_api_require_type', TRUE) ? t('Please set this to "All".') : t('You may select your main character or "All".');
 
   $form['add_api']['help_character'] = array(
     '#type' => 'item',
@@ -139,8 +139,8 @@ function eve_api_user_add_api_form_validate($form, &$form_state) {
       ':characterIDs' => $whitelist,
     ));
 
-    $allow_expires = variable_get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
-    $allow_type = variable_get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
+    $allow_expires = \Drupal::config('eve_api.config')->get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
+    $allow_type = \Drupal::config('eve_api.config')->get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
 
     if ($result->rowCount()) {
       if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
@@ -149,7 +149,7 @@ function eve_api_user_add_api_form_validate($form, &$form_state) {
       }
     }
     else {
-      if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
+      if ($allow_expires || $allow_type || ($characters['accessMask'] & \Drupal::config('eve_api.config')->get('eve_api_access_mask', 268435455)) != \Drupal::config('eve_api.config')->get('eve_api_access_mask', 268435455)) {
         form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
         form_set_error('vCode');
       }
@@ -372,13 +372,13 @@ function eve_api_user_list_api_form_submit($form, &$form_state) {
       }
     }
 
-    $alliance_role = user_role_load(variable_get('eve_api_alliance_role', 2));
+    $alliance_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_alliance_role', 2));
     user_multiple_role_edit(array($uid), 'remove_role', $alliance_role->rid);
 
-    $blue_role = user_role_load(variable_get('eve_api_blue_role', 2));
+    $blue_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_blue_role', 2));
     user_multiple_role_edit(array($uid), 'remove_role', $blue_role->rid);
 
-    $unverified_role = user_role_load(variable_get('eve_api_unverified_role', 2));
+    $unverified_role = user_role_load(\Drupal::config('eve_api.config')->get('eve_api_unverified_role', 2));
     user_multiple_role_edit(array($uid), 'add_role', $unverified_role->rid);
 
     db_update('users')->fields(array(
@@ -461,8 +461,8 @@ function eve_api_user_update_api_form($form, &$form_state, $account, $api_id) {
     '#weight' => 0,
   );
 
-  $allow_expires = variable_get('eve_api_require_expires', FALSE) ? t('You may set an expiry, but the preferred method is to tick the box "No Expiry".') : t('Please tick the box "No Expiry".');
-  $allow_type = variable_get('eve_api_require_type', TRUE) ? t('Please set this to "All".') : t('You may select your main character or "All".');
+  $allow_expires = \Drupal::config('eve_api.config')->get('eve_api_require_expires', FALSE) ? t('You may set an expiry, but the preferred method is to tick the box "No Expiry".') : t('Please tick the box "No Expiry".');
+  $allow_type = \Drupal::config('eve_api.config')->get('eve_api_require_type', TRUE) ? t('Please set this to "All".') : t('You may select your main character or "All".');
 
   $form['update_api']['help_character'] = array(
     '#type' => 'item',
@@ -578,8 +578,8 @@ function eve_api_user_update_api_form_validate($form, &$form_state) {
       ':characterIDs' => $whitelist,
     ));
 
-    $allow_expires = variable_get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
-    $allow_type = variable_get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
+    $allow_expires = \Drupal::config('eve_api.config')->get('eve_api_require_expires', FALSE) ? FALSE : !empty($characters['expires']);
+    $allow_type = \Drupal::config('eve_api.config')->get('eve_api_require_type', TRUE) ? $characters['type'] != 'Account' : FALSE;
 
     if ($result->rowCount()) {
       if ($allow_expires || ($characters['accessMask'] & 8388680) != 8388680) {
@@ -588,7 +588,7 @@ function eve_api_user_update_api_form_validate($form, &$form_state) {
       }
     }
     else {
-      if ($allow_expires || $allow_type || ($characters['accessMask'] & variable_get('eve_api_access_mask', 268435455)) != variable_get('eve_api_access_mask', 268435455)) {
+      if ($allow_expires || $allow_type || ($characters['accessMask'] & \Drupal::config('eve_api.config')->get('eve_api_access_mask', 268435455)) != \Drupal::config('eve_api.config')->get('eve_api_access_mask', 268435455)) {
         form_set_error('keyID', t('Please ensure that all boxes are highlighted and selected for the API, the "Character" drop down box is set to "All", the "Type" drop down box is set to "Character", and that the "No Expiry" checkbox is ticked.'));
         form_set_error('vCode');
       }

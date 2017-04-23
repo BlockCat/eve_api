@@ -6,3 +6,4 @@ dependencies:
     - eve_api
     - libraries
 configure: 'admin/eve_api/teamspeak'
+type: module

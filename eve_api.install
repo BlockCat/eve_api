@@ -1119,16 +1119,8 @@ function eve_api_install() {
   );
 
   foreach ($roles as $variable => $role) {
-    if ($role_data = user_role_load($role)) {
-      \Drupal::configFactory()->getEditable('eve_api.config')->set($variable, (int) $role_data->rid)->save();
-    }
-    else {
-      $user_role = new stdClass();
-      $user_role->name = $role;
-      user_role_save($user_role);
-      $role_data = user_role_load($role);
-      \Drupal::configFactory()->getEditable('eve_api.config')->set($variable, (int) $role_data->rid)->save();
-    }
+    $role_data = user_role_load($role);
+    \Drupal::configFactory()->getEditable('eve_api.config')->set($variable, (int) $role_data->rid)->save();    
   }
 
   \Drupal::configFactory()->getEditable('eve_api.config')->set('eve_api_enable', FALSE)->save();

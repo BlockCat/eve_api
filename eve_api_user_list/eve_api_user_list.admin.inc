@@ -38,7 +38,7 @@ function eve_api_user_list_admin_form($form, &$form_state) {
     '#weight' => 10,
   );
 
-  if (variable_get('eve_api_first_run', FALSE) && !variable_get('eve_api_enable', FALSE)) {
+  if (\Drupal::config('eve_api.config')->get('eve_api_first_run', FALSE) && !\Drupal::config('eve_api.config')->get('eve_api_enable', FALSE)) {
     drupal_set_message(t('Please wait until the cron tasks have pulled the Alliance API Info.'));
     $form['submit_button']['#disabled'] = TRUE;
   }

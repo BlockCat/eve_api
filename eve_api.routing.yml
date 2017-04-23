@@ -1,0 +1,11 @@
+user_register:
+    path: '/user/register'
+    default:
+        _controller: '\Drupal\eve_api\Controller\RegisterController'
+        _title: 'Create New Account'
+admin_eve_api:
+    path: '/admin/eve_api'
+    default:
+        _controller: ''
+        _title: 'EVE API'
+        
