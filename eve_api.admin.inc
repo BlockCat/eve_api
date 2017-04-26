@@ -12,7 +12,7 @@
  *
  * @ingroup forms
  */
-function eve_api_admin_settings_form($form, &$form_state) {
+/*function eve_api_admin_settings_form($form, &$form_state) {
   $form['enter_api'] = array(
     '#type' => 'fieldset',
     '#title' => t('Enter API Key'),
@@ -134,7 +134,7 @@ function eve_api_admin_settings_form($form, &$form_state) {
 
   return $form;
 }
-
+*/
 /**
  * Form validation handler for eve_api_admin_settings_form().
  *

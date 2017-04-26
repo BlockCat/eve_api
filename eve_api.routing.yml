@@ -1,11 +1,23 @@
-user_register:
-    path: '/user/register'
-    default:
-        _controller: '\Drupal\eve_api\Controller\RegisterController'
+eve_api.user.register:
+    path: '/user/registers'
+    defaults:
+        _controller: '\Drupal\eve_api\Controller\RegisterController::eve_api_register_wizard'
         _title: 'Create New Account'
-admin_eve_api:
+    requirements:
+        _permission: 'access content'
+eve_api.admin:
     path: '/admin/eve_api'
-    default:
-        _controller: ''
+    defaults:
+        _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+        #_controller: '\Drupal\eve_api\Controller\RegisterController::eve_api_register_wizard'
         _title: 'EVE API'
-        
+    requirements:
+       _permission: 'access content eve_api administration pages administer settings'
+eve_api.admin.settings:
+    path: '/admin/eve_api/settings'
+    defaults:
+        _controller: '\Drupal\eve_api\Form\AdminSettingsForm'
+        _title: 'Settings'
+    requirements:
+        _permission: 'access content administer eve_api settings'
+    

@@ -1,7 +1,9 @@
 <?php
 namespace Drupal\eve_api\Controller;
 
-class RegisterController {
+use Drupal\Core\Controller\ControllerBase;
+
+class RegisterController extends ControllerBase {
 	/**
 	 * @file
 	 * Functions related to altering the registration method on the site.
@@ -15,8 +17,8 @@ class RegisterController {
 	 */
 	function eve_api_register_wizard($step = 'enter_api') {
 	  // Include required ctools files.
-	  ctools_include('wizard');
-	  ctools_include('object-cache');
+	  //ctools_include('wizard');
+	  //ctools_include('object-cache');
 
 	  $form_info = array(
 		// Specify unique form id for this form.
@@ -51,7 +53,7 @@ class RegisterController {
 	  );
 
 	  // Make cached data available within each step's $form_state array.
-	  $form_state['signup_object'] = eve_api_get_page_cache('signup');
+	  $form_state['signup_object'] = $this->eve_api_get_page_cache('signup');
 
 	  // Return the form as a Ctools multi-step form.
 	  $output = ctools_wizard_multistep_form($form_info, $step, $form_state);
@@ -66,7 +68,7 @@ class RegisterController {
 	 *   The name of the cached object to retrieve.
 	 */
 	function eve_api_get_page_cache($name) {
-	  ctools_include('object-cache');
+	  //ctools_include('object-cache');
 	  $cache = ctools_object_cache_get('eve_api', $name);
 
 	  // If the cached object doesn't exist yet, create an empty object.
@@ -88,7 +90,7 @@ class RegisterController {
 	 *   The object to be cached.
 	 */
 	function eve_api_set_page_cache($name, $data) {
-	  ctools_include('object-cache');
+	  //ctools_include('object-cache');
 	  ctools_object_cache_set('eve_api', $name, $data);
 	}
 
@@ -99,7 +101,7 @@ class RegisterController {
 	 *   The name of the object to destroy.
 	 */
 	function eve_api_clear_page_cache($name) {
-	  ctools_include('object-cache');
+	  //ctools_include('object-cache');
 	  ctools_object_cache_clear('eve_api', $name);
 	}
 

@@ -56,6 +56,7 @@ function eve_api_menu() {
 
   $items['user/register/%'] = array(
     'title' => 'Create New Account',
+	'route_name' => 'eve_api.user_register',
     'page callback' => 'eve_api_register_wizard',
     'page arguments' => array(2),
     'access callback' => 'user_register_access',
@@ -78,6 +79,7 @@ function eve_api_menu() {
 
   $items['admin/eve_api'] = array(
     'title' => 'EVE API',
+	'route_name'=> 'eve_api.admin_eve_api',
     'description' => 'Configure and setup EVE API.',
     'page callback' => 'system_admin_menu_block_page',
     'access arguments' => array('access eve_api administration pages'),
@@ -88,6 +90,7 @@ function eve_api_menu() {
 
   $items['admin/eve_api/settings'] = array(
     'title' => 'Settings',
+	'route_name'=> 'eve_api.admin_eve_api_settings',
     'description' => 'Configure and setup EVE API.',
     'page arguments' => array('eve_api_admin_settings_form'),
     'weight' => 0,
